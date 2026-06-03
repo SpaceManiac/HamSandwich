@@ -1,3 +1,8 @@
+<!--
+Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
                                   _   _ ____  _
                               ___| | | |  _ \| |
                              / __| | | | |_) | |
@@ -20,10 +25,6 @@ everything from git, do this:
 Daniel uses a configure line similar to this for easier development:
 
     ./configure --disable-shared --enable-debug --enable-maintainer-mode
-
-In environments that don't support configure (i.e. Windows), do this:
-
-    buildconf.bat
 
 ## REQUIREMENTS
 

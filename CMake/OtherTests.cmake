@@ -25,7 +25,8 @@ include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckTypeSize)
 
-macro(add_header_include _check _header)
+# #include header if condition is true
+macro(curl_add_header_include _check _header)
   if(${_check})
     set(_source_epilogue "${_source_epilogue}
       #include <${_header}>")
@@ -37,11 +38,11 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 
 if(NOT DEFINED HAVE_STRUCT_SOCKADDR_STORAGE)
   cmake_push_check_state()
-  unset(CMAKE_EXTRA_INCLUDE_FILES)
+  set(CMAKE_EXTRA_INCLUDE_FILES "")
   if(WIN32)
     set(CMAKE_EXTRA_INCLUDE_FILES "winsock2.h")
-    set(CMAKE_REQUIRED_LIBRARIES "ws2_32")
-  elseif(HAVE_SYS_SOCKET_H)
+    list(APPEND CMAKE_REQUIRED_LIBRARIES "ws2_32")
+  else()
     set(CMAKE_EXTRA_INCLUDE_FILES "sys/socket.h")
   endif()
   check_type_size("struct sockaddr_storage" SIZEOF_STRUCT_SOCKADDR_STORAGE)
@@ -51,9 +52,9 @@ endif()
 
 if(NOT WIN32)
   set(_source_epilogue "#undef inline")
-  add_header_include(HAVE_SYS_TYPES_H "sys/types.h")
-  add_header_include(HAVE_SYS_SOCKET_H "sys/socket.h")
+  curl_add_header_include(HAVE_SYS_TYPES_H "sys/types.h")
   check_c_source_compiles("${_source_epilogue}
+    #include <sys/socket.h>
     int main(void)
     {
       int flag = MSG_NOSIGNAL;
@@ -63,8 +64,13 @@ if(NOT WIN32)
 endif()
 
 set(_source_epilogue "#undef inline")
-add_header_include(HAVE_SYS_TIME_H "sys/time.h")
 check_c_source_compiles("${_source_epilogue}
+  #ifdef _MSC_VER
+  #include <winsock2.h>
+  #endif
+  #ifndef _WIN32
+  #include <sys/time.h>
+  #endif
   #include <time.h>
   int main(void)
   {
@@ -97,18 +103,19 @@ elseif(BSD OR CMAKE_SYSTEM_NAME MATCHES "BSD")
 endif()
 
 if(NOT DEFINED HAVE_GETADDRINFO_THREADSAFE)
-  set(_source_epilogue "#undef inline")
-  add_header_include(HAVE_SYS_SOCKET_H "sys/socket.h")
-  add_header_include(HAVE_SYS_TIME_H "sys/time.h")
-  add_header_include(HAVE_NETDB_H "netdb.h")
+  set(_source_epilogue "#undef inline
+    #ifndef _WIN32
+    #include <sys/socket.h>
+    #include <sys/time.h>
+    #endif")
+  curl_add_header_include(HAVE_NETDB_H "netdb.h")
   check_c_source_compiles("${_source_epilogue}
     int main(void)
     {
-    #ifdef h_errno
-      return 0;
-    #else
+    #ifndef h_errno
       #error force compilation error
     #endif
+      return 0;
     }" HAVE_H_ERRNO)
 
   if(NOT HAVE_H_ERRNO)
@@ -124,12 +131,11 @@ if(NOT DEFINED HAVE_GETADDRINFO_THREADSAFE)
         int main(void)
         {
         #if defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200809L)
-          return 0;
         #elif defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 700)
-          return 0;
         #else
           #error force compilation error
         #endif
+          return 0;
         }" HAVE_H_ERRNO_SBS_ISSUE_7)
     endif()
   endif()
@@ -141,9 +147,9 @@ endif()
 
 if(NOT WIN32 AND NOT DEFINED HAVE_CLOCK_GETTIME_MONOTONIC_RAW)
   set(_source_epilogue "#undef inline")
-  add_header_include(HAVE_SYS_TYPES_H "sys/types.h")
-  add_header_include(HAVE_SYS_TIME_H "sys/time.h")
+  curl_add_header_include(HAVE_SYS_TYPES_H "sys/types.h")
   check_c_source_compiles("${_source_epilogue}
+    #include <sys/time.h>
     #include <time.h>
     int main(void)
     {

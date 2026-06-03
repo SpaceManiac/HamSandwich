@@ -24,19 +24,21 @@
 #
 ###########################################################################
 #
+import gzip
 import logging
 import os
 import re
 import shutil
-import socket
 import subprocess
 import tempfile
 from configparser import ConfigParser, ExtendedInterpolation
 from datetime import timedelta
-from typing import Optional
+from typing import Optional, Dict, List
+
+import pytest
+from filelock import FileLock
 
 from .certs import CertificateSpec, Credentials, TestCA
-from .ports import alloc_ports
 
 
 log = logging.getLogger(__name__)
@@ -51,21 +53,65 @@ def init_config_from(conf_path):
 
 
 TESTS_HTTPD_PATH = os.path.dirname(os.path.dirname(__file__))
+PROJ_PATH = os.path.dirname(os.path.dirname(TESTS_HTTPD_PATH))
 TOP_PATH = os.path.join(os.getcwd(), os.path.pardir)
-DEF_CONFIG = init_config_from(os.path.join(TOP_PATH, 'tests', 'http', 'config.ini'))
+CONFIG_PATH = os.path.join(TOP_PATH, 'tests', 'http', 'config.ini')
+if not os.path.exists(CONFIG_PATH):
+    ALT_CONFIG_PATH = os.path.join(PROJ_PATH, 'tests', 'http', 'config.ini')
+    if not os.path.exists(ALT_CONFIG_PATH):
+        raise Exception(f'unable to find config.ini in {CONFIG_PATH} nor {ALT_CONFIG_PATH}')
+    TOP_PATH = PROJ_PATH
+    CONFIG_PATH = ALT_CONFIG_PATH
+DEF_CONFIG = init_config_from(CONFIG_PATH)
 CURL = os.path.join(TOP_PATH, 'src', 'curl')
+CURLINFO = os.path.join(TOP_PATH, 'src', 'curlinfo')
+
+
+class NghttpxUtil:
+
+    CMD = None
+    VERSION_FULL = None
+
+    @classmethod
+    def version(cls, cmd):
+        if cmd is None:
+            return None
+        if cls.VERSION_FULL is None or cmd != cls.CMD:
+            p = subprocess.run(args=[cmd, '--version'],
+                               capture_output=True, text=True)
+            if p.returncode != 0:
+                raise RuntimeError(f'{cmd} --version failed with exit code: {p.returncode}')
+            cls.CMD = cmd
+            for line in p.stdout.splitlines(keepends=False):
+                if line.startswith('nghttpx '):
+                    cls.VERSION_FULL = line
+            if cls.VERSION_FULL is None:
+                raise RuntimeError(f'{cmd}: unable to determine version')
+        return cls.VERSION_FULL
+
+    @staticmethod
+    def version_with_h3(version):
+        return re.match(r'.* ngtcp2/\d+\.\d+\.\d+.*', version) is not None
 
 
 class EnvConfig:
 
-    def __init__(self):
+    def __init__(self, pytestconfig: Optional[pytest.Config] = None,
+                 testrun_uid=None,
+                 worker_id=None):
+        self.pytestconfig = pytestconfig
+        self.testrun_uid = testrun_uid
+        self.worker_id = worker_id if worker_id is not None else 'master'
         self.tests_dir = TESTS_HTTPD_PATH
-        self.gen_dir = os.path.join(self.tests_dir, 'gen')
+        self.gen_root = self.gen_dir = os.path.join(self.tests_dir, 'gen')
+        if self.worker_id != 'master':
+            self.gen_dir = os.path.join(self.gen_dir, self.worker_id)
         self.project_dir = os.path.dirname(os.path.dirname(self.tests_dir))
         self.build_dir = TOP_PATH
         self.config = DEF_CONFIG
         # check cur and its features
         self.curl = CURL
+        self.curlinfo = CURLINFO
         if 'CURL' in os.environ:
             self.curl = os.environ['CURL']
         self.curl_props = {
@@ -113,21 +159,15 @@ class EnvConfig:
                     prot.lower() for prot in line[11:].split(' ')
                 }
 
-        self.ports = alloc_ports(port_specs={
-            'ftp': socket.SOCK_STREAM,
-            'ftps': socket.SOCK_STREAM,
-            'http': socket.SOCK_STREAM,
-            'https': socket.SOCK_STREAM,
-            'nghttpx_https': socket.SOCK_STREAM,
-            'proxy': socket.SOCK_STREAM,
-            'proxys': socket.SOCK_STREAM,
-            'h2proxys': socket.SOCK_STREAM,
-            'caddy': socket.SOCK_STREAM,
-            'caddys': socket.SOCK_STREAM,
-            'ws': socket.SOCK_STREAM,
-        })
+        p = subprocess.run(args=[self.curlinfo],
+                           capture_output=True, text=True)
+        if p.returncode != 0:
+            raise RuntimeError(f'{self.curlinfo} failed with exit code: {p.returncode}')
+        self.curl_is_verbose = 'verbose-strings: ON' in p.stdout
+
+        self.ports = {}
+
         self.httpd = self.config['httpd']['httpd']
-        self.apachectl = self.config['httpd']['apachectl']
         self.apxs = self.config['httpd']['apxs']
         if len(self.apxs) == 0:
             self.apxs = None
@@ -147,6 +187,8 @@ class EnvConfig:
         self.expired_domain = f"expired.{self.tld}"
         self.cert_specs = [
             CertificateSpec(domains=[self.domain1, self.domain1brotli, 'localhost', '127.0.0.1'], key_type='rsa2048'),
+            CertificateSpec(name='domain1-no-ip', domains=[self.domain1, self.domain1brotli], key_type='rsa2048'),
+            CertificateSpec(name='domain1-very-bad', domains=[self.domain1, 'dns:127.0.0.1'], key_type='rsa2048'),
             CertificateSpec(domains=[self.domain2], key_type='rsa2048'),
             CertificateSpec(domains=[self.ftp_domain], key_type='rsa2048'),
             CertificateSpec(domains=[self.proxy_domain, '127.0.0.1'], key_type='rsa2048'),
@@ -163,15 +205,13 @@ class EnvConfig:
         self._nghttpx_version = None
         self.nghttpx_with_h3 = False
         if self.nghttpx is not None:
-            p = subprocess.run(args=[self.nghttpx, '-v'],
-                               capture_output=True, text=True)
-            if p.returncode != 0:
+            try:
+                self._nghttpx_version = NghttpxUtil.version(self.nghttpx)
+                self.nghttpx_with_h3 = NghttpxUtil.version_with_h3(self._nghttpx_version)
+            except RuntimeError:
                 # not a working nghttpx
+                log.exception('checking nghttpx version')
                 self.nghttpx = None
-            else:
-                self._nghttpx_version = re.sub(r'^nghttpx\s*', '', p.stdout.strip())
-                self.nghttpx_with_h3 = re.match(r'.* nghttp3/.*', p.stdout.strip()) is not None
-                log.debug(f'nghttpx -v: {p.stdout}')
 
         self.caddy = self.config['caddy']['caddy']
         self._caddy_version = None
@@ -194,6 +234,8 @@ class EnvConfig:
                 self.caddy = None
 
         self.vsftpd = self.config['vsftpd']['vsftpd']
+        if self.vsftpd == '':
+            self.vsftpd = None
         self._vsftpd_version = None
         if self.vsftpd is not None:
             try:
@@ -222,6 +264,29 @@ class EnvConfig:
                     raise Exception(f'Unable to determine VsFTPD version from: {p.stderr}')
             except Exception:
                 self.vsftpd = None
+
+        self.danted = self.config['danted']['danted']
+        if self.danted == '':
+            self.danted = None
+        self._danted_version = None
+        if self.danted is not None:
+            try:
+                p = subprocess.run(args=[self.danted, '-v'],
+                                   capture_output=True, text=True)
+                assert p.returncode == 0
+                if p.returncode != 0:
+                    # not a working vsftpd
+                    self.danted = None
+                m = re.match(r'^Dante v(\d+\.\d+\.\d+).*', p.stdout)
+                if not m:
+                    m = re.match(r'^Dante v(\d+\.\d+\.\d+).*', p.stderr)
+                if m:
+                    self._danted_version = m.group(1)
+                else:
+                    self.danted = None
+                    raise Exception(f'Unable to determine danted version from: {p.stderr}')
+            except Exception:
+                self.danted = None
 
         self._tcpdump = shutil.which('tcpdump')
 
@@ -257,7 +322,6 @@ class EnvConfig:
 
     def is_complete(self) -> bool:
         return os.path.isfile(self.httpd) and \
-               os.path.isfile(self.apachectl) and \
                self.apxs is not None and \
                os.path.isfile(self.apxs)
 
@@ -266,8 +330,6 @@ class EnvConfig:
             return 'httpd not configured, see `--with-test-httpd=<path>`'
         if not os.path.isfile(self.httpd):
             return f'httpd ({self.httpd}) not found'
-        if not os.path.isfile(self.apachectl):
-            return f'apachectl ({self.apachectl}) not found'
         if self.apxs is None:
             return "command apxs not found (commonly provided in apache2-dev)"
         if not os.path.isfile(self.apxs):
@@ -290,8 +352,15 @@ class EnvConfig:
     def tcpdmp(self) -> Optional[str]:
         return self._tcpdump
 
+    def clear_locks(self):
+        ca_lock = os.path.join(self.gen_root, 'ca/ca.lock')
+        if os.path.exists(ca_lock):
+            os.remove(ca_lock)
+
 
 class Env:
+
+    SERVER_TIMEOUT = 30  # seconds to wait for server to come up/reload
 
     CONFIG = EnvConfig()
 
@@ -326,6 +395,13 @@ class Env:
     @staticmethod
     def curl_uses_lib(libname: str) -> bool:
         return libname.lower() in Env.CONFIG.curl_props['libs']
+
+    @staticmethod
+    def curl_uses_any_libs(libs: List[str]) -> bool:
+        for libname in libs:
+            if libname.lower() in Env.CONFIG.curl_props['libs']:
+                return True
+        return False
 
     @staticmethod
     def curl_uses_ossl_quic() -> bool:
@@ -370,6 +446,16 @@ class Env:
         return False
 
     @staticmethod
+    def curl_lib_version_before(libname: str, lib_version) -> bool:
+        lversion = Env.curl_lib_version(libname)
+        if lversion != 'unknown':
+            if m := re.match(r'(\d+\.\d+\.\d+).*', lversion):
+                lversion = m.group(1)
+            return Env.CONFIG.versiontuple(lib_version) > \
+                Env.CONFIG.versiontuple(lversion)
+        return False
+
+    @staticmethod
     def curl_os() -> str:
         return Env.CONFIG.curl_props['os']
 
@@ -384,6 +470,21 @@ class Env:
     @staticmethod
     def curl_is_debug() -> bool:
         return Env.CONFIG.curl_is_debug
+
+    @staticmethod
+    def curl_is_verbose() -> bool:
+        return Env.CONFIG.curl_is_verbose
+
+    @staticmethod
+    def curl_can_early_data() -> bool:
+        if Env.curl_uses_lib('gnutls'):
+            return Env.curl_lib_version_at_least('gnutls', '3.6.13')
+        return Env.curl_uses_any_libs(['wolfssl', 'quictls', 'openssl'])
+
+    @staticmethod
+    def curl_can_h3_early_data() -> bool:
+        return Env.curl_can_early_data() and \
+            Env.curl_uses_lib('ngtcp2')
 
     @staticmethod
     def have_h3() -> bool:
@@ -422,10 +523,16 @@ class Env:
         return Env.CONFIG.vsftpd_version
 
     @staticmethod
+    def has_danted() -> bool:
+        return Env.CONFIG.danted is not None
+
+    @staticmethod
     def tcpdump() -> Optional[str]:
         return Env.CONFIG.tcpdmp
 
-    def __init__(self, pytestconfig=None):
+    def __init__(self, pytestconfig=None, env_config=None):
+        if env_config:
+            Env.CONFIG = env_config
         self._verbose = pytestconfig.option.verbose \
             if pytestconfig is not None else 0
         self._ca = None
@@ -433,11 +540,14 @@ class Env:
 
     def issue_certs(self):
         if self._ca is None:
-            ca_dir = os.path.join(self.CONFIG.gen_dir, 'ca')
-            self._ca = TestCA.create_root(name=self.CONFIG.tld,
-                                          store_dir=ca_dir,
-                                          key_type="rsa2048")
-        self._ca.issue_certs(self.CONFIG.cert_specs)
+            ca_dir = os.path.join(self.CONFIG.gen_root, 'ca')
+            os.makedirs(ca_dir, exist_ok=True)
+            lock_file = os.path.join(ca_dir, 'ca.lock')
+            with FileLock(lock_file):
+                self._ca = TestCA.create_root(name=self.CONFIG.tld,
+                                              store_dir=ca_dir,
+                                              key_type="rsa2048")
+                self._ca.issue_certs(self.CONFIG.cert_specs)
 
     def setup(self):
         os.makedirs(self.gen_dir, exist_ok=True)
@@ -465,6 +575,10 @@ class Env:
     @property
     def gen_dir(self) -> str:
         return self.CONFIG.gen_dir
+
+    @property
+    def gen_root(self) -> str:
+        return self.CONFIG.gen_root
 
     @property
     def project_dir(self) -> str:
@@ -511,12 +625,23 @@ class Env:
         return self.CONFIG.expired_domain
 
     @property
+    def ports(self) -> Dict[str, int]:
+        return self.CONFIG.ports
+
+    def update_ports(self, ports: Dict[str, int]):
+        self.CONFIG.ports.update(ports)
+
+    @property
     def http_port(self) -> int:
-        return self.CONFIG.ports['http']
+        return self.CONFIG.ports.get('http', 0)
 
     @property
     def https_port(self) -> int:
         return self.CONFIG.ports['https']
+
+    @property
+    def https_only_tcp_port(self) -> int:
+        return self.CONFIG.ports['https-tcp-only']
 
     @property
     def nghttpx_https_port(self) -> int:
@@ -563,6 +688,10 @@ class Env:
         return self.CONFIG.ports['caddy']
 
     @property
+    def danted(self) -> str:
+        return self.CONFIG.danted
+
+    @property
     def vsftpd(self) -> str:
         return self.CONFIG.vsftpd
 
@@ -577,10 +706,6 @@ class Env:
     @property
     def httpd(self) -> str:
         return self.CONFIG.httpd
-
-    @property
-    def apachectl(self) -> str:
-        return self.CONFIG.apachectl
 
     @property
     def apxs(self) -> str:
@@ -625,4 +750,25 @@ class Env:
             if remain != 0:
                 i = int(fsize / line_length) + 1
                 fd.write(f"{i:09d}-{s}"[0:remain-1] + "\n")
+        return fpath
+
+    def make_data_gzipbomb(self, indir: str, fname: str, fsize: int) -> str:
+        fpath = os.path.join(indir, fname)
+        gzpath = f'{fpath}.gz'
+        varpath = f'{fpath}.var'
+
+        with open(fpath, 'w') as fd:
+            fd.write('not what we are looking for!\n')
+        count = int(fsize / 1024)
+        zero1k = bytearray(1024)
+        with gzip.open(gzpath, 'wb') as fd:
+            for _ in range(count):
+                fd.write(zero1k)
+        with open(varpath, 'w') as fd:
+            fd.write(f'URI: {fname}\n')
+            fd.write('\n')
+            fd.write(f'URI: {fname}.gz\n')
+            fd.write('Content-Type: text/plain\n')
+            fd.write('Content-Encoding: x-gzip\n')
+            fd.write('\n')
         return fpath

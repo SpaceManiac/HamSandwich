@@ -4,7 +4,7 @@ SPDX-License-Identifier: curl
 Long: pass
 Arg: <phrase>
 Help: Passphrase for the private key
-Protocols: SSH TLS
+Protocols: TLS SCP SFTP
 Category: ssh tls auth
 Added: 7.9.3
 Multi: single
@@ -17,4 +17,4 @@ Example:
 
 # `--pass`
 
-Passphrase for the private key.
+Passphrase for the private key used for SSH or TLS.

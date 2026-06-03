@@ -290,6 +290,7 @@ curl_easy_escape_ccsid(CURL *handle, const char *string, int length,
   char *d;
 
   if(!string) {
+    /* !checksrc! disable ERRNOVAR 1 */
     errno = EINVAL;
     return (char *) NULL;
     }
@@ -320,6 +321,7 @@ curl_easy_unescape_ccsid(CURL *handle, const char *string, int length,
   char *d;
 
   if(!string) {
+    /* !checksrc! disable ERRNOVAR 1 */
     errno = EINVAL;
     return (char *) NULL;
     }
@@ -1162,6 +1164,7 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
   case CURLOPT_SSLKEYTYPE:
   case CURLOPT_SSL_CIPHER_LIST:
   case CURLOPT_SSL_EC_CURVES:
+  case CURLOPT_SSL_SIGNATURE_ALGORITHMS:
   case CURLOPT_TLS13_CIPHERS:
   case CURLOPT_TLSAUTH_PASSWORD:
   case CURLOPT_TLSAUTH_TYPE:
@@ -1210,8 +1213,8 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
       if(!s) {
         result = CURLE_OUT_OF_MEMORY;
         break;
-        }
       }
+    }
     else {
       /* Data length specified. */
       size_t len;
@@ -1243,6 +1246,7 @@ curl_easy_setopt_ccsid(CURL *easy, CURLoption tag, ...)
 
       data->set.postfieldsize = pfsize;         /* Replace data size. */
       s = cp;
+      cp = NULL;
     }
 
     result = curl_easy_setopt(easy, CURLOPT_POSTFIELDS, s);

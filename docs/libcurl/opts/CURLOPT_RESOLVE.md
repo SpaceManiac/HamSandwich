@@ -47,7 +47,7 @@ numerical IP addresses. If you specify multiple IP addresses they need to be
 separated by comma. If libcurl is built to support IPv6, each of the ADDRESS
 entries can of course be either IPv4 or IPv6 style addressing.
 
-Specify the host as a single ampersand (`*`) to match all names. This wildcard
+Specify the host as a single asterisk (`*`) to match all names. This wildcard
 is resolved last so any resolve with a specific host and port number is given
 priority.
 
@@ -73,6 +73,8 @@ resolves, include a string in the linked list that uses the format
 The entry to remove must be prefixed with a dash, and the hostname and port
 number must exactly match what was added previously.
 
+Provide IPv6 addresses within [brackets].
+
 Using this option multiple times makes the last set list override the previous
 ones. Set it to NULL to disable its use again.
 
@@ -90,6 +92,7 @@ int main(void)
   CURL *curl;
   struct curl_slist *host = NULL;
   host = curl_slist_append(NULL, "example.com:443:127.0.0.1");
+  host = curl_slist_append(host, "example.com:443:[2001:db8::252f:efd6]");
 
   curl = curl_easy_init();
   if(curl) {
@@ -117,8 +120,13 @@ Support for providing multiple IP addresses per entry was added in 7.59.0.
 Support for adding non-permanent entries by using the "+" prefix was added in
 7.75.0.
 
+Support for specifying the host component as an IPv6 address was added in 8.13.0.
+
 # %AVAILABILITY%
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

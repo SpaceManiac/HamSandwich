@@ -29,8 +29,8 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_CONTENT_LENGTH_DOWNLOAD,
 # DESCRIPTION
 
 Pass a pointer to a double to receive the content-length of the download. This
-is the value read from the Content-Length: field. Since 7.19.4, this returns
--1 if the size is not known.
+is the value read from the Content-Length: field. This returns -1 if the size
+is not known.
 
 CURLINFO_CONTENT_LENGTH_DOWNLOAD_T(3) is a newer replacement that returns a more
 sensible variable type.
@@ -70,4 +70,7 @@ Deprecated since 7.55.0.
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_getinfo(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

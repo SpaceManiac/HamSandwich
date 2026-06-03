@@ -31,6 +31,11 @@ Pass a *pointer* that remains untouched by libcurl and passed as the first
 argument in the closesocket callback set with
 CURLOPT_CLOSESOCKETFUNCTION(3).
 
+Note that when using multi/share handles, your callback may get invoked even
+after the easy handle has been cleaned up. The callback and data is
+inherited by a new connection and that connection may live longer
+than the transfer itself in the multi/share handle's connection cache.
+
 # DEFAULT
 
 NULL
@@ -71,4 +76,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

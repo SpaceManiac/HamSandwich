@@ -23,8 +23,8 @@ CURLOPT_HSTS_CTRL - control HSTS behavior
 ~~~c
 #include <curl/curl.h>
 
-#define CURLHSTS_ENABLE       (1<<0)
-#define CURLHSTS_READONLYFILE (1<<1)
+#define CURLHSTS_ENABLE       (1L<<0)
+#define CURLHSTS_READONLYFILE (1L<<1)
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_HSTS_CTRL, long bitmask);
 ~~~
@@ -64,7 +64,7 @@ int main(void)
 {
   CURL *curl = curl_easy_init();
   if(curl) {
-    curl_easy_setopt(curl, CURLOPT_HSTS_CTRL, (long)CURLHSTS_ENABLE);
+    curl_easy_setopt(curl, CURLOPT_HSTS_CTRL, CURLHSTS_ENABLE);
     curl_easy_perform(curl);
   }
 }
@@ -74,4 +74,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

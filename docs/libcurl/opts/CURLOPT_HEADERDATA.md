@@ -36,9 +36,9 @@ If CURLOPT_WRITEFUNCTION(3) or CURLOPT_HEADERFUNCTION(3) is used,
 If neither of those options are set, *pointer* must be a valid FILE * and
 it is used by a plain fwrite() to write headers to.
 
-If you are using libcurl as a Windows DLL, you **MUST** use a
-CURLOPT_WRITEFUNCTION(3) or CURLOPT_HEADERFUNCTION(3) if you set
-this option or you might experience crashes.
+If you are using libcurl as a Windows DLL, you **must** use a
+CURLOPT_WRITEFUNCTION(3) or CURLOPT_HEADERFUNCTION(3) if you set this option
+or you might experience crashes.
 
 # DEFAULT
 
@@ -85,4 +85,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

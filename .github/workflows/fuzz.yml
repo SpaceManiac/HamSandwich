@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: curl
 
-name: Fuzzer
+name: 'Fuzzer'
 
 'on':
   push:
@@ -15,11 +15,11 @@ name: Fuzzer
       - '.circleci/**'
       - 'appveyor.*'
       - 'CMake/**'
+      - 'Dockerfile'
       - 'packages/**'
       - 'plan9/**'
       - 'projects/**'
       - 'tests/data/**'
-      - 'winbuild/**'
   pull_request:
     branches:
       - master
@@ -29,14 +29,15 @@ name: Fuzzer
       - '.circleci/**'
       - 'appveyor.*'
       - 'CMake/**'
+      - 'Dockerfile'
       - 'packages/**'
       - 'plan9/**'
       - 'projects/**'
       - 'tests/data/**'
-      - 'winbuild/**'
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  # Hard-coded workflow name to avoid colliding with curl-fuzzer's group
+  group: curl-fuzz-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 permissions: {}

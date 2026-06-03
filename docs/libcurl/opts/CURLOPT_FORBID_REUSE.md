@@ -8,6 +8,7 @@ See-also:
   - CURLOPT_FRESH_CONNECT (3)
   - CURLOPT_MAXCONNECTS (3)
   - CURLOPT_MAXLIFETIME_CONN (3)
+  - CURLMOPT_NETWORK_CHANGED (3)
 Protocol:
   - All
 Added-in: 7.7
@@ -65,4 +66,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

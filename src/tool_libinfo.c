@@ -23,12 +23,7 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-#include "strcase.h"
-
-#include "curlx.h"
-
 #include "tool_libinfo.h"
-
 #include "memdebug.h" /* keep this as LAST include */
 
 /* global variable definitions, for libcurl runtime info */
@@ -77,6 +72,7 @@ bool feature_http2 = FALSE;
 bool feature_http3 = FALSE;
 bool feature_httpsproxy = FALSE;
 bool feature_libz = FALSE;
+bool feature_libssh2 = FALSE;
 bool feature_ntlm = FALSE;
 bool feature_ntlm_wb = FALSE;
 bool feature_spnego = FALSE;
@@ -84,6 +80,7 @@ bool feature_ssl = FALSE;
 bool feature_tls_srp = FALSE;
 bool feature_zstd = FALSE;
 bool feature_ech = FALSE;
+bool feature_ssls_export = FALSE;
 
 static struct feature_name_presentp {
   const char   *feature_name;
@@ -115,6 +112,7 @@ static struct feature_name_presentp {
   {"SPNEGO",         &feature_spnego,     CURL_VERSION_SPNEGO},
   {"SSL",            &feature_ssl,        CURL_VERSION_SSL},
   {"SSPI",           NULL,                CURL_VERSION_SSPI},
+  {"SSLS-EXPORT",    &feature_ssls_export, 0},
   {"threadsafe",     NULL,                CURL_VERSION_THREADSAFE},
   {"TLS-SRP",        &feature_tls_srp,    CURL_VERSION_TLSAUTH_SRP},
   {"TrackMemory",    NULL,                CURL_VERSION_CURLDEBUG},
@@ -124,7 +122,7 @@ static struct feature_name_presentp {
   {NULL,             NULL,                0}
 };
 
-static const char *fnames[sizeof(maybe_feature) / sizeof(maybe_feature[0])];
+static const char *fnames[CURL_ARRAYSIZE(maybe_feature)];
 const char * const *feature_names = fnames;
 size_t feature_count;
 
@@ -188,6 +186,8 @@ CURLcode get_libcurl_info(void)
     ++feature_count;
   }
 
+  feature_libssh2 = curlinfo->libssh_version &&
+    !strncmp("libssh2", curlinfo->libssh_version, 7);
   return CURLE_OK;
 }
 

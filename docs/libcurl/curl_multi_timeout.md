@@ -61,7 +61,7 @@ int main(void)
   fd_set fdread;
   fd_set fdwrite;
   fd_set fdexcep;
-  int maxfd;
+  int maxfd = 2;
   CURLM *multi = curl_multi_init();
 
   curl_multi_timeout(multi, &timeo);
@@ -89,4 +89,7 @@ loop - until all transfers are complete.
 
 # RETURN VALUE
 
-The standard CURLMcode for multi interface error codes.
+This function returns a CURLMcode indicating success or error.
+
+CURLM_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

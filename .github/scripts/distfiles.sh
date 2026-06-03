@@ -19,6 +19,7 @@ gitonly=".git*
 ^SECURITY.md
 ^LICENSES/*
 ^docs/examples/adddocsref.pl
+^docs/tests/CI.md
 ^docs/THANKS-filter
 ^projects/Windows/*
 ^scripts/ciconfig.pl
@@ -28,9 +29,7 @@ gitonly=".git*
 ^scripts/delta
 ^scripts/installcheck.sh
 ^scripts/release-notes.pl
-^scripts/singleuse.pl
-^src/tool_hugehelp.c.cvs
-^tests/CI.md"
+^scripts/singleuse.pl"
 
 tarfiles="$(mktemp)"
 gitfiles="$(mktemp)"

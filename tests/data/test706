@@ -47,10 +47,7 @@ FTP dir list PASV via SOCKS4
 #
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-QUIT
-</strip>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

@@ -58,7 +58,7 @@ int main(void)
     if(CURLE_OK == res) {
       long filetime = 0;
       res = curl_easy_getinfo(curl, CURLINFO_FILETIME, &filetime);
-      if((CURLE_OK == res) && (filetime >= 0)) {
+      if((CURLE_OK == res) && (filetime != -1)) {
         time_t file_time = (time_t)filetime;
         printf("filetime: %s", ctime(&file_time));
       }
@@ -73,4 +73,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_getinfo(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

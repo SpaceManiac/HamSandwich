@@ -15,6 +15,8 @@ curl_easy_recv
 curl_easy_reset
 curl_easy_send
 curl_easy_setopt
+curl_easy_ssls_export
+curl_easy_ssls_import
 curl_easy_strerror
 curl_easy_unescape
 curl_easy_upkeep
@@ -52,8 +54,11 @@ curl_multi_assign
 curl_multi_cleanup
 curl_multi_fdset
 curl_multi_get_handles
+curl_multi_get_offt
 curl_multi_info_read
 curl_multi_init
+curl_multi_notify_disable
+curl_multi_notify_enable
 curl_multi_perform
 curl_multi_poll
 curl_multi_remove_handle
@@ -93,3 +98,4 @@ curl_version_info
 curl_ws_meta
 curl_ws_recv
 curl_ws_send
+curl_ws_start_frame

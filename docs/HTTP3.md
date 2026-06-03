@@ -23,13 +23,10 @@ QUIC libraries we are using:
 
 [OpenSSL 3.2+ QUIC](https://github.com/openssl/openssl) - **EXPERIMENTAL**
 
-[msh3](https://github.com/nibanks/msh3) (with [msquic](https://github.com/microsoft/msquic)) - **EXPERIMENTAL**
-
 ## Experimental
 
 HTTP/3 support in curl is considered **EXPERIMENTAL** until further notice
-when built to use *quiche* or *msh3*. Only the *ngtcp2* backend is not
-experimental.
+when built to use *quiche*. Only the *ngtcp2* backend is not experimental.
 
 Further development and tweaking of the HTTP/3 support in curl happens in the
 master branch using pull-requests, just like ordinary changes.
@@ -43,26 +40,30 @@ To fix before we remove the experimental label:
 
 Building curl with ngtcp2 involves 3 components: `ngtcp2` itself, `nghttp3` and a QUIC supporting TLS library. The supported TLS libraries are covered below.
 
- * `ngtcp2`: v1.2.0
- * `nghttp3`: v1.1.0
+While any version of `ngtcp2` and `nghttp3` from v1.0.0 on are expected to
+work, using the latest versions often brings functional and performance
+improvements.
 
-## Build with quictls
+The build examples use `$NGHTTP3_VERSION` and `$NGTCP2_VERSION` as placeholders
+for the version you build.
 
-OpenSSL does not offer the required APIs for building a QUIC client. You need
-to use a TLS library that has such APIs and that works with *ngtcp2*.
+## Build with OpenSSL
 
-Build quictls:
+OpenSSL v3.5.0+ offers APIs for integration with *ngtcp2* v1.12.0+. Earlier
+versions do not work.
 
-     % git clone --depth 1 -b openssl-3.1.4+quic https://github.com/quictls/openssl
+Build OpenSSL (version 3.5.0 or newer):
+
+     % git clone --quiet --depth=1 -b openssl-$OPENSSL_VERSION https://github.com/openssl/openssl
      % cd openssl
-     % ./config enable-tls1_3 --prefix=<somewhere1>
+     % ./config --prefix=<somewhere1> --libdir=lib
      % make
      % make install
 
 Build nghttp3:
 
      % cd ..
-     % git clone -b v1.1.0 https://github.com/ngtcp2/nghttp3
+     % git clone -b $NGHTTP3_VERSION https://github.com/ngtcp2/nghttp3
      % cd nghttp3
      % git submodule update --init
      % autoreconf -fi
@@ -73,7 +74,52 @@ Build nghttp3:
 Build ngtcp2:
 
      % cd ..
-     % git clone -b v1.2.0 https://github.com/ngtcp2/ngtcp2
+     % git clone -b $NGTCP2_VERSION https://github.com/ngtcp2/ngtcp2
+     % cd ngtcp2
+     % autoreconf -fi
+     % ./configure PKG_CONFIG_PATH=<somewhere1>/lib/pkgconfig:<somewhere2>/lib/pkgconfig LDFLAGS="-Wl,-rpath,<somewhere1>/lib" --prefix=<somewhere3> --enable-lib-only --with-openssl
+     % make
+     % make install
+
+Build curl:
+
+     % cd ..
+     % git clone https://github.com/curl/curl
+     % cd curl
+     % autoreconf -fi
+     % LDFLAGS="-Wl,-rpath,<somewhere1>/lib" ./configure PKG_CONFIG_PATH=<ngtcp2-root>/lib/pkgconfig --with-openssl=<somewhere1> --with-nghttp3=<somewhere2> --with-ngtcp2
+     % make
+     % make install
+
+## Build with quictls
+
+OpenSSL before version 3.5 does not offer the required APIs for building a
+QUIC client. You need to use a TLS library that has such APIs and that works
+with *ngtcp2*.
+
+Build quictls (any `+quic` tagged version works):
+
+     % git clone --depth 1 -b openssl-3.1.4+quic https://github.com/quictls/openssl
+     % cd openssl
+     % ./config enable-tls1_3 --prefix=<somewhere1> --libdir=lib
+     % make
+     % make install
+
+Build nghttp3:
+
+     % cd ..
+     % git clone -b $NGHTTP3_VERSION https://github.com/ngtcp2/nghttp3
+     % cd nghttp3
+     % git submodule update --init
+     % autoreconf -fi
+     % ./configure --prefix=<somewhere2> --enable-lib-only
+     % make
+     % make install
+
+Build ngtcp2:
+
+     % cd ..
+     % git clone -b $NGTCP2_VERSION https://github.com/ngtcp2/ngtcp2
      % cd ngtcp2
      % autoreconf -fi
      % ./configure PKG_CONFIG_PATH=<somewhere1>/lib/pkgconfig:<somewhere2>/lib/pkgconfig LDFLAGS="-Wl,-rpath,<somewhere1>/lib" --prefix=<somewhere3> --enable-lib-only
@@ -86,11 +132,9 @@ Build curl:
      % git clone https://github.com/curl/curl
      % cd curl
      % autoreconf -fi
-     % LDFLAGS="-Wl,-rpath,<somewhere1>/lib" ./configure --with-openssl=<somewhere1> --with-nghttp3=<somewhere2> --with-ngtcp2=<somewhere3>
+     % LDFLAGS="-Wl,-rpath,<somewhere1>/lib" ./configure PKG_CONFIG_PATH=<ngtcp2-root>/lib/pkgconfig --with-openssl=<somewhere1> --with-nghttp3=<somewhere2> --with-ngtcp2
      % make
      % make install
-
-For OpenSSL 3.0.0 or later builds on Linux for x86_64 architecture, substitute all occurrences of "/lib" with "/lib64"
 
 ## Build with GnuTLS
 
@@ -106,7 +150,7 @@ Build GnuTLS:
 Build nghttp3:
 
      % cd ..
-     % git clone -b v1.1.0 https://github.com/ngtcp2/nghttp3
+     % git clone -b $NGHTTP3_VERSION https://github.com/ngtcp2/nghttp3
      % cd nghttp3
      % git submodule update --init
      % autoreconf -fi
@@ -117,7 +161,7 @@ Build nghttp3:
 Build ngtcp2:
 
      % cd ..
-     % git clone -b v1.2.0 https://github.com/ngtcp2/ngtcp2
+     % git clone -b $NGTCP2_VERSION https://github.com/ngtcp2/ngtcp2
      % cd ngtcp2
      % autoreconf -fi
      % ./configure PKG_CONFIG_PATH=<somewhere1>/lib/pkgconfig:<somewhere2>/lib/pkgconfig LDFLAGS="-Wl,-rpath,<somewhere1>/lib" --prefix=<somewhere3> --enable-lib-only --with-gnutls
@@ -130,7 +174,7 @@ Build curl:
      % git clone https://github.com/curl/curl
      % cd curl
      % autoreconf -fi
-     % ./configure --with-gnutls=<somewhere1> --with-nghttp3=<somewhere2> --with-ngtcp2=<somewhere3>
+     % ./configure PKG_CONFIG_PATH=<ngtcp2-root>/lib/pkgconfig --with-gnutls=<somewhere1> --with-nghttp3=<somewhere2> --with-ngtcp2
      % make
      % make install
 
@@ -148,7 +192,7 @@ Build wolfSSL:
 Build nghttp3:
 
      % cd ..
-     % git clone -b v1.1.0 https://github.com/ngtcp2/nghttp3
+     % git clone -b $NGHTTP3_VERSION https://github.com/ngtcp2/nghttp3
      % cd nghttp3
      % git submodule update --init
      % autoreconf -fi
@@ -159,7 +203,7 @@ Build nghttp3:
 Build ngtcp2:
 
      % cd ..
-     % git clone -b v1.2.0 https://github.com/ngtcp2/ngtcp2
+     % git clone -b $NGTCP2_VERSION https://github.com/ngtcp2/ngtcp2
      % cd ngtcp2
      % autoreconf -fi
      % ./configure PKG_CONFIG_PATH=<somewhere1>/lib/pkgconfig:<somewhere2>/lib/pkgconfig LDFLAGS="-Wl,-rpath,<somewhere1>/lib" --prefix=<somewhere3> --enable-lib-only --with-wolfssl
@@ -172,7 +216,7 @@ Build curl:
      % git clone https://github.com/curl/curl
      % cd curl
      % autoreconf -fi
-     % ./configure --with-wolfssl=<somewhere1> --with-nghttp3=<somewhere2> --with-ngtcp2=<somewhere3>
+     % ./configure PKG_CONFIG_PATH=<ngtcp2-root>/lib/pkgconfig --with-wolfssl=<somewhere1> --with-nghttp3=<somewhere2> --with-ngtcp2
      % make
      % make install
 
@@ -210,10 +254,12 @@ Build curl:
 
 QUIC support is **EXPERIMENTAL**
 
-Build OpenSSL 3.3.1:
+Use OpenSSL 3.3.1 or newer (QUIC support was added in 3.3.0, with
+shortcomings on some platforms like macOS). 3.4.1 or newer is recommended.
+Build via:
 
      % cd ..
-     % git clone -b openssl-3.3.1 https://github.com/openssl/openssl
+     % git clone -b $OPENSSL_VERSION https://github.com/openssl/openssl
      % cd openssl
      % ./config enable-tls1_3 --prefix=<somewhere> --libdir=lib
      % make
@@ -222,7 +268,7 @@ Build OpenSSL 3.3.1:
 Build nghttp3:
 
      % cd ..
-     % git clone -b v1.1.0 https://github.com/ngtcp2/nghttp3
+     % git clone -b $NGHTTP3_VERSION https://github.com/ngtcp2/nghttp3
      % cd nghttp3
      % git submodule update --init
      % autoreconf -fi
@@ -245,73 +291,12 @@ You can build curl with cmake:
      % cd ..
      % git clone https://github.com/curl/curl
      % cd curl
-     % cmake . -B bld -DCURL_USE_OPENSSL=ON -DUSE_OPENSSL_QUIC=ON
+     % cmake -B bld -DCURL_USE_OPENSSL=ON -DUSE_OPENSSL_QUIC=ON
      % cmake --build bld
      % cmake --install bld
 
  If `make install` results in `Permission denied` error, you need to prepend
  it with `sudo`.
-
-# msh3 (msquic) version
-
-**Note**: The msquic HTTP/3 backend is immature and is not properly functional
-one as of September 2023. Feel free to help us test it and improve it, but
-there is no point in filing bugs about it just yet.
-
-msh3 support is **EXPERIMENTAL**
-
-## Build Linux (with quictls fork of OpenSSL)
-
-Build msh3:
-
-     % git clone -b v0.6.0 --depth 1 --recursive https://github.com/nibanks/msh3
-     % cd msh3 && mkdir build && cd build
-     % cmake -G 'Unix Makefiles' -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-     % cmake --build .
-     % cmake --install .
-
-Build curl:
-
-     % git clone https://github.com/curl/curl
-     % cd curl
-     % autoreconf -fi
-     % ./configure LDFLAGS="-Wl,-rpath,/usr/local/lib" --with-msh3=/usr/local --with-openssl
-     % make
-     % make install
-
-Run from `/usr/local/bin/curl`.
-
-## Build Windows
-
-Build msh3:
-
-     % git clone -b v0.6.0 --depth 1 --recursive https://github.com/nibanks/msh3
-     % cd msh3 && mkdir build && cd build
-     % cmake -G 'Visual Studio 17 2022' -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-     % cmake --build . --config Release
-     % cmake --install . --config Release
-
-**Note** - On Windows, Schannel is used for TLS support by default. If you
-with to use (the quictls fork of) OpenSSL, specify the `-DQUIC_TLS=openssl`
-option to the generate command above. Also note that OpenSSL brings with it an
-additional set of build dependencies not specified here.
-
-Build curl (in [Visual Studio Command
-prompt](../winbuild/README.md#open-a-command-prompt)):
-
-     % git clone https://github.com/curl/curl
-     % cd curl/winbuild
-     % nmake /f Makefile.vc mode=dll WITH_MSH3=dll MSH3_PATH="C:/Program Files/msh3" MACHINE=x64
-
-**Note** - If you encounter a build error with `tool_hugehelp.c` being
-missing, rename `tool_hugehelp.c.cvs` in the same directory to
-`tool_hugehelp.c` and then run `nmake` again.
-
-Run in the `C:/Program Files/msh3/lib` directory, copy `curl.exe` to that
-directory, or copy `msquic.dll` and `msh3.dll` from that directory to the
-`curl.exe` directory. For example:
-
-     % C:\Program Files\msh3\lib> F:\curl\builds\libcurl-vc-x64-release-dll-ipv6-sspi-schannel-msh3\bin\curl.exe --http3 https://curl.se/
 
 # `--http3`
 
@@ -411,7 +396,7 @@ Run the local h3 server on port 9443, make it proxy all traffic through to
 HTTP/1 on localhost port 80. For local toying, we can just use the test cert
 that exists in curl's test dir.
 
-     % CERT=$CURLSRC/tests/stunnel.pem
+     % CERT=/path/to/stunnel.pem
      % $HOME/bin/nghttpx $CERT $CERT --backend=localhost,80 \
       --frontend="localhost,9443;quic"
 

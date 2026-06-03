@@ -69,7 +69,7 @@ int main(void)
     res = curl_easy_perform(curl);
 
     if(res == CURLE_OK) {
-      long sockfd;
+      curl_socket_t sockfd;
       size_t sent;
       /* Extract the socket from the curl handle - we need it for waiting. */
       res = curl_easy_getinfo(curl, CURLINFO_ACTIVESOCKET, &sockfd);
@@ -94,5 +94,5 @@ On failure, returns the appropriate error code.
 This function may return **CURLE_AGAIN**. In this case, use your operating
 system facilities to wait until the socket is writable, and retry.
 
-If there is no socket available to use from the previous transfer, this function
-returns **CURLE_UNSUPPORTED_PROTOCOL**.
+If there is no socket available to use from the previous transfer, this
+function returns **CURLE_UNSUPPORTED_PROTOCOL**.

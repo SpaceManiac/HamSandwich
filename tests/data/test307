@@ -36,14 +36,14 @@ https
 simple HTTPS GET with openssl engine
 </name>
 <command>
---engine openssl -k https://%HOSTIP:%HTTPSPORT/%TESTNUMBER
+--engine openssl --insecure https://%HOSTIP:%HTTPSPORT/%TESTNUMBER
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPSPORT
 User-Agent: curl/%VERSION

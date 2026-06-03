@@ -46,13 +46,10 @@ FTP IPv6 dir list with EPRT and --disable-eprt
 #
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-QUIT
-</strip>
 <strippart>
-s/^(EPRT \|2\|::1\|)(.*)/$1/
+s/^(EPRT \|2\|::1\|)(\S*)/$1/
 </strippart>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

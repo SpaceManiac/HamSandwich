@@ -5,6 +5,7 @@ Long: doh-cert-status
 Help: Verify DoH server cert status OCSP-staple
 Added: 7.76.0
 Category: dns tls
+Protocols: DNS
 Multi: boolean
 See-also:
   - doh-insecure
@@ -16,7 +17,7 @@ Example:
 
 Same as --cert-status but used for DoH (DNS-over-HTTPS).
 
-Verifies the status of the DoH servers' certificate by using the Certificate
+Verify the status of the DoH servers' certificate by using the Certificate
 Status Request (aka. OCSP stapling) TLS extension.
 
 If this option is enabled and the DoH server sends an invalid (e.g. expired)

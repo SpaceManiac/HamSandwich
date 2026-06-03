@@ -8,7 +8,7 @@ SPDX-License-Identifier: curl
 
 ## There are still bugs
 
- Curl and libcurl keep being developed. Adding features and changing code
+ curl and libcurl keep being developed. Adding features and changing code
  means that bugs sneak in, no matter how hard we try to keep them out.
 
  Of course there are lots of bugs left. Not to mention misfeatures.
@@ -25,8 +25,8 @@ SPDX-License-Identifier: curl
 
  Please read the rest of this document below first before doing that.
 
- If you feel you need to ask around first, find a suitable [mailing list](
- https://curl.se/mail/) and post your questions there.
+ If you feel you need to ask around first, find a suitable [mailing
+ list](https://curl.se/mail/) and post your questions there.
 
 ## Security bugs
 
@@ -62,7 +62,7 @@ SPDX-License-Identifier: curl
  - what URL you were working with (if possible), at least which protocol
 
  and anything and everything else you think matters. Tell us what you expected
- to happen, tell use what did happen, tell us how you could make it work
+ to happen, tell us what did happen, tell us how you could make it work
  another way. Dig around, try out, test. Then include all the tiny bits and
  pieces in your report. You benefit from this yourself, as it enables us to
  help you quicker and more accurately.

@@ -25,7 +25,7 @@
  * Pass in a custom socket for libcurl to use.
  * </DESC>
  */
-#ifdef _WIN32
+#ifdef _MSC_VER
 #ifndef _WINSOCK_DEPRECATED_NO_WARNINGS
 #define _WINSOCK_DEPRECATED_NO_WARNINGS  /* for inet_addr() */
 #endif
@@ -46,7 +46,11 @@
 #include <unistd.h>           /*  misc. Unix functions      */
 #endif
 
+#ifdef UNDER_CE
+#define strerror(e) "?"
+#else
 #include <errno.h>
+#endif
 
 /* The IP address and port number to connect to */
 #define IPADDR "127.0.0.1"
@@ -56,7 +60,7 @@
 #define INADDR_NONE 0xffffffff
 #endif
 
-static size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream)
+static size_t write_cb(void *ptr, size_t size, size_t nmemb, void *stream)
 {
   size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
   return written;
@@ -99,14 +103,9 @@ int main(void)
   struct sockaddr_in servaddr;  /*  socket address structure  */
   curl_socket_t sockfd;
 
-#ifdef _WIN32
-  WSADATA wsaData;
-  int initwsa = WSAStartup(MAKEWORD(2, 2), &wsaData);
-  if(initwsa) {
-    printf("WSAStartup failed: %d\n", initwsa);
-    return 1;
-  }
-#endif
+  res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
@@ -144,7 +143,7 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 
     /* send all data to this function  */
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_cb);
 
     /* call this function to get a socket */
     curl_easy_setopt(curl, CURLOPT_OPENSOCKETFUNCTION, opensocket);
@@ -157,7 +156,7 @@ int main(void)
     /* call this function to set options for the socket */
     curl_easy_setopt(curl, CURLOPT_SOCKOPTFUNCTION, sockopt_callback);
 
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
     res = curl_easy_perform(curl);
 
@@ -171,8 +170,7 @@ int main(void)
     }
   }
 
-#ifdef _WIN32
-  WSACleanup();
-#endif
+  curl_global_cleanup();
+
   return 0;
 }

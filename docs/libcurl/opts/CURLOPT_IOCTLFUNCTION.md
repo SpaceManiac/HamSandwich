@@ -50,15 +50,15 @@ rewinding the read data stream is the only action it can request. The
 rewinding of the read data stream may be necessary when doing an HTTP PUT or
 POST with a multi-pass authentication method.
 
-The callback MUST return *CURLIOE_UNKNOWNCMD* if the input *cmd* is
-not *CURLIOCMD_RESTARTREAD*.
+The callback **must** return *CURLIOE_UNKNOWNCMD* if the input *cmd* is not
+*CURLIOCMD_RESTARTREAD*.
 
-The *clientp* argument to the callback is set with the
-CURLOPT_IOCTLDATA(3) option.
+The *clientp* argument to the callback is set with the CURLOPT_IOCTLDATA(3)
+option.
 
 **This option is deprecated**. Do not use it. Use CURLOPT_SEEKFUNCTION(3)
-instead to provide seeking. If CURLOPT_SEEKFUNCTION(3) is set, this
-parameter is ignored when seeking.
+instead to provide seeking. If CURLOPT_SEEKFUNCTION(3) is set, this parameter
+is ignored when seeking.
 
 # DEFAULT
 
@@ -103,4 +103,7 @@ Deprecated since 7.18.0.
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

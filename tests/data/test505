@@ -2,6 +2,7 @@
 <info>
 <keywords>
 FTP
+STOR
 </keywords>
 </info>
 
@@ -40,9 +41,6 @@ works?
 
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-QUIT
-</strip>
 <upload>
 Contents
 of
@@ -54,7 +52,7 @@ upload
 
 works?
 </upload>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

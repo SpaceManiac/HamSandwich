@@ -51,6 +51,7 @@ static int my_trace(CURL *handle, curl_infotype type,
   printf("our ptr: %p\n", mine->custom);
 
   /* output debug info */
+  return 0;
 }
 
 int main(void)
@@ -82,4 +83,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

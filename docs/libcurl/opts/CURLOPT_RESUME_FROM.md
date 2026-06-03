@@ -53,7 +53,7 @@ int main(void)
 {
   CURL *curl = curl_easy_init();
   if(curl) {
-    long size_of_file;
+    long size_of_file = 6789;
 
     curl_easy_setopt(curl, CURLOPT_URL, "ftp://example.com");
 
@@ -76,4 +76,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

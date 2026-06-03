@@ -33,10 +33,7 @@ FTP wildcard with pattern ending with an open-bracket
 </command>
 </client>
 <verify>
-<strip>
-QUIT
-</strip>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

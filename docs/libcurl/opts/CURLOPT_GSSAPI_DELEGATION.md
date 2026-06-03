@@ -51,14 +51,22 @@ int main(void)
     curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
     /* delegate if okayed by policy */
     curl_easy_setopt(curl, CURLOPT_GSSAPI_DELEGATION,
-                     (long)CURLGSSAPI_DELEGATION_POLICY_FLAG);
+                     CURLGSSAPI_DELEGATION_POLICY_FLAG);
     ret = curl_easy_perform(curl);
   }
 }
 ~~~
 
+# HISTORY
+
+**CURLGSSAPI_DELEGATION_*** macros became `long` types in 8.16.0, prior to this
+version a `long` cast was necessary when passed to curl_easy_setopt(3).
+
 # %AVAILABILITY%
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

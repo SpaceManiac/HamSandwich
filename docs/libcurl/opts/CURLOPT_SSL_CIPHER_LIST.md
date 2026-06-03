@@ -14,12 +14,11 @@ Protocol:
   - TLS
 TLS-backend:
   - OpenSSL
-  - BearSSL
   - Schannel
-  - Secure Transport
   - wolfSSL
   - mbedTLS
   - rustls
+  - GnuTLS
 Added-in: 7.9
 ---
 
@@ -44,7 +43,7 @@ separated by colons.
 
 For setting TLS 1.3 ciphers see CURLOPT_TLS13_CIPHERS(3).
 
-A valid example of a cipher list is:
+A valid example of a cipher list with OpenSSL is:
 ~~~
 "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:"
 "ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305"
@@ -52,6 +51,11 @@ A valid example of a cipher list is:
 
 For Schannel, you can use this option to set algorithms but not specific
 cipher suites. Refer to the ciphers lists document for algorithms.
+
+GnuTLS has the concept of a
+[priority string](https://gnutls.org/manual/html_node/Priority-Strings.html)
+which has its own syntax and keywords. The string set via
+CURLOPT_SSL_CIPHER_LIST(3) directly influences the priority setting.
 
 Find more details about cipher lists on this URL:
 
@@ -92,8 +96,6 @@ int main(void)
 OpenSSL support added in 7.9.
 wolfSSL support added in 7.53.0.
 Schannel support added in 7.61.0.
-Secure Transport support added in 7.77.0.
-BearSSL support added in 7.83.0.
 mbedTLS support added in 8.8.0.
 Rustls support added in 8.10.0.
 
@@ -103,4 +105,7 @@ Since curl 8.10.0 returns CURLE_NOT_BUILT_IN when not supported.
 
 # RETURN VALUE
 
-Returns CURLE_OK if supported, CURLE_NOT_BUILT_IN otherwise.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

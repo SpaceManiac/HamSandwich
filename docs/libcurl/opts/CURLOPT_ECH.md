@@ -11,6 +11,7 @@ Protocol:
 TLS-backend:
   - OpenSSL
   - wolfSSL
+  - rustls
 Added-in: 8.8.0
 ---
 
@@ -32,7 +33,7 @@ ECH is only compatible with TLSv1.3.
 
 This experimental feature requires a special build of OpenSSL, as ECH is not
 yet supported in OpenSSL releases. In contrast ECH is supported by the latest
-BoringSSL and wolfSSL releases.
+BoringSSL, wolfSSL and rustls-ffi releases.
 
 There is also a known issue with using wolfSSL which does not support ECH when
 the HelloRetryRequest mechanism is used.
@@ -104,5 +105,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK on success or CURLE_OUT_OF_MEMORY if there was insufficient
-heap space.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

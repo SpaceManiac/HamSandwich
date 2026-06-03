@@ -47,12 +47,6 @@ accessible file.
 This option is by default set to the system path where libcurl's CA
 certificate bundle is assumed to be stored, as established at build time.
 
-(iOS and macOS only) If curl is built against Secure Transport, then this
-option is supported for backward compatibility with other SSL engines, but it
-should not be set. If the option is not set, then curl uses the certificates
-in the system and user Keychain to verify the peer, which is the preferred
-method of verifying the peer's certificate chain.
-
 The application does not have to keep the string around after setting this
 option.
 
@@ -96,5 +90,7 @@ https://curl.se/docs/ssl-compared.html
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
-CURLE_OUT_OF_MEMORY if there was insufficient heap space.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

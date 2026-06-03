@@ -24,33 +24,19 @@
 
 #include "curl_setup.h"
 
-#ifdef HAVE_STRERROR_R
-#  if (!defined(HAVE_POSIX_STRERROR_R) && \
-       !defined(HAVE_GLIBC_STRERROR_R)) || \
-      (defined(HAVE_POSIX_STRERROR_R) && defined(HAVE_GLIBC_STRERROR_R))
-#    error "strerror_r MUST be either POSIX, glibc style"
-#  endif
-#endif
-
 #include <curl/curl.h>
-
-#ifdef USE_LIBIDN2
-#include <idn2.h>
-#endif
+#include <curl/mprintf.h>
 
 #ifdef USE_WINDOWS_SSPI
 #include "curl_sspi.h"
 #endif
 
+#include "curlx/winapi.h"
 #include "strerror.h"
-/* The last 3 #include files should be in this order */
-#include "curl_printf.h"
+
+/* The last 2 #include files should be in this order */
 #include "curl_memory.h"
 #include "memdebug.h"
-
-#if defined(_WIN32) || defined(_WIN32_WCE)
-#define PRESERVE_WINDOWS_ERROR_CODE
-#endif
 
 const char *
 curl_easy_strerror(CURLcode error)
@@ -320,22 +306,7 @@ curl_easy_strerror(CURLcode error)
     return "ECH attempted but failed";
 
     /* error codes not used by current libcurl */
-  case CURLE_OBSOLETE20:
-  case CURLE_OBSOLETE24:
-  case CURLE_OBSOLETE29:
-  case CURLE_OBSOLETE32:
-  case CURLE_OBSOLETE34:
-  case CURLE_OBSOLETE40:
-  case CURLE_OBSOLETE41:
-  case CURLE_OBSOLETE44:
-  case CURLE_OBSOLETE46:
-  case CURLE_OBSOLETE50:
-  case CURLE_OBSOLETE51:
-  case CURLE_OBSOLETE57:
-  case CURLE_OBSOLETE62:
-  case CURLE_OBSOLETE75:
-  case CURLE_OBSOLETE76:
-  case CURL_LAST:
+  default:
     break;
   }
   /*
@@ -570,406 +541,14 @@ curl_url_strerror(CURLUcode error)
 #endif
 }
 
-#ifdef USE_WINSOCK
-/* This is a helper function for Curl_strerror that converts Winsock error
- * codes (WSAGetLastError) to error messages.
- * Returns NULL if no error message was found for error code.
- */
-static const char *
-get_winsock_error(int err, char *buf, size_t len)
-{
-#ifndef CURL_DISABLE_VERBOSE_STRINGS
-  const char *p;
-  size_t alen;
-#endif
-
-  if(!len)
-    return NULL;
-
-  *buf = '\0';
-
-#ifdef CURL_DISABLE_VERBOSE_STRINGS
-  (void)err;
-  return NULL;
-#else
-  switch(err) {
-  case WSAEINTR:
-    p = "Call interrupted";
-    break;
-  case WSAEBADF:
-    p = "Bad file";
-    break;
-  case WSAEACCES:
-    p = "Bad access";
-    break;
-  case WSAEFAULT:
-    p = "Bad argument";
-    break;
-  case WSAEINVAL:
-    p = "Invalid arguments";
-    break;
-  case WSAEMFILE:
-    p = "Out of file descriptors";
-    break;
-  case WSAEWOULDBLOCK:
-    p = "Call would block";
-    break;
-  case WSAEINPROGRESS:
-  case WSAEALREADY:
-    p = "Blocking call in progress";
-    break;
-  case WSAENOTSOCK:
-    p = "Descriptor is not a socket";
-    break;
-  case WSAEDESTADDRREQ:
-    p = "Need destination address";
-    break;
-  case WSAEMSGSIZE:
-    p = "Bad message size";
-    break;
-  case WSAEPROTOTYPE:
-    p = "Bad protocol";
-    break;
-  case WSAENOPROTOOPT:
-    p = "Protocol option is unsupported";
-    break;
-  case WSAEPROTONOSUPPORT:
-    p = "Protocol is unsupported";
-    break;
-  case WSAESOCKTNOSUPPORT:
-    p = "Socket is unsupported";
-    break;
-  case WSAEOPNOTSUPP:
-    p = "Operation not supported";
-    break;
-  case WSAEAFNOSUPPORT:
-    p = "Address family not supported";
-    break;
-  case WSAEPFNOSUPPORT:
-    p = "Protocol family not supported";
-    break;
-  case WSAEADDRINUSE:
-    p = "Address already in use";
-    break;
-  case WSAEADDRNOTAVAIL:
-    p = "Address not available";
-    break;
-  case WSAENETDOWN:
-    p = "Network down";
-    break;
-  case WSAENETUNREACH:
-    p = "Network unreachable";
-    break;
-  case WSAENETRESET:
-    p = "Network has been reset";
-    break;
-  case WSAECONNABORTED:
-    p = "Connection was aborted";
-    break;
-  case WSAECONNRESET:
-    p = "Connection was reset";
-    break;
-  case WSAENOBUFS:
-    p = "No buffer space";
-    break;
-  case WSAEISCONN:
-    p = "Socket is already connected";
-    break;
-  case WSAENOTCONN:
-    p = "Socket is not connected";
-    break;
-  case WSAESHUTDOWN:
-    p = "Socket has been shut down";
-    break;
-  case WSAETOOMANYREFS:
-    p = "Too many references";
-    break;
-  case WSAETIMEDOUT:
-    p = "Timed out";
-    break;
-  case WSAECONNREFUSED:
-    p = "Connection refused";
-    break;
-  case WSAELOOP:
-    p = "Loop??";
-    break;
-  case WSAENAMETOOLONG:
-    p = "Name too long";
-    break;
-  case WSAEHOSTDOWN:
-    p = "Host down";
-    break;
-  case WSAEHOSTUNREACH:
-    p = "Host unreachable";
-    break;
-  case WSAENOTEMPTY:
-    p = "Not empty";
-    break;
-  case WSAEPROCLIM:
-    p = "Process limit reached";
-    break;
-  case WSAEUSERS:
-    p = "Too many users";
-    break;
-  case WSAEDQUOT:
-    p = "Bad quota";
-    break;
-  case WSAESTALE:
-    p = "Something is stale";
-    break;
-  case WSAEREMOTE:
-    p = "Remote error";
-    break;
-#ifdef WSAEDISCON  /* missing in SalfordC! */
-  case WSAEDISCON:
-    p = "Disconnected";
-    break;
-#endif
-    /* Extended Winsock errors */
-  case WSASYSNOTREADY:
-    p = "Winsock library is not ready";
-    break;
-  case WSANOTINITIALISED:
-    p = "Winsock library not initialised";
-    break;
-  case WSAVERNOTSUPPORTED:
-    p = "Winsock version not supported";
-    break;
-
-    /* getXbyY() errors (already handled in herrmsg):
-     * Authoritative Answer: Host not found */
-  case WSAHOST_NOT_FOUND:
-    p = "Host not found";
-    break;
-
-    /* Non-Authoritative: Host not found, or SERVERFAIL */
-  case WSATRY_AGAIN:
-    p = "Host not found, try again";
-    break;
-
-    /* Non recoverable errors, FORMERR, REFUSED, NOTIMP */
-  case WSANO_RECOVERY:
-    p = "Unrecoverable error in call to nameserver";
-    break;
-
-    /* Valid name, no data record of requested type */
-  case WSANO_DATA:
-    p = "No data record of requested type";
-    break;
-
-  default:
-    return NULL;
-  }
-  alen = strlen(p);
-  if(alen < len)
-    strcpy(buf, p);
-  return buf;
-#endif
-}
-#endif   /* USE_WINSOCK */
-
-#if defined(_WIN32) || defined(_WIN32_WCE)
-/* This is a helper function for Curl_strerror that converts Windows API error
- * codes (GetLastError) to error messages.
- * Returns NULL if no error message was found for error code.
- */
-static const char *
-get_winapi_error(int err, char *buf, size_t buflen)
-{
-  char *p;
-  wchar_t wbuf[256];
-
-  if(!buflen)
-    return NULL;
-
-  *buf = '\0';
-  *wbuf = L'\0';
-
-  /* We return the local codepage version of the error string because if it is
-     output to the user's terminal it will likely be with functions which
-     expect the local codepage (eg fprintf, failf, infof).
-     FormatMessageW -> wcstombs is used for Windows CE compatibility. */
-  if(FormatMessageW((FORMAT_MESSAGE_FROM_SYSTEM |
-                     FORMAT_MESSAGE_IGNORE_INSERTS), NULL, (DWORD)err,
-                    LANG_NEUTRAL, wbuf, sizeof(wbuf)/sizeof(wchar_t), NULL)) {
-    size_t written = wcstombs(buf, wbuf, buflen - 1);
-    if(written != (size_t)-1)
-      buf[written] = '\0';
-    else
-      *buf = '\0';
-  }
-
-  /* Truncate multiple lines */
-  p = strchr(buf, '\n');
-  if(p) {
-    if(p > buf && *(p-1) == '\r')
-      *(p-1) = '\0';
-    else
-      *p = '\0';
-  }
-
-  return (*buf ? buf : NULL);
-}
-#endif /* _WIN32 || _WIN32_WCE */
-
-/*
- * Our thread-safe and smart strerror() replacement.
- *
- * The 'err' argument passed in to this function MUST be a true errno number
- * as reported on this system. We do no range checking on the number before
- * we pass it to the "number-to-message" conversion function and there might
- * be systems that do not do proper range checking in there themselves.
- *
- * We do not do range checking (on systems other than Windows) since there is
- * no good reliable and portable way to do it.
- *
- * On Windows different types of error codes overlap. This function has an
- * order of preference when trying to match error codes:
- * CRT (errno), Winsock (WSAGetLastError), Windows API (GetLastError).
- *
- * It may be more correct to call one of the variant functions instead:
- * Call Curl_sspi_strerror if the error code is definitely Windows SSPI.
- * Call Curl_winapi_strerror if the error code is definitely Windows API.
- */
-const char *Curl_strerror(int err, char *buf, size_t buflen)
-{
-#ifdef PRESERVE_WINDOWS_ERROR_CODE
-  DWORD old_win_err = GetLastError();
-#endif
-  int old_errno = errno;
-  char *p;
-
-  if(!buflen)
-    return NULL;
-
-#ifndef _WIN32
-  DEBUGASSERT(err >= 0);
-#endif
-
-  *buf = '\0';
-
-#if defined(_WIN32) || defined(_WIN32_WCE)
-#if defined(_WIN32)
-  /* 'sys_nerr' is the maximum errno number, it is not widely portable */
-  if(err >= 0 && err < sys_nerr)
-    msnprintf(buf, buflen, "%s", sys_errlist[err]);
-  else
-#endif
-  {
-    if(
-#ifdef USE_WINSOCK
-       !get_winsock_error(err, buf, buflen) &&
-#endif
-       !get_winapi_error(err, buf, buflen))
-      msnprintf(buf, buflen, "Unknown error %d (%#x)", err, err);
-  }
-#else /* not Windows coming up */
-
-#if defined(HAVE_STRERROR_R) && defined(HAVE_POSIX_STRERROR_R)
- /*
-  * The POSIX-style strerror_r() may set errno to ERANGE if insufficient
-  * storage is supplied via 'strerrbuf' and 'buflen' to hold the generated
-  * message string, or EINVAL if 'errnum' is not a valid error number.
-  */
-  if(0 != strerror_r(err, buf, buflen)) {
-    if('\0' == buf[0])
-      msnprintf(buf, buflen, "Unknown error %d", err);
-  }
-#elif defined(HAVE_STRERROR_R) && defined(HAVE_GLIBC_STRERROR_R)
- /*
-  * The glibc-style strerror_r() only *might* use the buffer we pass to
-  * the function, but it always returns the error message as a pointer,
-  * so we must copy that string unconditionally (if non-NULL).
-  */
-  {
-    char buffer[256];
-    char *msg = strerror_r(err, buffer, sizeof(buffer));
-    if(msg)
-      msnprintf(buf, buflen, "%s", msg);
-    else
-      msnprintf(buf, buflen, "Unknown error %d", err);
-  }
-#else
-  {
-    /* !checksrc! disable STRERROR 1 */
-    const char *msg = strerror(err);
-    if(msg)
-      msnprintf(buf, buflen, "%s", msg);
-    else
-      msnprintf(buf, buflen, "Unknown error %d", err);
-  }
-#endif
-
-#endif /* end of not Windows */
-
-  /* strip trailing '\r\n' or '\n'. */
-  p = strrchr(buf, '\n');
-  if(p && (p - buf) >= 2)
-    *p = '\0';
-  p = strrchr(buf, '\r');
-  if(p && (p - buf) >= 1)
-    *p = '\0';
-
-  if(errno != old_errno)
-    errno = old_errno;
-
-#ifdef PRESERVE_WINDOWS_ERROR_CODE
-  if(old_win_err != GetLastError())
-    SetLastError(old_win_err);
-#endif
-
-  return buf;
-}
-
-/*
- * Curl_winapi_strerror:
- * Variant of Curl_strerror if the error code is definitely Windows API.
- */
-#if defined(_WIN32) || defined(_WIN32_WCE)
-const char *Curl_winapi_strerror(DWORD err, char *buf, size_t buflen)
-{
-#ifdef PRESERVE_WINDOWS_ERROR_CODE
-  DWORD old_win_err = GetLastError();
-#endif
-  int old_errno = errno;
-
-  if(!buflen)
-    return NULL;
-
-  *buf = '\0';
-
-#ifndef CURL_DISABLE_VERBOSE_STRINGS
-  if(!get_winapi_error((int)err, buf, buflen)) {
-    msnprintf(buf, buflen, "Unknown error %lu (0x%08lX)", err, err);
-  }
-#else
-  {
-    const char *txt = (err == ERROR_SUCCESS) ? "No error" : "Error";
-    if(strlen(txt) < buflen)
-      strcpy(buf, txt);
-  }
-#endif
-
-  if(errno != old_errno)
-    errno = old_errno;
-
-#ifdef PRESERVE_WINDOWS_ERROR_CODE
-  if(old_win_err != GetLastError())
-    SetLastError(old_win_err);
-#endif
-
-  return buf;
-}
-#endif /* _WIN32 || _WIN32_WCE */
-
 #ifdef USE_WINDOWS_SSPI
 /*
  * Curl_sspi_strerror:
- * Variant of Curl_strerror if the error code is definitely Windows SSPI.
+ * Variant of curlx_strerror if the error code is definitely Windows SSPI.
  */
-const char *Curl_sspi_strerror(int err, char *buf, size_t buflen)
+const char *Curl_sspi_strerror(SECURITY_STATUS err, char *buf, size_t buflen)
 {
-#ifdef PRESERVE_WINDOWS_ERROR_CODE
+#ifdef _WIN32
   DWORD old_win_err = GetLastError();
 #endif
   int old_errno = errno;
@@ -1076,18 +655,18 @@ const char *Curl_sspi_strerror(int err, char *buf, size_t buflen)
   }
 
   if(err == SEC_E_ILLEGAL_MESSAGE) {
-    msnprintf(buf, buflen,
-              "SEC_E_ILLEGAL_MESSAGE (0x%08X) - This error usually occurs "
-              "when a fatal SSL/TLS alert is received (e.g. handshake failed)."
-              " More detail may be available in the Windows System event log.",
-              err);
+    curl_msnprintf(buf, buflen,
+                   "SEC_E_ILLEGAL_MESSAGE (0x%08lx) - This error usually "
+                   "occurs when a fatal SSL/TLS alert is received (e.g. "
+                   "handshake failed). More detail may be available in "
+                   "the Windows System event log.", err);
   }
   else {
     char msgbuf[256];
-    if(get_winapi_error(err, msgbuf, sizeof(msgbuf)))
-      msnprintf(buf, buflen, "%s (0x%08X) - %s", txt, err, msgbuf);
+    if(curlx_get_winapi_error((DWORD)err, msgbuf, sizeof(msgbuf)))
+      curl_msnprintf(buf, buflen, "%s (0x%08lx) - %s", txt, err, msgbuf);
     else
-      msnprintf(buf, buflen, "%s (0x%08X)", txt, err);
+      curl_msnprintf(buf, buflen, "%s (0x%08lx)", txt, err);
   }
 
 #else
@@ -1100,9 +679,9 @@ const char *Curl_sspi_strerror(int err, char *buf, size_t buflen)
 #endif
 
   if(errno != old_errno)
-    errno = old_errno;
+    CURL_SETERRNO(old_errno);
 
-#ifdef PRESERVE_WINDOWS_ERROR_CODE
+#ifdef _WIN32
   if(old_win_err != GetLastError())
     SetLastError(old_win_err);
 #endif

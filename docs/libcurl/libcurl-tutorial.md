@@ -194,7 +194,7 @@ One of the most basic properties to set in the handle is the URL. You set your
 preferred URL to transfer with CURLOPT_URL(3) in a manner similar to:
 
 ~~~c
- curl_easy_setopt(handle, CURLOPT_URL, "http://domain.com/");
+ curl_easy_setopt(handle, CURLOPT_URL, "http://example.com/");
 ~~~
 
 Let's assume for a while that you want to receive data as the URL identifies a
@@ -322,7 +322,7 @@ have a prototype similar to:
  size_t function(char *bufptr, size_t size, size_t nitems, void *userp);
 ~~~
 Where *bufptr* is the pointer to a buffer we fill in with data to upload
-and *size*nitems* is the size of the buffer and therefore also the maximum
+and *nitems* is the size of the buffer and therefore also the maximum
 amount of data we can return to libcurl in this call. The *userp* pointer
 is the custom pointer we set to point to a struct of ours to pass private data
 between the application and the callback.

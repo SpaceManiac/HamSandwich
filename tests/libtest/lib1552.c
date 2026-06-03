@@ -21,17 +21,13 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
-#include "testutil.h"
-#include "warnless.h"
 #include "memdebug.h"
 
-#define TEST_HANG_TIMEOUT 60 * 1000
-
-CURLcode test(char *URL)
+static CURLcode test_lib1552(const char *URL)
 {
-  CURL *curls = NULL;
+  CURL *curl = NULL;
   CURLM *multi = NULL;
   int still_running;
   CURLcode i = CURLE_OK;
@@ -45,14 +41,14 @@ CURLcode test(char *URL)
 
   multi_init(multi);
 
-  easy_init(curls);
+  easy_init(curl);
 
-  easy_setopt(curls, CURLOPT_URL, URL);
-  easy_setopt(curls, CURLOPT_HEADER, 1L);
-  easy_setopt(curls, CURLOPT_VERBOSE, 1L);
-  easy_setopt(curls, CURLOPT_USERPWD, "u:s");
+  easy_setopt(curl, CURLOPT_URL, URL);
+  easy_setopt(curl, CURLOPT_HEADER, 1L);
+  easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+  easy_setopt(curl, CURLOPT_USERPWD, "u:s");
 
-  multi_add_handle(multi, curls);
+  multi_add_handle(multi, curl);
 
   multi_perform(multi, &still_running);
 
@@ -63,7 +59,7 @@ CURLcode test(char *URL)
     int num;
     mres = curl_multi_wait(multi, NULL, 0, TEST_HANG_TIMEOUT, &num);
     if(mres != CURLM_OK) {
-      printf("curl_multi_wait() returned %d\n", mres);
+      curl_mprintf("curl_multi_wait() returned %d\n", mres);
       res = TEST_ERR_MAJOR_BAD;
       goto test_cleanup;
     }
@@ -86,7 +82,7 @@ test_cleanup:
   /* undocumented cleanup sequence - type UA */
 
   curl_multi_cleanup(multi);
-  curl_easy_cleanup(curls);
+  curl_easy_cleanup(curl);
   curl_global_cleanup();
 
   if(res)

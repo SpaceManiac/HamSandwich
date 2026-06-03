@@ -38,14 +38,14 @@ ftps
 FTPS dir list PASV unencrypted data
 </name>
 <command>
--k --ftp-ssl-control ftps://%HOSTIP:%FTPSPORT/
+--insecure --ftp-ssl-control ftps://%HOSTIP:%FTPSPORT/
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PBSZ 0

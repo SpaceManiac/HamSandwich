@@ -76,7 +76,7 @@ int main(void)
     if(res == CURLE_OK) {
       char buf[256];
       size_t nread;
-      long sockfd;
+      curl_socket_t sockfd;
 
       /* Extract the socket from the curl handle - we need it for waiting. */
       res = curl_easy_getinfo(curl, CURLINFO_ACTIVESOCKET, &sockfd);
@@ -102,5 +102,5 @@ system facilities to wait until data can be read, and retry.
 
 Reading exactly 0 bytes indicates a closed connection.
 
-If there is no socket available to use from the previous transfer, this function
-returns **CURLE_UNSUPPORTED_PROTOCOL**.
+If there is no socket available to use from the previous transfer, this
+function returns **CURLE_UNSUPPORTED_PROTOCOL**.

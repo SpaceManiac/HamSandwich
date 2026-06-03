@@ -28,9 +28,7 @@ appleOS:
           - any-glob-to-all-files: "{\
               .github/workflows/macos.yml,\
               lib/config-mac.h,\
-              lib/macos*,\
-              lib/vtls/sectransp*,\
-              m4/curl-sectransp.m4\
+              lib/macos*\
               }"
 
 authentication:
@@ -63,11 +61,10 @@ build:
               **/CMakeLists.txt,\
               **/Makefile.am,\
               **/Makefile.inc,\
-              **/Makefile.mk,\
               **/*.m4,\
               **/*.mk,\
               *.m4,\
-              docs/INSTALL.cmake,\
+              docs/INSTALL-CMAKE.md,\
               lib/curl_config.h.cmake,\
               lib/libcurl*.in,\
               CMake/**,\
@@ -78,8 +75,8 @@ build:
               packages/**,\
               plan9/**,\
               projects/**,\
-              winbuild/**,\
-              lib/libcurl.def\
+              lib/libcurl.def,\
+              tests/cmake/**\
               }"
 
 CI:
@@ -100,8 +97,9 @@ cmake:
           - any-glob-to-all-files: "{\
               **/CMakeLists.txt,\
               CMake/**,\
-              docs/INSTALL.cmake,\
-              lib/curl_config.h.cmake\
+              docs/INSTALL-CMAKE.md,\
+              lib/curl_config.h.cmake,\
+              tests/cmake/**\
               }"
 
 cmdline tool:
@@ -164,9 +162,9 @@ cryptography:
               docs/libcurl/opts/CURLOPT_EGDSOCKET*,\
               lib/*sha256*,\
               lib/*sha512*,\
-              lib/curl_des.*,\
               lib/curl_hmac.*,\
               lib/curl_md?.*,\
+              lib/curl_ntlm_core.*,\
               lib/md?.*,\
               lib/rand.*\
               }"
@@ -283,7 +281,6 @@ HTTP/3:
               .github/workflows/ngtcp2*,\
               .github/workflows/quiche*,\
               .github/workflows/osslq*,\
-              CMake/FindMSH3.cmake,\
               CMake/FindNGHTTP3.cmake,\
               CMake/FindNGTCP2.cmake,\
               docs/HTTP3.md,\
@@ -291,14 +288,6 @@ HTTP/3:
               lib/vquic/**,\
               tests/http3-server.pl,\
               tests/nghttpx.conf\
-              }"
-
-Hyper:
-  - all:
-      - changed-files:
-          - any-glob-to-all-files: "{\
-              docs/HYPER.md,\
-              lib/c-hyper.*\
               }"
 
 IMAP:
@@ -386,6 +375,7 @@ RTMP:
   - all:
       - changed-files:
           - any-glob-to-all-files: "{\
+              CMake/FindLibrtmp.cmake,\
               lib/curl_rtmp.*\
               }"
 
@@ -461,7 +451,7 @@ TLS:
   - all:
       - changed-files:
           - any-glob-to-all-files: "{\
-              CMake/FindBearSSL.cmake,\
+              CMake/FindGnuTLS.cmake,\
               CMake/FindMbedTLS.cmake,\
               CMake/FindWolfSSL.cmake,\
               CMake/FindRustls.cmake,\
@@ -481,13 +471,11 @@ TLS:
               docs/libcurl/opts/CURLOPT_TLS*,\
               docs/libcurl/opts/CURLOPT_USE_SSL*,\
               lib/vtls/**,\
-              m4/curl-bearssl.m4,\
               m4/curl-gnutls.m4,\
               m4/curl-mbedtls.m4,\
               m4/curl-openssl.m4,\
               m4/curl-rustls.m4,\
               m4/curl-schannel.m4,\
-              m4/curl-sectransp.m4,\
               m4/curl-wolfssl.m4\
               }"
 
@@ -524,14 +512,13 @@ Windows:
           - any-glob-to-all-files: "{\
               appveyor.*,\
               .github/workflows/windows.yml,\
-              CMake/Platforms/WindowsCache.cmake,\
+              CMake/win32-cache.cmake,\
               lib/*win32*,\
-              lib/curl_multibyte.*,\
+              lib/curlx/multibyte.*,\
               lib/rename.*,\
               lib/vtls/schannel*,\
               m4/curl-schannel.m4,\
               projects/**,\
               src/tool_doswin.c,\
-              winbuild/**,\
               lib/libcurl.def\
               }"

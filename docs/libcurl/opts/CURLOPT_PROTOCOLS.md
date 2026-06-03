@@ -31,7 +31,7 @@ This option is deprecated. We strongly recommend using
 CURLOPT_PROTOCOLS_STR(3) instead because this option cannot control all
 available protocols.
 
-Pass a long that holds a bitmask of CURLPROTO_* defines. If used, this bitmask
+Pass a long that holds a bitmask of protocol bits. If used, this bitmask
 limits what protocols libcurl may use in the transfer. This allows you to have
 a libcurl built to support a wide range of protocols but still limit specific
 transfers to only be allowed to use a subset of them. By default libcurl
@@ -96,6 +96,11 @@ int main(int argc, char **argv)
 }
 ~~~
 
+# HISTORY
+
+**CURLPROTO_*** macros became `long` types in 8.16.0, prior to this version
+a `long` cast was necessary when passed to curl_easy_setopt(3).
+
 # DEPRECATED
 
 Deprecated since 7.85.0.
@@ -104,4 +109,7 @@ Deprecated since 7.85.0.
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

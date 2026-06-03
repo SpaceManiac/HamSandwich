@@ -51,6 +51,7 @@ BEGIN {
 use IPC::Open2;
 use Digest::MD5;
 use File::Basename;
+use Time::HiRes;
 
 use directories;
 
@@ -68,14 +69,11 @@ use serverhelp qw(
     servername_str
     server_pidfilename
     server_logfilename
+    server_exe_args
     mainsockf_pidfilename
     mainsockf_logfilename
     datasockf_pidfilename
     datasockf_logfilename
-    );
-
-use pathhelp qw(
-    exe_ext
     );
 
 use globalconfig qw(
@@ -190,7 +188,6 @@ my $datasockf_conn = 'no';       # ['no','yes']
 # global vars used for signal handling
 #
 my $got_exit_signal = 0; # set if program should finish execution ASAP
-my $exit_signal;         # first signal handled in exit_signal_handler
 
 #**********************************************************************
 # Mail related definitions
@@ -410,7 +407,7 @@ sub sysread_or_die {
 }
 
 sub startsf {
-    my @mainsockfcmd = ("./server/sockfilt".exe_ext('SRV'),
+    my @mainsockfcmd = (server_exe_args('sockfilt'),
         "--ipv$ipvnum",
         "--port", $port,
         "--pidfile", $mainsockf_pidfile,
@@ -488,7 +485,7 @@ sub sendcontrol {
 
         for(@a) {
             sockfilt $_;
-            portable_sleep($ctrldelay);
+            Time::HiRes::sleep($ctrldelay);
         }
     }
     my $log;
@@ -525,7 +522,7 @@ sub senddata {
             # pause between each byte
             for (split(//,$l)) {
                 sockfiltsecondary $_;
-                portable_sleep($datadelay);
+                Time::HiRes::sleep($datadelay);
             }
         }
     }
@@ -679,7 +676,7 @@ sub disc_handshake {
     print DWRITE "DISC\n";
     my $line;
     my $nr;
-    while (5 == ($nr = sysread DREAD, $line, 5)) {
+    while(5 == ($nr = sysread DREAD, $line, 5)) {
         if($line eq "DATA\n") {
             # Must read the data bytes to stay in sync
             my $i;
@@ -848,7 +845,7 @@ sub MAIL_smtp {
 
     logmsg "MAIL_smtp got $args\n";
 
-    if (!$args) {
+    if(!$args) {
         sendcontrol "501 Unrecognized parameter\r\n";
     }
     else {
@@ -868,15 +865,15 @@ sub MAIL_smtp {
         }
 
         # this server doesn't "validate" MAIL FROM addresses
-        if (length($from)) {
+        if(length($from)) {
             my @found;
             my $valid = 1;
 
             # Check the capabilities for SIZE and if the specified size is
             # greater than the message size then reject it
-            if (@found = grep /^SIZE (\d+)$/, @capabilities) {
-                if ($found[0] =~ /^SIZE (\d+)$/) {
-                    if ($size > $1) {
+            if(@found = grep /^SIZE (\d+)$/, @capabilities) {
+                if($found[0] =~ /^SIZE (\d+)$/) {
+                    if($size > $1) {
                         $valid = 0;
                     }
                 }
@@ -912,10 +909,10 @@ sub RCPT_smtp {
 
         # Validate the to address (only a valid email address inside <> is
         # allowed, such as <user@example.com>)
-        if ((!$smtputf8 && $to =~
-              /^<([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})>$/) ||
-            ($smtputf8 && $to =~
-              /^<([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4})>$/)) {
+        if((!$smtputf8 && $to =~
+             /^<([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})>$/) ||
+           ($smtputf8 && $to =~
+             /^<([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4})>$/)) {
             sendcontrol "250 Recipient OK\r\n";
         }
         else {
@@ -929,10 +926,10 @@ sub RCPT_smtp {
 sub DATA_smtp {
     my ($args) = @_;
 
-    if ($args) {
+    if($args) {
         sendcontrol "501 Unrecognized parameter\r\n";
     }
-    elsif ($smtp_client !~ /^(\d*)$/) {
+    elsif($smtp_client !~ /^(\d*)$/) {
         sendcontrol "501 Invalid arguments\r\n";
     }
     else {
@@ -950,7 +947,7 @@ sub DATA_smtp {
         my $ulsize=0;
         my $disc=0;
         my $raw;
-        while (5 == (sysread \*SFREAD, $line, 5)) {
+        while(5 == (sysread \*SFREAD, $line, 5)) {
             if($line eq "DATA\n") {
                 my $i;
                 my $eob;
@@ -1078,16 +1075,16 @@ sub VRFY_smtp {
 
         # Validate the username (only a valid local or external username is
         # allowed, such as user or user@example.com)
-        if ((!$smtputf8 && $username =~
-            /^([a-zA-Z0-9._%+-]+)(\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4}))?$/) ||
-            ($smtputf8 && $username =~
-            /^([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)(\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4}))?$/)) {
+        if((!$smtputf8 && $username =~
+           /^([a-zA-Z0-9._%+-]+)(\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4}))?$/) ||
+           ($smtputf8 && $username =~
+           /^([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)(\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4}))?$/)) {
 
             my @data = getreplydata($smtp_client);
 
             if(!@data) {
-                if ($username !~
-                    /^([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})$/) {
+                if($username !~
+                   /^([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})$/) {
                   push @data, "250 <$username\@example.com>\r\n"
                 }
                 else {
@@ -1188,7 +1185,7 @@ sub LOGIN_imap {
 
     logmsg "LOGIN_imap got $args\n";
 
-    if ($user eq "") {
+    if($user eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1231,7 +1228,7 @@ sub FETCH_imap {
 
     logmsg "FETCH_imap got $args\n";
 
-    if ($selected eq "") {
+    if($selected eq "") {
         sendcontrol "$cmdid BAD Command received in Invalid state\r\n";
     }
     else {
@@ -1359,10 +1356,10 @@ sub STORE_imap {
 
     logmsg "STORE_imap got $args\n";
 
-    if ($selected eq "") {
+    if($selected eq "") {
         sendcontrol "$cmdid BAD Command received in Invalid state\r\n";
     }
-    elsif (($uid eq "") || ($what ne "+Flags") || ($value eq "")) {
+    elsif(($uid eq "") || ($what ne "+Flags") || ($value eq "")) {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1384,10 +1381,10 @@ sub LIST_imap {
 
     logmsg "LIST_imap got $args\n";
 
-    if ($reference eq "") {
+    if($reference eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
-    elsif ($reference eq "verifiedserver") {
+    elsif($reference eq "verifiedserver") {
         # this is the secret command that verifies that this actually is
         # the curl test server
         sendcontrol "* LIST () \"/\" \"WE ROOLZ: $$\"\r\n";
@@ -1419,7 +1416,7 @@ sub LSUB_imap {
 
     logmsg "LSUB_imap got $args\n";
 
-    if ($reference eq "") {
+    if($reference eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1441,7 +1438,7 @@ sub EXAMINE_imap {
 
     logmsg "EXAMINE_imap got $mailbox\n";
 
-    if ($mailbox eq "") {
+    if($mailbox eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1464,7 +1461,7 @@ sub STATUS_imap {
 
     logmsg "STATUS_imap got $args\n";
 
-    if ($mailbox eq "") {
+    if($mailbox eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1486,10 +1483,10 @@ sub SEARCH_imap {
 
     logmsg "SEARCH_imap got $what\n";
 
-    if ($selected eq "") {
+    if($selected eq "") {
         sendcontrol "$cmdid BAD Command received in Invalid state\r\n";
     }
-    elsif ($what eq "") {
+    elsif($what eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1511,7 +1508,7 @@ sub CREATE_imap {
 
     logmsg "CREATE_imap got $args\n";
 
-    if ($args eq "") {
+    if($args eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1527,7 +1524,7 @@ sub DELETE_imap {
 
     logmsg "DELETE_imap got $args\n";
 
-    if ($args eq "") {
+    if($args eq "") {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1544,7 +1541,7 @@ sub RENAME_imap {
 
     logmsg "RENAME_imap got $args\n";
 
-    if (($from_mailbox eq "") || ($to_mailbox eq "")) {
+    if(($from_mailbox eq "") || ($to_mailbox eq "")) {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1555,7 +1552,7 @@ sub RENAME_imap {
 }
 
 sub CHECK_imap {
-    if ($selected eq "") {
+    if($selected eq "") {
         sendcontrol "$cmdid BAD Command received in Invalid state\r\n";
     }
     else {
@@ -1566,10 +1563,10 @@ sub CHECK_imap {
 }
 
 sub CLOSE_imap {
-    if ($selected eq "") {
+    if($selected eq "") {
         sendcontrol "$cmdid BAD Command received in Invalid state\r\n";
     }
-    elsif (!@deleted) {
+    elsif(!@deleted) {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1582,11 +1579,11 @@ sub CLOSE_imap {
 }
 
 sub EXPUNGE_imap {
-    if ($selected eq "") {
+    if($selected eq "") {
         sendcontrol "$cmdid BAD Command received in Invalid state\r\n";
     }
     else {
-        if (!@deleted) {
+        if(!@deleted) {
             # Report the number of existing messages as per the SELECT
             # command
             sendcontrol "* 172 EXISTS\r\n";
@@ -1613,7 +1610,7 @@ sub COPY_imap {
 
     logmsg "COPY_imap got $args\n";
 
-    if (($uid eq "") || ($mailbox eq "")) {
+    if(($uid eq "") || ($mailbox eq "")) {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1637,17 +1634,17 @@ sub UID_imap {
 
     logmsg "UID_imap got $args\n";
 
-    if ($selected eq "") {
+    if($selected eq "") {
         sendcontrol "$cmdid BAD Command received in Invalid state\r\n";
     }
-    elsif (substr($command, 0, 5) eq "FETCH"){
+    elsif(substr($command, 0, 5) eq "FETCH"){
         my $func = $commandfunc{"FETCH"};
         if($func) {
             &$func($args, $command);
         }
     }
-    elsif (($command ne "COPY") &&
-           ($command ne "STORE") && ($command ne "SEARCH")) {
+    elsif(($command ne "COPY") &&
+          ($command ne "STORE") && ($command ne "SEARCH")) {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1672,7 +1669,7 @@ sub NOOP_imap {
         "* 14 FETCH (FLAGS (\\Seen \\Deleted))\r\n",
     );
 
-    if ($args) {
+    if($args) {
         sendcontrol "$cmdid BAD Command Argument\r\n";
     }
     else {
@@ -1754,16 +1751,16 @@ sub APOP_pop3 {
     my ($args) = @_;
     my ($user, $secret) = split(/ /, $args, 2);
 
-    if (!grep /^APOP$/, @capabilities) {
+    if(!grep /^APOP$/, @capabilities) {
         sendcontrol "-ERR Unrecognized command\r\n";
     }
-    elsif (($user eq "") || ($secret eq "")) {
+    elsif(($user eq "") || ($secret eq "")) {
         sendcontrol "-ERR Protocol error\r\n";
     }
     else {
         my $digest = Digest::MD5::md5_hex($POP3_TIMESTAMP, $TEXT_PASSWORD);
 
-        if ($secret ne $digest) {
+        if($secret ne $digest) {
             sendcontrol "-ERR Login failure\r\n";
         }
         else {
@@ -1805,7 +1802,7 @@ sub USER_pop3 {
 
     logmsg "USER_pop3 got $user\n";
 
-    if (!$user) {
+    if(!$user) {
         sendcontrol "-ERR Protocol error\r\n";
     }
     else {
@@ -1883,7 +1880,7 @@ sub DELE_pop3 {
 
     logmsg "DELE_pop3 got $msgid\n";
 
-    if (!$msgid) {
+    if(!$msgid) {
         sendcontrol "-ERR Protocol error\r\n";
     }
     else {
@@ -1898,7 +1895,7 @@ sub DELE_pop3 {
 sub STAT_pop3 {
     my ($args) = @_;
 
-    if ($args) {
+    if($args) {
         sendcontrol "-ERR Protocol error\r\n";
     }
     else {
@@ -1913,7 +1910,7 @@ sub STAT_pop3 {
 sub NOOP_pop3 {
     my ($args) = @_;
 
-    if ($args) {
+    if($args) {
         sendcontrol "-ERR Protocol error\r\n";
     }
     else {
@@ -1931,7 +1928,7 @@ sub UIDL_pop3 {
         "3 4\r\n", # Note that UID 3 is a simulated "deleted" message
     );
 
-    if (!grep /^UIDL$/, @capabilities) {
+    if(!grep /^UIDL$/, @capabilities) {
         sendcontrol "-ERR Unrecognized command\r\n";
     }
     else {
@@ -1956,14 +1953,14 @@ sub TOP_pop3 {
 
     logmsg "TOP_pop3 got $args\n";
 
-    if (!grep /^TOP$/, @capabilities) {
+    if(!grep /^TOP$/, @capabilities) {
         sendcontrol "-ERR Unrecognized command\r\n";
     }
-    elsif (($msgid eq "") || ($lines eq "")) {
+    elsif(($msgid eq "") || ($lines eq "")) {
         sendcontrol "-ERR Protocol error\r\n";
     }
     else {
-        if ($lines == "0") {
+        if($lines == "0") {
             logmsg "retrieve header of mail\n";
         }
         else {
@@ -1990,11 +1987,11 @@ sub TOP_pop3 {
 sub RSET_pop3 {
     my ($args) = @_;
 
-    if ($args) {
+    if($args) {
         sendcontrol "-ERR Protocol error\r\n";
     }
     else {
-        if (@deleted) {
+        if(@deleted) {
             logmsg "resetting @deleted message(s)\n";
 
             @deleted = ();
@@ -2028,26 +2025,26 @@ sub REST_ftp {
 }
 
 sub switch_directory_goto {
-  my $target_dir = $_;
+    my $target_dir = $_;
 
-  if(!$ftptargetdir) {
-    $ftptargetdir = "/";
-  }
+    if(!$ftptargetdir) {
+        $ftptargetdir = "/";
+    }
 
-  if($target_dir eq "") {
-    $ftptargetdir = "/";
-  }
-  elsif($target_dir eq "..") {
-    if($ftptargetdir eq "/") {
-      $ftptargetdir = "/";
+    if($target_dir eq "") {
+        $ftptargetdir = "/";
+    }
+    elsif($target_dir eq "..") {
+        if($ftptargetdir eq "/") {
+            $ftptargetdir = "/";
+        }
+        else {
+            $ftptargetdir =~ s/[[:alnum:]]+\/$//;
+        }
     }
     else {
-      $ftptargetdir =~ s/[[:alnum:]]+\/$//;
+        $ftptargetdir .= $target_dir . "/";
     }
-  }
-  else {
-    $ftptargetdir .= $target_dir . "/";
-  }
 }
 
 sub switch_directory {
@@ -2171,7 +2168,7 @@ sub NLST_ftp {
 sub MDTM_ftp {
     my $testno = $_[0];
     my $testpart = "";
-    if ($testno > 10000) {
+    if($testno > 10000) {
         $testpart = $testno % 10000;
         $testno = int($testno / 10000);
     }
@@ -2314,7 +2311,7 @@ sub RETR_ftp {
 
     $testno =~ s/^([^0-9]*)//;
     my $testpart = "";
-    if ($testno > 10000) {
+    if($testno > 10000) {
         $testpart = $testno % 10000;
         $testno = int($testno / 10000);
     }
@@ -2408,7 +2405,7 @@ sub STOR_ftp {
     my $line;
     my $ulsize=0;
     my $disc=0;
-    while (5 == (sysread DREAD, $line, 5)) {
+    while(5 == (sysread DREAD, $line, 5)) {
         if($line eq "DATA\n") {
             my $i;
             sysread DREAD, $i, 5;
@@ -2472,10 +2469,10 @@ sub PASV_ftp {
     logmsg "DATA sockfilt for passive data channel starting...\n";
 
     # We fire up a new sockfilt to do the data transfer for us.
-    my @datasockfcmd = ("./server/sockfilt".exe_ext('SRV'),
+    my @datasockfcmd = (server_exe_args('sockfilt'),
         "--ipv$ipvnum", "--port", 0,
         "--pidfile", $datasockf_pidfile,
-        "--logfile",  $datasockf_logfile);
+        "--logfile", $datasockf_logfile);
     if($nodataconn) {
         push(@datasockfcmd, '--bindonly');
     }
@@ -2569,12 +2566,12 @@ sub PASV_ftp {
         if($pasvbadip) {
             $p="1,2,3,4";
         }
-        sendcontrol sprintf("227 Entering Passive Mode ($p,%d,%d)\n",
+        sendcontrol sprintf("227 Entering Passive Mode ($p,%d,%d)\r\n",
                             int($pasvport/256), int($pasvport%256));
     }
     else {
         # EPSV reply
-        sendcontrol sprintf("229 Entering Passive Mode (|||%d|)\n", $pasvport);
+        sendcontrol sprintf("229 Entering Passive Mode (|||%d|)\r\n", $pasvport);
     }
 
     logmsg "Client has been notified that DATA conn ".
@@ -2609,7 +2606,7 @@ sub PASV_ftp {
         }
         alarm 0;
     };
-    if ($@) {
+    if($@) {
         # timed out
         logmsg "$srvrname server timed out awaiting data connection ".
             "on port $pasvport\n";
@@ -2694,7 +2691,7 @@ sub PORT_ftp {
     logmsg "DATA sockfilt for active data channel starting...\n";
 
     # We fire up a new sockfilt to do the data transfer for us.
-    my @datasockfcmd = ("./server/sockfilt".exe_ext('SRV'),
+    my @datasockfcmd = (server_exe_args('sockfilt'),
         "--ipv$ipvnum", "--connect", $port, "--addr", $addr,
         "--pidfile", $datasockf_pidfile,
         "--logfile", $datasockf_logfile);
@@ -2744,47 +2741,47 @@ sub PORT_ftp {
 sub datasockf_state {
     my $state = $_[0];
 
-  if($state eq 'STOPPED') {
-    # Data sockfilter initial state, not running,
-    # not connected and not used.
-    $datasockf_state = $state;
-    $datasockf_mode = 'none';
-    $datasockf_runs = 'no';
-    $datasockf_conn = 'no';
-  }
-  elsif($state eq 'PASSIVE') {
-    # Data sockfilter accepted connection from client.
-    $datasockf_state = $state;
-    $datasockf_mode = 'passive';
-    $datasockf_runs = 'yes';
-    $datasockf_conn = 'yes';
-  }
-  elsif($state eq 'ACTIVE') {
-    # Data sockfilter has connected to client.
-    $datasockf_state = $state;
-    $datasockf_mode = 'active';
-    $datasockf_runs = 'yes';
-    $datasockf_conn = 'yes';
-  }
-  elsif($state eq 'PASSIVE_NODATACONN') {
-    # Data sockfilter bound port without listening,
-    # client won't be able to establish data connection.
-    $datasockf_state = $state;
-    $datasockf_mode = 'passive';
-    $datasockf_runs = 'yes';
-    $datasockf_conn = 'no';
-  }
-  elsif($state eq 'ACTIVE_NODATACONN') {
-    # Data sockfilter does not even run,
-    # client awaits data connection from server in vain.
-    $datasockf_state = $state;
-    $datasockf_mode = 'active';
-    $datasockf_runs = 'no';
-    $datasockf_conn = 'no';
-  }
-  else {
-      die "Internal error. Unknown datasockf state: $state!";
-  }
+    if($state eq 'STOPPED') {
+        # Data sockfilter initial state, not running,
+        # not connected and not used.
+        $datasockf_state = $state;
+        $datasockf_mode = 'none';
+        $datasockf_runs = 'no';
+        $datasockf_conn = 'no';
+    }
+    elsif($state eq 'PASSIVE') {
+        # Data sockfilter accepted connection from client.
+        $datasockf_state = $state;
+        $datasockf_mode = 'passive';
+        $datasockf_runs = 'yes';
+        $datasockf_conn = 'yes';
+    }
+    elsif($state eq 'ACTIVE') {
+        # Data sockfilter has connected to client.
+        $datasockf_state = $state;
+        $datasockf_mode = 'active';
+        $datasockf_runs = 'yes';
+        $datasockf_conn = 'yes';
+    }
+    elsif($state eq 'PASSIVE_NODATACONN') {
+        # Data sockfilter bound port without listening,
+        # client won't be able to establish data connection.
+        $datasockf_state = $state;
+        $datasockf_mode = 'passive';
+        $datasockf_runs = 'yes';
+        $datasockf_conn = 'no';
+    }
+    elsif($state eq 'ACTIVE_NODATACONN') {
+        # Data sockfilter does not even run,
+        # client awaits data connection from server in vain.
+        $datasockf_state = $state;
+        $datasockf_mode = 'active';
+        $datasockf_runs = 'no';
+        $datasockf_conn = 'no';
+    }
+    else {
+        die "Internal error. Unknown datasockf state: $state!";
+    }
 }
 
 #**********************************************************************
@@ -3296,7 +3293,7 @@ while(1) {
             logmsg("Sleep for $delay seconds\n");
             my $twentieths = $delay * 20;
             while($twentieths--) {
-                portable_sleep(0.05) unless($got_exit_signal);
+                Time::HiRes::sleep(0.05) unless($got_exit_signal);
             }
         }
 

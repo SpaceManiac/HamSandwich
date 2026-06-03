@@ -42,10 +42,6 @@ accessible file.
 This option is by default set to the system path where libcurl's CA
 certificate bundle is assumed to be stored, as established at build time.
 
-(iOS and macOS) When curl uses Secure Transport this option is supported. If
-the option is not set, then curl uses the certificates in the system and user
-Keychain to verify the peer.
-
 (Schannel) This option is supported for Schannel in Windows 7 or later but we
 recommend not using it until Windows 8 since it works better starting then.
 If the option is not set, then curl uses the certificates in the Windows'
@@ -61,8 +57,8 @@ The default value for this can be figured out with CURLINFO_CAINFO(3).
 
 # DEFAULT
 
-Built-in system specific. When curl is built with Secure Transport or
-Schannel, this option is not set by default.
+Built-in system specific. When curl is built with Schannel, this option is not
+set by default.
 
 # %PROTOCOLS%
 
@@ -89,5 +85,7 @@ Schannel support added in libcurl 7.60.
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
-CURLE_OUT_OF_MEMORY if there was insufficient heap space.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

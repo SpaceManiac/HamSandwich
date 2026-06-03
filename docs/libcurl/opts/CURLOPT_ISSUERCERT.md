@@ -43,8 +43,8 @@ not considered as failure.
 
 A specific error code (CURLE_SSL_ISSUER_ERROR) is defined with the option,
 which is returned if the setup of the SSL/TLS session has failed due to a
-mismatch with the issuer of peer certificate (CURLOPT_SSL_VERIFYPEER(3)
-has to be set too for the check to fail). (Added in 7.19.0)
+mismatch with the issuer of peer certificate (CURLOPT_SSL_VERIFYPEER(3) has to
+be set too for the check to fail).
 
 Using this option multiple times makes the last set string override the
 previous ones. Set it to NULL to disable its use again.
@@ -78,5 +78,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
-CURLE_OUT_OF_MEMORY if there was insufficient heap space.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

@@ -47,15 +47,16 @@ struct priv {
 
 static int timerfunc(CURLM *multi, long timeout_ms, void *clientp)
 {
- struct priv *mydata = clientp;
- printf("our ptr: %p\n", mydata->custom);
+  struct priv *mydata = clientp;
+  printf("our ptr: %p\n", mydata->custom);
 
- if(timeout_ms) {
-   /* this is the new single timeout to wait for */
- }
- else {
-   /* delete the timeout, nothing to wait for now */
- }
+  if(timeout_ms >= 0) {
+    /* this is the new single timeout to wait for */
+  }
+  else {
+    /* delete the timeout, nothing to wait for now */
+  }
+  return 0;
 }
 
 int main(void)
@@ -71,4 +72,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not.
+curl_multi_setopt(3) returns a CURLMcode indicating success or error.
+
+CURLM_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

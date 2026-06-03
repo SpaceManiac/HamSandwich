@@ -30,6 +30,19 @@
 #include <string.h>
 #include <curl/curl.h>
 
+/* Avoid warning in FD_SET() with pre-2020 Cygwin/MSYS releases:
+ * warning: conversion to 'long unsigned int' from 'curl_socket_t' {aka 'int'}
+ * may change the sign of the result [-Wsign-conversion]
+ */
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#ifdef __DJGPP__
+#pragma GCC diagnostic ignored "-Warith-conversion"
+#endif
+#elif defined(_MSC_VER)
+#pragma warning(disable:4127)  /* conditional expression is constant */
+#endif
+
 /* Auxiliary function that waits on the socket. */
 static int wait_on_socket(curl_socket_t sockfd, int for_recv, long timeout_ms)
 {
@@ -37,24 +50,18 @@ static int wait_on_socket(curl_socket_t sockfd, int for_recv, long timeout_ms)
   fd_set infd, outfd, errfd;
   int res;
 
+#if defined(MSDOS) || defined(__AMIGA__)
+  tv.tv_sec = (time_t)(timeout_ms / 1000);
+  tv.tv_usec = (time_t)(timeout_ms % 1000) * 1000;
+#else
   tv.tv_sec = timeout_ms / 1000;
   tv.tv_usec = (int)(timeout_ms % 1000) * 1000;
+#endif
 
   FD_ZERO(&infd);
   FD_ZERO(&outfd);
   FD_ZERO(&errfd);
 
-/* Avoid this warning with pre-2020 Cygwin/MSYS releases:
- * warning: conversion to 'long unsigned int' from 'curl_socket_t' {aka 'int'}
- * may change the sign of the result [-Wsign-conversion]
- */
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-conversion"
-#elif defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable:4127)  /* conditional expression is constant */
-#endif
   FD_SET(sockfd, &errfd); /* always check for error */
 
   if(for_recv) {
@@ -63,11 +70,6 @@ static int wait_on_socket(curl_socket_t sockfd, int for_recv, long timeout_ms)
   else {
     FD_SET(sockfd, &outfd);
   }
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 
   /* select() returns the number of signalled sockets or -1 */
   res = select((int)sockfd + 1, &infd, &outfd, &errfd, &tv);
@@ -81,6 +83,10 @@ int main(void)
   const char *request = "GET / HTTP/1.0\r\nHost: example.com\r\n\r\n";
   size_t request_len = strlen(request);
 
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
+
   /* A general note of caution here: if you are using curl_easy_recv() or
      curl_easy_send() to implement HTTP or _any_ other protocol libcurl
      supports "natively", you are doing it wrong and you should stop.
@@ -91,7 +97,6 @@ int main(void)
 
   curl = curl_easy_init();
   if(curl) {
-    CURLcode res;
     curl_socket_t sockfd;
     size_t nsent_total = 0;
 
@@ -173,5 +178,6 @@ int main(void)
     /* always cleanup */
     curl_easy_cleanup(curl);
   }
+  curl_global_cleanup();
   return 0;
 }

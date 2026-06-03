@@ -45,15 +45,12 @@ Moooooooooooo
 
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-QUIT
-</strip>
 # Strip off parts of the PORT and EPRT commands that might differ
 <strippart>
-s/^PORT (.*)/PORT/
-s/^EPRT \|1\|(.*)/EPRT \|1\|/
+s/^EPRT \|1\|(\S*)/EPRT \|1\|/
+s/^PORT (\S*)/PORT/
 </strippart>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

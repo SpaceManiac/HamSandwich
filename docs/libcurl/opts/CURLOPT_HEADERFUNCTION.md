@@ -109,9 +109,9 @@ Nothing.
 static size_t header_callback(char *buffer, size_t size,
                               size_t nitems, void *userdata)
 {
-  /* received header is nitems * size long in 'buffer' NOT ZERO TERMINATED */
+  /* received header is 'nitems' bytes in 'buffer' NOT ZERO TERMINATED */
   /* 'userdata' is set with CURLOPT_HEADERDATA */
-  return nitems * size;
+  return nitems;
 }
 
 int main(void)
@@ -131,4 +131,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

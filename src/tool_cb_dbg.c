@@ -23,8 +23,6 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
-#include "curlx.h"
-
 #include "tool_cfgable.h"
 #include "tool_msgs.h"
 #include "tool_cb_dbg.h"
@@ -48,8 +46,8 @@ static const char *hms_for_sec(time_t tv_sec)
   if(tv_sec != cached_tv_sec) {
     /* !checksrc! disable BANNEDFUNC 1 */
     struct tm *now = localtime(&tv_sec);  /* not thread safe either */
-    msnprintf(hms_buf, sizeof(hms_buf), "%02d:%02d:%02d",
-              now->tm_hour, now->tm_min, now->tm_sec);
+    curl_msnprintf(hms_buf, sizeof(hms_buf), "%02d:%02d:%02d",
+                   now->tm_hour, now->tm_min, now->tm_sec);
     cached_tv_sec = tv_sec;
   }
   return hms_buf;
@@ -66,7 +64,7 @@ static void log_line_start(FILE *log, const char *timebuf,
     "* ", "< ", "> ", "{ ", "} ", "{ ", "} "
   };
   if((timebuf && *timebuf) || (idsbuf && *idsbuf))
-    fprintf(log, "%s%s%s", timebuf, idsbuf, s_infotype[type]);
+    curl_mfprintf(log, "%s%s%s", timebuf, idsbuf, s_infotype[type]);
   else
     fputs(s_infotype[type], log);
 }
@@ -81,8 +79,6 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
                   char *data, size_t size,
                   void *userdata)
 {
-  struct OperationConfig *operation = userdata;
-  struct GlobalConfig *config = operation->global;
   FILE *output = tool_stderr;
   const char *text;
   struct timeval tv;
@@ -95,52 +91,53 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
   char idsbuf[60];
   curl_off_t xfer_id, conn_id;
 
-  (void)handle; /* not used */
+  (void)handle;
+  (void)userdata;
 
-  if(config->tracetime) {
+  if(global->tracetime) {
     tv = tvrealnow();
-    msnprintf(timebuf, sizeof(timebuf), "%s.%06ld ",
-              hms_for_sec(tv.tv_sec), (long)tv.tv_usec);
+    curl_msnprintf(timebuf, sizeof(timebuf), "%s.%06ld ",
+                   hms_for_sec(tv.tv_sec), (long)tv.tv_usec);
   }
   else
     timebuf[0] = 0;
 
-  if(handle && config->traceids &&
+  if(handle && global->traceids &&
      !curl_easy_getinfo(handle, CURLINFO_XFER_ID, &xfer_id) && xfer_id >= 0) {
     if(!curl_easy_getinfo(handle, CURLINFO_CONN_ID, &conn_id) &&
         conn_id >= 0) {
-      msnprintf(idsbuf, sizeof(idsbuf), TRC_IDS_FORMAT_IDS_2,
-                xfer_id, conn_id);
+      curl_msnprintf(idsbuf, sizeof(idsbuf), TRC_IDS_FORMAT_IDS_2,
+                     xfer_id, conn_id);
     }
     else {
-      msnprintf(idsbuf, sizeof(idsbuf), TRC_IDS_FORMAT_IDS_1, xfer_id);
+      curl_msnprintf(idsbuf, sizeof(idsbuf), TRC_IDS_FORMAT_IDS_1, xfer_id);
     }
   }
   else
     idsbuf[0] = 0;
 
-  if(!config->trace_stream) {
+  if(!global->trace_stream) {
     /* open for append */
-    if(!strcmp("-", config->trace_dump))
-      config->trace_stream = stdout;
-    else if(!strcmp("%", config->trace_dump))
+    if(!strcmp("-", global->trace_dump))
+      global->trace_stream = stdout;
+    else if(!strcmp("%", global->trace_dump))
       /* Ok, this is somewhat hackish but we do it undocumented for now */
-      config->trace_stream = tool_stderr;
+      global->trace_stream = tool_stderr;
     else {
-      config->trace_stream = fopen(config->trace_dump, FOPEN_WRITETEXT);
-      config->trace_fopened = TRUE;
+      global->trace_stream = curlx_fopen(global->trace_dump, FOPEN_WRITETEXT);
+      global->trace_fopened = TRUE;
     }
   }
 
-  if(config->trace_stream)
-    output = config->trace_stream;
+  if(global->trace_stream)
+    output = global->trace_stream;
 
   if(!output) {
-    warnf(config, "Failed to create/open output");
+    warnf("Failed to create/open output");
     return 0;
   }
 
-  if(config->tracetype == TRACE_PLAIN) {
+  if(global->tracetype == TRACE_PLAIN) {
     static bool newl = FALSE;
     static bool traced_data = FALSE;
 
@@ -183,11 +180,11 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
            to stderr or stdout, we do not display the alert about the data not
            being shown as the data _is_ shown then just not via this
            function */
-        if(!config->isatty ||
+        if(!global->isatty ||
            ((output != tool_stderr) && (output != stdout))) {
           if(!newl)
             log_line_start(output, timebuf, idsbuf, type);
-          fprintf(output, "[%zu bytes data]\n", size);
+          curl_mfprintf(output, "[%zu bytes data]\n", size);
           newl = FALSE;
           traced_data = TRUE;
         }
@@ -204,7 +201,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
 
   switch(type) {
   case CURLINFO_TEXT:
-    fprintf(output, "%s%s== Info: %.*s", timebuf, idsbuf, (int)size, data);
+    curl_mfprintf(output, "%s%s* %.*s", timebuf, idsbuf, (int)size, data);
     FALLTHROUGH();
   default: /* in case a new one is introduced to shock us */
     return 0;
@@ -230,7 +227,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
   }
 
   dump(timebuf, idsbuf, text, output, (unsigned char *) data, size,
-       config->tracetype, type);
+       global->tracetype, type);
   return 0;
 }
 
@@ -247,18 +244,18 @@ static void dump(const char *timebuf, const char *idsbuf, const char *text,
     /* without the hex output, we can fit more on screen */
     width = 0x40;
 
-  fprintf(stream, "%s%s%s, %zu bytes (0x%zx)\n", timebuf, idsbuf,
-          text, size, size);
+  curl_mfprintf(stream, "%s%s%s, %zu bytes (0x%zx)\n", timebuf, idsbuf,
+                text, size, size);
 
   for(i = 0; i < size; i += width) {
 
-    fprintf(stream, "%04zx: ", i);
+    curl_mfprintf(stream, "%04zx: ", i);
 
     if(tracetype == TRACE_BIN) {
       /* hex not disabled, show it */
       for(c = 0; c < width; c++)
         if(i + c < size)
-          fprintf(stream, "%02x ", ptr[i + c]);
+          curl_mfprintf(stream, "%02x ", ptr[i + c]);
         else
           fputs("   ", stream);
     }
@@ -272,8 +269,9 @@ static void dump(const char *timebuf, const char *idsbuf, const char *text,
         break;
       }
       (void)infotype;
-      fprintf(stream, "%c", ((ptr[i + c] >= 0x20) && (ptr[i + c] < 0x7F)) ?
-              ptr[i + c] : UNPRINTABLE_CHAR);
+      curl_mfprintf(stream, "%c",
+                    ((ptr[i + c] >= 0x20) && (ptr[i + c] < 0x7F)) ?
+                    ptr[i + c] : UNPRINTABLE_CHAR);
       /* check again for 0D0A, to avoid an extra \n if it is at width */
       if((tracetype == TRACE_ASCII) &&
          (i + c + 2 < size) && (ptr[i + c + 1] == 0x0D) &&

@@ -16,4 +16,9 @@ Example:
 
 # `--trace-ids`
 
-Prepends the transfer and connection identifiers to each trace or verbose line that curl displays.
+Prepend the transfer and connection identifiers to each trace or verbose line
+that curl displays.
+
+The identifiers are unique numbers assigned to each connection and transfer to
+allow a user to better understand which transfer and connection each verbose
+output line refers to.

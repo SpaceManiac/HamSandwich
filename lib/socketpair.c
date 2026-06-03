@@ -27,10 +27,9 @@
 #include "urldata.h"
 #include "rand.h"
 
-#if defined(USE_EVENTFD)
-#ifdef HAVE_SYS_EVENTFD_H
+#ifdef USE_EVENTFD
+
 #include <sys/eventfd.h>
-#endif
 
 int Curl_eventfd(curl_socket_t socks[2], bool nonblocking)
 {
@@ -42,18 +41,25 @@ int Curl_eventfd(curl_socket_t socks[2], bool nonblocking)
   socks[0] = socks[1] = efd;
   return 0;
 }
+
 #elif defined(HAVE_PIPE)
+
 #ifdef HAVE_FCNTL
 #include <fcntl.h>
 #endif
 
 int Curl_pipe(curl_socket_t socks[2], bool nonblocking)
 {
+#ifdef HAVE_PIPE2
+  int flags = nonblocking ? O_NONBLOCK | O_CLOEXEC : O_CLOEXEC;
+  if(pipe2(socks, flags))
+    return -1;
+#else
   if(pipe(socks))
     return -1;
 #ifdef HAVE_FCNTL
   if(fcntl(socks[0], F_SETFD, FD_CLOEXEC) ||
-     fcntl(socks[1], F_SETFD, FD_CLOEXEC) ) {
+     fcntl(socks[1], F_SETFD, FD_CLOEXEC)) {
     close(socks[0]);
     close(socks[1]);
     socks[0] = socks[1] = CURL_SOCKET_BAD;
@@ -69,21 +75,23 @@ int Curl_pipe(curl_socket_t socks[2], bool nonblocking)
       return -1;
     }
   }
+#endif
 
   return 0;
 }
-#endif
 
+#endif /* USE_EVENTFD */
 
 #ifndef CURL_DISABLE_SOCKETPAIR
 #ifdef HAVE_SOCKETPAIR
+#ifdef USE_SOCKETPAIR
 int Curl_socketpair(int domain, int type, int protocol,
                     curl_socket_t socks[2], bool nonblocking)
 {
 #ifdef SOCK_NONBLOCK
   type = nonblocking ? type | SOCK_NONBLOCK : type;
 #endif
-  if(socketpair(domain, type, protocol, socks))
+  if(CURL_SOCKETPAIR(domain, type, protocol, socks))
     return -1;
 #ifndef SOCK_NONBLOCK
   if(nonblocking) {
@@ -97,13 +105,16 @@ int Curl_socketpair(int domain, int type, int protocol,
 #endif
   return 0;
 }
+#endif /* USE_SOCKETPAIR */
 #else /* !HAVE_SOCKETPAIR */
 #ifdef _WIN32
 /*
  * This is a socketpair() implementation for Windows.
  */
 #include <string.h>
+#ifdef HAVE_IO_H
 #include <io.h>
+#endif
 #else
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
@@ -119,12 +130,11 @@ int Curl_socketpair(int domain, int type, int protocol,
 #endif /* !INADDR_LOOPBACK */
 #endif /* !_WIN32 */
 
-#include "nonblock.h" /* for curlx_nonblock */
-#include "timeval.h"  /* needed before select.h */
+#include "curlx/nonblock.h" /* for curlx_nonblock */
+#include "curlx/timeval.h"  /* needed before select.h */
 #include "select.h"   /* for Curl_poll */
 
-/* The last 3 #include files should be in this order */
-#include "curl_printf.h"
+/* The last 2 #include files should be in this order */
 #include "curl_memory.h"
 #include "memdebug.h"
 
@@ -143,7 +153,7 @@ int Curl_socketpair(int domain, int type, int protocol,
   (void)type;
   (void)protocol;
 
-  listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  listener = CURL_SOCKET(AF_INET, SOCK_STREAM, IPPROTO_TCP);
   if(listener == CURL_SOCKET_BAD)
     return -1;
 
@@ -177,7 +187,7 @@ int Curl_socketpair(int domain, int type, int protocol,
     goto error;
   if(listen(listener, 1) == -1)
     goto error;
-  socks[0] = socket(AF_INET, SOCK_STREAM, 0);
+  socks[0] = CURL_SOCKET(AF_INET, SOCK_STREAM, 0);
   if(socks[0] == CURL_SOCKET_BAD)
     goto error;
   if(connect(socks[0], &a.addr, sizeof(a.inaddr)) == -1)
@@ -190,11 +200,11 @@ int Curl_socketpair(int domain, int type, int protocol,
   pfd[0].events = POLLIN;
   pfd[0].revents = 0;
   (void)Curl_poll(pfd, 1, 1000); /* one second */
-  socks[1] = accept(listener, NULL, NULL);
+  socks[1] = CURL_ACCEPT(listener, NULL, NULL);
   if(socks[1] == CURL_SOCKET_BAD)
     goto error;
   else {
-    struct curltime start = Curl_now();
+    struct curltime start = curlx_now();
     char rnd[9];
     char check[sizeof(rnd)];
     char *p = &check[0];
@@ -218,18 +228,18 @@ int Curl_socketpair(int domain, int type, int protocol,
       if(nread == -1) {
         int sockerr = SOCKERRNO;
         /* Do not block forever */
-        if(Curl_timediff(Curl_now(), start) > (60 * 1000))
+        if(curlx_timediff(curlx_now(), start) > (60 * 1000))
           goto error;
         if(
-#ifdef WSAEWOULDBLOCK
+#ifdef USE_WINSOCK
           /* This is how Windows does it */
-          (WSAEWOULDBLOCK == sockerr)
+          (SOCKEWOULDBLOCK == sockerr)
 #else
           /* errno may be EWOULDBLOCK or on some systems EAGAIN when it
              returned due to its inability to send off data without
              blocking. We therefore treat both error codes the same here */
-          (EWOULDBLOCK == sockerr) || (EAGAIN == sockerr) ||
-          (EINTR == sockerr) || (EINPROGRESS == sockerr)
+          (SOCKEWOULDBLOCK == sockerr) || (EAGAIN == sockerr) ||
+          (SOCKEINTR == sockerr) || (SOCKEINPROGRESS == sockerr)
 #endif
           ) {
           continue;

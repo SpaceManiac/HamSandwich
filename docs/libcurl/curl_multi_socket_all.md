@@ -50,7 +50,8 @@ int main(void)
 {
   int running;
   int rc;
-  CURLM *multi;
+  CURLM *multi = curl_multi_init();
+
   rc = curl_multi_socket_all(multi, &running);
 }
 ~~~
@@ -59,7 +60,10 @@ int main(void)
 
 # RETURN VALUE
 
-CURLMcode type, general libcurl multi interface error code.
+This function returns a CURLMcode indicating success or error.
+
+CURLM_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).
 
 The return code is for the whole multi stack. Problems still might have
 occurred on individual transfers even when one of these functions return OK.

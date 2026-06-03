@@ -38,9 +38,6 @@ previous ones. Set it to NULL to disable its use again.
 libcurl does not copy the list, it needs to be kept around until after the
 transfer has completed.
 
-These commands are not performed when a directory listing is performed, only
-for file transfers.
-
 While CURLOPT_QUOTE(3) and CURLOPT_POSTQUOTE(3) work for SFTP,
 this option does not.
 
@@ -78,4 +75,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

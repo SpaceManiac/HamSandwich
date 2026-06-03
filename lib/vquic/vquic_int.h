@@ -24,15 +24,13 @@
  *
  ***************************************************************************/
 
-#include "curl_setup.h"
-#include "bufq.h"
+#include "../curl_setup.h"
+#include "../bufq.h"
 
 #ifdef USE_HTTP3
 
 #define MAX_PKT_BURST 10
 #define MAX_UDP_PAYLOAD_SIZE  1452
-/* Default QUIC connection timeout we announce from our side */
-#define CURL_QUIC_MAX_IDLE_MS   (120 * 1000)
 
 struct cf_quic_ctx {
   curl_socket_t sockfd; /* connected UDP socket */
@@ -53,6 +51,9 @@ struct cf_quic_ctx {
   BIT(no_gso); /* do not use gso on sending */
 };
 
+#define H3_STREAM_CTX(ctx,data)                                         \
+  (data ? Curl_uint_hash_get(&(ctx)->streams, (data)->mid) : NULL)
+
 CURLcode vquic_ctx_init(struct cf_quic_ctx *qctx);
 void vquic_ctx_free(struct cf_quic_ctx *qctx);
 
@@ -67,7 +68,7 @@ CURLcode vquic_send_blocked_pkts(struct Curl_cfilter *cf,
                                  struct cf_quic_ctx *qctx);
 
 CURLcode vquic_send(struct Curl_cfilter *cf, struct Curl_easy *data,
-                        struct cf_quic_ctx *qctx, size_t gsolen);
+                    struct cf_quic_ctx *qctx, size_t gsolen);
 
 CURLcode vquic_send_tail_split(struct Curl_cfilter *cf, struct Curl_easy *data,
                                struct cf_quic_ctx *qctx, size_t gsolen,
@@ -77,17 +78,27 @@ CURLcode vquic_flush(struct Curl_cfilter *cf, struct Curl_easy *data,
                      struct cf_quic_ctx *qctx);
 
 
-typedef CURLcode vquic_recv_pkt_cb(const unsigned char *pkt, size_t pktlen,
-                                   struct sockaddr_storage *remote_addr,
-                                   socklen_t remote_addrlen, int ecn,
-                                   void *userp);
+typedef CURLcode vquic_recv_pkts_cb(const unsigned char *buf, size_t buflen,
+                                    size_t gso_size,
+                                    struct sockaddr_storage *remote_addr,
+                                    socklen_t remote_addrlen, int ecn,
+                                    void *userp);
 
 CURLcode vquic_recv_packets(struct Curl_cfilter *cf,
                             struct Curl_easy *data,
                             struct cf_quic_ctx *qctx,
                             size_t max_pkts,
-                            vquic_recv_pkt_cb *recv_cb, void *userp);
+                            vquic_recv_pkts_cb *recv_cb, void *userp);
 
 #endif /* !USE_HTTP3 */
+
+#ifdef USE_NGTCP2
+struct ngtcp2_mem;
+struct ngtcp2_mem *Curl_ngtcp2_mem(void);
+#endif
+#ifdef USE_NGHTTP3
+struct nghttp3_mem;
+struct nghttp3_mem *Curl_nghttp3_mem(void);
+#endif
 
 #endif /* HEADER_CURL_VQUIC_QUIC_INT_H */
