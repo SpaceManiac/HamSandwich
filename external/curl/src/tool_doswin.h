@@ -40,30 +40,24 @@ typedef enum {
 
 SANITIZEcode sanitize_file_name(char **const sanitized, const char *file_name,
                                 int flags);
-#ifdef UNITTESTS
-SANITIZEcode truncate_dryrun(const char *path, const size_t truncate_pos);
-SANITIZEcode msdosify(char **const sanitized, const char *file_name,
-                      int flags);
-SANITIZEcode rename_if_reserved_dos_device_name(char **const sanitized,
-                                                const char *file_name,
-                                                int flags);
-#endif /* UNITTESTS */
 
-#if defined(MSDOS) && (defined(__DJGPP__) || defined(__GO32__))
-
+#ifdef __DJGPP__
 char **__crt0_glob_function(char *arg);
-
-#endif /* MSDOS && (__DJGPP__ || __GO32__) */
+#endif
 
 #ifdef _WIN32
 
-#if !defined(CURL_WINDOWS_UWP) && \
+#if !defined(CURL_WINDOWS_UWP) && !defined(UNDER_CE) && \
   !defined(CURL_DISABLE_CA_SEARCH) && !defined(CURL_CA_SEARCH_SAFE)
 CURLcode FindWin32CACert(struct OperationConfig *config,
                          const TCHAR *bundle_file);
 #endif
 struct curl_slist *GetLoadedModulePaths(void);
 CURLcode win32_init(void);
+
+#if !defined(CURL_WINDOWS_UWP) && !defined(UNDER_CE)
+curl_socket_t win32_stdin_read_thread(void);
+#endif /* !CURL_WINDOWS_UWP && !UNDER_CE */
 
 #endif /* _WIN32 */
 

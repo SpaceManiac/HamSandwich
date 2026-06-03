@@ -67,10 +67,16 @@ int main(void)
 }
 ~~~
 
+# HISTORY
+
+**CURLAUTH_*** macros became `long` types in 7.26.0, prior to this version
+a `long` cast was necessary when passed to curl_easy_setopt(3).
+
 # %AVAILABILITY%
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
-CURLE_NOT_BUILT_IN if the bitmask specified no supported authentication
-methods.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

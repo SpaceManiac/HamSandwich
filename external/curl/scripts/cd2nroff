@@ -76,7 +76,7 @@ HELP
 
 use POSIX qw(strftime);
 my @ts;
-if (defined($ENV{SOURCE_DATE_EPOCH})) {
+if(defined($ENV{SOURCE_DATE_EPOCH})) {
     @ts = gmtime($ENV{SOURCE_DATE_EPOCH});
 } else {
     @ts = localtime;
@@ -134,6 +134,9 @@ sub outtls {
     if($t[0] eq "All") {
         push @o, "\nAll TLS backends support this option.";
     }
+    elsif($t[0] eq "none") {
+        push @o, "\nNo TLS backend supports this option.";
+    }
     else {
         push @o, "\nThis option works only with the following TLS backends:\n";
         my @s = sort @t;
@@ -183,15 +186,14 @@ my %knownprotos = (
     );
 
 my %knowntls = (
-    'BearSSL' => 1,
     'GnuTLS' => 1,
     'mbedTLS' => 1,
     'OpenSSL' => 1,
     'rustls' => 1,
     'Schannel' => 1,
-    'Secure Transport' => 1,
     'wolfSSL' => 1,
     'All' => 1,
+    'none' => 1,
     );
 
 sub single {
@@ -318,7 +320,9 @@ sub single {
                 return 2;
             }
             if(!$spdx) {
+                # REUSE-IgnoreStart
                 print STDERR "$f:$line:1:ERROR: no 'SPDX-License-Identifier:' field present\n";
+                # REUSE-IgnoreEnd
                 return 2;
             }
             if($section == 3) {
@@ -399,7 +403,7 @@ sub single {
                 push @desc, ".fi\n";
                 next;
             }
-            # convert single backslahes to doubles
+            # convert single backslashes to doubles
             $d =~ s/\\/\\\\/g;
             # lines starting with a period needs it escaped
             $d =~ s/^\./\\&./;
@@ -415,7 +419,12 @@ sub single {
         # *italics*
         $d =~ s/\*(\S.*?)\*/\\fI$1\\fP/g;
 
-        if($d =~ /[^\\][\<\>]/) {
+        my $back = $d;
+
+        # remove all backticked pieces
+        $back =~ s/\`(.*?)\`//g;
+
+        if($back =~ /[^\\][\<\>]/) {
             print STDERR "$f:$line:1:ERROR: un-escaped < or > used\n";
             $errors++;
         }

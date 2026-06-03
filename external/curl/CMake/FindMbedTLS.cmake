@@ -25,10 +25,10 @@
 #
 # Input variables:
 #
-# - `MBEDTLS_INCLUDE_DIR`:   The mbedTLS include directory.
-# - `MBEDTLS_LIBRARY`:       Path to `mbedtls` library.
-# - `MBEDX509_LIBRARY`:      Path to `mbedx509` library.
-# - `MBEDCRYPTO_LIBRARY`:    Path to `mbedcrypto` library.
+# - `MBEDTLS_INCLUDE_DIR`:   Absolute path to mbedTLS include directory.
+# - `MBEDTLS_LIBRARY`:       Absolute path to `mbedtls` library.
+# - `MBEDX509_LIBRARY`:      Absolute path to `mbedx509` library.
+# - `MBEDCRYPTO_LIBRARY`:    Absolute path to `mbedcrypto` library.
 #
 # Result variables:
 #
@@ -46,47 +46,38 @@ if(DEFINED MBEDTLS_INCLUDE_DIRS AND NOT DEFINED MBEDTLS_INCLUDE_DIR)
   unset(MBEDTLS_INCLUDE_DIRS)
 endif()
 
+set(MBEDTLS_PC_REQUIRES "mbedtls" "mbedx509" "mbedcrypto")
+
 if(CURL_USE_PKGCONFIG AND
    NOT DEFINED MBEDTLS_INCLUDE_DIR AND
    NOT DEFINED MBEDTLS_LIBRARY AND
    NOT DEFINED MBEDX509_LIBRARY AND
    NOT DEFINED MBEDCRYPTO_LIBRARY)
   find_package(PkgConfig QUIET)
-  pkg_check_modules(MBEDTLS "mbedtls")
-  pkg_check_modules(MBEDX509 "mbedx509")
-  pkg_check_modules(MBEDCRYPTO "mbedcrypto")
+  pkg_check_modules(MBEDTLS ${MBEDTLS_PC_REQUIRES})
 endif()
 
-if(MBEDTLS_FOUND AND MBEDX509_FOUND AND MBEDCRYPTO_FOUND)
-  list(APPEND MBEDTLS_LIBRARIES ${MBEDX509_LIBRARIES} ${MBEDCRYPTO_LIBRARIES})
-  list(REMOVE_DUPLICATES MBEDTLS_LIBRARIES)
-  set(MBEDTLS_PC_REQUIRES "mbedtls")
+if(MBEDTLS_FOUND)
+  set(MbedTLS_FOUND TRUE)
+  set(MBEDTLS_VERSION ${MBEDTLS_mbedtls_VERSION})
   string(REPLACE ";" " " MBEDTLS_CFLAGS "${MBEDTLS_CFLAGS}")
   message(STATUS "Found MbedTLS (via pkg-config): ${MBEDTLS_INCLUDE_DIRS} (found version \"${MBEDTLS_VERSION}\")")
 else()
+  set(MBEDTLS_PC_REQUIRES "")  # Depend on pkg-config only when found via pkg-config
+
   find_path(MBEDTLS_INCLUDE_DIR NAMES "mbedtls/ssl.h")
   find_library(MBEDTLS_LIBRARY NAMES "mbedtls" "libmbedtls")
   find_library(MBEDX509_LIBRARY NAMES "mbedx509" "libmbedx509")
   find_library(MBEDCRYPTO_LIBRARY NAMES "mbedcrypto" "libmbedcrypto")
 
   unset(MBEDTLS_VERSION CACHE)
-  if(MBEDTLS_INCLUDE_DIR)
-    if(EXISTS "${MBEDTLS_INCLUDE_DIR}/mbedtls/build_info.h")  # 3.x
-      set(_version_header "${MBEDTLS_INCLUDE_DIR}/mbedtls/build_info.h")
-    elseif(EXISTS "${MBEDTLS_INCLUDE_DIR}/mbedtls/version.h")  # 2.x
-      set(_version_header "${MBEDTLS_INCLUDE_DIR}/mbedtls/version.h")
-    else()
-      unset(_version_header)
-    endif()
-    if(_version_header)
-      set(_version_regex "#[\t ]*define[\t ]+MBEDTLS_VERSION_STRING[\t ]+\"([0-9.]+)\"")
-      file(STRINGS "${_version_header}" _version_str REGEX "${_version_regex}")
-      string(REGEX REPLACE "${_version_regex}" "\\1" _version_str "${_version_str}")
-      set(MBEDTLS_VERSION "${_version_str}")
-      unset(_version_regex)
-      unset(_version_str)
-      unset(_version_header)
-    endif()
+  if(MBEDTLS_INCLUDE_DIR AND EXISTS "${MBEDTLS_INCLUDE_DIR}/mbedtls/build_info.h")
+    set(_version_regex "#[\t ]*define[\t ]+MBEDTLS_VERSION_STRING[\t ]+\"([0-9.]+)\"")
+    file(STRINGS "${MBEDTLS_INCLUDE_DIR}/mbedtls/build_info.h" _version_str REGEX "${_version_regex}")
+    string(REGEX REPLACE "${_version_regex}" "\\1" _version_str "${_version_str}")
+    set(MBEDTLS_VERSION "${_version_str}")
+    unset(_version_regex)
+    unset(_version_str)
   endif()
 
   include(FindPackageHandleStandardArgs)

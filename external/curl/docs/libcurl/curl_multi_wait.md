@@ -91,6 +91,8 @@ int main(void)
   CURLM *multi = curl_multi_init();
   int still_running;
 
+  easy = curl_easy_init();
+
   /* add the individual easy handle */
   curl_multi_add_handle(multi, easy);
 
@@ -120,5 +122,7 @@ int main(void)
 
 # RETURN VALUE
 
-CURLMcode type, general libcurl multi interface error code. See
-libcurl-errors(3)
+This function returns a CURLMcode indicating success or error.
+
+CURLM_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

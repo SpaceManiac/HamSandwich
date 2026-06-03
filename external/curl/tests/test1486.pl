@@ -22,8 +22,6 @@
 # SPDX-License-Identifier: curl
 #
 ###########################################################################
-#
-#
 
 use strict;
 use warnings;
@@ -56,11 +54,24 @@ sub getsrcvars {
     close($f);
 }
 
+my %special = (
+    'header{name}' => 1,
+    'output{filename}' => 1,
+    'time{format}' => 1,
+    );
+
 sub getdocsvars {
     open(my $f, "<", "$root/../docs/cmdline-opts/write-out.md");
     while(<$f>) {
-        if($_ =~ /^\#\# \`([^\`]*)\`/) {
-            $indocs{$1} = 1;
+        chomp;
+        $_ =~ s/[\r\n]//g;
+        if($_ =~ /^\#\# *\z/) {
+            last;
+        }
+        elsif($_ =~ /^\#\# \`([^\`]*)\`/) {
+            if(!$special{$1}) {
+                $indocs{$1} = 1;
+            }
         }
     }
     close($f);

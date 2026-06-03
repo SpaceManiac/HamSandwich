@@ -23,7 +23,7 @@ smtp
 <name>
 SMTP multipart with 7bit encoder error
 </name>
-<stdin>
+<stdin crlf="yes">
 From: different
 To: another
 
@@ -33,7 +33,7 @@ body
 smtp://%HOSTIP:%SMTPPORT/%TESTNUMBER --mail-rcpt recipient@example.com --mail-from sender@example.com -F '=This is valid;encoder=7bit' -F "=@%LOGDIR/test%TESTNUMBER.txt;encoder=7bit" -H "From: different" -H "To: another"
 </command>
 <file name="%LOGDIR/test%TESTNUMBER.txt">
-This is an attached file (in french: pièce jointe).
+This is an attached file (in french: pi%hex[%c3%a8]hex%ce jointe).
 
 It contains at least an 8-bit byte value.
 </file>
@@ -42,7 +42,7 @@ It contains at least an 8-bit byte value.
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="yes">
 EHLO %TESTNUMBER
 MAIL FROM:<sender@example.com>
 RCPT TO:<recipient@example.com>

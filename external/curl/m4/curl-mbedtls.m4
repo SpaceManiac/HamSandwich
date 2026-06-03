@@ -46,7 +46,6 @@ if test "x$OPT_MBEDTLS" != xno; then
       dnl libmbedtls found, set the variable
       [
         AC_DEFINE(USE_MBEDTLS, 1, [if mbedTLS is enabled])
-        AC_SUBST(USE_MBEDTLS, [1])
         MBEDTLS_ENABLED=1
         USE_MBEDTLS="yes"
         ssl_msg="mbedTLS"
@@ -74,7 +73,6 @@ if test "x$OPT_MBEDTLS" != xno; then
       AC_CHECK_LIB(mbedtls, mbedtls_ssl_init,
         [
         AC_DEFINE(USE_MBEDTLS, 1, [if mbedTLS is enabled])
-        AC_SUBST(USE_MBEDTLS, [1])
         MBEDTLS_ENABLED=1
         USE_MBEDTLS="yes"
         ssl_msg="mbedTLS"
@@ -106,7 +104,13 @@ if test "x$OPT_MBEDTLS" != xno; then
       fi
       dnl FIXME: Enable when mbedTLS was detected via pkg-config
       if false; then
-        LIBCURL_PC_REQUIRES_PRIVATE="$LIBCURL_PC_REQUIRES_PRIVATE mbedtls"
+        LIBCURL_PC_REQUIRES_PRIVATE="$LIBCURL_PC_REQUIRES_PRIVATE mbedtls mbedx509 mbedcrypto"
+      fi
+
+      dnl Check DES support in mbedTLS <4.
+      AC_CHECK_FUNCS(mbedtls_des_crypt_ecb)
+      if test "$ac_cv_func_mbedtls_des_crypt_ecb" = 'yes'; then
+        HAVE_MBEDTLS_DES_CRYPT_ECB=1
       fi
     fi
 

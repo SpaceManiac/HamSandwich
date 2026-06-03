@@ -38,9 +38,10 @@ curl_easy_getinfo(3) as the library can set up the connection and then
 the application can obtain the most recently used socket for special data
 transfers.
 
-Since 7.86.0, this option can be set to '2' and if HTTP or WebSocket are used,
+Since 7.86.0, this option can be set to '2' and if WebSocket is used,
 libcurl performs the request and reads all response headers before handing
-over control to the application.
+over control to the application. For other protocols the behavior of '2'
+is undefined.
 
 Transfers marked connect only do not reuse any existing connections and
 connections marked connect only are not allowed to get reused.
@@ -83,4 +84,7 @@ WS and WSS support added in 7.86.0.
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

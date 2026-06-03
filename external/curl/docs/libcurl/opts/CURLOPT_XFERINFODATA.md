@@ -46,11 +46,11 @@ struct progress {
   size_t size;
 };
 
-static size_t progress_cb(void *clientp,
-                          curl_off_t dltotal,
-                          curl_off_t dlnow,
-                          curl_off_t ultotal,
-                          curl_off_t ulnow)
+static int progress_cb(void *clientp,
+                       curl_off_t dltotal,
+                       curl_off_t dlnow,
+                       curl_off_t ultotal,
+                       curl_off_t ulnow)
 {
   struct progress *memory = clientp;
   printf("private ptr: %p\n", memory->private);
@@ -76,4 +76,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

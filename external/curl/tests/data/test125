@@ -27,13 +27,10 @@ ftp://%HOSTIP:%FTPPORT/path/to/file/%TESTNUMBER
 
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-QUIT
-</strip>
 <errorcode>
 9
 </errorcode>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

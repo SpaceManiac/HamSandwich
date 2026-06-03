@@ -31,7 +31,6 @@ prefix='@prefix@'
 exec_prefix="@exec_prefix@"
 # shellcheck disable=SC2034
 includedir="@includedir@"
-cppflag_curl_staticlib='@LIBCURL_PC_CFLAGS@'
 
 usage()
 {
@@ -40,7 +39,7 @@ Usage: curl-config [OPTION]
 
 Available values for OPTION include:
 
-  --built-shared says 'yes' if libcurl was built shared
+  --built-shared        says 'yes' if libcurl was built shared
   --ca                  CA bundle install path
   --cc                  compiler
   --cflags              preprocessor and compiler flags
@@ -142,28 +141,23 @@ while test "$#" -gt 0; do
     ;;
 
   --cflags)
-    if test "X$cppflag_curl_staticlib" = 'X-DCURL_STATICLIB'; then
-      CPPFLAG_CURL_STATICLIB='-DCURL_STATICLIB '
+    if test "@includedir@" = '/usr/include'; then
+      echo '@LIBCURL_PC_CFLAGS@'
     else
-      CPPFLAG_CURL_STATICLIB=''
-    fi
-    if test "X@includedir@" = 'X/usr/include'; then
-      echo "${CPPFLAG_CURL_STATICLIB}"
-    else
-      echo "${CPPFLAG_CURL_STATICLIB}-I@includedir@"
+      echo "@LIBCURL_PC_CFLAGS@ -I@includedir@"
     fi
     ;;
 
   --libs)
-    if test "X@libdir@" != 'X/usr/lib' -a "X@libdir@" != 'X/usr/lib64'; then
-      CURLLIBDIR="-L@libdir@ "
+    if test "@libdir@" != '/usr/lib' -a "@libdir@" != '/usr/lib64'; then
+      curllibdir="-L@libdir@ "
     else
-      CURLLIBDIR=''
+      curllibdir=''
     fi
-    if test 'X@ENABLE_SHARED@' = 'Xno'; then
-      echo "${CURLLIBDIR}-lcurl @LIBCURL_PC_LIBS_PRIVATE@"
+    if test '@ENABLE_SHARED@' = 'no'; then
+      echo "${curllibdir}-lcurl @LIBCURL_PC_LIBS_PRIVATE@"
     else
-      echo "${CURLLIBDIR}-lcurl"
+      echo "${curllibdir}-lcurl"
     fi
     ;;
 
@@ -172,7 +166,7 @@ while test "$#" -gt 0; do
     ;;
 
   --static-libs)
-    if test 'X@ENABLE_STATIC@' != 'Xno'; then
+    if test '@ENABLE_STATIC@' != 'no'; then
       echo "@libdir@/libcurl.@libext@ @LIBCURL_PC_LDFLAGS_PRIVATE@ @LIBCURL_PC_LIBS_PRIVATE@"
     else
       echo 'curl was built with static libraries disabled' >&2

@@ -25,6 +25,7 @@
 ###########################################################################
 #
 import logging
+import os
 import re
 import pytest
 
@@ -37,13 +38,6 @@ log = logging.getLogger(__name__)
 class TestShutdown:
 
     @pytest.fixture(autouse=True, scope='class')
-    def _class_scope(self, env, httpd, nghttpx):
-        if env.have_h3():
-            nghttpx.start_if_needed()
-        httpd.clear_extra_configs()
-        httpd.reload()
-
-    @pytest.fixture(autouse=True, scope='class')
     def _class_scope(self, env, httpd):
         indir = httpd.docs_dir
         env.make_data_file(indir=indir, fname="data-10k", fsize=10*1024)
@@ -53,66 +47,78 @@ class TestShutdown:
     # check with `tcpdump` that we see curl TCP RST packets
     @pytest.mark.skipif(condition=not Env.tcpdump(), reason="tcpdump not available")
     @pytest.mark.parametrize("proto", ['http/1.1'])
-    def test_19_01_check_tcp_rst(self, env: Env, httpd, repeat, proto):
+    def test_19_01_check_tcp_rst(self, env: Env, httpd, proto):
         if env.ci_run:
             pytest.skip("seems not to work in CI")
-        curl = CurlClient(env=env)
-        url = f'https://{env.authority_for(env.domain1, proto)}/data.json?[0-1]'
+        # timing critical, disable trace overrides
+        run_env = os.environ.copy()
+        if 'CURL_DEBUG' in run_env:
+            del run_env['CURL_DEBUG']
+        curl = CurlClient(env=env, run_env=run_env)
+        port = env.port_for(alpn_proto=proto)
+        url = f'https://{env.domain1}:{port}/data.json?[0-1]'
         r = curl.http_download(urls=[url], alpn_proto=proto, with_tcpdump=True, extra_args=[
             '--parallel'
         ])
         r.check_response(http_status=200, count=2)
         assert r.tcpdump
-        assert len(r.tcpdump.stats) != 0, f'Expected TCP RSTs packets: {r.tcpdump.stderr}'
+        assert len(r.tcpdump.get_rsts(ports=[port])) != 0, f'Expected TCP RSTs packets: {r.tcpdump.stderr}'
 
     # check with `tcpdump` that we do NOT see TCP RST when CURL_GRACEFUL_SHUTDOWN set
     @pytest.mark.skipif(condition=not Env.tcpdump(), reason="tcpdump not available")
     @pytest.mark.parametrize("proto", ['http/1.1', 'h2'])
-    def test_19_02_check_shutdown(self, env: Env, httpd, repeat, proto):
+    def test_19_02_check_shutdown(self, env: Env, httpd, proto):
         if not env.curl_is_debug():
             pytest.skip('only works for curl debug builds')
-        curl = CurlClient(env=env, run_env={
+        run_env = os.environ.copy()
+        run_env.update({
             'CURL_GRACEFUL_SHUTDOWN': '2000',
-            'CURL_DEBUG': 'ssl,tcp'
+            'CURL_DEBUG': 'ssl,tcp,lib-ids,multi'
         })
-        url = f'https://{env.authority_for(env.domain1, proto)}/data.json?[0-1]'
+        curl = CurlClient(env=env, run_env=run_env)
+        port = env.port_for(alpn_proto=proto)
+        url = f'https://{env.domain1}:{port}/data.json?[0-1]'
         r = curl.http_download(urls=[url], alpn_proto=proto, with_tcpdump=True, extra_args=[
             '--parallel'
         ])
         r.check_response(http_status=200, count=2)
         assert r.tcpdump
-        assert len(r.tcpdump.stats) == 0, 'Unexpected TCP RSTs packets'
+        assert len(r.tcpdump.get_rsts(ports=[port])) == 0, 'Unexpected TCP RST packets'
 
     # run downloads where the server closes the connection after each request
     @pytest.mark.parametrize("proto", ['http/1.1'])
-    def test_19_03_shutdown_by_server(self, env: Env, httpd, repeat, proto):
+    def test_19_03_shutdown_by_server(self, env: Env, httpd, proto):
         if not env.curl_is_debug():
             pytest.skip('only works for curl debug builds')
+        if not env.curl_is_verbose():
+            pytest.skip('only works for curl with verbose strings')
         count = 10
         curl = CurlClient(env=env, run_env={
             'CURL_GRACEFUL_SHUTDOWN': '2000',
-            'CURL_DEBUG': 'ssl'
+            'CURL_DEBUG': 'ssl,multi'
         })
         url = f'https://{env.authority_for(env.domain1, proto)}/curltest/tweak/?'\
             f'id=[0-{count-1}]&with_cl&close'
         r = curl.http_download(urls=[url], alpn_proto=proto)
         r.check_response(http_status=200, count=count)
         shutdowns = [line for line in r.trace_lines
-                     if re.match(r'.*CCACHE\] shutdown #\d+, done=1', line)]
+                     if re.match(r'.*\[SHUTDOWN] shutdown, done=1', line)]
         assert len(shutdowns) == count, f'{shutdowns}'
 
     # run downloads with CURLOPT_FORBID_REUSE set, meaning *we* close
     # the connection after each request
     @pytest.mark.parametrize("proto", ['http/1.1'])
-    def test_19_04_shutdown_by_curl(self, env: Env, httpd, proto, repeat):
+    def test_19_04_shutdown_by_curl(self, env: Env, httpd, proto):
         if not env.curl_is_debug():
             pytest.skip('only works for curl debug builds')
+        if not env.curl_is_verbose():
+            pytest.skip('only works for curl with verbose strings')
         count = 10
         docname = 'data.json'
         url = f'https://localhost:{env.https_port}/{docname}'
-        client = LocalClient(name='hx-download', env=env, run_env={
+        client = LocalClient(name='cli_hx_download', env=env, run_env={
             'CURL_GRACEFUL_SHUTDOWN': '2000',
-            'CURL_DEBUG': 'ssl'
+            'CURL_DEBUG': 'ssl,multi'
         })
         if not client.exists():
             pytest.skip(f'example client not built: {client.name}')
@@ -121,23 +127,25 @@ class TestShutdown:
         ])
         r.check_exit_code(0)
         shutdowns = [line for line in r.trace_lines
-                     if re.match(r'.*CCACHE\] shutdown #\d+, done=1', line)]
+                     if re.match(r'.*SHUTDOWN] shutdown, done=1', line)]
         assert len(shutdowns) == count, f'{shutdowns}'
 
     # run event-based downloads with CURLOPT_FORBID_REUSE set, meaning *we* close
     # the connection after each request
     @pytest.mark.parametrize("proto", ['http/1.1'])
-    def test_19_05_event_shutdown_by_server(self, env: Env, httpd, proto, repeat):
+    def test_19_05_event_shutdown_by_server(self, env: Env, httpd, proto):
         if not env.curl_is_debug():
             pytest.skip('only works for curl debug builds')
+        if not env.curl_is_verbose():
+            pytest.skip('only works for curl with verbose strings')
         count = 10
-        curl = CurlClient(env=env, run_env={
-            # forbid connection reuse to trigger shutdowns after transfer
-            'CURL_FORBID_REUSE': '1',
-            # make socket receives block 50% of the time to delay shutdown
-            'CURL_DBG_SOCK_RBLOCK': '50',
-            'CURL_DEBUG': 'ssl'
-        })
+        run_env = os.environ.copy()
+        # forbid connection reuse to trigger shutdowns after transfer
+        run_env['CURL_FORBID_REUSE'] = '1'
+        # make socket receives block 50% of the time to delay shutdown
+        run_env['CURL_DBG_SOCK_RBLOCK'] = '50'
+        run_env['CURL_DEBUG'] = 'ssl,multi,lib-ids'
+        curl = CurlClient(env=env, run_env=run_env)
         url = f'https://{env.authority_for(env.domain1, proto)}/curltest/tweak/?'\
             f'id=[0-{count-1}]&with_cl&'
         r = curl.http_download(urls=[url], alpn_proto=proto, extra_args=[
@@ -146,7 +154,7 @@ class TestShutdown:
         r.check_response(http_status=200, count=count)
         # check that we closed all connections
         closings = [line for line in r.trace_lines
-                    if re.match(r'.*CCACHE\] closing #\d+', line)]
+                    if re.match(r'.*SHUTDOWN] (force )?closing', line)]
         assert len(closings) == count, f'{closings}'
         # check that all connection sockets were removed from event
         removes = [line for line in r.trace_lines
@@ -155,11 +163,13 @@ class TestShutdown:
 
     # check graceful shutdown on multiplexed http
     @pytest.mark.parametrize("proto", ['h2', 'h3'])
-    def test_19_06_check_shutdown(self, env: Env, httpd, nghttpx, repeat, proto):
+    def test_19_06_check_shutdown(self, env: Env, httpd, nghttpx, proto):
         if proto == 'h3' and not env.have_h3():
             pytest.skip("h3 not supported")
         if not env.curl_is_debug():
             pytest.skip('only works for curl debug builds')
+        if not env.curl_is_verbose():
+            pytest.skip('only works for curl with verbose strings')
         curl = CurlClient(env=env, run_env={
             'CURL_GRACEFUL_SHUTDOWN': '2000',
             'CURL_DEBUG': 'all'
@@ -171,5 +181,34 @@ class TestShutdown:
         r.check_response(http_status=200, count=2)
         # check connection cache closings
         shutdowns = [line for line in r.trace_lines
-                     if re.match(r'.*CCACHE\] shutdown #\d+, done=1', line)]
+                     if re.match(r'.*SHUTDOWN] shutdown, done=1', line)]
         assert len(shutdowns) == 1, f'{shutdowns}'
+
+    # run connection pressure, many small transfers, not reusing connections,
+    # limited total
+    @pytest.mark.parametrize("proto", ['http/1.1'])
+    def test_19_07_shutdown_by_curl(self, env: Env, httpd, proto):
+        if not env.curl_is_debug():
+            pytest.skip('only works for curl debug builds')
+        count = 500
+        docname = 'data.json'
+        url = f'https://localhost:{env.https_port}/{docname}'
+        client = LocalClient(name='cli_hx_download', env=env, run_env={
+            'CURL_GRACEFUL_SHUTDOWN': '2000',
+            'CURL_DEBUG': 'ssl,multi'
+        })
+        if not client.exists():
+            pytest.skip(f'example client not built: {client.name}')
+        r = client.run(args=[
+             '-n', f'{count}',  # that many transfers
+             '-f',  # forbid conn reuse
+             '-m', '10',  # max parallel
+             '-T', '5',  # max total conns at a time
+             '-V', proto,
+             url
+        ])
+        r.check_exit_code(0)
+        shutdowns = [line for line in r.trace_lines
+                     if re.match(r'.*SHUTDOWN] shutdown, done=1', line)]
+        # we see less clean shutdowns as total limit forces early closes
+        assert len(shutdowns) < count, f'{shutdowns}'

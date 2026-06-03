@@ -15,7 +15,6 @@ TLS-backend:
   - GnuTLS
   - mbedTLS
   - Schannel
-  - Secure Transport
   - wolfSSL
 Added-in: 7.52.0
 ---
@@ -37,10 +36,8 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_SSLCERTTYPE, char *type);
 Pass a pointer to a null-terminated string as parameter. The string should be
 the format of your client certificate used when connecting to an HTTPS proxy.
 
-Supported formats are "PEM" and "DER", except with Secure Transport or
-Schannel. OpenSSL (versions 0.9.3 and later), Secure Transport (on iOS 5 or
-later, or macOS 10.7 or later) and Schannel support "P12" for PKCS#12-encoded
-files.
+Supported formats are "PEM" and "DER", except with Schannel. OpenSSL and
+Schannel support "P12" for PKCS#12-encoded files.
 
 The application does not have to keep the string around after setting this
 option.
@@ -78,5 +75,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if TLS is supported, CURLE_UNKNOWN_OPTION if not, or
-CURLE_OUT_OF_MEMORY if there was insufficient heap space.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

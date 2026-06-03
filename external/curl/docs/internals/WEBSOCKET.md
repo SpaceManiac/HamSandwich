@@ -39,7 +39,8 @@ WebSocket with libcurl can be done two ways.
 The new options to `curl_easy_setopt()`:
 
  `CURLOPT_WS_OPTIONS` - to control specific behavior. `CURLWS_RAW_MODE` makes
- libcurl provide all WebSocket traffic raw in the callback.
+ libcurl provide all WebSocket traffic raw in the callback. `CURLWS_NOAUTOPONG`
+ disables automatic `PONG` replies.
 
 The new function calls:
 
@@ -99,7 +100,6 @@ Ideas:
 
 - Verify the Sec-WebSocket-Accept response. It requires a sha-1 function.
 - Verify Sec-WebSocket-Extensions and Sec-WebSocket-Protocol in the response
-- Make WebSocket work with hyper
 - Consider a `curl_ws_poll()`
 - Make sure WebSocket code paths are fuzzed
 - Add client-side PING interval

@@ -218,15 +218,6 @@ $! for compatibility.
 $write cvh "/* Location of default ca path */"
 $write cvh "#define curl_ca_path ""gnv$curl_ca_path"""
 $!
-$! NTLM_WB_ENABLED requires fork() but configure does not know this
-$! We have to disable this in the configure command line.
-$! config_h.com finds that configure defaults to it being enabled so
-$! reports it.  So we need to turn it off here.
-$!
-$write cvh "#ifdef NTLM_WB_ENABLED"
-$write cvh "#undef NTLM_WB_ENABLED"
-$write cvh "#endif"
-$!
 $! The config_h.com finds a bunch of default disable commands in
 $! configure and will incorrectly disable these options.  The config_h.com
 $! is a generic procedure and it would break more things to try to fix it
@@ -345,11 +336,6 @@ $write cvh "#endif"
 $write cvh "#ifdef USE_UNIX_SOCKETS"
 $write cvh "#undef USE_UNIX_SOCKETS"
 $write cvh "#endif"
-$!
-$write cvh "#ifndef HAVE_OLD_GSSMIT"
-$write cvh "#define gss_nt_service_name GSS_C_NT_HOSTBASED_SERVICE"
-$write cvh "#endif"
-$!
 $!
 $! Note:
 $! The CURL_EXTERN_SYMBOL is used for platforms that need the compiler

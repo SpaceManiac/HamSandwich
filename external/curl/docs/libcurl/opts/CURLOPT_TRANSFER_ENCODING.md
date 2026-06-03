@@ -35,8 +35,8 @@ HTTP response sent using a compressed Transfer-Encoding that is automatically
 uncompressed by libcurl on reception.
 
 Transfer-Encoding differs slightly from the Content-Encoding you ask for with
-CURLOPT_ACCEPT_ENCODING(3) in that a Transfer-Encoding is strictly meant
-to be for the transfer and thus MUST be decoded before the data arrives in the
+CURLOPT_ACCEPT_ENCODING(3) in that a Transfer-Encoding is strictly meant to be
+for the transfer and thus must be decoded before the data arrives in the
 client. Traditionally, Transfer-Encoding has been much less used and supported
 by both HTTP clients and HTTP servers.
 
@@ -64,4 +64,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

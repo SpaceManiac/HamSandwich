@@ -15,5 +15,6 @@ Example:
 
 # `--compressed-ssh`
 
-Enables built-in SSH compression. This is a request, not an order; the server
-may or may not do it.
+Enable SSH compression. This is a request, not an order; the server may or may
+not do it. This allows the data to be sent compressed over the wire, and
+automatically decompressed in the receiving end, to save bandwidth.

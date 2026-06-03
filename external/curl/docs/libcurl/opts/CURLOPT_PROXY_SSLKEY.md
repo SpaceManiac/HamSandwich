@@ -39,9 +39,9 @@ the filename of your private key used for connecting to the HTTPS proxy. The
 default format is "PEM" and can be changed with
 CURLOPT_PROXY_SSLKEYTYPE(3).
 
-(Windows, iOS and macOS) This option is ignored by Secure Transport and
-Schannel SSL backends because they expect the private key to be already
-present in the key chain or PKCS#12 file containing the certificate.
+This option is ignored by the Schannel backend because it expects the private
+key to be already present in the key chain or PKCS#12 file containing the
+certificate.
 
 The application does not have to keep the string around after setting this
 option.
@@ -78,5 +78,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK if TLS is supported, CURLE_UNKNOWN_OPTION if not, or
-CURLE_OUT_OF_MEMORY if there was insufficient heap space.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

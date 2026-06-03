@@ -10,6 +10,7 @@ Multi: boolean
 See-also:
   - tlsv1.3
   - tls-max
+  - ssl-sessions
 Example:
   - --tls-earlydata $URL
 ---
@@ -19,7 +20,8 @@ Example:
 Enable the use of TLSv1.3 early data, also known as '0RTT' where possible.
 This has security implications for the requests sent that way.
 
-This option is used when curl is built to use GnuTLS.
+This option can be used when curl is built to use GnuTLS, wolfSSL, quictls and
+OpenSSL as a TLS provider (but not BoringSSL, AWS-LC, or rustls).
 
 If a server supports this TLSv1.3 feature, and to what extent, is announced
 as part of the TLS "session" sent back to curl. Until curl has seen such
@@ -36,6 +38,9 @@ may be no harm in that. If the first request orders a refrigerator
 for you, it is probably not a good idea to use early data for it. curl
 cannot deduce what the security implications of your requests actually
 are and make this decision for you.
+
+The amount of early data sent can be inspected by using the `--write-out`
+variable `tls_earlydata`.
 
 **WARNING**: this option has security implications. See above for more
 details.

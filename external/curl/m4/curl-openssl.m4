@@ -46,6 +46,9 @@ if test "x$OPT_OPENSSL" != xno; then
       my_ac_save_LIBS=$LIBS
       LIBS="-lgdi32 $LIBS"
       AC_LINK_IFELSE([ AC_LANG_PROGRAM([[
+        #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+        #endif
         #include <windef.h>
         #include <wingdi.h>
         ]],
@@ -120,7 +123,6 @@ if test "x$OPT_OPENSSL" != xno; then
       SSL_CPPFLAGS=`CURL_EXPORT_PCDIR([$OPENSSL_PCDIR]) dnl
         $PKGCONFIG --cflags-only-I openssl 2>/dev/null`
 
-      AC_SUBST(SSL_LIBS)
       AC_MSG_NOTICE([pkg-config: SSL_LIBS: "$SSL_LIBS"])
       AC_MSG_NOTICE([pkg-config: SSL_LDFLAGS: "$SSL_LDFLAGS"])
       AC_MSG_NOTICE([pkg-config: SSL_CPPFLAGS: "$SSL_CPPFLAGS"])
@@ -207,22 +209,7 @@ if test "x$OPT_OPENSSL" != xno; then
 
     AC_CHECK_LIB(ssl, SSL_connect)
 
-    if test "$ac_cv_lib_ssl_SSL_connect" != yes; then
-      dnl we didn't find the SSL lib, try the RSAglue/rsaref stuff
-      AC_MSG_CHECKING(for ssl with RSAglue/rsaref libs in use);
-      OLIBS=$LIBS
-      LIBS="-lRSAglue -lrsaref $LIBS"
-      AC_CHECK_LIB(ssl, SSL_connect)
-      if test "$ac_cv_lib_ssl_SSL_connect" != yes; then
-        dnl still no SSL_connect
-        AC_MSG_RESULT(no)
-        LIBS=$OLIBS
-      else
-        AC_MSG_RESULT(yes)
-      fi
-
-    else
-
+    if test "$ac_cv_lib_ssl_SSL_connect" = yes; then
       dnl Have the libraries--check for OpenSSL headers
       AC_CHECK_HEADERS(openssl/x509.h openssl/rsa.h openssl/crypto.h \
                        openssl/pem.h openssl/ssl.h openssl/err.h,
@@ -230,21 +217,6 @@ if test "x$OPT_OPENSSL" != xno; then
         test openssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
         OPENSSL_ENABLED=1
         AC_DEFINE(USE_OPENSSL, 1, [if OpenSSL is in use]))
-
-      if test $ac_cv_header_openssl_x509_h = no; then
-        dnl we don't use the "action" part of the AC_CHECK_HEADERS macro
-        dnl since 'err.h' might in fact find a krb4 header with the same
-        dnl name
-        AC_CHECK_HEADERS(x509.h rsa.h crypto.h pem.h ssl.h err.h)
-
-        if test $ac_cv_header_x509_h = yes &&
-           test $ac_cv_header_crypto_h = yes &&
-           test $ac_cv_header_ssl_h = yes; then
-          dnl three matches
-          ssl_msg="OpenSSL"
-          OPENSSL_ENABLED=1
-        fi
-      fi
     fi
 
     if test X"$OPENSSL_ENABLED" != X"1"; then
@@ -300,12 +272,12 @@ if test "x$OPT_OPENSSL" != xno; then
         #include <openssl/opensslv.h>
       ]],[[
         int dummy = LIBRESSL_VERSION_NUMBER;
+        (void)dummy;
       ]])
     ],[
       AC_MSG_RESULT([yes])
-      AC_DEFINE_UNQUOTED(HAVE_LIBRESSL, 1,
-        [Define to 1 if using LibreSSL.])
       ssl_msg="LibreSSL"
+      HAVE_LIBRESSL=1
     ],[
       AC_MSG_RESULT([no])
     ])
@@ -330,12 +302,17 @@ if test "x$OPT_OPENSSL" != xno; then
   fi
 
   dnl is this OpenSSL (fork) providing the original QUIC API?
-  AC_CHECK_FUNCS([SSL_set_quic_use_legacy_codepoint],
-                 [QUIC_ENABLED=yes])
+  AC_CHECK_FUNCS([SSL_set_quic_use_legacy_codepoint], [QUIC_ENABLED=yes])
   if test "$QUIC_ENABLED" = "yes"; then
     AC_MSG_NOTICE([OpenSSL fork speaks QUIC API])
   else
-    AC_MSG_NOTICE([OpenSSL version does not speak QUIC API])
+    AC_CHECK_FUNCS([SSL_set_quic_tls_cbs], [QUIC_ENABLED=yes])
+    if test "$QUIC_ENABLED" = "yes"; then
+      AC_MSG_NOTICE([OpenSSL with QUIC APIv2])
+      OPENSSL_QUIC_API2=1
+    else
+      AC_MSG_NOTICE([OpenSSL version does not speak any known QUIC API])
+    fi
   fi
 
   if test "$OPENSSL_ENABLED" = "1"; then
@@ -363,31 +340,53 @@ if test X"$OPT_OPENSSL" != Xno &&
   AC_MSG_ERROR([--with-openssl was given but OpenSSL could not be detected])
 fi
 
-dnl ---
-dnl We require OpenSSL with SRP support.
-dnl ---
 if test "$OPENSSL_ENABLED" = "1"; then
+  dnl ---
+  dnl We check OpenSSL for DES support.
+  dnl ---
+  AC_MSG_CHECKING([for DES support in OpenSSL])
+  AC_LINK_IFELSE([
+    AC_LANG_PROGRAM([[
+      #ifndef OPENSSL_SUPPRESS_DEPRECATED
+      #define OPENSSL_SUPPRESS_DEPRECATED
+      #endif
+      #include <openssl/des.h>
+    ]],[[
+      DES_ecb_encrypt(0, 0, 0, DES_ENCRYPT);
+    ]])
+  ],[
+    AC_MSG_RESULT([yes])
+    AC_DEFINE(HAVE_DES_ECB_ENCRYPT, 1, [if you have the function DES_ecb_encrypt])
+    HAVE_DES_ECB_ENCRYPT=1
+  ],[
+    AC_MSG_RESULT([no])
+  ])
+
+  dnl ---
+  dnl We require OpenSSL with SRP support.
+  dnl ---
   AC_MSG_CHECKING([for SRP support in OpenSSL])
   AC_LINK_IFELSE([
     AC_LANG_PROGRAM([[
+      #ifndef OPENSSL_SUPPRESS_DEPRECATED
+      #define OPENSSL_SUPPRESS_DEPRECATED
+      #endif
       #include <openssl/ssl.h>
     ]],[[
-      SSL_CTX_set_srp_username(NULL, "");
-      SSL_CTX_set_srp_password(NULL, "");
+      SSL_CTX_set_srp_username(NULL, NULL);
+      SSL_CTX_set_srp_password(NULL, NULL);
     ]])
   ],[
     AC_MSG_RESULT([yes])
     AC_DEFINE(HAVE_OPENSSL_SRP, 1, [if you have the functions SSL_CTX_set_srp_username and SSL_CTX_set_srp_password])
-    AC_SUBST(HAVE_OPENSSL_SRP, [1])
+    HAVE_OPENSSL_SRP=1
   ],[
     AC_MSG_RESULT([no])
   ])
-fi
 
-dnl ---
-dnl Whether the OpenSSL configuration will be loaded automatically
-dnl ---
-if test X"$OPENSSL_ENABLED" = X"1"; then
+  dnl ---
+  dnl Whether the OpenSSL configuration will be loaded automatically
+  dnl ---
   AC_ARG_ENABLE(openssl-auto-load-config,
 AS_HELP_STRING([--enable-openssl-auto-load-config],[Enable automatic loading of OpenSSL configuration])
 AS_HELP_STRING([--disable-openssl-auto-load-config],[Disable automatic loading of OpenSSL configuration]),
@@ -396,12 +395,10 @@ AS_HELP_STRING([--disable-openssl-auto-load-config],[Disable automatic loading o
       AC_DEFINE(CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG, 1, [if the OpenSSL configuration won't be loaded automatically])
     fi
   ])
-fi
 
-dnl ---
-dnl We may use OpenSSL QUIC.
-dnl ---
-if test "$OPENSSL_ENABLED" = "1"; then
+  dnl ---
+  dnl We may use OpenSSL QUIC.
+  dnl ---
   AC_MSG_CHECKING([for QUIC support and OpenSSL >= 3.3])
   AC_LINK_IFELSE([
     AC_LANG_PROGRAM([[

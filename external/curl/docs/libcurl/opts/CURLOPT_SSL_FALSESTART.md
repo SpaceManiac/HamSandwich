@@ -9,7 +9,7 @@ See-also:
 Protocol:
   - TLS
 TLS-backend:
-  - Secure Transport
+  - none
 Added-in: 7.42.0
 ---
 
@@ -54,9 +54,15 @@ int main(void)
 }
 ~~~
 
+# DEPRECATED
+
+Deprecated since 8.15.0.
+
 # %AVAILABILITY%
 
 # RETURN VALUE
 
-Returns CURLE_OK if false start is supported by the SSL backend, otherwise
-returns CURLE_NOT_BUILT_IN.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

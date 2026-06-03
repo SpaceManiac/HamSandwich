@@ -40,7 +40,10 @@
 int main(void)
 {
   CURL *curl;
-  CURLcode res = CURLE_OK;
+
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
+  if(res)
+    return (int)res;
 
   curl = curl_easy_init();
   if(curl) {
@@ -57,7 +60,7 @@ int main(void)
      * of using CURLUSESSL_TRY here, because if TLS upgrade fails, the
      * transfer continues anyway - see the security discussion in the libcurl
      * tutorial for more details. */
-    curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
+    curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
 
     /* If your server does not have a valid certificate, then you can disable
      * part of the Transport Layer Security protection by setting the
@@ -89,6 +92,8 @@ int main(void)
     /* Always cleanup */
     curl_easy_cleanup(curl);
   }
+
+  curl_global_cleanup();
 
   return (int)res;
 }

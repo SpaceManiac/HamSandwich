@@ -13,9 +13,9 @@ verbose logs
 
 # Client-side
 <client>
-<server>
-none
-</server>
+<features>
+verbose-strings
+</features>
 <tool>
 lib%TESTNUMBER
 </tool>
@@ -23,9 +23,6 @@ lib%TESTNUMBER
 <name>
 libcurl strerror API call tests
 </name>
-<command>
-nothing
-</command>
 </client>
 
 #

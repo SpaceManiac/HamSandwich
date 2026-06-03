@@ -1,3 +1,7 @@
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
+#
+# SPDX-License-Identifier: curl
+
 Guenter Knauf <lists@gknw.net> <gk@gknw.de>
 Gisle Vanem <gvanem@yahoo.no> <gisle.vanem@gmail.com>
 Gisle Vanem <gvanem@yahoo.no> <gvanem@broadpark.no>
@@ -65,7 +69,8 @@ Jessa Chandler <jessachandler@gmail.com>
 Gökhan Şengün <gsengun@linux-5d7d.site> <gokhansengun@gmai.com>
 Svyatoslav Mishyn <juef@openmailbox.org>
 Douglas Steinwand <dzs-curl@dzs.fx.org>
-James Fuller <jim@webcomposite.com>
+James Fuller <jim@webcomposite.com> <jfuller@redhat.com>
+James Fuller <jim@webcomposite.com> Jim Fuller <jim@webcomposite.com>
 Don J Olmstead <don.j.olmstead@gmail.com>
 Nicolas Sterchele <sterchelen@gmail.com>
 Sergey Raevskiy <ccik@inbox.ru>
@@ -113,3 +118,5 @@ Moritz Buhl <git@moritzbuhl.de>
 Aki Sakurai <75532970+AkiSakurai@users.noreply.github.com>
 Sinkevich Artem <artsin666@gmail.com>
 Andrew Kirillov <akirillo@uk.ibm.com>
+Stephen Farrell <stephen.farrell@cs.tcd.ie>
+Calvin Ruocco <calvin.ruocco@vector.com>

@@ -33,21 +33,30 @@
 # --unit : built to support unit tests
 #
 
-my $unittests;
-if($ARGV[0] eq "--unit") {
+use strict;
+use warnings;
+
+my $unittests="";
+if(@ARGV && $ARGV[0] eq "--unit") {
     $unittests = "tests/unit ";
     shift @ARGV;
 }
 
-my $file = $ARGV[0];
+my $file = $ARGV[0] || '';
 
 my %wl = (
-    'curlx_uztoso' => 'cmdline tool use',
     'Curl_xfer_write_resp' => 'internal api',
     'Curl_creader_def_init' => 'internal api',
     'Curl_creader_def_close' => 'internal api',
     'Curl_creader_def_read' => 'internal api',
     'Curl_creader_def_total_length' => 'internal api',
+    'Curl_meta_reset' => 'internal api',
+    'Curl_thread_destroy' => 'internal api',
+    'Curl_trc_dns' => 'internal api',
+    'curlx_base64_decode' => 'internal api',
+    'curlx_base64_encode' => 'internal api',
+    'curlx_base64url_encode' => 'internal api',
+    'Curl_multi_clear_dirty' => 'internal api',
 );
 
 my %api = (
@@ -62,6 +71,8 @@ my %api = (
     'curl_easy_reset' => 'API',
     'curl_easy_send' => 'API',
     'curl_easy_setopt' => 'API',
+    'curl_easy_ssls_export' => 'API',
+    'curl_easy_ssls_import' => 'API',
     'curl_easy_strerror' => 'API',
     'curl_easy_unescape' => 'API',
     'curl_easy_upkeep' => 'API',
@@ -102,8 +113,11 @@ my %api = (
     'curl_multi_cleanup' => 'API',
     'curl_multi_fdset' => 'API',
     'curl_multi_get_handles' => 'API',
+    'curl_multi_get_offt' => 'API',
     'curl_multi_info_read' => 'API',
     'curl_multi_init' => 'API',
+    'curl_multi_notify_disable' => 'API',
+    'curl_multi_notify_enable' => 'API',
     'curl_multi_perform' => 'API',
     'curl_multi_remove_handle' => 'API',
     'curl_multi_setopt' => 'API',
@@ -145,6 +159,7 @@ my %api = (
     'curl_ws_meta' => 'API',
     'curl_ws_recv' => 'API',
     'curl_ws_send' => 'API',
+    'curl_ws_start_frame' => 'API',
 
     # the following functions are provided globally in debug builds
     'curl_easy_perform_ev' => 'debug-build',
@@ -172,8 +187,7 @@ open(N, "nm $file|") ||
 
 my %exist;
 my %uses;
-my $file;
-while (<N>) {
+while(<N>) {
     my $l = $_;
     chomp $l;
 
@@ -198,7 +212,7 @@ while (<N>) {
 }
 close(N);
 
-my $err;
+my $err = 0;
 for(sort keys %exist) {
     #printf "%s is defined in %s, used by: %s\n", $_, $exist{$_}, $uses{$_};
     if(!$uses{$_}) {

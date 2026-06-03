@@ -25,8 +25,8 @@
 #
 # Input variables:
 #
-# - `WOLFSSL_INCLUDE_DIR`:   The wolfSSL include directory.
-# - `WOLFSSL_LIBRARY`:       Path to `wolfssl` library.
+# - `WOLFSSL_INCLUDE_DIR`:   Absolute path to wolfSSL include directory.
+# - `WOLFSSL_LIBRARY`:       Absolute path to `wolfssl` library.
 #
 # Result variables:
 #
@@ -34,6 +34,7 @@
 # - `WOLFSSL_INCLUDE_DIRS`:  The wolfSSL include directories.
 # - `WOLFSSL_LIBRARIES`:     The wolfSSL library names.
 # - `WOLFSSL_LIBRARY_DIRS`:  The wolfSSL library directories.
+# - `WOLFSSL_PC_REQUIRES`:   The wolfSSL pkg-config packages.
 # - `WOLFSSL_CFLAGS`:        Required compiler flags.
 # - `WOLFSSL_VERSION`:       Version of wolfSSL.
 
@@ -46,14 +47,17 @@ if(DEFINED WolfSSL_LIBRARY AND NOT DEFINED WOLFSSL_LIBRARY)
   set(WOLFSSL_LIBRARY "${WolfSSL_LIBRARY}")
 endif()
 
+set(WOLFSSL_PC_REQUIRES "wolfssl")
+
 if(CURL_USE_PKGCONFIG AND
    NOT DEFINED WOLFSSL_INCLUDE_DIR AND
    NOT DEFINED WOLFSSL_LIBRARY)
   find_package(PkgConfig QUIET)
-  pkg_check_modules(WOLFSSL "wolfssl")
+  pkg_check_modules(WOLFSSL ${WOLFSSL_PC_REQUIRES})
 endif()
 
 if(WOLFSSL_FOUND)
+  set(WolfSSL_FOUND TRUE)
   string(REPLACE ";" " " WOLFSSL_CFLAGS "${WOLFSSL_CFLAGS}")
   message(STATUS "Found WolfSSL (via pkg-config): ${WOLFSSL_INCLUDE_DIRS} (found version \"${WOLFSSL_VERSION}\")")
 else()
@@ -87,10 +91,26 @@ else()
   mark_as_advanced(WOLFSSL_INCLUDE_DIR WOLFSSL_LIBRARY)
 endif()
 
-if(NOT WIN32)
-  find_library(_math_library "m")
-  if(_math_library)
-    list(APPEND WOLFSSL_LIBRARIES "m")  # for log and pow
+if(WOLFSSL_FOUND)
+  if(APPLE)
+    find_library(SECURITY_FRAMEWORK NAMES "Security")
+    mark_as_advanced(SECURITY_FRAMEWORK)
+    if(NOT SECURITY_FRAMEWORK)
+      message(FATAL_ERROR "Security framework not found")
+    endif()
+    list(APPEND WOLFSSL_LIBRARIES "-framework Security")
+
+    find_library(COREFOUNDATION_FRAMEWORK NAMES "CoreFoundation")
+    mark_as_advanced(COREFOUNDATION_FRAMEWORK)
+    if(NOT COREFOUNDATION_FRAMEWORK)
+      message(FATAL_ERROR "CoreFoundation framework not found")
+    endif()
+    list(APPEND WOLFSSL_LIBRARIES "-framework CoreFoundation")
+  elseif(NOT WIN32)
+    find_library(MATH_LIBRARY NAMES "m")
+    if(MATH_LIBRARY)
+      list(APPEND WOLFSSL_LIBRARIES ${MATH_LIBRARY})  # for log and pow
+    endif()
+    mark_as_advanced(MATH_LIBRARY)
   endif()
-  mark_as_advanced(_math_library)
 endif()

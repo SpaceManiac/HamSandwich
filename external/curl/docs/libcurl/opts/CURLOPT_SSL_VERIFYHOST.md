@@ -8,6 +8,8 @@ See-also:
   - CURLOPT_CAINFO (3)
   - CURLOPT_PINNEDPUBLICKEY (3)
   - CURLOPT_SSL_VERIFYPEER (3)
+  - CURLOPT_PROXY_SSL_VERIFYHOST (3)
+  - CURLOPT_DOH_SSL_VERIFYHOST (3)
 Protocol:
   - TLS
 TLS-backend:
@@ -73,14 +75,6 @@ A certificate can be set for a numerical IP address (IPv4 or IPv6), but then
 it should be a Subject Alternate Name kind and its type should correctly
 identify the field as an IP address.
 
-# LIMITATIONS
-
-Secure Transport: If *verify* value is 0, then SNI is also disabled. SNI is a
-TLS extension that sends the hostname to the server. The server may use that
-information to do such things as sending back a specific certificate for the
-hostname, or forwarding the request to a specific origin server. Some
-hostnames may be inaccessible if SNI is not sent.
-
 # DEFAULT
 
 2
@@ -118,4 +112,7 @@ From 7.66.0: libcurl treats 1 and 2 to this option the same.
 
 # RETURN VALUE
 
-Returns CURLE_OK if TLS is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

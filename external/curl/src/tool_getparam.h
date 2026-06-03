@@ -90,6 +90,7 @@ typedef enum {
   C_FAIL_EARLY,
   C_FAIL_WITH_BODY,
   C_FALSE_START,
+  C_FOLLOW,
   C_FORM,
   C_FORM_ESCAPE,
   C_FORM_STRING,
@@ -138,6 +139,7 @@ typedef enum {
   C_KEEPALIVE_TIME,
   C_KEY,
   C_KEY_TYPE,
+  C_KNOWNHOSTS,
   C_KRB,
   C_KRB4,
   C_LIBCURL,
@@ -167,9 +169,11 @@ typedef enum {
   C_NTLM,
   C_NTLM_WB,
   C_OAUTH2_BEARER,
+  C_OUT_NULL,
   C_OUTPUT,
   C_OUTPUT_DIR,
   C_PARALLEL,
+  C_PARALLEL_HOST,
   C_PARALLEL_IMMEDIATE,
   C_PARALLEL_MAX,
   C_PASS,
@@ -242,6 +246,7 @@ typedef enum {
   C_SHOW_ERROR,
   C_SHOW_HEADERS,
   C_SILENT,
+  C_SIGNATURE_ALGORITHMS,
   C_SKIP_EXISTING,
   C_SOCKS4,
   C_SOCKS4A,
@@ -259,6 +264,7 @@ typedef enum {
   C_SSL_NO_REVOKE,
   C_SSL_REQD,
   C_SSL_REVOKE_BEST_EFFORT,
+  C_SSL_SESSIONS,
   C_SSLV2,
   C_SSLV3,
   C_STDERR,
@@ -292,6 +298,7 @@ typedef enum {
   C_IP_TOS,
   C_UNIX_SOCKET,
   C_UPLOAD_FILE,
+  C_UPLOAD_FLAGS,
   C_URL,
   C_URL_QUERY,
   C_USE_ASCII,
@@ -314,6 +321,9 @@ typedef enum {
 #define ARG_TYPEMASK 0x03
 #define ARGTYPE(x) ((x) & ARG_TYPEMASK)
 
+#define ARG_DEPR 0x10 /* deprecated option */
+#define ARG_CLEAR 0x20 /* clear cmdline argument */
+#define ARG_TLS 0x40 /* requires TLS support */
 #define ARG_NO 0x80 /* set if the option is documented as --no-* */
 
 struct LongShort {
@@ -325,7 +335,6 @@ struct LongShort {
 
 typedef enum {
   PARAM_OK = 0,
-  PARAM_OPTION_AMBIGUOUS,
   PARAM_OPTION_UNKNOWN,
   PARAM_REQUIRES_PARAMETER,
   PARAM_BAD_USE,
@@ -343,25 +352,24 @@ typedef enum {
   PARAM_NEXT_OPERATION,
   PARAM_NO_PREFIX,
   PARAM_NUMBER_TOO_LARGE,
-  PARAM_NO_NOT_BOOLEAN,
   PARAM_CONTDISP_RESUME_FROM, /* --continue-at and --remote-header-name */
   PARAM_READ_ERROR,
   PARAM_EXPAND_ERROR, /* --expand problem */
   PARAM_BLANK_STRING,
+  PARAM_VAR_SYNTAX, /* --variable syntax error */
+  PARAM_RECURSION,
   PARAM_LAST
 } ParameterError;
 
-struct GlobalConfig;
 struct OperationConfig;
 
 const struct LongShort *findlongopt(const char *opt);
 const struct LongShort *findshortopt(char letter);
 
-ParameterError getparameter(const char *flag, char *nextarg,
-                            argv_item_t cleararg,
+ParameterError getparameter(const char *flag, const char *nextarg,
                             bool *usedarg,
-                            struct GlobalConfig *global,
-                            struct OperationConfig *operation);
+                            struct OperationConfig *config,
+                            int max_recursive);
 
 #ifdef UNITTESTS
 void parse_cert_parameter(const char *cert_parameter,
@@ -369,7 +377,20 @@ void parse_cert_parameter(const char *cert_parameter,
                           char **passphrase);
 #endif
 
-ParameterError parse_args(struct GlobalConfig *config, int argc,
-                          argv_item_t argv[]);
+ParameterError parse_args(int argc, argv_item_t argv[]);
+
+#if defined(UNICODE) && defined(_WIN32) && !defined(UNDER_CE)
+
+#define convert_UTF8_to_tchar(ptr) curlx_convert_UTF8_to_wchar((ptr))
+#define convert_tchar_to_UTF8(ptr) curlx_convert_wchar_to_UTF8((ptr))
+#define unicodefree(ptr) curlx_unicodefree(ptr)
+
+#else
+
+#define convert_UTF8_to_tchar(ptr) (const char *)(ptr)
+#define convert_tchar_to_UTF8(ptr) (const char *)(ptr)
+#define unicodefree(ptr) do {} while(0)
+
+#endif
 
 #endif /* HEADER_CURL_TOOL_GETPARAM_H */

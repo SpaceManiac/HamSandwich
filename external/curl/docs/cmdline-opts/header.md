@@ -12,6 +12,7 @@ Multi: append
 See-also:
   - user-agent
   - referer
+  - proxy-header
 Example:
   - -H "X-First-Name: Joe" $URL
   - -H "User-Agent: yes-please/2000" $URL
@@ -55,10 +56,14 @@ among others and should be added with this option.
 You need --proxy-header to send custom headers intended for an HTTP proxy.
 (Added in 7.37.0)
 
-Passing on a "Transfer-Encoding: chunked" header when doing an HTTP request
+Passing on a `Transfer-Encoding: chunked` header when doing an HTTP request
 with a request body, makes curl send the data using chunked encoding.
 
 **WARNING**: headers set with this option are set in all HTTP requests - even
 after redirects are followed, like when told with --location. This can lead to
 the header being sent to other hosts than the original host, so sensitive
 headers should be used with caution combined with following redirects.
+
+`Authorization:` and `Cookie:` headers are explicitly *not* passed on in HTTP
+requests when following redirects to other origins, unless --location-trusted
+is used.

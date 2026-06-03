@@ -44,14 +44,14 @@ socks5unix
 HTTPS GET with host name using SOCKS5h via Unix sockets
 </name>
 <command>
-https://this.is.a.host.name:%HTTPSPORT/%TESTNUMBER -k --proxy socks5h://localhost%SOCKSUNIXPATH
+https://this.is.a.host.name:%HTTPSPORT/%TESTNUMBER --insecure --proxy socks5h://localhost%SOCKSUNIXPATH
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: this.is.a.host.name:%HTTPSPORT
 User-Agent: curl/%VERSION

@@ -54,22 +54,38 @@
 #
 ################################################
 
-my $cleanup = ($ARGV[0] eq "cleanup");
+use strict;
+use warnings;
+
+my $cleanup = (@ARGV && $ARGV[0] eq "cleanup");
 my @gitlog=`git log @^{/RELEASE-NOTES:.synced}..` if(!$cleanup);
 my @releasenotes=`cat RELEASE-NOTES`;
 
 my @o; # the entire new RELEASE-NOTES
 my @refused; # [num] = [2 bits of use info]
 my @refs; # [number] = [URL]
+my %dupe;
 for my $l (@releasenotes) {
     if($l =~ /^ o .*\[(\d+)\]/) {
         # referenced, set bit 0
         $refused[$1]=1;
+        my $m = $l;
+        chomp $m;
+        $m =~ s/^ o //;
+        $m =~ s/ \[\d+\]$//;
+        $dupe{$m} = 1; # mark this as present
     }
     elsif($l =~ /^ \[(\d+)\] = (.*)/) {
         # listed in a reference, set bit 1
         $refused[$1] |= 2;
         $refs[$1] = $2;
+    }
+    # mention without reference
+    elsif($l =~ /^ o (.*)/) {
+        my $m = $l;
+        chomp $m;
+        $m =~ s/^ o //;
+        $dupe{$m} = 1; # mark this as present
     }
 }
 
@@ -107,6 +123,12 @@ sub extract {
     # false alarm, not a valid line
 }
 
+my @fixes;
+my @closes;
+my @bug;
+my @line;
+my %moreinfo;
+
 my $short;
 my $first;
 for my $l (@gitlog) {
@@ -137,7 +159,7 @@ for my $l (@gitlog) {
             my $ref = extract($2);
             push @fixes, $ref if($ref);
         }
-        elsif($line =~ /^Clo(s|)es(:|) *(.*)/i) {
+        elsif($line =~ /^Cl([os]+)es(:|) *(.*)/i) {
             my $ref = extract($3);
             push @closes, $ref if($ref);
         }
@@ -154,7 +176,12 @@ if($first) {
 # call at the end of a parsed commit
 sub onecommit {
     my ($short)=@_;
-    my $ref;
+    my $ref = '';
+
+    if($dupe{$short}) {
+        # this git commit message was found in the file
+        return;
+    }
 
     if($bug[0]) {
         $ref = $bug[0];
@@ -185,9 +212,16 @@ for my $l (@releasenotes) {
         push @o, $l;
         push @o, "\n";
         for my $f (@line) {
+            if($dupe{$f}) {
+                # this item is already listed
+                next;
+            }
+
             push @o, sprintf " o %s%s\n", $f,
                 $moreinfo{$f}? sprintf(" [%d]", $moreinfo{$f}): "";
-            $refused[$moreinfo{$f}]=3;
+            if($moreinfo{$f}) {
+                $refused[$moreinfo{$f}]=3;
+            }
         }
         push @o, " --- new entries are listed above this ---";
         next;

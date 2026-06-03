@@ -28,8 +28,8 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_MIME_OPTIONS, long options);
 
 # DESCRIPTION
 
-Pass a long that holds a bitmask of CURLMIMEOPT_* defines. Each bit is a
-Boolean flag used while encoding a MIME tree or multipart form data.
+Pass a long that holds a bitmask of options. Each bit is a boolean flag used
+while encoding a MIME tree or multipart form data.
 
 Available bits are:
 
@@ -91,8 +91,16 @@ int main(void)
 }
 ~~~
 
+# HISTORY
+
+**CURLMIMEOPT_FORMESCAPE** macro became `long` type in 8.16.0, prior to this
+version a `long` cast was necessary when passed to curl_easy_setopt(3).
+
 # %AVAILABILITY%
 
 # RETURN VALUE
 
-Returns CURLE_OK
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

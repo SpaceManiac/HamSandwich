@@ -89,11 +89,11 @@ struct progress {
   size_t size;
 };
 
-static size_t progress_callback(void *clientp,
-                                double dltotal,
-                                double dlnow,
-                                double ultotal,
-                                double ulnow)
+static int progress_callback(void *clientp,
+                             double dltotal,
+                             double dlnow,
+                             double ultotal,
+                             double ulnow)
 {
   struct progress *memory = clientp;
   printf("private: %p\n", memory->private);
@@ -126,4 +126,7 @@ Deprecated since 7.32.0.
 
 # RETURN VALUE
 
-Returns CURLE_OK.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

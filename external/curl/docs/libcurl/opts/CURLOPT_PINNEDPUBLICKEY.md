@@ -16,7 +16,6 @@ TLS-backend:
   - GnuTLS
   - wolfSSL
   - mbedTLS
-  - Secure Transport
   - Schannel
 Added-in: 7.39.0
 ---
@@ -129,8 +128,6 @@ footer:
 
 7.47.0: mbedTLS
 
-7.54.1: Secure Transport on macOS 10.7+/iOS 10+
-
 7.58.1: Schannel
 
 ## sha256 support
@@ -138,8 +135,6 @@ footer:
 7.44.0: OpenSSL, GnuTLS and wolfSSL
 
 7.47.0: mbedTLS
-
-7.54.1: Secure Transport on macOS 10.7+/iOS 10+
 
 7.58.1: Schannel
 
@@ -149,5 +144,7 @@ Other SSL backends not supported.
 
 # RETURN VALUE
 
-Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
-CURLE_OUT_OF_MEMORY if there was insufficient heap space.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

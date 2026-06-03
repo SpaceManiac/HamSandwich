@@ -24,6 +24,7 @@
 #
 ###########################################################################
 #
+import base64
 import ipaddress
 import os
 import re
@@ -33,6 +34,7 @@ from typing import List, Any, Optional
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives._serialization import PublicFormat
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
@@ -148,6 +150,15 @@ class Credentials:
     @property
     def private_key(self) -> Any:
         return self._pkey
+
+    def pub_sha256_b64(self) -> Any:
+        pubkey = self._pkey.public_key()
+        sha256 = hashes.Hash(algorithm=hashes.SHA256())
+        sha256.update(pubkey.public_bytes(
+            encoding=Encoding.DER,
+            format=PublicFormat.SubjectPublicKeyInfo
+        ))
+        return base64.b64encode(sha256.finalize()).decode('utf8')
 
     @property
     def certificate(self) -> Any:
@@ -393,7 +404,7 @@ class TestCA:
             issuer_subject: Optional[Credentials],
             valid_from_delta: Optional[timedelta] = None,
             valid_until_delta: Optional[timedelta] = None
-    ):
+    ) -> x509.CertificateBuilder:
         pubkey = pkey.public_key()
         issuer_subject = issuer_subject if issuer_subject is not None else subject
 
@@ -448,11 +459,15 @@ class TestCA:
     def _add_leaf_usages(csr: Any, domains: List[str], issuer: Credentials) -> Any:
         names = []
         for name in domains:
-            try:
-                names.append(x509.IPAddress(ipaddress.ip_address(name)))
-            # TODO: specify specific exceptions here
-            except:  # noqa: E722
-                names.append(x509.DNSName(name))
+            m = re.match(r'dns:(.+)', name)
+            if m:
+                names.append(x509.DNSName(m.group(1)))
+            else:
+                try:
+                    names.append(x509.IPAddress(ipaddress.ip_address(name)))
+                # TODO: specify specific exceptions here
+                except:  # noqa: E722
+                    names.append(x509.DNSName(name))
 
         return csr.add_extension(
             x509.BasicConstraints(ca=False, path_length=None),

@@ -64,6 +64,9 @@ NULL
 
 # EXAMPLE
 ~~~c
+extern size_t read_cb(char *ptr, size_t size,
+                      size_t nmemb, void *userdata);
+
 static int trailer_cb(struct curl_slist **tr, void *data)
 {
   /* libcurl frees the list */
@@ -84,7 +87,7 @@ int main(void)
 
     /* Assuming we have a function that returns the data to be pushed
        Let that function be read_cb */
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, trailer_cb);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_cb);
 
     struct curl_slist *headers = NULL;
     headers = curl_slist_append(headers, "Trailer: My-super-awesome-trailer");
@@ -107,4 +110,7 @@ int main(void)
 
 # RETURN VALUE
 
-Returns CURLE_OK.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

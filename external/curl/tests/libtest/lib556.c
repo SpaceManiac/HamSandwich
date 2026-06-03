@@ -21,35 +21,24 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
-#include "test.h"
+#include "first.h"
 
-#include "warnless.h"
 #include "memdebug.h"
 
-/* For Windows, mainly (may be moved in a config file?) */
-#ifndef STDIN_FILENO
-  #define STDIN_FILENO 0
-#endif
-#ifndef STDOUT_FILENO
-  #define STDOUT_FILENO 1
-#endif
-#ifndef STDERR_FILENO
-  #define STDERR_FILENO 2
-#endif
-
-CURLcode test(char *URL)
+static CURLcode test_lib556(const char *URL)
 {
   CURLcode res;
   CURL *curl;
+  int transfers = 0;
 
   if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
-    fprintf(stderr, "curl_global_init() failed\n");
+    curl_mfprintf(stderr, "curl_global_init() failed\n");
     return TEST_ERR_MAJOR_BAD;
   }
 
   curl = curl_easy_init();
   if(!curl) {
-    fprintf(stderr, "curl_easy_init() failed\n");
+    curl_mfprintf(stderr, "curl_easy_init() failed\n");
     curl_global_cleanup();
     return TEST_ERR_MAJOR_BAD;
   }
@@ -58,16 +47,20 @@ CURLcode test(char *URL)
   test_setopt(curl, CURLOPT_CONNECT_ONLY, 1L);
   test_setopt(curl, CURLOPT_VERBOSE, 1L);
 
+again:
+
   res = curl_easy_perform(curl);
 
   if(!res) {
     /* we are connected, now get an HTTP document the raw way */
-    const char *request =
-      "GET /556 HTTP/1.1\r\n"
-      "Host: ninja\r\n\r\n";
+    char request[64];
     const char *sbuf = request;
-    size_t sblen = strlen(request);
+    size_t sblen;
     size_t nwritten = 0, nread = 0;
+
+    sblen = curl_msnprintf(request, sizeof(request),
+                           "GET /%d HTTP/1.1\r\n"
+                           "Host: ninja\r\n\r\n", testnum);
 
     do {
       char buf[1024];
@@ -87,14 +80,30 @@ CURLcode test(char *URL)
 
       if(nread) {
         /* send received stuff to stdout */
-        if(!write(STDOUT_FILENO, buf, nread))
+#ifdef UNDER_CE
+        if((size_t)fwrite(buf, sizeof(buf[0]), nread, stdout) != nread) {
+#else
+        if((size_t)write(STDOUT_FILENO, buf, nread) != nread) {
+#endif
+          char errbuf[STRERROR_LEN];
+          curl_mfprintf(stderr, "write() failed: errno %d (%s)\n",
+                        errno, curlx_strerror(errno, errbuf, sizeof(errbuf)));
+          res = TEST_ERR_FAILURE;
           break;
+        }
       }
 
     } while((res == CURLE_OK && nread) || (res == CURLE_AGAIN));
 
     if(res && res != CURLE_AGAIN)
       res = TEST_ERR_FAILURE;
+  }
+
+  if(testnum == 696) {
+    ++transfers;
+    /* perform the transfer a second time */
+    if(!res && transfers == 1)
+      goto again;
   }
 
 test_cleanup:

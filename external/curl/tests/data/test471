@@ -54,7 +54,7 @@ Reject HTTP/1.1 to HTTP/2 switch on the same connection
 #
 # Verify data after the test has been "shot"
 <verify>
-<protocol>
+<protocol crlf="headers">
 GET /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
@@ -68,7 +68,7 @@ Accept: */*
 </protocol>
 # curl: (1) Version mismatch (from HTTP/1 to HTTP/2)
 <errorcode>
-1
+8
 </errorcode>
 </verify>
 </testcase>

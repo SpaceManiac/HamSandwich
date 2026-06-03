@@ -74,7 +74,7 @@ November: configure script and reported successful compiles on several
 major operating systems. The never-quite-understood -F option was added and
 curl could now simulate quite a lot of a browser. TELNET support was added.
 
-Curl 5 was released in December 1998 and introduced the first ever curl man
+curl 5 was released in December 1998 and introduced the first ever curl man
 page. People started making Linux RPM packages out of it.
 
 1999
@@ -187,7 +187,7 @@ June: curl 7.12.0 introduced IDN support. 10 official web mirrors.
 This release bumped the major SONAME to 3 due to the removal of the
 `curl_formparse()` function
 
-August: Curl and libcurl 7.12.1
+August: curl and libcurl 7.12.1
 
     Public curl release number:                82
     Releases counted from the beginning:      109
@@ -222,6 +222,9 @@ March: security vulnerability: libcurl TFTP Packet Buffer Overflow
 
 September: The major SONAME number for libcurl was bumped to 4 due to the
 removal of ftp third party transfer support.
+
+October: we started to offer the Mozilla CA cert bundle as a PEM file on the
+curl website.
 
 November: Added SCP and SFTP support
 
@@ -326,6 +329,10 @@ April: added the cyassl backend (later renamed to wolfSSL)
 
  August: support for HTTP/2 server push
 
+ September: started "everything curl". A separate stand-alone book documenting
+ curl and related info in perhaps a more tutorial style rather than just a
+ reference,
+
  December: Public Suffix List
 
 2016
@@ -340,9 +347,11 @@ April: added the cyassl backend (later renamed to wolfSSL)
 2017
 ----
 
+ May: Fastly starts hosting the curl website
+
  July: OSS-Fuzz started fuzzing libcurl
 
- September: Added Multi-SSL support
+ September: Added MultiSSL support
 
  The website serves 3100 GB/month
 
@@ -377,7 +386,7 @@ April: added the cyassl backend (later renamed to wolfSSL)
  curl and libcurl are installed in an estimated 5 *billion* instances
  world-wide.
 
- October 31: Curl and libcurl 7.62.0
+ October 31: curl and libcurl 7.62.0
 
     Public curl releases:         177
     Command line options:         219
@@ -389,6 +398,8 @@ April: added the cyassl backend (later renamed to wolfSSL)
 
 2019
 ----
+
+ January: Daniel started working full-time on curl, employed by wolfSSL
 
  March: added experimental alt-svc support
 
@@ -404,7 +415,8 @@ April: added the cyassl backend (later renamed to wolfSSL)
 
  January: added BearSSL support
 
- March: removed support for PolarSSL, added wolfSSH support
+ March: removed support for PolarSSL, added wolfSSH support. Created the first
+ dashboard on the website.
 
  April: experimental MQTT support
 
@@ -437,6 +449,8 @@ March: added --json, removed mesalink support
  The curl.se website serves 16,500 GB/month over 462M requests, the
  official docker image has been pulled 4,098,015,431 times.
 
+April: added support for msh3 as another HTTP/3 backend
+
 October: initial WebSocket support
 
 2023
@@ -447,7 +461,8 @@ March: remove support for curl_off_t < 8 bytes
 March 31: we started working on a new command line tool for URL parsing and
 manipulations: trurl.
 
-May: added support for HTTP/2 over HTTPS proxy. Refuse to resolve .onion.
+May: added support for HTTP/2 over HTTPS proxy. Refuse to resolve .onion. The
+curl GitHub repository reaches 30,000 stars.
 
 August: Dropped support for the NSS library
 
@@ -465,6 +480,42 @@ January: switched to "curldown" for all documentation
 
 April 24: the curl container has been pulled more than six billion times
 
-May: experimental support for ECH
+May: experimental support for ECH, dropped NTLM_WB
 
 August 9: we adopted the wcurl tool into the curl organization
+
+September 11: --help [option]
+
+November 6: TLS 1.3 early data, WebSocket is official
+
+December 21: dropped hyper
+
+2025
+----
+
+February 5: first 0RTT for QUIC, ssl session import/export
+
+February: experimental HTTPS RR support
+
+February 22: The website served 62.95 TB/month; 12.43 billion requests. The
+docker image has been pulled 6373501745 times.
+
+June: we removed support for BearSSL, Secure Transport and msh3
+
+October: Daniel gets awarded a gold medal by the Swedish Royal Academy of
+Engineering Sciences for his work on curl.
+
+We counted curl having been installed on 110 operating systems and 28 CPU
+architectures.
+
+November:
+
+    Public curl releases:         271
+    Command line options:         273
+    curl_easy_setopt() options:   308
+    Public functions in libcurl:  100
+    Contributors:                 3534
+
+We drop support for krb-ftp, Heimdal, wolfSSH and the winbuild build system.
+
+Add support for Apple SecTrust, native CA certs on Apple systems.

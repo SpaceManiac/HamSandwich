@@ -59,10 +59,7 @@ ftp://ftp.example.com.%TESTNUMBER/%TESTNUMBER --connect-to ::connect.example.com
 #
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-QUIT
-</strip>
-<protocol>
+<protocol crlf="yes">
 USER anonymous
 PASS ftp@example.com
 PWD

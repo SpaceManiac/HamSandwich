@@ -105,10 +105,12 @@ int main(void)
 {
   /* the event-library gets told when there activity on the socket 'fd',
      which we translate to a call to curl_multi_socket_action() */
-  int running;
-  CURLM *multi; /* the stack we work with */
-  int fd; /* the descriptor that had action */
-  int bitmask; /* what activity that happened */
+  int running = 0;
+  int fd = 3; /* the descriptor that had action */
+  int bitmask = 2; /* what activity that happened */
+
+  CURLM *multi = curl_multi_init();
+
   CURLMcode mc = curl_multi_socket_action(multi, fd, bitmask, &running);
   if(mc)
     printf("error: %s\n", curl_multi_strerror(mc));
@@ -119,5 +121,7 @@ int main(void)
 
 # RETURN VALUE
 
-CURLMcode type, general libcurl multi interface error code. See
-libcurl-errors(3)
+This function returns a CURLMcode indicating success or error.
+
+CURLM_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).

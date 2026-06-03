@@ -102,7 +102,6 @@ if test "x$OPT_GNUTLS" != xno; then
       AC_CHECK_LIB(gnutls, gnutls_x509_crt_get_dn2,
         [
         AC_DEFINE(USE_GNUTLS, 1, [if GnuTLS is enabled])
-        AC_SUBST(USE_GNUTLS, [1])
         GNUTLS_ENABLED=1
         USE_GNUTLS="yes"
         ssl_msg="GnuTLS"
@@ -138,11 +137,10 @@ if test "x$OPT_GNUTLS" != xno; then
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
 fi
 
-dnl ---
-dnl Check which crypto backend GnuTLS uses
-dnl ---
-
 if test "$GNUTLS_ENABLED" = "1"; then
+  dnl ---
+  dnl Check which crypto backend GnuTLS uses
+  dnl ---
   USE_GNUTLS_NETTLE=
   # First check if we can detect either crypto library via transitive linking
   AC_CHECK_LIB(gnutls, nettle_MD5Init, [ USE_GNUTLS_NETTLE=1 ])
@@ -155,17 +153,14 @@ if test "$GNUTLS_ENABLED" = "1"; then
     AC_MSG_ERROR([GnuTLS found, but nettle was not found])
   fi
   LIBS="-lnettle $LIBS"
-fi
 
-dnl ---
-dnl We require GnuTLS with SRP support.
-dnl ---
-if test "$GNUTLS_ENABLED" = "1"; then
+  dnl ---
+  dnl We require GnuTLS with SRP support.
+  dnl ---
   AC_CHECK_LIB(gnutls, gnutls_srp_verifier,
     [
       AC_DEFINE(HAVE_GNUTLS_SRP, 1, [if you have the function gnutls_srp_verifier])
-      AC_SUBST(HAVE_GNUTLS_SRP, [1])
+      HAVE_GNUTLS_SRP=1
     ])
 fi
-
 ])

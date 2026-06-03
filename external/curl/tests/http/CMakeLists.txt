@@ -34,17 +34,11 @@ if(NOT VSFTPD)
 endif()
 mark_as_advanced(VSFTPD)
 
-find_program(HTTPD "apache2")  # /usr/sbin/apache2
+find_program(HTTPD NAMES "/usr/sbin/apache2" "httpd" "apache2")
 if(NOT HTTPD)
   set(HTTPD "")
 endif()
 mark_as_advanced(HTTPD)
-
-find_program(APACHECTL "apache2ctl")  # /usr/sbin/apache2ctl
-if(NOT APACHECTL)
-  set(APACHECTL "")
-endif()
-mark_as_advanced(APACHECTL)
 
 find_program(APXS "apxs")
 if(NOT APXS)
@@ -58,5 +52,11 @@ if(NOT HTTPD_NGHTTPX)
 endif()
 mark_as_advanced(HTTPD_NGHTTPX)
 
-# Consumed variables: APACHECTL, APXS, CADDY, HTTPD, HTTPD_NGHTTPX, VSFTPD
+find_program(DANTED "danted")
+if(NOT DANTED)
+  set(DANTED "")
+endif()
+mark_as_advanced(DANTED)
+
+# Consumed variables: APXS, CADDY, HTTPD, HTTPD_NGHTTPX, DANTED, VSFTPD
 configure_file("config.ini.in" "${CMAKE_CURRENT_BINARY_DIR}/config.ini" @ONLY)

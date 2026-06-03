@@ -71,7 +71,7 @@ int main(void)
 ~~~
 
 If you are on Linux and somehow have a need for paths larger than 107 bytes,
-you can use the proc filesystem to bypass the limitation:
+you can use the *proc* file system to bypass the limitation:
 
 ~~~c
   int dirfd = open(long_directory_path_to_socket, O_DIRECTORY | O_RDONLY);
@@ -85,4 +85,7 @@ you can use the proc filesystem to bypass the limitation:
 
 # RETURN VALUE
 
-Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
+curl_easy_setopt(3) returns a CURLcode indicating success or error.
+
+CURLE_OK (0) means everything was OK, non-zero means an error occurred, see
+libcurl-errors(3).
