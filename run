@@ -197,7 +197,7 @@ if test -z "$nobuild"; then
 fi
 
 # Handle ./run jfttool and lunaticpal which don't have CMake install scripts.
-if ! test -f "$debugcommand"; then
+if test "$os" != "emscripten" && ! test -f "$debugcommand"; then
 	cp "$cmakedir/source/$project/$project$debugext" "$debugcommand"
 	if test "$os" = "linux"; then
 		patchelf --add-rpath "\$ORIGIN" "$debugcommand"
