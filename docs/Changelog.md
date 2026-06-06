@@ -293,6 +293,8 @@ Editor features:
 ### HamSandwich (since last release)
 
 * Fix spellbooks being invisible in the HUD due to a bug introduced in Kid Mystic 4.3.
+* 1999 Mode
+  * Fix Mama Spider's no-coin-drop status instead applying to Spitters.
 
 ### v4.3 (2026-05-30)
 

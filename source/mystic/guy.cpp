@@ -1903,7 +1903,7 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				map->map[mapx+mapy*map->width].item=ITM_BRAIN;
 				break;
 			default:
-				if (VeryClassicMode() && (type == MONS_BIGSPDR || type == MONS_MUSH))
+				if (VeryClassicMode() && (type == MONS_MAMASPDR || type == MONS_MUSH))
 				{
 					// In 1999 mode, Mama Spider and Mush the Shroom are bosses like the list above, and drop no coins.
 					break;
