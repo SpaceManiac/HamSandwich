@@ -136,7 +136,7 @@ void DoCheat(byte w)
 			break;
 		case 8: // money
 			player.runeStones = MAX_RUNESTONES;
-			GainMoney(50000);
+			GainMoney(VeryClassicMode() ? 500 : 50000);
 			NewMessage("DINERO POR TODOS!",30);
 			// Not CE_CHEAT because GainMoney doesn't grant score.
 			break;

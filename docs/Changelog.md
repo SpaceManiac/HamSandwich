@@ -295,6 +295,7 @@ Editor features:
 * Fix spellbooks being invisible in the HUD due to a bug introduced in Kid Mystic 4.3.
 * 1999 Mode
   * Fix Mama Spider's no-coin-drop status instead applying to Spitters.
+  * Reduce money cheat amount from its modern $50,000 to the 1999-accurate $500.
 
 ### v4.3 (2026-05-30)
 
