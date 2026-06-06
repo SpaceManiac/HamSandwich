@@ -2,7 +2,7 @@
 Prefix | Strategy | Remote | Revision
 ------ | -------- | ------ | --------
 external/curl | git-subtree | https://github.com/curl/curl | curl-8_17_0
-external/emsdk | git-subtree | https://github.com/emscripten-core/emsdk | 5.0.7
+external/emsdk | git-subtree | https://github.com/emscripten-core/emsdk | 6.0.0
 external/imgui | git-subtree | https://github.com/ocornut/imgui | v1.87
 external/jtjson | manual | https://github.com/jart/json.cpp | 93d4d76181 (modified)
 external/lzma1900 | manual | https://7-zip.org/sdk.html | 19.00
