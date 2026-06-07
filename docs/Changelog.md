@@ -296,6 +296,7 @@ Editor features:
 * 1999 Mode
   * Fix Mama Spider's no-coin-drop status instead applying to Spitters.
   * Reduce money cheat amount from its modern $50,000 to the 1999-accurate $500.
+  * Disable even more interface indicators when out of mana.
 
 ### v4.3 (2026-05-30)
 
