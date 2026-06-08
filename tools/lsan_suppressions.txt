@@ -1,4 +1,4 @@
-leak:_dbus_
+leak:dbus_
 leak:libsteam_api.so
 leak:steamclient.so
 leak:__sanitizer::Symbolizer::PlatformDemangle
