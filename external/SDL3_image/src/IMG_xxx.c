@@ -1,0 +1,83 @@
+/*
+  SDL_image:  An example image loading library for use with SDL
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+*/
+
+/* This is a generic "format not supported" image framework */
+
+#include <SDL3_image/SDL_image.h>
+
+#ifdef LOAD_XXX
+
+/* See if an image is contained in a data source */
+/* Remember to declare this procedure in IMG.h . */
+bool IMG_isXXX(SDL_IOStream *src)
+{
+    int start;
+    bool is_XXX;
+
+    if (!src) {
+        return false;
+    }
+
+    start = SDL_TellIO(src);
+    is_XXX = false;
+
+    /* Detect the image here */
+
+    SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    return is_XXX;
+}
+
+/* Load an XXX type image from an SDL datasource */
+/* Remember to declare this procedure in IMG.h . */
+SDL_Surface *IMG_LoadXXX_IO(SDL_IOStream *src)
+{
+    Sint64 start;
+    SDL_Surface *surface = NULL;
+
+    if (!src) {
+        SDL_InvalidParamError("src");
+        return NULL;
+    }
+
+    start = SDL_TellIO(src);
+
+    /* Load the image here */
+
+    if (!surface) {
+        SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    }
+    return surface;
+}
+
+#else
+
+bool IMG_isXXX(SDL_IOStream *src)
+{
+    return false;
+}
+
+SDL_Surface *IMG_LoadXXX_IO(SDL_IOStream *src)
+{
+    SDL_SetError("SDL_image built without XXX support");
+    return NULL;
+}
+
+#endif /* LOAD_XXX */
