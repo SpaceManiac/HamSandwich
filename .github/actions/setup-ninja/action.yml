@@ -36,22 +36,22 @@ runs:
         echo "cache-key=${archive}-${{ inputs.version }}-${{ runner.os }}-${{ runner.arch }}" >> ${GITHUB_OUTPUT}
     - name: 'Restore cached ${{ steps.calc.outputs.archive }}'
       id: cache-restore
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
         key: ${{ steps.calc.outputs.cache-key }}
     - name: 'Download ninja ${{ inputs.version }} for ${{ runner.os }} (${{ runner.arch }})'
-      if: ${{ !steps.cache-restore.outputs.cache-hit }}
+      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
       shell: pwsh
       run: |
         Invoke-WebRequest "https://github.com/ninja-build/ninja/releases/download/v${{ inputs.version }}/${{ steps.calc.outputs.archive }}" -OutFile "${{ runner.temp }}/${{ steps.calc.outputs.archive }}"
     - name: 'Cache ${{ steps.calc.outputs.archive }}'
-      if: ${{ !steps.cache-restore.outputs.cache-hit }}
-      uses: actions/cache/save@v4
+      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
+      uses: actions/cache/save@v5
       with:
         path: '${{ runner.temp }}/${{ steps.calc.outputs.archive }}'
         key: ${{ steps.calc.outputs.cache-key }}
-    - name: 'Extract libusb'
+    - name: 'Extract ninja'
       shell: pwsh
       run: |
         7z "-o${{ runner.temp }}/ninja-${{ inputs.version }}-${{ runner.arch }}" x "${{ runner.temp }}/${{ steps.calc.outputs.archive }}"

@@ -1,44 +1,64 @@
-Nokia N-Gage
-============
+# Nokia N-Gage
 
-SDL2 port for Symbian S60v1 and v2 with a main focus on the Nokia N-Gage
-(Classic and QD) by [Michael Fitzmayer](https://github.com/mupfdev).
+SDL port for the Nokia N-Gage
+[Homebrew toolchain](https://github.com/ngagesdk/ngage-toolchain)
+contributed by:
 
-Compiling
----------
+- [Michael Fitzmayer](https://github.com/mupfdev)
 
-SDL is part of the [N-Gage SDK.](https://github.com/ngagesdk) project.
-The library is included in the
-[toolchain](https://github.com/ngagesdk/ngage-toolchain) as a
-sub-module.
+- [Anonymous Maarten](https://github.com/madebr)
 
-A complete example project based on SDL2 can be found in the GitHub
-account of the SDK: [Wordle](https://github.com/ngagesdk/wordle).
+Many thanks to:
 
-Current level of implementation
--------------------------------
+- icculus and slouken for always making room for us, even when we show up in 2025
+ still waving the N-Gage flag.
 
-The video driver currently provides full screen video support with
-keyboard input.
+- The Nokia N-Gage [Discord community](https://discord.gg/dbUzqJ26vs)
+ who keeps the platform alive.
 
-At the moment only the software renderer works.
+- The staff and supporters of the
+ [Suomen pelimuseo](https://www.vapriikki.fi/nayttelyt/fantastinen-floppi/), and
+ to Heikki Jungmann, for their ongoing love and dedication for the Nokia N-Gage --
+ you guys are awesome!
 
-Audio is not yet implemented.
+## History
 
-Acknowledgements
-----------------
+When SDL support was discontinued due to the lack of C99 support at the time,
+this version was rebuilt from the ground up after resolving the compiler issues.
 
-Thanks to Hannu Viitala, Kimmo Kinnunen and Markus Mertama for the
-valuable insight into Symbian programming.  Without the SDL 1.2 port
-which was specially developed for CDoom (Doom for the Nokia 9210), this
-adaptation would not have been possible.
+In contrast to the earlier SDL2 port, this version features a dedicated rendering
+backend and a functional, albeit limited, audio interface.  Support for the
+software renderer has been removed.
 
-I would like to thank my friends
-[Razvan](https://twitter.com/bewarerazvan) and [Dan
-Whelan](https://danwhelan.ie/), for their continuous support.  Without
-you and the [N-Gage community](https://discord.gg/dbUzqJ26vs), I would
-have lost my patience long ago.
+The outcome is a significantly leaner and more efficient SDL port, which we hope
+will breathe new life into this beloved yet obscure platform.
 
-Last but not least, I would like to thank the development team of
-[EKA2L1](https://12z1.com/) (an experimental Symbian OS emulator). Your
-patience and support in troubleshooting helped me a lot.
+## To the Stubborn Legends of the DC Scene
+
+This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew scene --
+because if we managed to pull this off for the N-Gage (yes, the N-Gage), surely
+you guys can stop clinging to SDL2 like it's a rare Shenmue prototype and finally
+make the leap to SDL3.  It's 2025, not 1999 -- and let's be honest, you're rocking
+a state-of-the-art C23 compiler.  The irony writes itself.
+
+## Existing Issues and Limitations
+
+- For now, the new
+ [SDL3 main callbacks](https://wiki.libsdl.org/SDL3/README-main-functions#main-callbacks-in-sdl3)
+ are not optional and must be used. This is important as the callbacks
+ are optional on other platforms.
+
+- If the application is put in the background while sound is playing,
+ some of the audio is looped until the app is back in focus.
+
+- It is recommended initialising SDLs audio sub-system even when it
+ is not required. The backend is started at a higher level.  Initialising
+ SDLs audio sub-system ensures that the backend is properly deinitialised.
+
+- Because the audio sample rate can change during phone calls, the sample
+ rate is currently fixed at 8kHz to ensure stable behavior.  Although
+ dynamically adjusting the sample rate is theoretically possible, the
+ current implementation doesn't support it yet.  This limitation is
+ expected to be resolved in a future update.
+
+- Dependency tracking is currently non-functional.

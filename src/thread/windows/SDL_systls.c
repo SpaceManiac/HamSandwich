@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,29 +19,16 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_THREAD_WINDOWS
 
 #include "../../core/windows/SDL_windows.h"
 
-#include "SDL_thread.h"
 #include "../SDL_thread_c.h"
 
-#if WINAPI_FAMILY_WINRT
-#include <fibersapi.h>
-
-#ifndef TLS_OUT_OF_INDEXES
-#define TLS_OUT_OF_INDEXES FLS_OUT_OF_INDEXES
-#endif
-
-#define TlsAlloc()  FlsAlloc(NULL)
-#define TlsSetValue FlsSetValue
-#define TlsGetValue FlsGetValue
-#endif
-
 static DWORD thread_local_storage = TLS_OUT_OF_INDEXES;
-static SDL_bool generic_local_storage = SDL_FALSE;
+static bool generic_local_storage = false;
 
 void SDL_SYS_InitTLSData(void)
 {
@@ -49,7 +36,7 @@ void SDL_SYS_InitTLSData(void)
         thread_local_storage = TlsAlloc();
         if (thread_local_storage == TLS_OUT_OF_INDEXES) {
             SDL_Generic_InitTLSData();
-            generic_local_storage = SDL_TRUE;
+            generic_local_storage = true;
         }
     }
 }
@@ -66,7 +53,7 @@ SDL_TLSData *SDL_SYS_GetTLSData(void)
     return NULL;
 }
 
-int SDL_SYS_SetTLSData(SDL_TLSData *data)
+bool SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     if (generic_local_storage) {
         return SDL_Generic_SetTLSData(data);
@@ -75,14 +62,14 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
     if (!TlsSetValue(thread_local_storage, data)) {
         return WIN_SetError("TlsSetValue()");
     }
-    return 0;
+    return true;
 }
 
 void SDL_SYS_QuitTLSData(void)
 {
     if (generic_local_storage) {
         SDL_Generic_QuitTLSData();
-        generic_local_storage = SDL_FALSE;
+        generic_local_storage = false;
     } else {
         if (thread_local_storage != TLS_OUT_OF_INDEXES) {
             TlsFree(thread_local_storage);
@@ -91,6 +78,4 @@ void SDL_SYS_QuitTLSData(void)
     }
 }
 
-#endif /* SDL_THREAD_WINDOWS */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_THREAD_WINDOWS

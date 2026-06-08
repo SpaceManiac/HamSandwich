@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,90 +18,67 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
-
+#include "SDL_internal.h"
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
-#include "../../core/windows/SDL_windows.h"
-#include "SDL_hints.h"
-#include "SDL_system.h"
-#include "SDL_filesystem.h"
-#include <XGameSaveFiles.h>
-
-char *
-SDL_GetBasePath(void)
-{
-    /* NOTE: This function is a UTF8 version of the Win32 SDL_GetBasePath()!
-     * The GDK actually _recommends_ the 'A' functions over the 'W' functions :o
-     */
-    DWORD buflen = 128;
-    CHAR *path = NULL;
-    DWORD len = 0;
-    int i;
-
-    while (SDL_TRUE) {
-        void *ptr = SDL_realloc(path, buflen * sizeof(CHAR));
-        if (!ptr) {
-            SDL_free(path);
-            SDL_OutOfMemory();
-            return NULL;
-        }
-
-        path = (CHAR *)ptr;
-
-        len = GetModuleFileNameA(NULL, path, buflen);
-        /* if it truncated, then len >= buflen - 1 */
-        /* if there was enough room (or failure), len < buflen - 1 */
-        if (len < buflen - 1) {
-            break;
-        }
-
-        /* buffer too small? Try again. */
-        buflen *= 2;
-    }
-
-    if (len == 0) {
-        SDL_free(path);
-        WIN_SetError("Couldn't locate our .exe");
-        return NULL;
-    }
-
-    for (i = len - 1; i > 0; i--) {
-        if (path[i] == '\\') {
-            break;
-        }
-    }
-
-    SDL_assert(i > 0);  /* Should have been an absolute path. */
-    path[i + 1] = '\0'; /* chop off filename. */
-
-    return path;
+extern "C" {
+#include "../SDL_sysfilesystem.h"
 }
 
-char *
-SDL_GetPrefPath(const char *org, const char *app)
+#include "../../core/windows/SDL_windows.h"
+#include <SDL3/SDL_hints.h>
+#include <SDL3/SDL_system.h>
+#include <SDL3/SDL_filesystem.h>
+#include <XGameSaveFiles.h>
+
+char *SDL_SYS_GetBasePath(void)
+{
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
+    }
+
+    char *ptr = SDL_strrchr(path, '\\');
+    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+
+    ptr[1] = '\0'; // chop off filename, leave '\\'.
+
+    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
+    }
+
+    char *ptr = SDL_strrchr(path, '\\');
+    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
+    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     XUserHandle user = NULL;
     XAsyncBlock block = { 0 };
     char *folderPath;
     HRESULT result;
     const char *csid = SDL_GetHint("SDL_GDK_SERVICE_CONFIGURATION_ID");
-    
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
 
-    /* This should be set before calling SDL_GetPrefPath! */
+    // This should be set before calling SDL_GetPrefPath!
     if (!csid) {
         SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "Set SDL_GDK_SERVICE_CONFIGURATION_ID before calling SDL_GetPrefPath!");
         return SDL_strdup("T:\\");
     }
 
-    if (SDL_GDKGetDefaultUser(&user) < 0) {
-        /* Error already set, just return */
+    if (!SDL_GetGDKDefaultUser(&user)) {
+        // Error already set, just return
         return NULL;
     }
 
@@ -110,7 +87,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    folderPath = (char*) SDL_malloc(MAX_PATH);
+    folderPath = (char *)SDL_malloc(MAX_PATH);
     do {
         result = XGameSaveFilesGetFolderWithUiResult(&block, MAX_PATH, folderPath);
     } while (result == E_PENDING);
@@ -134,5 +111,19 @@ SDL_GetPrefPath(const char *org, const char *app)
     return folderPath;
 }
 
+// TODO
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
+{
+    SDL_Unsupported();
+    return NULL;
+}
 
-/* vi: set ts=4 sw=4 expandtab: */
+char *SDL_SYS_GetCurrentDirectory(void)
+{
+    const char *base = SDL_GetBasePath();
+    if (!base) {
+        return NULL;
+    }
+
+    return SDL_strdup(base);
+}

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
-#include "SDL_thread.h"
+#include "SDL_internal.h"
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 
@@ -28,7 +27,7 @@
 #define INVALID_PTHREAD_KEY ((pthread_key_t)-1)
 
 static pthread_key_t thread_local_storage = INVALID_PTHREAD_KEY;
-static SDL_bool generic_local_storage = SDL_FALSE;
+static bool generic_local_storage = false;
 
 void SDL_SYS_InitTLSData(void)
 {
@@ -36,7 +35,7 @@ void SDL_SYS_InitTLSData(void)
         if (pthread_key_create(&thread_local_storage, NULL) != 0) {
             thread_local_storage = INVALID_PTHREAD_KEY;
             SDL_Generic_InitTLSData();
-            generic_local_storage = SDL_TRUE;
+            generic_local_storage = true;
         }
     }
 }
@@ -53,7 +52,7 @@ SDL_TLSData *SDL_SYS_GetTLSData(void)
     return NULL;
 }
 
-int SDL_SYS_SetTLSData(SDL_TLSData *data)
+bool SDL_SYS_SetTLSData(SDL_TLSData *data)
 {
     if (generic_local_storage) {
         return SDL_Generic_SetTLSData(data);
@@ -62,14 +61,14 @@ int SDL_SYS_SetTLSData(SDL_TLSData *data)
     if (pthread_setspecific(thread_local_storage, data) != 0) {
         return SDL_SetError("pthread_setspecific() failed");
     }
-    return 0;
+    return true;
 }
 
 void SDL_SYS_QuitTLSData(void)
 {
     if (generic_local_storage) {
         SDL_Generic_QuitTLSData();
-        generic_local_storage = SDL_FALSE;
+        generic_local_storage = false;
     } else {
         if (thread_local_storage != INVALID_PTHREAD_KEY) {
             pthread_key_delete(thread_local_storage);
@@ -77,5 +76,3 @@ void SDL_SYS_QuitTLSData(void)
         }
     }
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

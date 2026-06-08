@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,14 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "SDL_internal.h"
 
-#if SDL_HAVE_BLIT_0
+#ifdef SDL_HAVE_BLIT_0
 
-#include "SDL_video.h"
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 
-/* Functions to blit from bitmaps to other surfaces */
+// Functions to blit from bitmaps to other surfaces
 
 SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
 {
@@ -37,7 +36,7 @@ SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *src, *map, *dst;
     int srcskip, dstskip;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -45,6 +44,8 @@ SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
     dst = info->dst;
     dstskip = info->dst_skip;
     map = info->table;
+
+    width += info->leading_skip;
 
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
@@ -57,7 +58,13 @@ SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
         if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte >>= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -74,7 +81,13 @@ SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
         } else {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte <<= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -93,7 +106,13 @@ SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
         if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte >>= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -110,7 +129,13 @@ SDL_FORCE_INLINE void BlitBto1(SDL_BlitInfo *info, const Uint32 srcbpp)
         } else {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte <<= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -139,7 +164,7 @@ SDL_FORCE_INLINE void BlitBto2(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint16 *map, *dst;
     int srcskip, dstskip;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -147,6 +172,8 @@ SDL_FORCE_INLINE void BlitBto2(SDL_BlitInfo *info, const Uint32 srcbpp)
     dst = (Uint16 *)info->dst;
     dstskip = info->dst_skip / 2;
     map = (Uint16 *)info->table;
+
+    width += info->leading_skip;
 
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
@@ -158,7 +185,13 @@ SDL_FORCE_INLINE void BlitBto2(SDL_BlitInfo *info, const Uint32 srcbpp)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -175,7 +208,13 @@ SDL_FORCE_INLINE void BlitBto2(SDL_BlitInfo *info, const Uint32 srcbpp)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -202,7 +241,7 @@ SDL_FORCE_INLINE void BlitBto3(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *src, *map, *dst;
     int srcskip, dstskip;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -210,6 +249,8 @@ SDL_FORCE_INLINE void BlitBto3(SDL_BlitInfo *info, const Uint32 srcbpp)
     dst = info->dst;
     dstskip = info->dst_skip;
     map = info->table;
+
+    width += info->leading_skip;
 
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
@@ -221,7 +262,13 @@ SDL_FORCE_INLINE void BlitBto3(SDL_BlitInfo *info, const Uint32 srcbpp)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -241,7 +288,13 @@ SDL_FORCE_INLINE void BlitBto3(SDL_BlitInfo *info, const Uint32 srcbpp)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -272,7 +325,7 @@ SDL_FORCE_INLINE void BlitBto4(SDL_BlitInfo *info, const Uint32 srcbpp)
     int srcskip, dstskip;
     int c;
 
-    /* Set up some basic variables */
+    // Set up some basic variables
     width = info->dst_w;
     height = info->dst_h;
     src = info->src;
@@ -280,6 +333,8 @@ SDL_FORCE_INLINE void BlitBto4(SDL_BlitInfo *info, const Uint32 srcbpp)
     dst = (Uint32 *)info->dst;
     dstskip = info->dst_skip / 4;
     map = (Uint32 *)info->table;
+
+    width += info->leading_skip;
 
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
@@ -291,7 +346,13 @@ SDL_FORCE_INLINE void BlitBto4(SDL_BlitInfo *info, const Uint32 srcbpp)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -308,7 +369,13 @@ SDL_FORCE_INLINE void BlitBto4(SDL_BlitInfo *info, const Uint32 srcbpp)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -340,7 +407,8 @@ SDL_FORCE_INLINE void BlitBto1Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    width += info->leading_skip;
+
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -352,7 +420,13 @@ SDL_FORCE_INLINE void BlitBto1Key(SDL_BlitInfo *info, const Uint32 srcbpp)
         if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte >>= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -369,7 +443,13 @@ SDL_FORCE_INLINE void BlitBto1Key(SDL_BlitInfo *info, const Uint32 srcbpp)
         } else {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte <<= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -388,7 +468,13 @@ SDL_FORCE_INLINE void BlitBto1Key(SDL_BlitInfo *info, const Uint32 srcbpp)
         if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte >>= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -405,7 +491,13 @@ SDL_FORCE_INLINE void BlitBto1Key(SDL_BlitInfo *info, const Uint32 srcbpp)
         } else {
             while (height--) {
                 Uint8 byte = 0, bit;
-                for (c = 0; c < width; ++c) {
+                for (c = 0; c < info->leading_skip; ++c) {
+                    if (!(c & align)) {
+                        byte = *src++;
+                    }
+                    byte <<= srcbpp;
+                }
+                for (; c < width; ++c) {
                     if (!(c & align)) {
                         byte = *src++;
                     }
@@ -438,7 +530,8 @@ SDL_FORCE_INLINE void BlitBto2Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    width += info->leading_skip;
+
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -450,7 +543,13 @@ SDL_FORCE_INLINE void BlitBto2Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -467,7 +566,13 @@ SDL_FORCE_INLINE void BlitBto2Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -499,7 +604,8 @@ SDL_FORCE_INLINE void BlitBto3Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    width += info->leading_skip;
+
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -510,7 +616,13 @@ SDL_FORCE_INLINE void BlitBto3Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -527,7 +639,13 @@ SDL_FORCE_INLINE void BlitBto3Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -559,7 +677,8 @@ SDL_FORCE_INLINE void BlitBto4Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     Uint8 *palmap = info->table;
     int c;
 
-    /* Set up some basic variables */
+    width += info->leading_skip;
+
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -571,7 +690,13 @@ SDL_FORCE_INLINE void BlitBto4Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -588,7 +713,13 @@ SDL_FORCE_INLINE void BlitBto4Key(SDL_BlitInfo *info, const Uint32 srcbpp)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -613,19 +744,20 @@ static void BlitBtoNAlpha(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
-    const SDL_Color *srcpal = info->src_fmt->palette->colors;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    const SDL_Color *srcpal = info->src_pal->colors;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     int srcbpp, dstbpp;
     int c;
-    Uint32 pixel, mask, align;
+    Uint32 pixelvalue, mask, align;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB, dA;
     const unsigned A = info->a;
 
-    /* Set up some basic variables */
-    srcbpp = srcfmt->BytesPerPixel;
-    dstbpp = dstfmt->BytesPerPixel;
+    width += info->leading_skip;
+
+    srcbpp = srcfmt->bytes_per_pixel;
+    dstbpp = dstfmt->bytes_per_pixel;
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -638,7 +770,13 @@ static void BlitBtoNAlpha(SDL_BlitInfo *info)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -647,7 +785,7 @@ static void BlitBtoNAlpha(SDL_BlitInfo *info)
                     sR = srcpal[bit].r;
                     sG = srcpal[bit].g;
                     sB = srcpal[bit].b;
-                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixel, dR, dG, dB, dA);
+                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixelvalue, dR, dG, dB, dA);
                     ALPHA_BLEND_RGBA(sR, sG, sB, A, dR, dG, dB, dA);
                     ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
                 }
@@ -660,7 +798,13 @@ static void BlitBtoNAlpha(SDL_BlitInfo *info)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -669,7 +813,7 @@ static void BlitBtoNAlpha(SDL_BlitInfo *info)
                     sR = srcpal[bit].r;
                     sG = srcpal[bit].g;
                     sB = srcpal[bit].b;
-                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixel, dR, dG, dB, dA);
+                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixelvalue, dR, dG, dB, dA);
                     ALPHA_BLEND_RGBA(sR, sG, sB, A, dR, dG, dB, dA);
                     ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
                 }
@@ -690,20 +834,21 @@ static void BlitBtoNAlphaKey(SDL_BlitInfo *info)
     Uint8 *dst = info->dst;
     int srcskip = info->src_skip;
     int dstskip = info->dst_skip;
-    SDL_PixelFormat *srcfmt = info->src_fmt;
-    SDL_PixelFormat *dstfmt = info->dst_fmt;
-    const SDL_Color *srcpal = srcfmt->palette->colors;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    const SDL_Color *srcpal = info->src_pal->colors;
     int srcbpp, dstbpp;
     int c;
-    Uint32 pixel, mask, align;
+    Uint32 pixelvalue, mask, align;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB, dA;
     const unsigned A = info->a;
     Uint32 ckey = info->colorkey;
 
-    /* Set up some basic variables */
-    srcbpp = srcfmt->BytesPerPixel;
-    dstbpp = dstfmt->BytesPerPixel;
+    width += info->leading_skip;
+
+    srcbpp = srcfmt->bytes_per_pixel;
+    dstbpp = dstfmt->bytes_per_pixel;
     if (srcbpp == 4)
         srcskip += width - (width + 1) / 2;
     else if (srcbpp == 2)
@@ -716,7 +861,13 @@ static void BlitBtoNAlphaKey(SDL_BlitInfo *info)
     if (SDL_PIXELORDER(info->src_fmt->format) == SDL_BITMAPORDER_4321) {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte >>= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -725,7 +876,7 @@ static void BlitBtoNAlphaKey(SDL_BlitInfo *info)
                     sR = srcpal[bit].r;
                     sG = srcpal[bit].g;
                     sB = srcpal[bit].b;
-                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixel, dR, dG, dB, dA);
+                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixelvalue, dR, dG, dB, dA);
                     ALPHA_BLEND_RGBA(sR, sG, sB, A, dR, dG, dB, dA);
                     ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
                 }
@@ -738,7 +889,13 @@ static void BlitBtoNAlphaKey(SDL_BlitInfo *info)
     } else {
         while (height--) {
             Uint8 byte = 0, bit;
-            for (c = 0; c < width; ++c) {
+            for (c = 0; c < info->leading_skip; ++c) {
+                if (!(c & align)) {
+                    byte = *src++;
+                }
+                byte <<= srcbpp;
+            }
+            for (; c < width; ++c) {
                 if (!(c & align)) {
                     byte = *src++;
                 }
@@ -747,7 +904,7 @@ static void BlitBtoNAlphaKey(SDL_BlitInfo *info)
                     sR = srcpal[bit].r;
                     sG = srcpal[bit].g;
                     sB = srcpal[bit].b;
-                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixel, dR, dG, dB, dA);
+                    DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixelvalue, dR, dG, dB, dA);
                     ALPHA_BLEND_RGBA(sR, sG, sB, A, dR, dG, dB, dA);
                     ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
                 }
@@ -892,19 +1049,25 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
 {
     int which;
 
-    if (surface->map->dst->format->BitsPerPixel < 8) {
+    if (SDL_BITSPERPIXEL(surface->map.info.dst_fmt->format) < 8) {
         which = 0;
     } else {
-        which = surface->map->dst->format->BytesPerPixel;
+        which = SDL_BYTESPERPIXEL(surface->map.info.dst_fmt->format);
     }
 
-    if (SDL_PIXELTYPE(surface->format->format) == SDL_PIXELTYPE_INDEX1) {
-        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX1) {
+        switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_1b[which];
+            if (which < SDL_arraysize(bitmap_blit_1b)) {
+                return bitmap_blit_1b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_1b[which];
+            if (which < SDL_arraysize(colorkey_blit_1b)) {
+                return colorkey_blit_1b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc)NULL;
@@ -915,13 +1078,19 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
         return NULL;
     }
 
-    if (SDL_PIXELTYPE(surface->format->format) == SDL_PIXELTYPE_INDEX2) {
-        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX2) {
+        switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_2b[which];
+            if (which < SDL_arraysize(bitmap_blit_2b)) {
+                return bitmap_blit_2b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_2b[which];
+            if (which < SDL_arraysize(colorkey_blit_2b)) {
+                return colorkey_blit_2b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc)NULL;
@@ -932,13 +1101,19 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
         return NULL;
     }
 
-    if (SDL_PIXELTYPE(surface->format->format) == SDL_PIXELTYPE_INDEX4) {
-        switch (surface->map->info.flags & ~SDL_COPY_RLE_MASK) {
+    if (SDL_PIXELTYPE(surface->format) == SDL_PIXELTYPE_INDEX4) {
+        switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
         case 0:
-            return bitmap_blit_4b[which];
+            if (which < SDL_arraysize(bitmap_blit_4b)) {
+                return bitmap_blit_4b[which];
+            }
+            break;
 
         case SDL_COPY_COLORKEY:
-            return colorkey_blit_4b[which];
+            if (which < SDL_arraysize(colorkey_blit_4b)) {
+                return colorkey_blit_4b[which];
+            }
+            break;
 
         case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
             return which >= 2 ? BlitBtoNAlpha : (SDL_BlitFunc)NULL;
@@ -952,6 +1127,4 @@ SDL_BlitFunc SDL_CalculateBlit0(SDL_Surface *surface)
     return NULL;
 }
 
-#endif /* SDL_HAVE_BLIT_0 */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_HAVE_BLIT_0

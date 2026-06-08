@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,9 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_VITA_GXM
+#ifdef SDL_VIDEO_RENDER_VITA_GXM
 
 #include "SDL_render_vita_gxm_memory.h"
 
@@ -176,6 +176,4 @@ void vita_mem_fragment_usse_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_VIDEO_RENDER_VITA_GXM

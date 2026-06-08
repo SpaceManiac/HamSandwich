@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+   Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
    This software is provided 'as-is', without any express or implied
    warranty.  In no event will the authors be held liable for any damages
@@ -9,7 +9,7 @@
    including commercial applications, and to alter it and redistribute it
    freely.
 
-   This file is created by : Nitin Jain (nitin.j4@samsung.com)
+   This file is created by : Nitin Jain (nitin.j4\samsung.com)
 */
 
 /* Sample program:  Draw a Chess Board  by using the SDL render API */
@@ -17,30 +17,30 @@
 /* This allows testing SDL_CreateSoftwareRenderer with the window surface API. Undefine it to use the accelerated renderer instead. */
 #define USE_SOFTWARE_RENDERER
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test.h>
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
-#include "SDL.h"
-
-SDL_Window *window;
-SDL_Renderer *renderer;
-int done;
+static SDL_Window *window;
+static SDL_Renderer *renderer;
+static int done;
 
 #ifdef USE_SOFTWARE_RENDERER
-SDL_Surface *surface;
+static SDL_Surface *surface;
 #endif
 
-void DrawChessBoard(void)
+static void DrawChessBoard(void)
 {
     int row = 0, column = 0, x = 0;
-    SDL_Rect rect, darea;
+    SDL_FRect rect;
+    SDL_Rect darea;
 
     /* Get the Size of drawing surface */
-    SDL_RenderGetViewport(renderer, &darea);
+    SDL_GetRenderViewport(renderer, &darea);
 
     for (; row < 8; row++) {
         column = row % 2;
@@ -48,24 +48,30 @@ void DrawChessBoard(void)
         for (; column < 4 + (row % 2); column++) {
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
 
-            rect.w = darea.w / 8;
-            rect.h = darea.h / 8;
+            rect.w = (float)(darea.w / 8);
+            rect.h = (float)(darea.h / 8);
             rect.x = x * rect.w;
             rect.y = row * rect.h;
             x = x + 2;
             SDL_RenderFillRect(renderer, &rect);
+
+            /* Draw a red diagonal line through the upper left rectangle */
+            if (column == 0 && row == 0) {
+                SDL_SetRenderDrawColor(renderer, 0xFF, 0, 0, 0xFF);
+                SDL_RenderLine(renderer, 0, 0, rect.w, rect.h);
+            }
         }
     }
 }
 
-void loop(void)
+static void loop(void)
 {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
 
 #ifdef USE_SOFTWARE_RENDERER
-        /* Re-create when window has been resized */
-        if ((e.type == SDL_WINDOWEVENT) && (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)) {
+        /* Re-create when window surface has been resized */
+        if (e.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
 
             SDL_DestroyRenderer(renderer);
 
@@ -77,17 +83,17 @@ void loop(void)
         }
 #endif
 
-        if (e.type == SDL_QUIT) {
+        if (e.type == SDL_EVENT_QUIT) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
         }
 
-        if ((e.type == SDL_KEYDOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
+        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.key == SDLK_ESCAPE)) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
@@ -111,35 +117,45 @@ void loop(void)
 
 int main(int argc, char *argv[])
 {
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    SDLTest_CommonState *state;
+
+    /* Initialize test framework */
+    state = SDLTest_CommonCreateState(argv, 0);
+    if (!state) {
+        return 1;
+    }
+
+    /* Parse commandline */
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
+        return 1;
+    }
 
     /* Initialize SDL */
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s\n", SDL_GetError());
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s", SDL_GetError());
         return 1;
     }
 
     /* Create window and renderer for given surface */
-    window = SDL_CreateWindow("Chess Board", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_RESIZABLE);
+    window = SDL_CreateWindow("Chess Board", 640, 480, SDL_WINDOW_RESIZABLE);
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s", SDL_GetError());
         return 1;
     }
 #ifdef USE_SOFTWARE_RENDERER
     surface = SDL_GetWindowSurface(window);
     renderer = SDL_CreateSoftwareRenderer(surface);
 #else
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, NULL);
 #endif
     if (!renderer) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s", SDL_GetError());
         return 1;
     }
 
     /* Draw the Image on rendering surface */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
@@ -147,7 +163,10 @@ int main(int argc, char *argv[])
     }
 #endif
 
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return 0;
 }
-
