@@ -33,14 +33,14 @@ void SetBackScroll(byte on)
 
 void LoadBackgd(const char *name)
 {
-	owned::SDL_Surface bmp = owned::SDL_LoadBMP_RW(AppdataOpen(name));
+	owned::SDL_Surface bmp = owned::SDL_LoadBMP_IO(AppdataOpen(name));
 	memcpy(backgd, bmp->pixels, bmp->h * 480);
 	backgdY=0;
 }
 
 void LoadStatus(void)
 {
-	owned::SDL_Surface bmp = owned::SDL_LoadBMP_RW(AppdataOpen("graphics/status.bmp"));
+	owned::SDL_Surface bmp = owned::SDL_LoadBMP_IO(AppdataOpen("graphics/status.bmp"));
 	memcpy(statusBar, bmp->pixels, bmp->h * 160);
 }
 

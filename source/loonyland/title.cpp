@@ -290,7 +290,7 @@ void GetSavesForMenu(void)
 		}
 		else
 		{
-			SDL_RWread(f, &p,sizeof(player_t),1);
+			SDL_ReadIO(f, &p,sizeof(player_t),1);
 			f.reset();
 
 			DescribeSave(saves[i].txt, &p);

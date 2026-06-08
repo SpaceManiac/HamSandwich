@@ -1407,7 +1407,7 @@ void RenderBasicControls(void)
 	{
 		RenderGamepadButton(x, y-3, opt.joyCtrl[CTL_ID_UP + i]);
 		if(dpadOK)
-			RenderGamepadButton(x, y+20-3, SDL_CONTROLLER_BUTTON_DPAD_UP+i);
+			RenderGamepadButton(x, y+20-3, SDL_GAMEPAD_BUTTON_DPAD_UP+i);
 		x += 20;
 	}
 	opt.dpadToMove = dpadOK;

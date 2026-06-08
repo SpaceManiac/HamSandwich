@@ -123,14 +123,14 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 		curLine = 10;
 	}
 
-	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_X))
+	if (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_WEST))
 		startTextInput = true;
 	if (gamepad)
 		gamepadMode = true;
 
 	char c = mgl->LastKeyPressed();
 	byte taps = GetTaps();
-	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_Y))
+	if (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_NORTH))
 	{
 		switch (keyboardShift)
 		{
@@ -142,7 +142,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 				break;
 		}
 	}
-	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_A))
+	if (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_SOUTH))
 	{
 		if (curRow == 2 && curCol == 9)
 		{
@@ -221,7 +221,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			errorBright=-200;
 		}
 	}
-	else if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+	else if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 	{
 		return 255;  // cancel
 	}
@@ -234,7 +234,7 @@ byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 		}
 	}
-	else if(c==SDLK_BACKSPACE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_B)))
+	else if(c==SDLK_BACKSPACE || (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_EAST)))
 	{
 		if(strlen(entry)>0)
 		{

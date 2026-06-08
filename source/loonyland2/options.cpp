@@ -407,7 +407,7 @@ void LoadOptions(void)
 	else
 	{
 		static_assert(sizeof(options_t) == 165);
-		if(SDL_RWread(f, &opt,1,sizeof(options_t))<sizeof(options_t))
+		if(SDL_ReadIO(f, &opt,1,sizeof(options_t))<sizeof(options_t))
 		{
 #ifdef DIRECTORS
 			for(i=0;i<GALLERY_PIX;i++)
@@ -422,7 +422,7 @@ void LoadOptions(void)
 void SaveOptions(void)
 {
 	auto f = AppdataOpen_Write("loony.cfg");
-	SDL_RWwrite(f, &opt,sizeof(options_t),1);
+	SDL_WriteIO(f, &opt,sizeof(options_t),1);
 	f.reset();
 	AppdataSync();
 }

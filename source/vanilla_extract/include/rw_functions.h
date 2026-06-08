@@ -3,39 +3,39 @@
 
 #include <SDL_rwops.h>
 
-// Some versions of SDL2 use a macro for SDL_RWclose, which we can't overload,
+// Some versions of SDL2 use a macro for SDL_CloseIO, which we can't overload,
 // so undef it and make it a normal function so we can overload it later.
-#ifdef SDL_RWclose
-#undef SDL_RWsize
-#undef SDL_RWseek
-#undef SDL_RWtell
-#undef SDL_RWread
-#undef SDL_RWwrite
-#undef SDL_RWclose
-inline Sint64 SDL_RWsize(SDL_RWops *context)
+#ifdef SDL_CloseIO
+#undef SDL_GetIOSize
+#undef SDL_SeekIO
+#undef SDL_TellIO
+#undef SDL_ReadIO
+#undef SDL_WriteIO
+#undef SDL_CloseIO
+inline Sint64 SDL_GetIOSize(SDL_IOStream *context)
 {
 	return context->size(context);
 }
-inline Sint64 SDL_RWseek(SDL_RWops *context, Sint64 offset, int whence)
+inline Sint64 SDL_SeekIO(SDL_IOStream *context, Sint64 offset, int whence)
 {
 	return context->seek(context, offset, whence);
 }
-inline Sint64 SDL_RWtell(SDL_RWops *context)
+inline Sint64 SDL_TellIO(SDL_IOStream *context)
 {
-	return context->seek(context, 0, RW_SEEK_CUR);
+	return context->seek(context, 0, SDL_IO_SEEK_CUR);
 }
-inline size_t SDL_RWread(SDL_RWops *context, void *ptr, size_t size, size_t maxnum)
+inline size_t SDL_ReadIO(SDL_IOStream *context, void *ptr, size_t size, size_t maxnum)
 {
 	return context->read(context, ptr, size, maxnum);
 }
-inline size_t SDL_RWwrite(SDL_RWops *context, const void *ptr, size_t size, size_t num)
+inline size_t SDL_WriteIO(SDL_IOStream *context, const void *ptr, size_t size, size_t num)
 {
 	return context->write(context, ptr, size, num);
 }
-inline int SDL_RWclose(SDL_RWops *context)
+inline int SDL_CloseIO(SDL_IOStream *context)
 {
 	return context->close(context);
 }
-#endif  // SDL_RWclose
+#endif  // SDL_CloseIO
 
 #endif  // RW_FUNCTIONS_H

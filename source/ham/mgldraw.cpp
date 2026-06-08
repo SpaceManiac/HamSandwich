@@ -72,7 +72,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	this->windowed = windowed = true;
 #endif  // __EMSCRIPTEN__
 
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER)) {
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD)) {
 		LogError("SDL_Init(VIDEO|JOYSTICK): %s", SDL_GetError());
 		FatalError("Failed to initialize SDL");
 		return;
@@ -81,7 +81,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 #ifdef __ANDROID__
 	// On Android, tabbing out of the application may generate an SDL_Quit,
 	// which is received once the application is re-entered.
-	SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+	SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
 #endif
 
 	JamulSoundInit(512);
@@ -118,7 +118,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	extern __attribute__((weak)) const size_t embed_game_icon_size;
 	extern __attribute__((weak)) const unsigned char embed_game_icon[];
 	if (&embed_game_icon && &embed_game_icon_size) {
-		owned::SDL_Surface surface = ReadIcoFile(owned::SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size), -1);
+		owned::SDL_Surface surface = ReadIcoFile(owned::SDL_IOFromConstMem(embed_game_icon, embed_game_icon_size), -1);
 		SDL_SetWindowIcon(window, surface.get());
 	}
 #endif
@@ -159,7 +159,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	SDL_SetWindowTitle(window, name);
 	SDL_ShowCursor(SDL_DISABLE);
 	SDL_ShowWindow(window);
-	SDL_SetWindowResizable(window, SDL_TRUE);  // Set after showing so i3 treats it as non-resizable to start.
+	SDL_SetWindowResizable(window, true);  // Set after showing so i3 treats it as non-resizable to start.
 
 	scrn = std::make_unique<byte[]>(xRes * yRes);
 	buffer = std::make_unique<RGB[]>(xRes * yRes);
@@ -267,7 +267,7 @@ void MGLDraw::SetWindowed(bool newWindowed)
 		SDL_GetWindowPosition(window, &px, &py);
 
 		SDL_SetWindowFullscreen(window, 0);
-		SDL_SetWindowResizable(window, SDL_TRUE);  // Set now in case we started fullscreen.
+		SDL_SetWindowResizable(window, true);  // Set now in case we started fullscreen.
 
 		px -= (xRes - winWidth) / 2;
 		py -= (yRes - winHeight) / 2;
@@ -338,7 +338,7 @@ void MGLDraw::ResizeBuffer(int w, int h, bool clamp)
 	{
 		// Clamp the requested width/height to be no more than the display size.
 		SDL_DisplayMode mode = {};
-		SDL_GetWindowDisplayMode(window, &mode);
+		SDL_GetWindowFullscreenMode(window, &mode);
 		if (mode.w > 640 && mode.w < w)
 			w = mode.w;
 		if (mode.h > 480 && mode.h < h)
@@ -413,7 +413,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 
 	SDL_UpdateTexture(texture, NULL, buffer.get(), pitch * sizeof(RGB));
 	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, texture, NULL, &dest);
+	SDL_RenderTexture(renderer, texture, NULL, &dest);
 	bool enableTouchMouse = true;
 	if (softJoystick)
 	{
@@ -429,14 +429,14 @@ TASK(void) MGLDraw::FinishFlip(void)
 	SDL_Event e;
 	while(SDL_PollEvent(&e))
 	{
-		if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
+		if (e.type == SDL_EVENT_KEY_DOWN || e.type == SDL_EVENT_KEY_UP)
 		{
 			TranslateKey(&e.key.keysym);
 		}
 
 		ControlHandleEvent(e);
 
-		if (e.type == SDL_KEYDOWN)
+		if (e.type == SDL_EVENT_KEY_DOWN)
 		{
 			lastRawCode = e.key.keysym.scancode;
 			if (!(e.key.keysym.sym & ~0xff))
@@ -475,10 +475,10 @@ TASK(void) MGLDraw::FinishFlip(void)
 				{
 					// go to biggest window size that will fit on desktop
 					SDL_DisplayMode mode;
-					int index = SDL_GetWindowDisplayIndex(window);
+					int index = SDL_GetDisplayForWindow(window);
 					if (index < 0)
 					{
-						LogError("SDL_GetWindowDisplayIndex: %s", SDL_GetError());
+						LogError("SDL_GetDisplayForWindow: %s", SDL_GetError());
 						SetWindowed(true);
 					}
 					else if (SDL_GetDesktopDisplayMode(index, &mode) < 0)
@@ -494,7 +494,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 						SDL_GetWindowPosition(window, &px, &py);
 
 						SDL_SetWindowFullscreen(window, 0);
-						SDL_SetWindowResizable(window, SDL_TRUE);  // Set now in case we started fullscreen.
+						SDL_SetWindowResizable(window, true);  // Set now in case we started fullscreen.
 						windowed = true;
 
 						px -= (newWidth - winWidth) / 2;
@@ -533,7 +533,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				SaveBMP(fname);
 			}
 		}
-		else if (e.type == SDL_TEXTINPUT)
+		else if (e.type == SDL_EVENT_TEXT_INPUT)
 		{
 			if (strlen(e.text.text) == 1)
 			{
@@ -546,7 +546,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				lastKeyPressed = e.text.text[0];
 			}
 		}
-		else if (e.type == SDL_MOUSEMOTION)
+		else if (e.type == SDL_EVENT_MOUSE_MOTION)
 		{
 			if (enableTouchMouse || e.motion.which != SDL_TOUCH_MOUSEID)
 			{
@@ -562,7 +562,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				}
 			}
 		}
-		else if (e.type == SDL_MOUSEBUTTONUP)
+		else if (e.type == SDL_EVENT_MOUSE_BUTTON_UP)
 		{
 			// Always accept mouseups.
 			int flag = 0;
@@ -572,7 +572,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 				flag = 2;
 			mouse_b &= ~flag;
 		}
-		else if (e.type == SDL_MOUSEBUTTONDOWN || e.type == SDL_MOUSEBUTTONUP)
+		else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN || e.type == SDL_EVENT_MOUSE_BUTTON_UP)
 		{
 			// Only accept mousedowns that are inside the real scene.
 			// Also ignore mousedowns if soft joystick is active.
@@ -587,43 +587,43 @@ TASK(void) MGLDraw::FinishFlip(void)
 				mouse_b |= flag;
 			}
 		}
-		else if (e.type == SDL_MOUSEWHEEL)
+		else if (e.type == SDL_EVENT_MOUSE_WHEEL)
 		{
 			mouse_z += e.wheel.y;
 		}
-		else if (e.type == SDL_QUIT)
+		else if (e.type == SDL_EVENT_QUIT)
 		{
 			readyToQuit = 1;
 		}
-		else if (e.type == SDL_CONTROLLERDEVICEREMOVED)
+		else if (e.type == SDL_EVENT_GAMEPAD_REMOVED)
 		{
 			idle = true;
 			idleGame = true;
 		}
 		else if (e.type == SDL_WINDOWEVENT)
 		{
-			if (e.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
+			if (e.window.event == SDL_EVENT_WINDOW_FOCUS_LOST)
 			{
 				idle = true;
 				idleGame = true;
 			}
-			else if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+			else if (e.window.event == SDL_EVENT_WINDOW_FOCUS_GAINED)
 			{
 				idleGame = false;
 				idle = false;
 			}
-			else if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+			else if (e.window.event == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
 			{
 				winWidth = e.window.data1;
 				winHeight = e.window.data2;
 			}
-			else if (e.window.event == SDL_WINDOWEVENT_EXPOSED)
+			else if (e.window.event == SDL_EVENT_WINDOW_EXPOSED)
 			{
 				// On some platforms (Linux i3) we don't get SIZE_CHANGED when
 				// we go fullscreen, but we do get an EXPOSED, and this works.
 				SDL_GetWindowSize(window, &winWidth, &winHeight);
 				SDL_Rect rect = { 0, 0, winWidth, winHeight };
-				SDL_RenderSetViewport(renderer, &rect);
+				SDL_SetRenderViewport(renderer, &rect);
 			}
 		}
 
@@ -1146,7 +1146,7 @@ bool MGLDraw::LoadBMPResize(const char *name)
 
 bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 {
-	owned::SDL_RWops rw = AppdataOpen(name);
+	owned::SDL_IOStream rw = AppdataOpen(name);
 	if (!rw) {
 		// Asset stack printed error already
 		return false;
@@ -1154,14 +1154,14 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 
 #ifdef __EMSCRIPTEN__
 	// Under Emscripten, IMG_Load can't load some files which SDL_LoadBMP can.
-	SDL_Surface* b = SDL_LoadBMP_RW(rw.get(), SDL_FALSE);
+	SDL_Surface* b = SDL_LoadBMP_IO(rw.get(), false);
 	if (!b)
 	{
-		b = IMG_Load_RW(rw.get(), SDL_FALSE);
+		b = IMG_Load_RW(rw.get(), false);
 	}
 	rw.reset();
 #else  // __EMSCRIPTEN__
-	SDL_Surface* b = IMG_Load_RW(rw.release(), SDL_TRUE);
+	SDL_Surface* b = IMG_Load_RW(rw.release(), true);
 #endif  // __EMSCRIPTEN__
 
 	if (!b) {
@@ -1182,8 +1182,8 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 	if (b->format->BitsPerPixel != 8)
 	{
 		// Trying to load a truecolor image or something. Convert it to the palette.
-		SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_INDEX8);
-		format->palette = SDL_AllocPalette(256);
+		SDL_PixelFormat* format = SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_INDEX8);
+		format->palette = SDL_CreatePalette(256);
 		for (int i = 0; i < 256; ++i)
 		{
 			format->palette->colors[i].r = thePal[i].r;
@@ -1193,7 +1193,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 		}
 
 		SDL_Surface* b2 = SDL_ConvertSurface(b, format, 0);
-		SDL_FreeSurface(b);
+		SDL_DestroySurface(b);
 		b = b2;
 
 		SDL_FreeFormat(format);
@@ -1216,7 +1216,7 @@ bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 	}
 	SDL_UnlockSurface(b);
 
-	SDL_FreeSurface(b);
+	SDL_DestroySurface(b);
 	return true;
 }
 
@@ -1232,9 +1232,9 @@ bool MGLDraw::SaveBMP(const char *name)
 	{
 		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
-	SDL_SaveBMP_RW(surface, AppdataOpen_Write(name).release(), SDL_TRUE);
+	SDL_SaveBMP_IO(surface, AppdataOpen_Write(name).release(), true);
 	AppdataSync();
-	SDL_FreeSurface(surface);
+	SDL_DestroySurface(surface);
 	return true;
 }
 
@@ -1251,8 +1251,8 @@ bool MGLDraw::SavePNG(const char* name)
 		surface->format->palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
 	// NB: Unlike SaveBMP, this expects an absolute path. Maybe slightly surprising.
-	bool ok = IMG_SavePNG_RW(surface, SDL_RWFromFile(name, "wb"), SDL_TRUE) == 0;
-	SDL_FreeSurface(surface);
+	bool ok = IMG_SavePNG_RW(surface, SDL_IOFromFile(name, "wb"), true) == 0;
+	SDL_DestroySurface(surface);
 	return ok;
 }
 
@@ -1280,10 +1280,10 @@ void MGLDraw::StartTextInput(int x, int y, int x2, int y2)
 
 	SDL_SetTextInputRect(&rect);
 
-	if (SDL_GetHintBoolean("SteamDeck", SDL_FALSE))
+	if (SDL_GetHintBoolean("SteamDeck", false))
 	{
-		SDL_EventState(SDL_TEXTINPUT, SDL_ENABLE);
-		SDL_EventState(SDL_TEXTEDITING, SDL_ENABLE);
+		SDL_EventState(SDL_EVENT_TEXT_INPUT, SDL_ENABLE);
+		SDL_EventState(SDL_EVENT_TEXT_EDITING, SDL_ENABLE);
 
 		// The original addition of Steam Deck keyboard support doesn't set the
 		// rect https://github.com/libsdl-org/SDL/pull/6515 so do it ourselves.
@@ -1298,7 +1298,7 @@ void MGLDraw::StartTextInput(int x, int y, int x2, int y2)
 			rect.y,
 			rect.w,
 			rect.h,
-			SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE) ? 0 : 1);
+			SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, false) ? 0 : 1);
 		SDL_OpenURL(deeplink);
 	}
 	else

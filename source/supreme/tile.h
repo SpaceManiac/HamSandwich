@@ -21,9 +21,9 @@ struct Tilegfx
 	void SetTiles(const byte *src, int width, int height);
 	void SetTile(int t, const byte *src, int pitch);
 
-	void LoadTiles(SDL_RWops *f, int numTiles);
+	void LoadTiles(SDL_IOStream *f, int numTiles);
 	void LoadTiles(std::istream& f, int numTiles);
-	void SaveTiles(SDL_RWops *f) const;
+	void SaveTiles(SDL_IOStream *f) const;
 	void SaveTiles(std::ostream& f) const;
 	void SaveTilesToBMP(const char *fname) const;
 };

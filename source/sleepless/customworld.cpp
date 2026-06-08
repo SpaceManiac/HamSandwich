@@ -301,7 +301,7 @@ void InitCustomWorld(void)
 /* Compute MD5 message digest for bytes read from STREAM.  The
    resulting message digest number will be written into the 16 bytes
    beginning at RESBLOCK.  */
-int md5_rw(SDL_RWops *stream, void *resblock)
+int md5_rw(SDL_IOStream *stream, void *resblock)
 {
 	/* Important: BLOCKSIZE must be a multiple of 64.  */
 	constexpr int BLOCKSIZE = 4096;
@@ -324,7 +324,7 @@ int md5_rw(SDL_RWops *stream, void *resblock)
 		/* Read block.  Take care for partial reads.  */
 		do
 		{
-			n = SDL_RWread(stream, buffer + sum, 1, BLOCKSIZE - sum);
+			n = SDL_ReadIO(stream, buffer + sum, 1, BLOCKSIZE - sum);
 
 			sum += n;
 		} while (sum < BLOCKSIZE && n != 0);

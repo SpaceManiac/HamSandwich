@@ -858,7 +858,7 @@ byte SpaceUpdatePlayerShip(MGLDraw *mgl)
 	oldc=c;
 
 	c=mgl->LastKeyPressed();
-	if(c==27 || (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
+	if(c==27 || (GetGamepadButtons() & ((1 << SDL_GAMEPAD_BUTTON_START) | (1 << SDL_GAMEPAD_BUTTON_BACK))))
 		return 1;
 
 	return 0;

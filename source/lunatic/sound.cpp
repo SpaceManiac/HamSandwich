@@ -45,7 +45,7 @@ void MakeNormalSound(int snd)
 	GoPlaySound(snd, 0, 255, SND_MAXPRIORITY | SND_CUTOFF | SND_ONE, MAX_SNDPRIORITY);
 }
 
-SDL_RWops* SoundLoadOverride(int which)
+SDL_IOStream* SoundLoadOverride(int which)
 {
 	return nullptr;
 }

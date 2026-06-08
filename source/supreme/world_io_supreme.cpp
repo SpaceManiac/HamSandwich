@@ -9,15 +9,15 @@
 #include "monster.h"
 #include "worldstitch.h"
 
-bool Supreme_GetWorldName(SDL_RWops *f, StringDestination name, StringDestination author)
+bool Supreme_GetWorldName(SDL_IOStream *f, StringDestination name, StringDestination author)
 {
 	char authbuffer[32], namebuffer[32];
 
-	if (SDL_RWseek(f, 8, RW_SEEK_SET) < 0)
+	if (SDL_SeekIO(f, 8, SDL_IO_SEEK_SET) < 0)
 		return false;
-	if (SDL_RWread(f, authbuffer, 32, 1) < 1)
+	if (SDL_ReadIO(f, authbuffer, 32, 1) < 1)
 		return false;
-	if (SDL_RWread(f, namebuffer, 32, 1) < 1)
+	if (SDL_ReadIO(f, namebuffer, 32, 1) < 1)
 		return false;
 
 	authbuffer[31] = 0;
@@ -75,12 +75,12 @@ static_assert(sizeof(IoSoundDesc) == 36);
 
 // ----------------------------------------------------------------------------
 
-static void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
+static void LoadTerrain(world_t *world, const char *fname, SDL_IOStream *f)
 {
 	for (terrain_t &terrain : world->Terrain())
 	{
 		IoTerrain io_terrain;
-		SDL_RWread(f, &io_terrain, sizeof(IoTerrain), 1);
+		SDL_ReadIO(f, &io_terrain, sizeof(IoTerrain), 1);
 		terrain = LoadOneTerrain(io_terrain);
 	}
 
@@ -102,7 +102,7 @@ static void LoadTerrain(world_t *world, const char *fname, SDL_RWops *f)
 	}
 }
 
-static void LoadSpecial(SDL_RWops *f, special_t *s)
+static void LoadSpecial(SDL_IOStream *f, special_t *s)
 {
 	byte numTrig,numEff,b;
 
@@ -111,11 +111,11 @@ static void LoadSpecial(SDL_RWops *f, special_t *s)
 	static_assert(sizeof(s->x) == 1);
 	static_assert(sizeof(s->y) == 1);
 	static_assert(sizeof(s->uses) == 1);
-	SDL_RWread(f,&s->x,1,sizeof(byte));
-	SDL_RWread(f,&s->y,1,sizeof(byte));
-	SDL_RWread(f,&s->uses,1,sizeof(byte));
+	SDL_ReadIO(f,&s->x,1,sizeof(byte));
+	SDL_ReadIO(f,&s->y,1,sizeof(byte));
+	SDL_ReadIO(f,&s->uses,1,sizeof(byte));
 
-	SDL_RWread(f,&b,1,sizeof(byte));	// read a combined number indicating #trigs & #effs
+	SDL_ReadIO(f,&b,1,sizeof(byte));	// read a combined number indicating #trigs & #effs
 
 	numTrig=b%8;
 	numEff=b/8;
@@ -123,9 +123,9 @@ static void LoadSpecial(SDL_RWops *f, special_t *s)
 	static_assert(sizeof(trigger_t) == 12);
 	static_assert(sizeof(effect_t) == 44);
 	if(numTrig>0)
-		SDL_RWread(f,s->trigger,numTrig,sizeof(trigger_t));
+		SDL_ReadIO(f,s->trigger,numTrig,sizeof(trigger_t));
 	if(numEff>0)
-		SDL_RWread(f,s->effect,numEff,sizeof(effect_t));
+		SDL_ReadIO(f,s->effect,numEff,sizeof(effect_t));
 
 	for (int i = 0; i < numEff; ++i)
 	{
@@ -134,10 +134,10 @@ static void LoadSpecial(SDL_RWops *f, special_t *s)
 	}
 }
 
-static void LoadSpecials(SDL_RWops *f, std::span<special_t> list)
+static void LoadSpecials(SDL_IOStream *f, std::span<special_t> list)
 {
 	byte numSpecials;
-	SDL_RWread(f, &numSpecials, 1, sizeof(byte));	// num specials
+	SDL_ReadIO(f, &numSpecials, 1, sizeof(byte));	// num specials
 
 	size_t i = 0;
 	for(; i < numSpecials && i < list.size(); ++i)
@@ -147,7 +147,7 @@ static void LoadSpecials(SDL_RWops *f, std::span<special_t> list)
 		list[i].x = 255;
 }
 
-static void LoadMapData(SDL_RWops *f, Map *me)
+static void LoadMapData(SDL_IOStream *f, Map *me)
 {
 	int pos,i;
 	int8_t readRun;
@@ -158,18 +158,18 @@ static void LoadMapData(SDL_RWops *f, Map *me)
 	pos=0;
 	while(pos<me->width*me->height)
 	{
-		SDL_RWread(f,&readRun,1,sizeof(int8_t));
+		SDL_ReadIO(f,&readRun,1,sizeof(int8_t));
 		if(readRun<0)	// repeat run
 		{
 			readRun=-readRun;
-			SDL_RWread(f,&mapCopy[pos],1,sizeof(IoTile));
+			SDL_ReadIO(f,&mapCopy[pos],1,sizeof(IoTile));
 			for(i=1;i<readRun;i++)
 				memcpy(&mapCopy[pos+i],&mapCopy[pos],sizeof(IoTile));
 			pos+=readRun;
 		}
 		else	// unique run
 		{
-			SDL_RWread(f,&mapCopy[pos],readRun,sizeof(IoTile));
+			SDL_ReadIO(f,&mapCopy[pos],readRun,sizeof(IoTile));
 			pos+=readRun;
 		}
 	}
@@ -187,21 +187,21 @@ static void LoadMapData(SDL_RWops *f, Map *me)
 	delete[] mapCopy;
 }
 
-static Map *LoadMap(SDL_RWops *f)
+static Map *LoadMap(SDL_IOStream *f)
 {
 	byte width, height;
-	SDL_RWread(f,&width,1,sizeof(byte));
-	SDL_RWread(f,&height,1,sizeof(byte));
+	SDL_ReadIO(f,&width,1,sizeof(byte));
+	SDL_ReadIO(f,&height,1,sizeof(byte));
 
 	Map *me = new Map(width, height, "");
 
 	static_assert(sizeof(me->name) == 32);
 	static_assert(sizeof(me->song) == 32);
-	SDL_RWread(f,me->name,32,sizeof(char));
-	SDL_RWread(f,me->song,32,sizeof(char));
+	SDL_ReadIO(f,me->name,32,sizeof(char));
+	SDL_ReadIO(f,me->song,32,sizeof(char));
 
 	byte count;
-	SDL_RWread(f,&count,1,sizeof(byte));	// num badguys
+	SDL_ReadIO(f,&count,1,sizeof(byte));	// num badguys
 	me->badguy.fill({});
 	// TODO: blows up if count > MAX_MAPMONS
 	for (byte i = 0; i < count; ++i)
@@ -211,11 +211,11 @@ static Map *LoadMap(SDL_RWops *f)
 		static_assert(sizeof(me->badguy[i].item) == 1);
 
 		byte temp;
-		SDL_RWread(f,&me->badguy[i].x, 1, sizeof(byte));
-		SDL_RWread(f,&me->badguy[i].y, 1, sizeof(byte));
-		SDL_RWread(f,&temp, 1, sizeof(byte));
+		SDL_ReadIO(f,&me->badguy[i].x, 1, sizeof(byte));
+		SDL_ReadIO(f,&me->badguy[i].y, 1, sizeof(byte));
+		SDL_ReadIO(f,&temp, 1, sizeof(byte));
 		me->badguy[i].type = temp;
-		SDL_RWread(f,&me->badguy[i].item, 1, sizeof(byte));
+		SDL_ReadIO(f,&me->badguy[i].item, 1, sizeof(byte));
 	}
 
 	LoadSpecials(f, me->special);
@@ -224,56 +224,56 @@ static Map *LoadMap(SDL_RWops *f)
 	static_assert(sizeof(me->numBrains) == 2);
 	static_assert(sizeof(me->numCandles) == 2);
 	static_assert(sizeof(me->itemDrops) == 2);
-	SDL_RWread(f,&me->flags,1,sizeof(word));
-	SDL_RWread(f,&me->numBrains,1,sizeof(word));
-	SDL_RWread(f,&me->numCandles,1,sizeof(word));
-	SDL_RWread(f,&me->itemDrops,1,sizeof(word));
+	SDL_ReadIO(f,&me->flags,1,sizeof(word));
+	SDL_ReadIO(f,&me->numBrains,1,sizeof(word));
+	SDL_ReadIO(f,&me->numCandles,1,sizeof(word));
+	SDL_ReadIO(f,&me->itemDrops,1,sizeof(word));
 
 	LoadMapData(f, me);
 
 	return me;
 }
 
-static void LoadItems(SDL_RWops *f)
+static void LoadItems(SDL_IOStream *f)
 {
 	word changedItems;
-	SDL_RWread(f,&changedItems,1,sizeof(word));
+	SDL_ReadIO(f,&changedItems,1,sizeof(word));
 
 	int i = 0;
 	for (; i < changedItems; ++i)
 	{
 		byte curItem = 0;
-		SDL_RWread(f, &curItem, 1, sizeof(byte));
+		SDL_ReadIO(f, &curItem, 1, sizeof(byte));
 		if (curItem == 255)
 		{
 			break;
 		}
-		SDL_RWread(f, GetItem(curItem), 1, sizeof(item_t));
+		SDL_ReadIO(f, GetItem(curItem), 1, sizeof(item_t));
 	}
 	for (; i < changedItems; ++i)
 	{
 		int curItem = NewItem();
-		SDL_RWread(f, GetItem(curItem), 1, sizeof(item_t));
+		SDL_ReadIO(f, GetItem(curItem), 1, sizeof(item_t));
 	}
 }
 
-static bool AppendItems(SDL_RWops *f)
+static bool AppendItems(SDL_IOStream *f)
 {
 	word changedItems;
-	SDL_RWread(f,&changedItems,1,sizeof(word));
+	SDL_ReadIO(f,&changedItems,1,sizeof(word));
 
 	int i = 0;
 	for (; i < changedItems; ++i)
 	{
 		byte curItem = 0;
-		SDL_RWread(f, &curItem, 1, sizeof(byte));
+		SDL_ReadIO(f, &curItem, 1, sizeof(byte));
 		if (curItem == 255)
 		{
 			break;
 		}
 		// throw away any mods of regular items
 		item_t garbage;
-		SDL_RWread(f, &garbage, 1, sizeof(item_t));
+		SDL_ReadIO(f, &garbage, 1, sizeof(item_t));
 	}
 	for (; i < changedItems; ++i)
 	{
@@ -282,15 +282,15 @@ static bool AppendItems(SDL_RWops *f)
 		{
 			return false;
 		}
-		SDL_RWread(f, GetItem(curItem), 1, sizeof(item_t));
+		SDL_ReadIO(f, GetItem(curItem), 1, sizeof(item_t));
 	}
 	return true;
 }
 
-static bool LoadCustomSounds(SDL_RWops *f)
+static bool LoadCustomSounds(SDL_IOStream *f)
 {
 	int numCustom;
-	SDL_RWread(f,&numCustom,1,sizeof(int));
+	SDL_ReadIO(f,&numCustom,1,sizeof(int));
 	for (int i = 0; i < numCustom; ++i)
 	{
 		IoSoundDesc ioDesc;
@@ -298,10 +298,10 @@ static bool LoadCustomSounds(SDL_RWops *f)
 		byte *data;
 
 		static_assert(sizeof(IoSoundDesc) == 36);
-		SDL_RWread(f,&ioDesc,1,sizeof(IoSoundDesc));
-		SDL_RWread(f,&size,sizeof(int32_t),1);
+		SDL_ReadIO(f,&ioDesc,1,sizeof(IoSoundDesc));
+		SDL_ReadIO(f,&size,sizeof(int32_t),1);
 		data=(byte *)malloc(size);
-		SDL_RWread(f,data,sizeof(byte),size);
+		SDL_ReadIO(f,data,sizeof(byte),size);
 
 		SoundDesc *desc = AddCustomSound(data, size);
 		if (!desc)
@@ -317,19 +317,19 @@ static bool LoadCustomSounds(SDL_RWops *f)
 	return true;
 }
 
-bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_RWops *f)
+bool Supreme_LoadWorld(world_t *world, const char *fname, SDL_IOStream *f)
 {
 	char code[9];
-	SDL_RWread(f, code, 8, 1);
+	SDL_ReadIO(f, code, 8, 1);
 	code[8] = '\0';
 	if (strcmp(code, "SUPREME!"))
 		return false;
 
-	SDL_RWread(f,&world->author,sizeof(char),32);
-	SDL_RWseek(f, 32, RW_SEEK_CUR);  // name of the world, not needed here
-	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
-	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
+	SDL_ReadIO(f,&world->author,sizeof(char),32);
+	SDL_SeekIO(f, 32, SDL_IO_SEEK_CUR);  // name of the world, not needed here
+	SDL_ReadIO(f,&world->numMaps,1,1);
+	SDL_SeekIO(f, sizeof(int), SDL_IO_SEEK_CUR);  // totalPoints
+	SDL_ReadIO(f,&world->numTiles,1,sizeof(word));	// tile count
 
 	world->tilegfx.LoadTiles(f, world->numTiles);
 
@@ -369,7 +369,7 @@ bool BeginAppendWorld(world_t *world, const char *fname)
 		return false;
 	}
 
-	SDL_RWread(f,code,sizeof(char),8);
+	SDL_ReadIO(f,code,sizeof(char),8);
 	code[8]='\0';
 	if(strcmp(code,"SUPREME!"))
 	{
@@ -377,11 +377,11 @@ bool BeginAppendWorld(world_t *world, const char *fname)
 		return false;
 	}
 
-	SDL_RWread(f,&world->author,sizeof(char),32);
-	SDL_RWseek(f, 32, RW_SEEK_CUR);  // name of the world, not needed here
-	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWseek(f, sizeof(int), RW_SEEK_CUR);  // totalPoints
-	SDL_RWread(f,&world->numTiles,1,sizeof(word));	// tile count
+	SDL_ReadIO(f,&world->author,sizeof(char),32);
+	SDL_SeekIO(f, 32, SDL_IO_SEEK_CUR);  // name of the world, not needed here
+	SDL_ReadIO(f,&world->numMaps,1,1);
+	SDL_SeekIO(f, sizeof(int), SDL_IO_SEEK_CUR);  // totalPoints
+	SDL_ReadIO(f,&world->numTiles,1,sizeof(word));	// tile count
 
 	world->tilegfx.LoadTiles(f.get(), world->numTiles);
 	LoadTerrain(world, fname, f.get());
@@ -418,14 +418,14 @@ bool BeginAppendWorld(world_t *world, const char *fname)
 
 // ----------------------------------------------------------------------------
 
-static void SaveSpecial(SDL_RWops *f, const special_t *s)
+static void SaveSpecial(SDL_IOStream *f, const special_t *s)
 {
 	byte numTrig,numEff,b;
 	int i;
 
-	SDL_RWwrite(f,&s->x,1,sizeof(byte));
-	SDL_RWwrite(f,&s->y,1,sizeof(byte));
-	SDL_RWwrite(f,&s->uses,1,sizeof(byte));
+	SDL_WriteIO(f,&s->x,1,sizeof(byte));
+	SDL_WriteIO(f,&s->y,1,sizeof(byte));
+	SDL_WriteIO(f,&s->uses,1,sizeof(byte));
 
 	numTrig=0;
 	numEff=0;
@@ -441,20 +441,20 @@ static void SaveSpecial(SDL_RWops *f, const special_t *s)
 			numEff=i+1;
 
 	b=numTrig+numEff*8;
-	SDL_RWwrite(f,&b,1,sizeof(byte));	// write a combined number indicating #trigs & #effs
+	SDL_WriteIO(f,&b,1,sizeof(byte));	// write a combined number indicating #trigs & #effs
 
 	if(numTrig>0)
-		SDL_RWwrite(f,s->trigger,numTrig,sizeof(trigger_t));
+		SDL_WriteIO(f,s->trigger,numTrig,sizeof(trigger_t));
 	for (int i = 0; i < numEff; ++i)
 	{
 		effect_t eff = s->effect[i];
 		if (eff.type == EFF_SOUND)
 			eff.value = SoundToDescIndex(eff.value);
-		SDL_RWwrite(f,&eff,sizeof(effect_t),1);
+		SDL_WriteIO(f,&eff,sizeof(effect_t),1);
 	}
 }
 
-static void SaveSpecials(SDL_RWops *f, std::span<const special_t> list)
+static void SaveSpecials(SDL_IOStream *f, std::span<const special_t> list)
 {
 	// First, count specials that actually exist.
 	byte numSpecials = 0;
@@ -473,7 +473,7 @@ static void SaveSpecials(SDL_RWops *f, std::span<const special_t> list)
 		}
 	}
 
-	SDL_RWwrite(f,&numSpecials,1,sizeof(byte));	// num specials
+	SDL_WriteIO(f,&numSpecials,1,sizeof(byte));	// num specials
 
 	// Now, write those out.
 	for (special_t spcl : list) // Intentional copy.
@@ -497,7 +497,7 @@ static void SaveSpecials(SDL_RWops *f, std::span<const special_t> list)
 	}
 }
 
-static void SaveMapData(SDL_RWops *f, const Map *me)
+static void SaveMapData(SDL_IOStream *f, const Map *me)
 {
 	int pos;
 	byte sameLength,diffLength;
@@ -533,8 +533,8 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 			{
 				// write out the run, and start a new run with this last one
 				writeRun=-127;
-				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,src,1,sizeof(IoTile));
+				SDL_WriteIO(f,&writeRun,1,sizeof(char));
+				SDL_WriteIO(f,src,1,sizeof(IoTile));
 				sameStart=pos;
 				runStart=pos;
 				sameLength=1;
@@ -543,8 +543,8 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 			else if(sameLength==2 && runStart!=sameStart)	// 2 in a row the same, time to start this as a same run
 			{
 				writeRun=sameStart-runStart;
-				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(IoTile));
+				SDL_WriteIO(f,&writeRun,1,sizeof(char));
+				SDL_WriteIO(f,&mapCopy[runStart],writeRun,sizeof(IoTile));
 				runStart=sameStart;
 				diffLength=1;
 			}
@@ -561,8 +561,8 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 				if(diffLength==128)	// max run length is 127
 				{
 					writeRun=127;
-					SDL_RWwrite(f,&writeRun,1,sizeof(char));
-					SDL_RWwrite(f,&mapCopy[runStart],127,sizeof(IoTile));
+					SDL_WriteIO(f,&writeRun,1,sizeof(char));
+					SDL_WriteIO(f,&mapCopy[runStart],127,sizeof(IoTile));
 					diffLength=1;
 					runStart=pos;
 				}
@@ -570,8 +570,8 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 			else	// end a same run, then start a diff run
 			{
 				writeRun=-sameLength;
-				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,src,1,sizeof(IoTile));
+				SDL_WriteIO(f,&writeRun,1,sizeof(char));
+				SDL_WriteIO(f,src,1,sizeof(IoTile));
 				sameStart=pos;
 				runStart=pos;
 				sameLength=1;
@@ -588,25 +588,25 @@ static void SaveMapData(SDL_RWops *f, const Map *me)
 	{
 		// final run is same run
 		writeRun=-sameLength;
-		SDL_RWwrite(f,&writeRun,1,sizeof(char));
-		SDL_RWwrite(f,src,1,sizeof(IoTile));
+		SDL_WriteIO(f,&writeRun,1,sizeof(char));
+		SDL_WriteIO(f,src,1,sizeof(IoTile));
 	}
 	else
 	{
 		// either it's one lonely unique tile, or a different run, either way...
 		writeRun=diffLength;
-		SDL_RWwrite(f,&writeRun,1,sizeof(char));
-		SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(IoTile));
+		SDL_WriteIO(f,&writeRun,1,sizeof(char));
+		SDL_WriteIO(f,&mapCopy[runStart],writeRun,sizeof(IoTile));
 	}
 	delete[] mapCopy;
 }
 
-static void SaveMap(SDL_RWops *f, const Map* me)
+static void SaveMap(SDL_IOStream *f, const Map* me)
 {
-	SDL_RWwrite(f,&me->width,1,sizeof(byte));
-	SDL_RWwrite(f,&me->height,1,sizeof(byte));
-	SDL_RWwrite(f,me->name,32,sizeof(char));
-	SDL_RWwrite(f,me->song,32,sizeof(char));
+	SDL_WriteIO(f,&me->width,1,sizeof(byte));
+	SDL_WriteIO(f,&me->height,1,sizeof(byte));
+	SDL_WriteIO(f,me->name,32,sizeof(char));
+	SDL_WriteIO(f,me->song,32,sizeof(char));
 
 	byte count = 0;
 	for (const mapBadguy_t &guy : me->badguy)
@@ -629,7 +629,7 @@ static void SaveMap(SDL_RWops *f, const Map* me)
 		}
 	}
 
-	SDL_RWwrite(f,&count,1,sizeof(byte));	// num badguys
+	SDL_WriteIO(f,&count,1,sizeof(byte));	// num badguys
 	for (const mapBadguy_t &guy : me->badguy)
 	{
 		if (guy.type && guy.type <= UINT8_MAX)
@@ -639,10 +639,10 @@ static void SaveMap(SDL_RWops *f, const Map* me)
 			static_assert(sizeof(guy.item) == 1);
 
 			byte temp = guy.type;
-			SDL_RWwrite(f, &guy.x, 1, sizeof(byte));
-			SDL_RWwrite(f, &guy.y, 1, sizeof(byte));
-			SDL_RWwrite(f, &temp, 1, sizeof(byte));
-			SDL_RWwrite(f, &guy.item, 1, sizeof(byte));
+			SDL_WriteIO(f, &guy.x, 1, sizeof(byte));
+			SDL_WriteIO(f, &guy.y, 1, sizeof(byte));
+			SDL_WriteIO(f, &temp, 1, sizeof(byte));
+			SDL_WriteIO(f, &guy.item, 1, sizeof(byte));
 
 			if (--count == 0)
 			{
@@ -657,15 +657,15 @@ static void SaveMap(SDL_RWops *f, const Map* me)
 	static_assert(sizeof(me->numBrains) == 2);
 	static_assert(sizeof(me->numCandles) == 2);
 	static_assert(sizeof(me->itemDrops) == 2);
-	SDL_RWwrite(f,&me->flags,1,sizeof(word));
-	SDL_RWwrite(f,&me->numBrains,1,sizeof(word));
-	SDL_RWwrite(f,&me->numCandles,1,sizeof(word));
-	SDL_RWwrite(f,&me->itemDrops,1,sizeof(word));
+	SDL_WriteIO(f,&me->flags,1,sizeof(word));
+	SDL_WriteIO(f,&me->numBrains,1,sizeof(word));
+	SDL_WriteIO(f,&me->numCandles,1,sizeof(word));
+	SDL_WriteIO(f,&me->itemDrops,1,sizeof(word));
 
 	SaveMapData(f, me);
 }
 
-static void SaveItems(SDL_RWops *f)
+static void SaveItems(SDL_IOStream *f)
 {
 	int i;
 	word changedItems;
@@ -680,36 +680,36 @@ static void SaveItems(SDL_RWops *f)
 			changedItems++;
 	}
 
-	SDL_RWwrite(f,&changedItems,1,sizeof(word));
+	SDL_WriteIO(f,&changedItems,1,sizeof(word));
 	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
 	{
 		if(memcmp(GetItem(i),GetBaseItem(i),sizeof(item_t)))
 		{
 			// this item is changed, write it out
 			b=(byte)i;
-			SDL_RWwrite(f,&b,1,sizeof(byte));	// write the item number
+			SDL_WriteIO(f,&b,1,sizeof(byte));	// write the item number
 			item_t item = *GetItem(i);
 			item.sound = SoundToDescIndex(item.sound);
-			SDL_RWwrite(f,&item,1,sizeof(item_t));
+			SDL_WriteIO(f,&item,1,sizeof(item_t));
 		}
 	}
 	if(numItems>NUM_ORIGINAL_ITEMS)
 	{
 		b=255;	// indicating custom items are beginning here
-		SDL_RWwrite(f,&b,1,sizeof(byte));
+		SDL_WriteIO(f,&b,1,sizeof(byte));
 		for(i=NUM_ORIGINAL_ITEMS;i<numItems;i++)
 		{
 			item_t item = *GetItem(i);
 			item.sound = SoundToDescIndex(item.sound);
-			SDL_RWwrite(f,&item,1,sizeof(item_t));
+			SDL_WriteIO(f,&item,1,sizeof(item_t));
 		}
 	}
 }
 
-static void SaveCustomSounds(SDL_RWops *f)
+static void SaveCustomSounds(SDL_IOStream *f)
 {
 	int numCustom = GetNumCustomSounds();
-	SDL_RWwrite(f,&numCustom,1,sizeof(int));
+	SDL_WriteIO(f,&numCustom,1,sizeof(int));
 	for(int i=0;i<numCustom;i++)
 	{
 		IoSoundDesc ioDesc;
@@ -719,13 +719,13 @@ static void SaveCustomSounds(SDL_RWops *f)
 		std::span<const byte> sound = GetCustomSound(i);
 
 		uint32_t size = sound.size();
-		SDL_RWwrite(f,&ioDesc,1,sizeof(IoSoundDesc));	// write out the descriptor
-		SDL_RWwrite(f,&size,sizeof(int32_t),1);	// write out the data length
-		SDL_RWwrite(f,sound.data(),sizeof(byte),size);	// write out the data
+		SDL_WriteIO(f,&ioDesc,1,sizeof(IoSoundDesc));	// write out the descriptor
+		SDL_WriteIO(f,&size,sizeof(int32_t),1);	// write out the data length
+		SDL_WriteIO(f,sound.data(),sizeof(byte),size);	// write out the data
 	}
 }
 
-bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)
+bool Supreme_SaveWorld(const world_t *world, SDL_IOStream *f)
 {
 	int totalPoints=0;
 	for(int i = 1; i < MAX_MAPS; i++)
@@ -733,20 +733,20 @@ bool Supreme_SaveWorld(const world_t *world, SDL_RWops *f)
 			totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
 
 	char code[9]="SUPREME!";
-	SDL_RWwrite(f,code,8,sizeof(char));	// identifier code
+	SDL_WriteIO(f,code,8,sizeof(char));	// identifier code
 
-	SDL_RWwrite(f,&world->author,sizeof(char),32);
-	SDL_RWwrite(f,&world->map[0]->name,sizeof(char),32);
-	SDL_RWwrite(f,&world->numMaps,1,1);
-	SDL_RWwrite(f,&totalPoints,1,sizeof(int));
-	SDL_RWwrite(f,&world->numTiles,1,sizeof(word));
+	SDL_WriteIO(f,&world->author,sizeof(char),32);
+	SDL_WriteIO(f,&world->map[0]->name,sizeof(char),32);
+	SDL_WriteIO(f,&world->numMaps,1,1);
+	SDL_WriteIO(f,&totalPoints,1,sizeof(int));
+	SDL_WriteIO(f,&world->numTiles,1,sizeof(word));
 
 	world->tilegfx.SaveTiles(f);
 
 	for (const terrain_t &terrain : world->Terrain())
 	{
 		IoTerrain io_terrain = SaveOneTerrain(terrain);
-		SDL_RWwrite(f, &io_terrain, sizeof(IoTerrain), 1);
+		SDL_WriteIO(f, &io_terrain, sizeof(IoTerrain), 1);
 	}
 
 	for (Map *map : world->Maps())

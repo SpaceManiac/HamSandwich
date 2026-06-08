@@ -99,7 +99,7 @@ bool VerifyLevel(Map *map)
 		return false;
 
 	dword index = 0;
-	while(SDL_RWread(f,&cmp,sizeof(dword),1))
+	while(SDL_ReadIO(f,&cmp,sizeof(dword),1))
 	{
 		++index;
 		if(cmp==chk)
@@ -685,10 +685,10 @@ TASK(byte) PlayALevel(byte map)
 
 		if(gameMode==GAMEMODE_PLAY && wasPaused)
 		{
-			if(!(GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START)))
+			if(!(GetGamepadButtons()&(1<<SDL_GAMEPAD_BUTTON_START)))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START)) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_GAMEPAD_BUTTON_START)) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
 		{
 			wasPaused=1;
 			PauseGame();

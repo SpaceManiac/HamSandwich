@@ -20,7 +20,7 @@ void ApplyControlSettings()
 	opt.joyCtrl[CTL_ID_DN] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN;
 	opt.joyCtrl[CTL_ID_LF] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF;
 	opt.joyCtrl[CTL_ID_RT] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT;
-	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_CONTROLLER_BUTTON_START;
+	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_GAMEPAD_BUTTON_START;
 
 	// menu controls
 	opt.key[CTL_ID_LF][2] = SDL_SCANCODE_LEFT;
@@ -84,21 +84,21 @@ void DefaultControls(void)
 	opt.joyCtrl[CTL_ID_DN] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_DN;
 	opt.joyCtrl[CTL_ID_LF] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF;
 	opt.joyCtrl[CTL_ID_RT] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT;
-	opt.joyCtrl[CTL_ID_B1] = SDL_CONTROLLER_BUTTON_A;
-	opt.joyCtrl[CTL_ID_B2] = SDL_CONTROLLER_BUTTON_B;
-	opt.joyCtrl[CTL_ID_B3] = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
-	opt.joyCtrl[CTL_ID_B4] = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
-	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_CONTROLLER_BUTTON_START;
+	opt.joyCtrl[CTL_ID_B1] = SDL_GAMEPAD_BUTTON_SOUTH;
+	opt.joyCtrl[CTL_ID_B2] = SDL_GAMEPAD_BUTTON_EAST;
+	opt.joyCtrl[CTL_ID_B3] = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER;
+	opt.joyCtrl[CTL_ID_B4] = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER;
+	opt.joyCtrl[CTL_ID_ESCAPE] = SDL_GAMEPAD_BUTTON_START;
 	opt.joyCtrl[CTL_ID_QC_1] = RAWGAMEPADAXIS_BASE+RawGamepadAxis::LT;	// energy barrage
 	opt.joyCtrl[CTL_ID_QC_2] = RAWGAMEPADAXIS_BASE + RawGamepadAxis::RT; // dragon's flame
-	opt.joyCtrl[CTL_ID_QC_3] = SDL_CONTROLLER_BUTTON_X; // seeker bolt
-	opt.joyCtrl[CTL_ID_QC_4] = SDL_CONTROLLER_BUTTON_Y; // ice
-	opt.joyCtrl[CTL_ID_QC_5] = SDL_CONTROLLER_BUTTON_LEFTSTICK; // inferno
-	opt.joyCtrl[CTL_ID_QC_6] = SDL_CONTROLLER_BUTTON_DPAD_RIGHT; // summon
-	opt.joyCtrl[CTL_ID_QC_7] = SDL_CONTROLLER_BUTTON_DPAD_LEFT; // stoneskin
-	opt.joyCtrl[CTL_ID_QC_8] = SDL_CONTROLLER_BUTTON_DPAD_DOWN; // berserk
-	opt.joyCtrl[CTL_ID_QC_9] = SDL_CONTROLLER_BUTTON_DPAD_UP; // heal
-	opt.joyCtrl[CTL_ID_QC_0] = SDL_CONTROLLER_BUTTON_RIGHTSTICK; // armageddon
+	opt.joyCtrl[CTL_ID_QC_3] = SDL_GAMEPAD_BUTTON_WEST; // seeker bolt
+	opt.joyCtrl[CTL_ID_QC_4] = SDL_GAMEPAD_BUTTON_NORTH; // ice
+	opt.joyCtrl[CTL_ID_QC_5] = SDL_GAMEPAD_BUTTON_LEFT_STICK; // inferno
+	opt.joyCtrl[CTL_ID_QC_6] = SDL_GAMEPAD_BUTTON_DPAD_RIGHT; // summon
+	opt.joyCtrl[CTL_ID_QC_7] = SDL_GAMEPAD_BUTTON_DPAD_LEFT; // stoneskin
+	opt.joyCtrl[CTL_ID_QC_8] = SDL_GAMEPAD_BUTTON_DPAD_DOWN; // berserk
+	opt.joyCtrl[CTL_ID_QC_9] = SDL_GAMEPAD_BUTTON_DPAD_UP; // heal
+	opt.joyCtrl[CTL_ID_QC_0] = SDL_GAMEPAD_BUTTON_RIGHT_STICK; // armageddon
 }
 
 void DefaultOptions(void)
@@ -130,7 +130,7 @@ void InitOptions(void)
 	char optCode[5];
 	if(f)
 	{
-		SDL_RWread(f, optCode,sizeof(char), 4);
+		SDL_ReadIO(f, optCode,sizeof(char), 4);
 		if (optCode[0] == 'K' && optCode[1] == 'I' && optCode[2] == 'D')
 		{
 			byte b = (byte)optCode[3];
@@ -139,7 +139,7 @@ void InitOptions(void)
 				// do whatever we need to do to update
 				// from version 1-2, nothing needed. It just won't be able to load the cheatstone data, but that's already been cleared by default options
 			}
-			SDL_RWread(f, &opt, sizeof(option_t), 1);
+			SDL_ReadIO(f, &opt, sizeof(option_t), 1);
 		}
 		else // this is so old it doesn't even have the cool KID code, so we need to reset it
 		{
@@ -158,8 +158,8 @@ void ExitOptions(void)
 	auto f = AppdataOpen_Write("options.cfg");
 	char optCode[5]="KID0";
 	optCode[3] = (char)OPT_VERSION;
-	SDL_RWwrite(f, optCode, sizeof(char), 4);
-	SDL_RWwrite(f,&opt,sizeof(option_t),1);
+	SDL_WriteIO(f, optCode, sizeof(char), 4);
+	SDL_WriteIO(f,&opt,sizeof(option_t),1);
 	f.reset();
 	AppdataSync();
 }
@@ -474,7 +474,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 						(i == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP) ||
 						(i == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF) ||
 						(i == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT) ||
-						(i==SDL_CONTROLLER_BUTTON_START))
+						(i==SDL_GAMEPAD_BUTTON_START))
 						continue; // can't bind left stick movement, it's fixed to movement, or START which is fixed to pause/exit
 
 					if (taps & (1 << i))
@@ -514,27 +514,27 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 void RenderGamepadButton(int x, int y, byte rawBtn)
 {
 	byte imgNum[] = {
-		8,	// SDL_CONTROLLER_BUTTON_A,
-		9,	// SDL_CONTROLLER_BUTTON_B,
-		10, // SDL_CONTROLLER_BUTTON_X,
-		11, // SDL_CONTROLLER_BUTTON_Y,
-		22, // SDL_CONTROLLER_BUTTON_BACK, (select button img)
-		24, // SDL_CONTROLLER_BUTTON_GUIDE, (just a ?, because I THINK this is the big "X" button on an xbox controller)
-		23, // SDL_CONTROLLER_BUTTON_START,
-		14, // SDL_CONTROLLER_BUTTON_LEFTSTICK,
-		15, // SDL_CONTROLLER_BUTTON_RIGHTSTICK,
-		12, // SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-		13, // SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-		19, //SDL_CONTROLLER_BUTTON_DPAD_UP,
-		17, // SDL_CONTROLLER_BUTTON_DPAD_DOWN,
-		18, // SDL_CONTROLLER_BUTTON_DPAD_LEFT,
-		16, // SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
-		25, //SDL_CONTROLLER_BUTTON_MISC1,    /* Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button */ - i just made up some weird symbol
-		26, //SDL_CONTROLLER_BUTTON_PADDLE1,  /* Xbox Elite paddle P1 */
-		27, //SDL_CONTROLLER_BUTTON_PADDLE2,  /* Xbox Elite paddle P3 */
-		28, //SDL_CONTROLLER_BUTTON_PADDLE3,  /* Xbox Elite paddle P2 */
-		29, // SDL_CONTROLLER_BUTTON_PADDLE4,  /* Xbox Elite paddle P4 */
-		30, //SDL_CONTROLLER_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
+		8,	// SDL_GAMEPAD_BUTTON_SOUTH,
+		9,	// SDL_GAMEPAD_BUTTON_EAST,
+		10, // SDL_GAMEPAD_BUTTON_WEST,
+		11, // SDL_GAMEPAD_BUTTON_NORTH,
+		22, // SDL_GAMEPAD_BUTTON_BACK, (select button img)
+		24, // SDL_GAMEPAD_BUTTON_GUIDE, (just a ?, because I THINK this is the big "X" button on an xbox controller)
+		23, // SDL_GAMEPAD_BUTTON_START,
+		14, // SDL_GAMEPAD_BUTTON_LEFT_STICK,
+		15, // SDL_GAMEPAD_BUTTON_RIGHT_STICK,
+		12, // SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,
+		13, // SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER,
+		19, //SDL_GAMEPAD_BUTTON_DPAD_UP,
+		17, // SDL_GAMEPAD_BUTTON_DPAD_DOWN,
+		18, // SDL_GAMEPAD_BUTTON_DPAD_LEFT,
+		16, // SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
+		25, //SDL_GAMEPAD_BUTTON_MISC1,    /* Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button */ - i just made up some weird symbol
+		26, //SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,  /* Xbox Elite paddle P1 */
+		27, //SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,  /* Xbox Elite paddle P3 */
+		28, //SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,  /* Xbox Elite paddle P2 */
+		29, // SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,  /* Xbox Elite paddle P4 */
+		30, //SDL_GAMEPAD_BUTTON_TOUCHPAD, /* PS4/PS5 touchpad button */
 		0,	// empty spot
 		0,	//	LS_UP,
 		1,	//	LS_DN,
@@ -563,7 +563,7 @@ void RenderGamepadButton(int x, int y, byte rawBtn)
 				(rawBtn == RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT)))
 			{
 				BlitIconBit(sx, sy, sx + 15, sy + 15, x-10, y, 255, 0);
-				rawBtn = SDL_CONTROLLER_BUTTON_DPAD_UP + rawBtn - (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP);
+				rawBtn = SDL_GAMEPAD_BUTTON_DPAD_UP + rawBtn - (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP);
 				sx = 384 + (imgNum[rawBtn] % 10) * 16;
 				sy = 416 + (imgNum[rawBtn] / 10) * 16;
 				BlitIconBit(sx, sy, sx + 15, sy + 15, x + 10, y, 255, 0);
@@ -792,10 +792,10 @@ void RenderOptionsMenu(MGLDraw *mgl)
 			case OPT_DPADTOMOVE:
 				for (int i = CTL_ID_B1; i < NUM_CONTROLS; i++)
 				{
-					if (opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_DOWN ||
-						opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_UP ||
-						opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_LEFT ||
-						opt.joyCtrl[i] == SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
+					if (opt.joyCtrl[i] == SDL_GAMEPAD_BUTTON_DPAD_DOWN ||
+						opt.joyCtrl[i] == SDL_GAMEPAD_BUTTON_DPAD_UP ||
+						opt.joyCtrl[i] == SDL_GAMEPAD_BUTTON_DPAD_LEFT ||
+						opt.joyCtrl[i] == SDL_GAMEPAD_BUTTON_DPAD_RIGHT)
 						dpadWarning = true;
 				}
 				if (opt.dpadToMove && dpadWarning)

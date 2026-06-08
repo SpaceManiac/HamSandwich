@@ -35,11 +35,11 @@ byte LoadWorld(world_t *world,const char *fname)
 	if(!f)
 		return 0;
 
-	SDL_RWread(f,&world->numMaps,1,1);
+	SDL_ReadIO(f,&world->numMaps,1,1);
 
 	LoadTiles(f.get());
 
-	SDL_RWread(f,world->terrain,200,sizeof(terrain_t));
+	SDL_ReadIO(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -63,11 +63,11 @@ byte SaveWorld(world_t *world,const char *fname)
 	if(!f)
 		return 0;
 
-	SDL_RWwrite(f,&world->numMaps,1,1);
+	SDL_WriteIO(f,&world->numMaps,1,1);
 
 	SaveTiles(f.get());
 
-	SDL_RWwrite(f,world->terrain,200,sizeof(terrain_t));
+	SDL_WriteIO(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)
 		world->map[i]->Save(f.get());
@@ -114,7 +114,7 @@ void GetWorldName(const char *fname,char *buf)
 	//   the 200 terrain types, the width&height of map 0, and bam there it is at the name
 	//   of map 0.
 
-	SDL_RWseek(f,1+400*32*24+200*sizeof(terrain_t)+2*sizeof(int),RW_SEEK_SET);
+	SDL_SeekIO(f,1+400*32*24+200*sizeof(terrain_t)+2*sizeof(int),SDL_IO_SEEK_SET);
 	// read the name
-	SDL_RWread(f,buf,1,32);
+	SDL_ReadIO(f,buf,1,32);
 }

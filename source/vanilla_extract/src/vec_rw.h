@@ -8,8 +8,8 @@
 namespace vanilla
 {
 
-	// Create an SDL_RWops from an owned byte buffer. It will be freed when closed.
-	owned::SDL_RWops create_vec_rwops(std::vector<uint8_t>&& buffer);
+	// Create an SDL_IOStream from an owned byte buffer. It will be freed when closed.
+	owned::SDL_IOStream create_vec_rwops(std::vector<uint8_t>&& buffer);
 
 }  // namespace vanilla
 

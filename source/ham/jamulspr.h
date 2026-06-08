@@ -7,7 +7,7 @@
 #include "jamultypes.h"
 #include "recolor.h"
 
-typedef struct SDL_RWops SDL_RWops;
+typedef struct SDL_IOStream SDL_IOStream;
 
 class MGLDraw;
 
@@ -22,8 +22,8 @@ public:
 	sprite_t(sprite_t &&) noexcept = default;
 	sprite_t &operator=(sprite_t &&) noexcept = default;
 
-	bool LoadData(SDL_RWops *f);
-	bool SaveData(SDL_RWops *f) const;
+	bool LoadData(SDL_IOStream *f);
+	bool SaveData(SDL_IOStream *f) const;
 	void GetHeader(byte *buffer) const;
 
 	void Draw(int x, int y, MGLDraw *mgl) const;

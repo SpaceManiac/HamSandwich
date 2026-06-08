@@ -265,14 +265,14 @@ bool Editor::import_frame(string fname, bool batch) {
 
     working("Importing...");
 
-    std::shared_ptr<SDL_Surface> surface(IMG_Load(fname.c_str()), SDL_FreeSurface);
+    std::shared_ptr<SDL_Surface> surface(IMG_Load(fname.c_str()), SDL_DestroySurface);
     if (!surface) {
         if (!batch) dialog::error("Failed to import", IMG_GetError());
         return false;
     }
 
     if (surface->format->format != SDL_PIXELFORMAT_ABGR8888) {
-        surface = {SDL_ConvertSurfaceFormat(surface.get(), SDL_PIXELFORMAT_ABGR8888, 0), SDL_FreeSurface};
+        surface = {SDL_ConvertSurface(surface.get(), SDL_PIXELFORMAT_ABGR8888, 0), SDL_DestroySurface};
     }
 
     if (lunaticpal::ReduceImage(surface.get()) && !batch) {
@@ -465,13 +465,13 @@ void Editor::render() {
                     break;
                 }
                 region = {x, y, frame.surface->w, frame.surface->h};
-                SDL_RenderCopy(renderer, frame.texture.get(), nullptr, &region);
+                SDL_RenderTexture(renderer, frame.texture.get(), nullptr, &region);
 
                 if (i == file->curSprite) {
                     // red box
                     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
                     region.x -= 1; region.y -= 1; region.w += 2; region.h += 2;
-                    SDL_RenderDrawRect(renderer, &region);
+                    SDL_RenderRect(renderer, &region);
                 }
 
                 x += frame.surface->w;
@@ -484,11 +484,11 @@ void Editor::render() {
         // crosshairs in behind
         if (crosshairs == 1) {
             SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255);
-            SDL_RenderDrawLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
-            SDL_RenderDrawLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
+            SDL_RenderLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
+            SDL_RenderLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
             SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
             region = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
-            SDL_RenderDrawRect(renderer, &region);
+            SDL_RenderRect(renderer, &region);
         }
 
         // draw sprite
@@ -500,18 +500,18 @@ void Editor::render() {
                     current->surface->w,
                     current->surface->h,
                 };
-                SDL_RenderCopy(renderer, current->texture.get(), nullptr, &region);
+                SDL_RenderTexture(renderer, current->texture.get(), nullptr, &region);
             }
         }
 
         // crosshairs in front
         if (crosshairs == 2) {
             SDL_SetRenderDrawColor(renderer, 0, 128, 0, 255);
-            SDL_RenderDrawLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
-            SDL_RenderDrawLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
+            SDL_RenderLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
+            SDL_RenderLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
             SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
             region = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
-            SDL_RenderDrawRect(renderer, &region);
+            SDL_RenderRect(renderer, &region);
         }
     }
 
@@ -520,9 +520,9 @@ void Editor::render() {
     region = {0, 0, 180, DISPLAY_HEIGHT};
     SDL_RenderFillRect(renderer, &region);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawLine(renderer, 180, 0, 180, DISPLAY_HEIGHT);
-    SDL_RenderDrawLine(renderer, 0, 210, 180, 210);
-    SDL_RenderDrawLine(renderer, 0, DISPLAY_HEIGHT - 24, 180, DISPLAY_HEIGHT - 24);
+    SDL_RenderLine(renderer, 180, 0, 180, DISPLAY_HEIGHT);
+    SDL_RenderLine(renderer, 0, 210, 180, 210);
+    SDL_RenderLine(renderer, 0, DISPLAY_HEIGHT - 24, 180, DISPLAY_HEIGHT - 24);
 
     // file stats
     if (FileInfo* file = getCurFile()) {
@@ -559,7 +559,7 @@ void Editor::render() {
                 file->curSprite = frames.size() - 1;
             }
 
-            if ((frame->ofsX || frame->ofsY) && gui.iconButton(146, 155, FAChar::undo, "Reset origin (Ctrl+R)", { KMOD_CTRL, SDL_SCANCODE_R })) {
+            if ((frame->ofsX || frame->ofsY) && gui.iconButton(146, 155, FAChar::undo, "Reset origin (Ctrl+R)", { SDL_KMOD_CTRL, SDL_SCANCODE_R })) {
                 frame->ofsX = frame->ofsY = 0;
                 file->unsaved = true;
             }
@@ -567,20 +567,20 @@ void Editor::render() {
 
         x = 10; g = 34; y = 180;
         if (frame) {
-            if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { KMOD_SHIFT, SDL_SCANCODE_LEFT })) {
+            if (gui.iconButton(x, y, FAChar::backward, "Shift frame left (Shift+Left)", { SDL_KMOD_SHIFT, SDL_SCANCODE_LEFT })) {
                 shift(-1);
             }
         }
-        if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { KMOD_CTRL, SDL_SCANCODE_INSERT })) {
+        if (gui.iconButton(x += g, y, FAChar::plus, "Add frame (Ctrl+Insert)", { SDL_KMOD_CTRL, SDL_SCANCODE_INSERT })) {
             JspFrame newFrame(32, 24);
             frames.insert(frames.begin() + file->curSprite, newFrame);
             file->unsaved = true;
         }
         if (frame) {
-            if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { KMOD_CTRL, SDL_SCANCODE_A })) {
+            if (gui.iconButton(x += g, y, FAChar::font, "Convert pink to alpha (Ctrl+A)", { SDL_KMOD_CTRL, SDL_SCANCODE_A })) {
                 convertAlpha();
             }
-            if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { KMOD_CTRL, SDL_SCANCODE_DELETE })) {
+            if (gui.iconButton(x += g, y, FAChar::minus, "Delete frame (Ctrl+Delete)", { SDL_KMOD_CTRL, SDL_SCANCODE_DELETE })) {
                 frames.erase(frames.begin() + file->curSprite);
                 file->unsaved = true;
 
@@ -590,7 +590,7 @@ void Editor::render() {
                     file->curSprite = frames.size() - 1;
                 }
             }
-            if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { KMOD_SHIFT, SDL_SCANCODE_RIGHT })) {
+            if (gui.iconButton(x += g, y, FAChar::forward, "Shift frame right (Shift+Right)", { SDL_KMOD_SHIFT, SDL_SCANCODE_RIGHT })) {
                 shift(1);
             }
         }
@@ -598,7 +598,7 @@ void Editor::render() {
         // sprites
         if (frames.size() > 0) {
             SDL_Rect clip {0, 211, 180, DISPLAY_HEIGHT - 26 - 209};
-            SDL_RenderSetClipRect(renderer, &clip);
+            SDL_SetRenderClipRect(renderer, &clip);
 
             // setup
             SDL_Texture *curBmp = frames[file->curSprite].texture.get();
@@ -606,7 +606,7 @@ void Editor::render() {
             int w = surface->w, h = surface->h;
             int spr_ = file->curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
             SDL_Rect rect = { 90 - w / 2, y_, w, h };
-            SDL_RenderCopy(renderer, curBmp, nullptr, &rect);
+            SDL_RenderTexture(renderer, curBmp, nullptr, &rect);
 
             // frames before
             size_t spr = spr_;
@@ -618,7 +618,7 @@ void Editor::render() {
                 rect.h = frames[spr].surface->h;
                 rect.x = 90 - rect.w / 2;
                 rect.y = y -= rect.h;
-                SDL_RenderCopy(renderer, bmp, nullptr, &rect);
+                SDL_RenderTexture(renderer, bmp, nullptr, &rect);
             }
 
             // frames after
@@ -629,7 +629,7 @@ void Editor::render() {
                 rect.h = frames[spr].surface->h;
                 rect.x = 90 - rect.w / 2;
                 rect.y = y;
-                SDL_RenderCopy(renderer, bmp, nullptr, &rect);
+                SDL_RenderTexture(renderer, bmp, nullptr, &rect);
                 y += rect.h;
                 ++spr;
             }
@@ -637,9 +637,9 @@ void Editor::render() {
             // red box
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
             rect = { 90 - w / 2 - 1, y_ - 1, 2 + w, 2 + h };
-            SDL_RenderDrawRect(renderer, &rect);
+            SDL_RenderRect(renderer, &rect);
         }
-        SDL_RenderSetClipRect(renderer, nullptr);
+        SDL_SetRenderClipRect(renderer, nullptr);
     }
 
     // top bar
@@ -648,13 +648,13 @@ void Editor::render() {
     SDL_RenderFillRect(renderer, &region);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderDrawLine(renderer, 0, 30, DISPLAY_WIDTH, 30);
-    SDL_RenderDrawLine(renderer, 0, 60, DISPLAY_WIDTH, 60);
+    SDL_RenderLine(renderer, 0, 30, DISPLAY_WIDTH, 30);
+    SDL_RenderLine(renderer, 0, 60, DISPLAY_WIDTH, 60);
 
     // buttons
     std::string str;
     x = 6; y = 4; w = 80; g = 90; h = 22;
-    if (gui.button(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)", { KMOD_CTRL, SDL_SCANCODE_O })) {
+    if (gui.button(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)", { SDL_KMOD_CTRL, SDL_SCANCODE_O })) {
         if (dialog::open("Open JSP", dialog::JSP, &str)) {
             load(str);
         }
@@ -663,7 +663,7 @@ void Editor::render() {
         files.push_back(FileInfo());
     }
     if (FileInfo* file = getCurFile()) {
-        if (gui.button(rect(x += g, y, w, h), "Close", "Close file (Ctrl+W)", { KMOD_CTRL, SDL_SCANCODE_W })) {
+        if (gui.button(rect(x += g, y, w, h), "Close", "Close file (Ctrl+W)", { SDL_KMOD_CTRL, SDL_SCANCODE_W })) {
             if (!file->unsaved || dialog::showOkCancel("Really close without saving?", false)) {
                 files.erase(files.begin() + curFile);
                 if (files.empty()) {
@@ -673,31 +673,31 @@ void Editor::render() {
                 }
             }
         }
-        if (gui.button(rect(x += g, y, w, h), "Save", "Save JSP (Ctrl+S)", { KMOD_CTRL, SDL_SCANCODE_S })) {
+        if (gui.button(rect(x += g, y, w, h), "Save", "Save JSP (Ctrl+S)", { SDL_KMOD_CTRL, SDL_SCANCODE_S })) {
             save();
         }
-        if (gui.button(rect(x += g, y, w, h), "Save As", "Save JSP As (Ctrl+Shift+S)", { KMOD_CTRL | KMOD_SHIFT, SDL_SCANCODE_S })) {
+        if (gui.button(rect(x += g, y, w, h), "Save As", "Save JSP As (Ctrl+Shift+S)", { SDL_KMOD_CTRL | SDL_KMOD_SHIFT, SDL_SCANCODE_S })) {
             if (dialog::save("Save JSP", dialog::JSP, &str)) {
                 saveAs(str);
             }
         }
         if (file->getCurFrame()) {
-            if (gui.button(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)", { KMOD_CTRL, SDL_SCANCODE_I })) {
+            if (gui.button(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)", { SDL_KMOD_CTRL, SDL_SCANCODE_I })) {
                 if (dialog::open("Import Image", dialog::IMAGES, &str)) {
                     import_frame(str);
                 }
             }
-            if (gui.button(rect(x += g, y, w, h), "Export", "Export to image (Ctrl+E)", { KMOD_CTRL, SDL_SCANCODE_E })) {
+            if (gui.button(rect(x += g, y, w, h), "Export", "Export to image (Ctrl+E)", { SDL_KMOD_CTRL, SDL_SCANCODE_E })) {
                 if (dialog::save("Export Image", dialog::IMAGES, &str)) {
                     export_frame(str);
                 }
             }
-            if (gui.button(rect(x += g, y, w, h), "Import All", "Import from folder (Ctrl+Shift+I)", { KMOD_CTRL | KMOD_SHIFT, SDL_SCANCODE_I })) {
+            if (gui.button(rect(x += g, y, w, h), "Import All", "Import from folder (Ctrl+Shift+I)", { SDL_KMOD_CTRL | SDL_KMOD_SHIFT, SDL_SCANCODE_I })) {
                 if (dialog::open("Select first frame (0.png)", dialog::PNG, &str)) {
                     import_batch(str);
                 }
             }
-            if (gui.button(rect(x += g, y, w, h), "Export All", "Export to folder (Ctrl+Shift+E)", { KMOD_CTRL | KMOD_SHIFT, SDL_SCANCODE_E })) {
+            if (gui.button(rect(x += g, y, w, h), "Export All", "Export to folder (Ctrl+Shift+E)", { SDL_KMOD_CTRL | SDL_KMOD_SHIFT, SDL_SCANCODE_E })) {
                 if (dialog::save("Export all frames", dialog::PNG, &str)) {
                     export_batch(str);
                 }
@@ -706,11 +706,11 @@ void Editor::render() {
     }
 
     //x = DISPLAY_WIDTH - g;
-    if (gui.button(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode (Ctrl+H)", { KMOD_CTRL, SDL_SCANCODE_H })) {
+    if (gui.button(rect(x += g, y, w, h), "Crosshairs", "Cycle crosshairs mode (Ctrl+H)", { SDL_KMOD_CTRL, SDL_SCANCODE_H })) {
         crosshairs = (crosshairs + 1) % MAX_CROSSHAIRS;
     }
     if (browsing) gui.highlight();
-    if (gui.button(rect(x += g, y, w, h), "Browse", "Show all frames at once (Ctrl+B)", { KMOD_CTRL, SDL_SCANCODE_B })) {
+    if (gui.button(rect(x += g, y, w, h), "Browse", "Show all frames at once (Ctrl+B)", { SDL_KMOD_CTRL, SDL_SCANCODE_B })) {
         browsing = !browsing;
     }
 
@@ -735,7 +735,7 @@ void Editor::handleEvent(const SDL_Event &event) {
     SDL_Rect dragArea = { 181, 31, DISPLAY_WIDTH, DISPLAY_HEIGHT };
 
     switch (event.type) {
-    case SDL_QUIT:
+    case SDL_EVENT_QUIT:
         // TODO: check all files, not just current
         if (!files.empty() && files[curFile].unsaved) {
             running = !dialog::showOkCancel("You have unsaved changes, do you want to quit anyways?", false);
@@ -744,31 +744,31 @@ void Editor::handleEvent(const SDL_Event &event) {
         }
         break;
 
-    case SDL_DROPFILE:
+    case SDL_EVENT_DROP_FILE:
         load(event.drop.file);
         SDL_free(event.drop.file);
         break;
 
     case SDL_WINDOWEVENT:
-        if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+        if (event.window.event == SDL_EVENT_WINDOW_RESIZED) {
             DISPLAY_WIDTH = event.window.data1;
             DISPLAY_HEIGHT = event.window.data2;
         }
         break;
 
-    case SDL_MOUSEBUTTONDOWN:
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
         if (!browsing && event.button.button == 1 && rect_contains(dragArea, event.button.x, event.button.y)) {
             dragging = true;
         }
         break;
 
-    case SDL_MOUSEBUTTONUP:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
         if (event.button.button == 1) {
             dragging = false;
         }
         break;
 
-    case SDL_MOUSEMOTION: {
+    case SDL_EVENT_MOUSE_MOTION: {
         if (files.empty()) break;
         FileInfo& file = files[curFile];
         if (file.jsp.frames.empty() || !dragging) break;
@@ -778,7 +778,7 @@ void Editor::handleEvent(const SDL_Event &event) {
         break;
     }
 
-    case SDL_MOUSEWHEEL:
+    case SDL_EVENT_MOUSE_WHEEL:
         if (event.wheel.y > 0) {
             move(-1);
         } else if (event.wheel.y < 0) {
@@ -786,14 +786,14 @@ void Editor::handleEvent(const SDL_Event &event) {
         }
         break;
 
-    case SDL_KEYDOWN: {
+    case SDL_EVENT_KEY_DOWN: {
         if (files.empty()) break;
         FileInfo& file = files[curFile];
         if (file.jsp.frames.size() == 0) break;
 
         int mods = SDL_GetModState();
-        bool ctrl = mods & KMOD_CTRL;
-        bool shift = mods & KMOD_SHIFT;
+        bool ctrl = mods & SDL_KMOD_CTRL;
+        bool shift = mods & SDL_KMOD_SHIFT;
 
         int move = 1;
         if (shift) move = 10;

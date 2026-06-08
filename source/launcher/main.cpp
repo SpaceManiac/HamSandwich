@@ -70,7 +70,7 @@ extern const size_t embed_verdana_size;
 void Verdana(ImGuiIO* io)
 {
 	mfont_t jamfont;
-	if (FontLoad(owned::SDL_RWFromConstMem(embed_verdana, embed_verdana_size).get(), &jamfont) != FONT_OK)
+	if (FontLoad(owned::SDL_IOFromConstMem(embed_verdana, embed_verdana_size).get(), &jamfont) != FONT_OK)
 		return;
 
 	ImFontConfig config;
@@ -942,20 +942,20 @@ int main(int argc, char** argv)
 
 	// Setup SDL
 	// (Some versions of SDL before <2.0.10 appears to have performance/stalling issues on a minority of Windows systems,
-	// depending on whether SDL_INIT_GAMECONTROLLER is enabled or disabled.. updating to latest version of SDL is recommended!)
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+	// depending on whether SDL_INIT_GAMEPAD is enabled or disabled.. updating to latest version of SDL is recommended!)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMEPAD) != 0)
 	{
 		printf("Error: %s\n", SDL_GetError());
 		return -1;
 	}
 
 	// Setup window
-	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
+	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_HIDDEN);
 	SDL_Window* window = SDL_CreateWindow("HamSandwich Launcher", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 480, window_flags);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 	SDL_ShowWindow(window);
 	bool vsync = true; // Enable vsync initially.
-	SDL_RenderSetVSync(renderer, vsync);
+	SDL_SetRenderVSync(renderer, vsync);
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -995,7 +995,7 @@ int main(int argc, char** argv)
 	{
 		if (game.icon)
 		{
-			auto img = ReadIcoFile(owned::SDL_RWFromConstMem(game.icon->data, game.icon->size), 32);
+			auto img = ReadIcoFile(owned::SDL_IOFromConstMem(game.icon->data, game.icon->size), 32);
 			if (img)
 			{
 				// For best results, bake a 32x32 PNG frame into the .ico file.
@@ -1014,7 +1014,7 @@ int main(int argc, char** argv)
 		const Icon* icon = launcher.icons_by_id["jspedit"];
 		if (icon)
 		{
-			auto img = ReadIcoFile(owned::SDL_RWFromConstMem(icon->data, icon->size), 32);
+			auto img = ReadIcoFile(owned::SDL_IOFromConstMem(icon->data, icon->size), 32);
 			if (img)
 			{
 				jspedit_icon = LoadedIcon(renderer, img.get());
@@ -1031,7 +1031,7 @@ int main(int argc, char** argv)
 		if (vsync != newVsync)
 		{
 			vsync = newVsync;
-			SDL_RenderSetVSync(renderer, vsync);
+			SDL_SetRenderVSync(renderer, vsync);
 		}
 
 		// Poll and handle events (inputs, window resize, etc.)
@@ -1043,11 +1043,11 @@ int main(int argc, char** argv)
 		while (SDL_PollEvent(&event))
 		{
 			ImGui_ImplSDL2_ProcessEvent(&event);
-			if (event.type == SDL_QUIT)
+			if (event.type == SDL_EVENT_QUIT)
 				done = true;
-			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
 				done = true;
-			if (event.type == SDL_DROPFILE)
+			if (event.type == SDL_EVENT_DROP_FILE)
 			{
 				CopyToAddonsFolder(launcher.current_game->addons_folder, event.drop.file);
 				SDL_free(event.drop.file);

@@ -295,8 +295,8 @@ void UpdateItems(void);
 byte GetRandomItem(void);
 void SetupRandomItems(void);
 int GetTotalRarity(void);
-void SaveItems(SDL_RWops *f);
-void LoadItems(SDL_RWops *f);
+void SaveItems(SDL_IOStream *f);
+void LoadItems(SDL_IOStream *f);
 void DeleteItem(int itm);
 int NumCustomSprites(void);
 int NumItemSprites(void);
@@ -304,7 +304,7 @@ int BrainsGiven(int type);
 int CandlesGiven(int type);
 int FindItemByName(const char *name);
 
-byte AppendItems(SDL_RWops *f);
+byte AppendItems(SDL_IOStream *f);
 
 struct mapTile_t;
 void UpdateItem(mapTile_t *m,int width,int offset);

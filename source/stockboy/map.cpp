@@ -13,18 +13,18 @@ static world_t *world;
 static int summonClock;
 static byte goodieX,goodieY,goodieType;
 
-Map::Map(SDL_RWops *f)
+Map::Map(SDL_IOStream *f)
 {
 	width=MAP_SIZE;
 	height=MAP_SIZE;
 
-	SDL_RWread(f,name,sizeof(char),32);
-	SDL_RWread(f,&goal,sizeof(goal_t),1);
-	SDL_RWread(f,&antigoal,sizeof(goal_t),1);
-	SDL_RWread(f,&timer,sizeof(word),1);
+	SDL_ReadIO(f,name,sizeof(char),32);
+	SDL_ReadIO(f,&goal,sizeof(goal_t),1);
+	SDL_ReadIO(f,&antigoal,sizeof(goal_t),1);
+	SDL_ReadIO(f,&timer,sizeof(word),1);
 
-	SDL_RWread(f,&genTime,sizeof(word),1);
-	SDL_RWread(f,map,sizeof(mapTile_t),width*height);
+	SDL_ReadIO(f,&genTime,sizeof(word),1);
+	SDL_ReadIO(f,map,sizeof(mapTile_t),width*height);
 }
 
 Map::Map(int wid,int hei,const char *name)
@@ -58,14 +58,14 @@ Map::~Map(void)
 {
 }
 
-byte Map::Save(SDL_RWops *f)
+byte Map::Save(SDL_IOStream *f)
 {
-	SDL_RWwrite(f,name,sizeof(char),32);
-	SDL_RWwrite(f,&goal,sizeof(goal_t),1);
-	SDL_RWwrite(f,&antigoal,sizeof(goal_t),1);
-	SDL_RWwrite(f,&timer,sizeof(word),1);
-	SDL_RWwrite(f,&genTime,sizeof(word),1);
-	SDL_RWwrite(f,map,sizeof(mapTile_t),width*height);
+	SDL_WriteIO(f,name,sizeof(char),32);
+	SDL_WriteIO(f,&goal,sizeof(goal_t),1);
+	SDL_WriteIO(f,&antigoal,sizeof(goal_t),1);
+	SDL_WriteIO(f,&timer,sizeof(word),1);
+	SDL_WriteIO(f,&genTime,sizeof(word),1);
+	SDL_WriteIO(f,map,sizeof(mapTile_t),width*height);
 	return 1;
 }
 

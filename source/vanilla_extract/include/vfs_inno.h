@@ -6,7 +6,7 @@
 namespace vanilla
 {
 	// Inno 4.0.5, bulk 7zipped
-	std::unique_ptr<Vfs> open_inno(SDL_RWops* rw);
+	std::unique_ptr<Vfs> open_inno(SDL_IOStream* rw);
 }
 
 #endif

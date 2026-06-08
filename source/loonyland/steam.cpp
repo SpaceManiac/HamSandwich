@@ -71,7 +71,7 @@ public:
 		}
 
 		dword gamepad = GetGamepadButtons();
-		if (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_GUIDE))
+		if (gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_GUIDE))
 		{
 			SteamFriends()->ActivateGameOverlay(nullptr);
 		}

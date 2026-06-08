@@ -507,7 +507,7 @@ byte AddCustomSound(const char *fname)
 	auto f = AppdataOpen(fname);
 	if(!f)
 		return 0;
-	customLength[numCustom] = SDL_RWsize(f);
+	customLength[numCustom] = SDL_GetIOSize(f);
 	if(customLength[numCustom]<=0)
 	{
 		return 0;
@@ -517,7 +517,7 @@ byte AddCustomSound(const char *fname)
 	{
 		return 0;
 	}
-	SDL_RWread(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
+	SDL_ReadIO(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
 	f.reset();
 
 	strcpy(soundInfo[CUSTOM_SND_START+numCustom].name,"New Sound");
@@ -536,7 +536,7 @@ byte ReplaceCustomSound(int n,const char *fname)
 	auto f = AppdataOpen(fname);
 	if(!f)
 		return 0;
-	customLength[n] = SDL_RWsize(f);
+	customLength[n] = SDL_GetIOSize(f);
 	if(customLength[n]<=0)
 	{
 		return 0;
@@ -546,7 +546,7 @@ byte ReplaceCustomSound(int n,const char *fname)
 	{
 		return 0;
 	}
-	SDL_RWread(f, customSound[n],sizeof(byte),customLength[n]);
+	SDL_ReadIO(f, customSound[n],sizeof(byte),customLength[n]);
 
 	return 1;
 }
@@ -573,40 +573,40 @@ void DeleteCustomSound(int n)
 											// references above N move down one
 }
 
-void SaveCustomSounds(SDL_RWops *f)
+void SaveCustomSounds(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_RWwrite(f,&numCustom,1,sizeof(int));
+	SDL_WriteIO(f,&numCustom,1,sizeof(int));
 	for(i=0;i<numCustom;i++)
 	{
-		SDL_RWwrite(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));	// write out the descriptor
-		SDL_RWwrite(f,&customLength[i],sizeof(int32_t),1);	// write out the data length
-		SDL_RWwrite(f,customSound[i],sizeof(byte),customLength[i]);	// write out the data
+		SDL_WriteIO(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));	// write out the descriptor
+		SDL_WriteIO(f,&customLength[i],sizeof(int32_t),1);	// write out the data length
+		SDL_WriteIO(f,customSound[i],sizeof(byte),customLength[i]);	// write out the data
 	}
 }
 
-void LoadCustomSounds(SDL_RWops *f)
+void LoadCustomSounds(SDL_IOStream *f)
 {
 	int i;
 
 	ClearCustomSounds();
 
-	SDL_RWread(f,&numCustom,1,sizeof(int));
+	SDL_ReadIO(f,&numCustom,1,sizeof(int));
 	for(i=0;i<numCustom;i++)
 	{
-		SDL_RWread(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
-		SDL_RWread(f,&customLength[i],sizeof(int32_t),1);
+		SDL_ReadIO(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
+		SDL_ReadIO(f,&customLength[i],sizeof(int32_t),1);
 		customSound[i]=(byte *)malloc(customLength[i]);
-		SDL_RWread(f,customSound[i],sizeof(byte),customLength[i]);
+		SDL_ReadIO(f,customSound[i],sizeof(byte),customLength[i]);
 	}
 }
 
-int AppendCustomSounds(SDL_RWops *f)
+int AppendCustomSounds(SDL_IOStream *f)
 {
 	int i,more,start;
 
-	SDL_RWread(f,&more,1,sizeof(int));
+	SDL_ReadIO(f,&more,1,sizeof(int));
 
 	if(numCustom+more>MAX_CUSTOM_SOUNDS)
 		return -1;
@@ -615,11 +615,11 @@ int AppendCustomSounds(SDL_RWops *f)
 	numCustom+=more;
 	for(i=start;i<numCustom;i++)
 	{
-		SDL_RWread(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
+		SDL_ReadIO(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
 		soundInfo[CUSTOM_SND_START+i].num=CUSTOM_SND_START+i;
-		SDL_RWread(f,&customLength[i],sizeof(int32_t),1);
+		SDL_ReadIO(f,&customLength[i],sizeof(int32_t),1);
 		customSound[i]=(byte *)malloc(customLength[i]);
-		SDL_RWread(f,customSound[i],sizeof(byte),customLength[i]);
+		SDL_ReadIO(f,customSound[i],sizeof(byte),customLength[i]);
 	}
 
 	return (start);
@@ -648,7 +648,7 @@ void MakeSpaceSound(int snd,int priority)
 	GoPlaySound(snd,0,0,SND_CUTOFF|GlobalFlags(),priority);
 }
 
-owned::SDL_RWops SoundLoadOverride(int num)
+owned::SDL_IOStream SoundLoadOverride(int num)
 {
 	if (num < CUSTOM_SND_START || num > CUSTOM_SND_START+GetNumCustomSounds())
 		return nullptr;
@@ -657,5 +657,5 @@ owned::SDL_RWops SoundLoadOverride(int num)
 	if (!buf)
 		return nullptr;
 
-	return owned::SDL_RWFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
+	return owned::SDL_IOFromConstMem(buf, GetCustomLength(num - CUSTOM_SND_START));
 }

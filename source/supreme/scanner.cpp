@@ -470,7 +470,7 @@ byte UpdateBestiary(int *lastTime,MGLDraw *mgl)
 	}
 
 	mgl->GetMouse(&msx,&msy);
-	if(mgl->LastKeyPressed()==27 || (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+	if(mgl->LastKeyPressed()==27 || (GetGamepadButtons() & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 		return 1;
 
 	c=GetTaps()|GetArrowTaps();

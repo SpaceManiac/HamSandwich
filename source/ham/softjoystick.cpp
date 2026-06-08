@@ -34,7 +34,7 @@ static inline bool rect_contains(const SDL_Rect &r, int x, int y) {
 
 void Element::draw(SDL_Renderer* renderer) {
 	if (tex)
-		SDL_RenderCopy(renderer, tex.get(), NULL, &rect);
+		SDL_RenderTexture(renderer, tex.get(), NULL, &rect);
 }
 
 SoftJoystick::SoftJoystick(MGLDraw* mgl) {
@@ -93,7 +93,7 @@ void SoftJoystick::render(SDL_Renderer* renderer) {
 }
 
 void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
-	if (e.type == SDL_FINGERDOWN) {
+	if (e.type == SDL_EVENT_FINGER_DOWN) {
 		int x = (int)(e.tfinger.x * mgl->winWidth);
 		int y = (int)(e.tfinger.y * mgl->winHeight);
 		if (rect_contains(esc.rect, x, y)) {
@@ -115,7 +115,7 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 		}
 	}
 
-	if (enableStick && (e.type == SDL_FINGERDOWN || e.type == SDL_FINGERMOTION)) {
+	if (enableStick && (e.type == SDL_EVENT_FINGER_DOWN || e.type == SDL_EVENT_FINGER_MOTION)) {
 		int x = (int)(e.tfinger.x * mgl->winWidth);
 		int y = (int)(e.tfinger.y * mgl->winHeight);
 
@@ -156,7 +156,7 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 		}
 	}
 
-	if (e.type == SDL_FINGERUP) {
+	if (e.type == SDL_EVENT_FINGER_UP) {
 		auto iter = fingerHeld.find(e.tfinger.fingerId);
 		if (iter != fingerHeld.end()) {
 			fingerHeld.erase(iter);

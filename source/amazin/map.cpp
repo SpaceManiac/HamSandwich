@@ -78,13 +78,13 @@ void MapLoad(const char *fname)
 		FatalError("Can't load map!");
 		exit(1);
 	}
-	SDL_RWread(f, g_Map, 0x10a, 8);
+	SDL_ReadIO(f, g_Map, 0x10a, 8);
 }
 
 void MapSave(const char *fname)
 {
 	auto f = AppdataOpen_Write(fname);
-	SDL_RWwrite(f, g_Map, 0x10a, 8);
+	SDL_WriteIO(f, g_Map, 0x10a, 8);
 	f.reset();
 	AppdataSync();
 }

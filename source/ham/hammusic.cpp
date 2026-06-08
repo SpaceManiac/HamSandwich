@@ -44,7 +44,7 @@ void PlaySongFile(const char* fullname)
 
 	StopSong();
 
-	owned::SDL_RWops rw = AppdataOpen(fullname);
+	owned::SDL_IOStream rw = AppdataOpen(fullname);
 	if (!rw)
 	{
 		return;

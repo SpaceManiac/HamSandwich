@@ -368,7 +368,7 @@ static void SaveZip()
 			if (err != ZIP_OK)
 				break;
 
-			owned::SDL_RWops rw = AppdataOpen(file.filename.c_str());
+			owned::SDL_IOStream rw = AppdataOpen(file.filename.c_str());
 			if (!rw)
 			{
 				err = 10;
@@ -376,7 +376,7 @@ static void SaveZip()
 			}
 			while (true)
 			{
-				size_t read = SDL_RWread(rw, buf, 1, BUFSIZE);
+				size_t read = SDL_ReadIO(rw, buf, 1, BUFSIZE);
 				if (read == 0)
 					break;
 				err = zipWriteInFileInZip(zf, buf, read);
@@ -458,7 +458,7 @@ static std::string PrepareWorkshopFolder()
 				return "";
 			}
 
-			owned::SDL_RWops rw = AppdataOpen(file.filename.c_str());
+			owned::SDL_IOStream rw = AppdataOpen(file.filename.c_str());
 			if (!rw)
 			{
 				LogError("Workshop: Failed to open for reading: %s", file.filename.c_str());
@@ -467,7 +467,7 @@ static std::string PrepareWorkshopFolder()
 
 			while (true)
 			{
-				size_t read = SDL_RWread(rw, buf, 1, BUFSIZE);
+				size_t read = SDL_ReadIO(rw, buf, 1, BUFSIZE);
 				if (read == 0)
 					break;
 				if (fwrite(buf, 1, read, f) < read)

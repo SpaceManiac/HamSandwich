@@ -6,7 +6,7 @@
 namespace vanilla
 {
 	// Inno 3.0.4, root uncompressed
-	std::unique_ptr<Vfs> open_inno3(owned::SDL_RWops rw);
+	std::unique_ptr<Vfs> open_inno3(owned::SDL_IOStream rw);
 }
 
 #endif

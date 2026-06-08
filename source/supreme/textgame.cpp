@@ -1923,7 +1923,7 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 	dword gamepad = GetGamepadButtons();
 	byte taps = GetTaps();
 
-	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_A))
+	if (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_SOUTH))
 	{
 		if (curRow == 2 && curCol == 9)
 		{
@@ -1961,15 +1961,15 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 	if (curRow == 3 && curCol == 9)
 		curCol = 8;
 
-	if (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_X))
+	if (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_WEST))
 		mgl->StartTextInput(35, 440, 640-35, 440+28);
 	if (gamepad)
 		gamepadMode = true;
 
-	if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+	if(c == SDLK_ESCAPE || (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 		return 1;
 
-	if(c == SDLK_RETURN || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_Y)))	// enter
+	if(c == SDLK_RETURN || (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_NORTH)))	// enter
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		if(lunaticCaught)
@@ -1997,7 +1997,7 @@ byte UpdateTextGame(int *lastTime,MGLDraw *mgl)
 			MakeNormalSound(SND_MENUCLICK);
 		}
 	}
-	else if(c == SDLK_BACKSPACE || (gamepad & ~lastGamepad & (1 << SDL_CONTROLLER_BUTTON_B)))
+	else if(c == SDLK_BACKSPACE || (gamepad & ~lastGamepad & (1 << SDL_GAMEPAD_BUTTON_EAST)))
 	{
 		if(strlen(inputTxt)>0)
 		{

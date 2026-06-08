@@ -216,17 +216,17 @@ static void FLI_doBRUN(byte *scrn,int scrWidth,byte *p)
 	}
 }
 
-static void FLI_nextchunk(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
+static void FLI_nextchunk(SDL_IOStream* FLI_file, MGLDraw *mgl, int scrWidth)
 {
 	chunkheader chead;
 
-	SDL_RWread(FLI_file, &chead,1,sizeofchunkheader);
+	SDL_ReadIO(FLI_file, &chead,1,sizeofchunkheader);
 	if(chead.kind==FLI_COPY)
 		chead.size=fliWidth*fliHeight+sizeofchunkheader;	// a hack to make up for a bug in Animator?
 
 	std::vector<byte> buffer(chead.size-sizeofchunkheader, 0);
 	byte *p = buffer.data();
-	SDL_RWread(FLI_file, p,1,chead.size-sizeofchunkheader);
+	SDL_ReadIO(FLI_file, p,1,chead.size-sizeofchunkheader);
 
 	switch(chead.kind)
 	{
@@ -256,12 +256,12 @@ static void FLI_nextchunk(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
 	}
 }
 
-static void FLI_nextfr(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
+static void FLI_nextfr(SDL_IOStream* FLI_file, MGLDraw *mgl, int scrWidth)
 {
-	long start = SDL_RWtell(FLI_file);
+	long start = SDL_TellIO(FLI_file);
 
 	frmheader fhead;
-	SDL_RWread(FLI_file,&fhead,1,sizeof(frmheader));
+	SDL_ReadIO(FLI_file,&fhead,1,sizeof(frmheader));
 
 	// check to see if this is a FLC file's special frame... if it is, skip it
 	if (fhead.magic == 0xF1FA)
@@ -274,7 +274,7 @@ static void FLI_nextfr(SDL_RWops* FLI_file, MGLDraw *mgl, int scrWidth)
 
 	// Some movies (TWOLCREDITS.flc) have padding at the end of the frame,
 	// after its chunks, so it needs to be skipped.
-	SDL_RWseek(FLI_file, start + fhead.size, RW_SEEK_SET);
+	SDL_SeekIO(FLI_file, start + fhead.size, SDL_IO_SEEK_SET);
 }
 
 TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCallBack callback)
@@ -287,7 +287,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	dword oldGamepadButtons = ~0;
 	dword gamepadButtons = GetGamepadButtons();
 
-	owned::SDL_RWops FLI_file = AppdataOpen(name);
+	owned::SDL_IOStream FLI_file = AppdataOpen(name);
 	if (!FLI_file)
 	{
 		// Asset stack printed error already
@@ -295,7 +295,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	}
 
 	// Read the main part of the header.
-	SDL_RWread(FLI_file, &FLI_hdr, 1, sizeof(fliheader));
+	SDL_ReadIO(FLI_file, &FLI_hdr, 1, sizeof(fliheader));
 	fliWidth = FLI_hdr.width;
 	fliHeight = FLI_hdr.height;
 
@@ -311,15 +311,15 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	// In older FLCs (everything except LL2's ending.flc), there is a dummy
 	// frame between the header and this location that must be skipped.
 	int32_t ofs1;
-	SDL_RWseek(FLI_file, 80, RW_SEEK_SET);
-	SDL_RWread(FLI_file, &ofs1, 4, 1);
+	SDL_SeekIO(FLI_file, 80, SDL_IO_SEEK_SET);
+	SDL_ReadIO(FLI_file, &ofs1, 4, 1);
 	// There is also the offset of the second frame following this, but all
 	// released movies have it at its expected location.
 
 	// The end of the header is at 128 bytes. In some movies, the real first
 	// frame is there, but in others there's a dummy frame with information
 	// we don't care about. Luckily ofs1 points to the real first frame.
-	SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
+	SDL_SeekIO(FLI_file, ofs1, SDL_IO_SEEK_SET);
 
 	mgl->LastKeyPressed();	// clear key buffer
 
@@ -347,7 +347,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 			if((loop)&&(frmon==FLI_hdr.frames+1))
 			{
 				frmon=1;
-				SDL_RWseek(FLI_file, ofs1, RW_SEEK_SET);
+				SDL_SeekIO(FLI_file, ofs1, SDL_IO_SEEK_SET);
 			}
 			if((!loop)&&(frmon==FLI_hdr.frames))
 				frmon=FLI_hdr.frames+1;
@@ -372,7 +372,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 			// key #27 is escape
 			oldGamepadButtons = gamepadButtons;
 			gamepadButtons = GetGamepadButtons();
-			if ((k == 27) || (gamepadButtons & ~oldGamepadButtons & ((1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_BACK))))
+			if ((k == 27) || (gamepadButtons & ~oldGamepadButtons & ((1 << SDL_GAMEPAD_BUTTON_START) | (1 << SDL_GAMEPAD_BUTTON_BACK))))
 			{
 				k = 27;
 				break;

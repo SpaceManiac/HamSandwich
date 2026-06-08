@@ -358,14 +358,14 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 	}
 }
 
-void SaveSpecial(special_t *s,SDL_RWops *f)
+void SaveSpecial(special_t *s,SDL_IOStream *f)
 {
 	byte numTrig,numEff,b;
 	int i;
 
-	SDL_RWwrite(f,&s->x,1,sizeof(byte));
-	SDL_RWwrite(f,&s->y,1,sizeof(byte));
-	SDL_RWwrite(f,&s->uses,1,sizeof(byte));
+	SDL_WriteIO(f,&s->x,1,sizeof(byte));
+	SDL_WriteIO(f,&s->y,1,sizeof(byte));
+	SDL_WriteIO(f,&s->uses,1,sizeof(byte));
 
 	numTrig=0;
 	numEff=0;
@@ -381,19 +381,19 @@ void SaveSpecial(special_t *s,SDL_RWops *f)
 			numEff=i+1;
 
 	b=numTrig+numEff*8;
-	SDL_RWwrite(f,&b,1,sizeof(byte));	// write a combined number indicating #trigs & #effs
+	SDL_WriteIO(f,&b,1,sizeof(byte));	// write a combined number indicating #trigs & #effs
 
 	if(numTrig>0)
-		SDL_RWwrite(f,s->trigger,numTrig,sizeof(trigger_t));
+		SDL_WriteIO(f,s->trigger,numTrig,sizeof(trigger_t));
 	if(numEff>0)
-		SDL_RWwrite(f,s->effect,numEff,sizeof(effect_t));
+		SDL_WriteIO(f,s->effect,numEff,sizeof(effect_t));
 }
 
-void SaveSpecials(SDL_RWops *f)
+void SaveSpecials(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_RWwrite(f,&numSpecials,1,sizeof(byte));	// num specials
+	SDL_WriteIO(f,&numSpecials,1,sizeof(byte));	// num specials
 	if(numSpecials>0)
 	{
 		for(i=0;i<numSpecials;i++)
@@ -401,34 +401,34 @@ void SaveSpecials(SDL_RWops *f)
 	}
 }
 
-void LoadSpecial(special_t *s,SDL_RWops *f)
+void LoadSpecial(special_t *s,SDL_IOStream *f)
 {
 	byte numTrig,numEff,b;
 
 	memset(s,0,sizeof(special_t));
 
-	SDL_RWread(f,&s->x,1,sizeof(byte));
-	SDL_RWread(f,&s->y,1,sizeof(byte));
-	SDL_RWread(f,&s->uses,1,sizeof(byte));
+	SDL_ReadIO(f,&s->x,1,sizeof(byte));
+	SDL_ReadIO(f,&s->y,1,sizeof(byte));
+	SDL_ReadIO(f,&s->uses,1,sizeof(byte));
 
-	SDL_RWread(f,&b,1,sizeof(byte));	// read a combined number indicating #trigs & #effs
+	SDL_ReadIO(f,&b,1,sizeof(byte));	// read a combined number indicating #trigs & #effs
 
 	numTrig=b%8;
 	numEff=b/8;
 
 	if(numTrig>0)
-		SDL_RWread(f,s->trigger,numTrig,sizeof(trigger_t));
+		SDL_ReadIO(f,s->trigger,numTrig,sizeof(trigger_t));
 	if(numEff>0)
-		SDL_RWread(f,s->effect,numEff,sizeof(effect_t));
+		SDL_ReadIO(f,s->effect,numEff,sizeof(effect_t));
 }
 
-void LoadSpecials(SDL_RWops *f,special_t *list)
+void LoadSpecials(SDL_IOStream *f,special_t *list)
 {
 	int i;
 
 	InitSpecials(list);
 
-	SDL_RWread(f,&numSpecials,1,sizeof(byte));	// num specials
+	SDL_ReadIO(f,&numSpecials,1,sizeof(byte));	// num specials
 	if(numSpecials>0)
 	{
 		for(i=0;i<numSpecials;i++)

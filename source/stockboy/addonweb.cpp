@@ -275,7 +275,7 @@ void SaveAddOn(void)
 	Log_Printnum("size: ",dataSize);
 
 	auto f = AppdataOpen_Write(addOn.destFileName);
-	SDL_RWwrite(f,data,sizeof(byte),dataSize);
+	SDL_WriteIO(f,data,sizeof(byte),dataSize);
 	f.reset();
 
 	Web_KillSocket(fileSocket);

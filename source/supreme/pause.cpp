@@ -705,7 +705,7 @@ PauseMenuResult UpdatePauseMenu(MGLDraw *mgl)
 	}
 
 	lastKey = mgl->LastKeyPressed();
-	if(lastKey==27 || (gamepad & ~oldGamepad) & (1 << SDL_CONTROLLER_BUTTON_START))	// hit ESC to exit pause menu
+	if(lastKey==27 || (gamepad & ~oldGamepad) & (1 << SDL_GAMEPAD_BUTTON_START))	// hit ESC to exit pause menu
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		lastKey=0;

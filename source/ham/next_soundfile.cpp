@@ -44,20 +44,20 @@ static const uint16_t muLaw[256] = {
 // Actually this table makes it sound a little different than it does according
 // to ffmpeg, but it's close enough.
 
-owned::Mix_Chunk LoadNextSoundfile(SDL_RWops *rw)
+owned::Mix_Chunk LoadNextSoundfile(SDL_IOStream *rw)
 {
 	char magic[4];
-	int64_t start = SDL_RWtell(rw);
-	if (SDL_RWread(rw, magic, 4, 1) == 1)
+	int64_t start = SDL_TellIO(rw);
+	if (SDL_ReadIO(rw, magic, 4, 1) == 1)
 	{
 		if (!memcmp(magic, ".snd", 4) /* Indicates big-endian file. */)
 		{
-			uint32_t dataLocation = SDL_ReadBE32(rw);
-			uint32_t dataSize = SDL_ReadBE32(rw);
-			uint32_t dataFormat = SDL_ReadBE32(rw);
-			uint32_t samplingRate = SDL_ReadBE32(rw);
-			uint32_t channelCount = SDL_ReadBE32(rw);
-			SDL_RWseek(rw, start + dataLocation, RW_SEEK_SET);  // Skip info field.
+			uint32_t dataLocation = SDL_ReadU32BE(rw);
+			uint32_t dataSize = SDL_ReadU32BE(rw);
+			uint32_t dataFormat = SDL_ReadU32BE(rw);
+			uint32_t samplingRate = SDL_ReadU32BE(rw);
+			uint32_t channelCount = SDL_ReadU32BE(rw);
+			SDL_SeekIO(rw, start + dataLocation, SDL_IO_SEEK_SET);  // Skip info field.
 
 			if (dataFormat == 1 /* SND_FORMAT_MULAW_8 */)
 			{
@@ -67,7 +67,7 @@ owned::Mix_Chunk LoadNextSoundfile(SDL_RWops *rw)
 				Mix_QuerySpec(&freq, &format, &channels);
 
 				SDL_AudioCVT cvt;
-				SDL_BuildAudioCVT(&cvt, AUDIO_S16SYS, channelCount, samplingRate, format, channels, freq);
+				SDL_BuildAudioCVT(&cvt, SDL_AUDIO_S16, channelCount, samplingRate, format, channels, freq);
 				cvt.len = dataSize * 2;
 				cvt.buf = (byte*) SDL_malloc(cvt.len * cvt.len_mult);
 

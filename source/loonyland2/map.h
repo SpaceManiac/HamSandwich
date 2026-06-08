@@ -108,10 +108,10 @@ class Map
 	public:
 		Map(int wid,int hei,const char *name);
 		Map(Map *m);
-		Map(SDL_RWops *f);
+		Map(SDL_IOStream *f);
 		~Map(void);
 
-		byte Save(SDL_RWops *f);
+		byte Save(SDL_IOStream *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void ShowTags(int camX,int camY,int copyX,int copyY,int copyWid,int copyHei);
@@ -131,8 +131,8 @@ class Map
 		void SmoothLights(void);
 		void Resize(int wid,int hei);
 		void CopyChunk(int cx,int cy,int cwidth,int cheight,int dx,int dy);
-		void SaveProgress(SDL_RWops *f);
-		void LoadFromProgress(SDL_RWops *f);
+		void SaveProgress(SDL_IOStream *f);
+		void LoadFromProgress(SDL_IOStream *f);
 		void ChopTree(int x,int y,byte fx);
 
 		int width,height;

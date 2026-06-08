@@ -575,7 +575,7 @@ TASK(void) EditMenu::FileClick(int msx,int msy,byte btn)
 						MakeNormalSound(SND_MENUCANCEL);
 						break;
 					}
-					if(SDL_GetModState() & KMOD_SHIFT)	// shift-click to merge levels
+					if(SDL_GetModState() & SDL_KMOD_SHIFT)	// shift-click to merge levels
 					{
 						sprintf(s,"%s?",curFname);
 						yesno->Activate("Merge in",s,"Yup","Nope");
@@ -820,7 +820,7 @@ void EditMenu::RenderFileWindow(int msx,int msy)
 	winx=x+88;
 	winy=y+13;
 
-	if(SDL_GetModState() & KMOD_SHIFT)
+	if(SDL_GetModState() & SDL_KMOD_SHIFT)
 	{
 		strcpy(btnName[1],"Merge");
 	}

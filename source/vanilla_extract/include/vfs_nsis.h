@@ -5,7 +5,7 @@
 
 namespace vanilla
 {
-	std::unique_ptr<Vfs> open_nsis(owned::SDL_RWops rw);
+	std::unique_ptr<Vfs> open_nsis(owned::SDL_IOStream rw);
 }
 
 #endif

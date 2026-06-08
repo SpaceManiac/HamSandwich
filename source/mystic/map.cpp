@@ -17,20 +17,20 @@ bool vault2Opened;
 byte guestProgress,libraryProgress,batsProgress;
 byte lightSpeed;
 
-Map::Map(SDL_RWops *f)
+Map::Map(SDL_IOStream *f)
 {
-	SDL_RWread(f,&width,1,sizeof(int));
-	SDL_RWread(f,&height,1,sizeof(int));
+	SDL_ReadIO(f,&width,1,sizeof(int));
+	SDL_ReadIO(f,&height,1,sizeof(int));
 
-	SDL_RWread(f,name,32,sizeof(char));
-	SDL_RWread(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
-	SDL_RWread(f,special,MAX_SPECIAL,sizeof(special_t));
-	SDL_RWread(f,&song,1,1);
-	SDL_RWread(f,&flags,1,1);
+	SDL_ReadIO(f,name,32,sizeof(char));
+	SDL_ReadIO(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_ReadIO(f,special,MAX_SPECIAL,sizeof(special_t));
+	SDL_ReadIO(f,&song,1,1);
+	SDL_ReadIO(f,&flags,1,1);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 
-	SDL_RWread(f,map,width*height,sizeof(mapTile_t));
+	SDL_ReadIO(f,map,width*height,sizeof(mapTile_t));
 }
 
 Map::Map(byte size,const char *name)
@@ -85,17 +85,17 @@ Map::~Map(void)
 	map = nullptr;
 }
 
-byte Map::Save(SDL_RWops *f)
+byte Map::Save(SDL_IOStream *f)
 {
-	SDL_RWwrite(f,&width,1,sizeof(int));
-	SDL_RWwrite(f,&height,1,sizeof(int));
-	SDL_RWwrite(f,name,32,sizeof(char));
-	SDL_RWwrite(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
-	SDL_RWwrite(f,special,MAX_SPECIAL,sizeof(special_t));
-	SDL_RWwrite(f,&song,1,1);
-	SDL_RWwrite(f,&flags,1,1);
+	SDL_WriteIO(f,&width,1,sizeof(int));
+	SDL_WriteIO(f,&height,1,sizeof(int));
+	SDL_WriteIO(f,name,32,sizeof(char));
+	SDL_WriteIO(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_WriteIO(f,special,MAX_SPECIAL,sizeof(special_t));
+	SDL_WriteIO(f,&song,1,1);
+	SDL_WriteIO(f,&flags,1,1);
 
-	SDL_RWwrite(f,map,width*height,sizeof(mapTile_t));
+	SDL_WriteIO(f,map,width*height,sizeof(mapTile_t));
 	return 1;
 }
 

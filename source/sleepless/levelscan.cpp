@@ -9,7 +9,7 @@
 #include "player.h"
 #include "string_extras.h"
 
-static SDL_RWops *scanF;
+static SDL_IOStream *scanF;
 
 static char lvlFlagName[][16]={
 	"Snowing",

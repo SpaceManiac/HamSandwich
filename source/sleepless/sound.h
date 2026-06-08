@@ -426,16 +426,16 @@ byte AddCustomSound(const char *fname);
 int GetNumCustomSounds(void);
 void DeleteCustomSound(int n);
 byte ReplaceCustomSound(int n,const char *fname);
-void LoadCustomSounds(SDL_RWops *f);
-void SaveCustomSounds(SDL_RWops *f);
+void LoadCustomSounds(SDL_IOStream *f);
+void SaveCustomSounds(SDL_IOStream *f);
 
 void MakeCustomSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalCustomSound(int snd);
 int GetCustomSoundByName(const char *name);
 void MakeSpaceSound(int snd,int priority);
 
-int AppendCustomSounds(SDL_RWops *f);
+int AppendCustomSounds(SDL_IOStream *f);
 
-owned::SDL_RWops SoundLoadOverride(int num);
+owned::SDL_IOStream SoundLoadOverride(int num);
 
 #endif

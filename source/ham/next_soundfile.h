@@ -4,6 +4,6 @@
 #include "owned_mixer.h"
 
 // Load a NeXT/Sun soundfile.
-owned::Mix_Chunk LoadNextSoundfile(SDL_RWops *rw);
+owned::Mix_Chunk LoadNextSoundfile(SDL_IOStream *rw);
 
 #endif  // NEXT_SOUNDFILE_H

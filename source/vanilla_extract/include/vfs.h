@@ -10,7 +10,7 @@
 #include "owned_stdio.h"
 #include "owned_sdl.h"
 
-struct SDL_RWops;
+struct SDL_IOStream;
 
 namespace vanilla
 {
@@ -47,7 +47,7 @@ namespace vanilla
 		Vfs() {}
 		virtual ~Vfs() {}
 
-		virtual owned::SDL_RWops open_sdl(const char* filename) = 0;
+		virtual owned::SDL_IOStream open_sdl(const char* filename) = 0;
 		virtual bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output) = 0;
 	};
 
@@ -58,7 +58,7 @@ namespace vanilla
 		WriteVfs() {}
 		virtual ~WriteVfs() {}
 
-		virtual owned::SDL_RWops open_write_sdl(const char* filename) = 0;
+		virtual owned::SDL_IOStream open_write_sdl(const char* filename) = 0;
 		virtual bool delete_file(const char* filename) = 0;
 		virtual bool rename(const char* from, const char* to) = 0;
 	};
@@ -83,7 +83,7 @@ namespace vanilla
 		}
 
 		const char* matches(const char* filename) const;
-		owned::SDL_RWops open_sdl(const char* filename);
+		owned::SDL_IOStream open_sdl(const char* filename);
 	};
 
 	// A full filesystem, including a list of mounts and the write (appdata) mount.
@@ -118,9 +118,9 @@ namespace vanilla
 		std::unique_ptr<WriteVfs> set_appdata(std::unique_ptr<WriteVfs> new_value);
 
 		// Forward to children
-		owned::SDL_RWops open_sdl(const char* filename);
+		owned::SDL_IOStream open_sdl(const char* filename);
 		void list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output);
-		owned::SDL_RWops open_write_sdl(const char* filename);
+		owned::SDL_IOStream open_write_sdl(const char* filename);
 
 		bool delete_file(const char* filename);
 		bool rename(const char* from, const char* to);

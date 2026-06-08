@@ -2510,7 +2510,7 @@ void DestroyBullets(int x,int y,byte team,int radius)
 	}
 }
 
-void SaveBullets(SDL_RWops *f)
+void SaveBullets(SDL_IOStream *f)
 {
 	int i;
 	word b;
@@ -2522,16 +2522,16 @@ void SaveBullets(SDL_RWops *f)
 			b++;
 	}
 
-	SDL_RWwrite(f,&b,sizeof(word),1);
+	SDL_WriteIO(f,&b,sizeof(word),1);
 	for(i=0;i<MAX_BULLETS;i++)
 	{
 		static_assert(sizeof(bullet_t) == 57);
 		if(bullet[i].type)
-			SDL_RWwrite(f,&bullet[i],sizeof(bullet_t),1);
+			SDL_WriteIO(f,&bullet[i],sizeof(bullet_t),1);
 	}
 }
 
-void LoadBullets(SDL_RWops *f)
+void LoadBullets(SDL_IOStream *f)
 {
 	int i;
 	word b;
@@ -2543,11 +2543,11 @@ void LoadBullets(SDL_RWops *f)
 			bullet[i].type=BLT_NONE;
 	}
 
-	SDL_RWread(f,&b,sizeof(word),1);
+	SDL_ReadIO(f,&b,sizeof(word),1);
 	for(i=0;i<b;i++)
 	{
 		static_assert(sizeof(bullet_t) == 57);
-		SDL_RWread(f,&bullet[i],sizeof(bullet_t),1);
+		SDL_ReadIO(f,&bullet[i],sizeof(bullet_t),1);
 	}
 }
 

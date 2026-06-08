@@ -20,14 +20,14 @@ namespace owned
 
 	typedef std::unique_ptr<::Mix_Chunk, _deleter::Mix_Chunk> Mix_Chunk;
 
-	inline Mix_Chunk Mix_LoadWAV_RW(::SDL_RWops* rw)
+	inline Mix_Chunk Mix_LoadWAV_RW(::SDL_IOStream* rw)
 	{
-		return Mix_Chunk { ::Mix_LoadWAV_RW(rw, SDL_FALSE) };
+		return Mix_Chunk { ::Mix_LoadWAV_RW(rw, false) };
 	}
 
-	inline Mix_Chunk Mix_LoadWAV_RW(owned::SDL_RWops rw)
+	inline Mix_Chunk Mix_LoadWAV_RW(owned::SDL_IOStream rw)
 	{
-		return Mix_Chunk { ::Mix_LoadWAV_RW(rw.release(), SDL_TRUE) };
+		return Mix_Chunk { ::Mix_LoadWAV_RW(rw.release(), true) };
 	}
 }
 
@@ -46,24 +46,24 @@ namespace owned
 
 	typedef std::unique_ptr<::Mix_Music, _deleter::Mix_Music> Mix_Music;
 
-	inline Mix_Music Mix_LoadMUS_RW(::SDL_RWops* rw)
+	inline Mix_Music Mix_LoadMUS_RW(::SDL_IOStream* rw)
 	{
-		return Mix_Music { ::Mix_LoadMUS_RW(rw, SDL_FALSE) };
+		return Mix_Music { ::Mix_LoadMUS_RW(rw, false) };
 	}
 
-	inline Mix_Music Mix_LoadMUS_RW(owned::SDL_RWops rw)
+	inline Mix_Music Mix_LoadMUS_RW(owned::SDL_IOStream rw)
 	{
-		return Mix_Music { ::Mix_LoadMUS_RW(rw.release(), SDL_TRUE) };
+		return Mix_Music { ::Mix_LoadMUS_RW(rw.release(), true) };
 	}
 
-	inline Mix_Music Mix_LoadMUSType_RW(::SDL_RWops* rw, Mix_MusicType type)
+	inline Mix_Music Mix_LoadMUSType_RW(::SDL_IOStream* rw, Mix_MusicType type)
 	{
-		return Mix_Music { ::Mix_LoadMUSType_RW(rw, type, SDL_FALSE) };
+		return Mix_Music { ::Mix_LoadMUSType_RW(rw, type, false) };
 	}
 
-	inline Mix_Music Mix_LoadMUSType_RW(owned::SDL_RWops rw, Mix_MusicType type)
+	inline Mix_Music Mix_LoadMUSType_RW(owned::SDL_IOStream rw, Mix_MusicType type)
 	{
-		return Mix_Music { ::Mix_LoadMUSType_RW(rw.release(), type, SDL_TRUE) };
+		return Mix_Music { ::Mix_LoadMUSType_RW(rw.release(), type, true) };
 	}
 }
 

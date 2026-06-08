@@ -13,7 +13,7 @@ extern struct HamExtern
 	void (*ChooseNextSong)();
 
 	// ---- jamulsound ----
-	owned::SDL_RWops (*SoundLoadOverride)(int);
+	owned::SDL_IOStream (*SoundLoadOverride)(int);
 } g_HamExtern;
 
 #endif  // HAM_EXTERN_H

@@ -23,7 +23,7 @@ void InitOptions(void)
 	auto f = AppdataOpen("options.cfg");
 	if(f)
 	{
-		SDL_RWread(f, &options,1,sizeof(options_t));
+		SDL_ReadIO(f, &options,1,sizeof(options_t));
 	}
 	else
 	{
@@ -54,7 +54,7 @@ void ExitOptions(void)
 	auto f = AppdataOpen_Write("options.cfg");
 	if(f)
 	{
-		SDL_RWwrite(f, &options,1,sizeof(options_t));
+		SDL_WriteIO(f, &options,1,sizeof(options_t));
 		f.reset();
 		AppdataSync();
 	}

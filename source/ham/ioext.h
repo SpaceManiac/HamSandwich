@@ -4,13 +4,13 @@
 #include <istream>
 #include <memory>
 
-struct SDL_RWops;
+struct SDL_IOStream;
 
 class SdlRwStream : public std::iostream
 {
 	std::unique_ptr<std::streambuf> sb;
 public:
-	explicit SdlRwStream(SDL_RWops *f);
+	explicit SdlRwStream(SDL_IOStream *f);
 };
 
 #endif  // IOEXT_H

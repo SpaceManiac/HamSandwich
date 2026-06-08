@@ -3861,48 +3861,48 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 
 static constexpr dword NO_SUCH_GUY = 65535;
 
-void SaveGuys(SDL_RWops *f)
+void SaveGuys(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_RWwrite(f,&maxGuys,sizeof(int),1);
+	SDL_WriteIO(f,&maxGuys,sizeof(int),1);
 
 	for(i=0;i<maxGuys;i++)
 	{
-		SDL_RWwrite(f,&guys[i]->type,sizeof(byte),1);
+		SDL_WriteIO(f,&guys[i]->type,sizeof(byte),1);
 		if(guys[i]->type)
 		{
 			dword target = guys[i]->target ? guys[i]->target->ID : NO_SUCH_GUY;
 			dword parent = guys[i]->parent ? guys[i]->parent->ID : NO_SUCH_GUY;
 			// sizes should total to 136
-			SDL_RWwrite(f,guys[i],offsetof(Guy, target),1);
-			SDL_RWwrite(f,&target,4,1);
-			SDL_RWwrite(f,&parent,4,1);
-			SDL_RWwrite(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
+			SDL_WriteIO(f,guys[i],offsetof(Guy, target),1);
+			SDL_WriteIO(f,&target,4,1);
+			SDL_WriteIO(f,&parent,4,1);
+			SDL_WriteIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
 			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
 }
 
-void LoadGuys(SDL_RWops *f)
+void LoadGuys(SDL_IOStream *f)
 {
 	int i;
 
 	ExitGuys();
-	SDL_RWread(f,&maxGuys,sizeof(int),1);
+	SDL_ReadIO(f,&maxGuys,sizeof(int),1);
 	InitGuys(maxGuys);
 
 	for(i=0;i<maxGuys;i++)
 	{
-		SDL_RWread(f,&guys[i]->type,sizeof(byte),1);
+		SDL_ReadIO(f,&guys[i]->type,sizeof(byte),1);
 		if(guys[i]->type)
 		{
 			dword target, parent;
 			// sizes should total to 136
-			SDL_RWread(f,guys[i],offsetof(Guy, target),1);
-			SDL_RWread(f,&target,4,1);
-			SDL_RWread(f,&parent,4,1);
-			SDL_RWread(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
+			SDL_ReadIO(f,guys[i],offsetof(Guy, target),1);
+			SDL_ReadIO(f,&target,4,1);
+			SDL_ReadIO(f,&parent,4,1);
+			SDL_ReadIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
 			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 
 			if(target==NO_SUCH_GUY)

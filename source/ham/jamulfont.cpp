@@ -49,19 +49,19 @@ void FontFree(mfont_t *font)
 
 FontError FontLoad(const char *fname, mfont_t *font)
 {
-	owned::SDL_RWops f = AppdataOpen(fname);
+	owned::SDL_IOStream f = AppdataOpen(fname);
 	if (!f)
 		return FONT_FILENOTFOUND;
 	return FontLoad(f.get(), font);
 }
 
-FontError FontLoad(SDL_RWops* f, mfont_t* font)
+FontError FontLoad(SDL_IOStream* f, mfont_t* font)
 {
-	if (SDL_RWread(f, font, MFONT_SIZE_READ, 1) != 1)
+	if (SDL_ReadIO(f, font, MFONT_SIZE_READ, 1) != 1)
 	{
 		return FONT_INVALIDFILE;
 	}
-	if (SDL_RWseek(f, MFONT_SIZE_TOTAL - MFONT_SIZE_READ, RW_SEEK_CUR) < 0)
+	if (SDL_SeekIO(f, MFONT_SIZE_TOTAL - MFONT_SIZE_READ, SDL_IO_SEEK_CUR) < 0)
 	{
 		return FONT_INVALIDFILE;
 	}
@@ -72,7 +72,7 @@ FontError FontLoad(SDL_RWops* f, mfont_t* font)
 		return FONT_CANTALLOC;
 	}
 
-	if (SDL_RWread(f, font->data, font->dataSize, 1) != 1)
+	if (SDL_ReadIO(f, font->data, font->dataSize, 1) != 1)
 	{
 		return FONT_INVALIDFILE;
 	}
@@ -90,13 +90,13 @@ FontError FontSave(const char *fname, const mfont_t *font)
 	if (!f)
 		return FONT_FILENOTFOUND;
 
-	if (SDL_RWwrite(f, font, MFONT_SIZE_READ, 1) != 1)
+	if (SDL_WriteIO(f, font, MFONT_SIZE_READ, 1) != 1)
 		return FONT_INVALIDFILE;
 
-	if (SDL_RWseek(f, MFONT_SIZE_TOTAL, RW_SEEK_SET) != 0)
+	if (SDL_SeekIO(f, MFONT_SIZE_TOTAL, SDL_IO_SEEK_SET) != 0)
 		return FONT_INVALIDFILE;
 
-	if (SDL_RWwrite(f, font->data, font->dataSize, 1) != 1)
+	if (SDL_WriteIO(f, font->data, font->dataSize, 1) != 1)
 		return FONT_INVALIDFILE;
 
 	f.reset();

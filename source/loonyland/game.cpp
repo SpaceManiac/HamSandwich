@@ -563,7 +563,7 @@ TASK(byte) PlayALevel(byte map)
 		LunaticDraw();
 		AWAIT gamemgl->Flip();
 
-		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_CONTROLLER_BUTTON_START))) && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_GAMEPAD_BUTTON_START))) && gameMode==GAMEMODE_PLAY)
 		{
 			PauseGame();
 		}

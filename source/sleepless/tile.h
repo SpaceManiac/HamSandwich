@@ -16,8 +16,8 @@ void SetNumTiles(int n);
 word GetNumTiles(void);
 void SetTiles(byte *scrn);
 void SetTile(int t,int x,int y,byte *src);
-void LoadTiles(SDL_RWops *f);
-void SaveTiles(SDL_RWops *f);
+void LoadTiles(SDL_IOStream *f);
+void SaveTiles(SDL_IOStream *f);
 void SaveTilesToBMP(const char *fname);
 void RenderFloorTile(int x,int y,int t,char light);
 void RenderFloorTileTrans(int x,int y,int t,char light);
@@ -29,7 +29,7 @@ void PlotStar(int x,int y,byte col,byte tx,byte ty,word tileNum);
 
 byte *GetTileData(int t);
 
-void AppendTiles(int start,SDL_RWops *f);
+void AppendTiles(int start,SDL_IOStream *f);
 
 
 // disco tiles

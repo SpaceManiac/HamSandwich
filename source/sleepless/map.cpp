@@ -14,26 +14,26 @@ word starX[NUM_STARS],starY[NUM_STARS];
 byte starCol[NUM_STARS];
 static byte dottedLineOfs;
 
-Map::Map(SDL_RWops *f)
+Map::Map(SDL_IOStream *f)
 {
 	byte count;
 
-	SDL_RWread(f,&width,1,sizeof(byte));
-	SDL_RWread(f,&height,1,sizeof(byte));
-	SDL_RWread(f,name,32,sizeof(char));
-	SDL_RWread(f,song,32,sizeof(char));
+	SDL_ReadIO(f,&width,1,sizeof(byte));
+	SDL_ReadIO(f,&height,1,sizeof(byte));
+	SDL_ReadIO(f,name,32,sizeof(char));
+	SDL_ReadIO(f,song,32,sizeof(char));
 
-	SDL_RWread(f,&count,1,sizeof(byte));	// num badguys
+	SDL_ReadIO(f,&count,1,sizeof(byte));	// num badguys
 	memset(badguy,0,sizeof(mapBadguy_t)*MAX_MAPMONS);
 	if(count>0)
-		SDL_RWread(f,badguy,count,sizeof(mapBadguy_t));
+		SDL_ReadIO(f,badguy,count,sizeof(mapBadguy_t));
 
 	LoadSpecials(f,special);
 
-	SDL_RWread(f,&flags,1,sizeof(word));
-	SDL_RWread(f,&numBrains,1,sizeof(word));
-	SDL_RWread(f,&numCandles,1,sizeof(word));
-	SDL_RWread(f,&itemDrops,1,sizeof(word));
+	SDL_ReadIO(f,&flags,1,sizeof(word));
+	SDL_ReadIO(f,&numBrains,1,sizeof(word));
+	SDL_ReadIO(f,&numCandles,1,sizeof(word));
+	SDL_ReadIO(f,&itemDrops,1,sizeof(word));
 
 	map=(mapTile_t *)malloc(sizeof(mapTile_t)*width*height);
 
@@ -98,7 +98,7 @@ Map::~Map(void)
 	free(map);
 }
 
-void Map::SaveMapData(SDL_RWops *f)
+void Map::SaveMapData(SDL_IOStream *f)
 {
 	int pos;
 	byte sameLength,diffLength;
@@ -134,8 +134,8 @@ void Map::SaveMapData(SDL_RWops *f)
 			{
 				// write out the run, and start a new run with this last one
 				writeRun=-127;
-				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,src,1,sizeof(saveTile_t));
+				SDL_WriteIO(f,&writeRun,1,sizeof(char));
+				SDL_WriteIO(f,src,1,sizeof(saveTile_t));
 				sameStart=pos;
 				runStart=pos;
 				sameLength=1;
@@ -144,8 +144,8 @@ void Map::SaveMapData(SDL_RWops *f)
 			else if(sameLength==2 && runStart!=sameStart)	// 2 in a row the same, time to start this as a same run
 			{
 				writeRun=sameStart-runStart;
-				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(saveTile_t));
+				SDL_WriteIO(f,&writeRun,1,sizeof(char));
+				SDL_WriteIO(f,&mapCopy[runStart],writeRun,sizeof(saveTile_t));
 				runStart=sameStart;
 				diffLength=1;
 			}
@@ -162,8 +162,8 @@ void Map::SaveMapData(SDL_RWops *f)
 				if(diffLength==128)	// max run length is 127
 				{
 					writeRun=127;
-					SDL_RWwrite(f,&writeRun,1,sizeof(char));
-					SDL_RWwrite(f,&mapCopy[runStart],127,sizeof(saveTile_t));
+					SDL_WriteIO(f,&writeRun,1,sizeof(char));
+					SDL_WriteIO(f,&mapCopy[runStart],127,sizeof(saveTile_t));
 					diffLength=1;
 					runStart=pos;
 				}
@@ -171,8 +171,8 @@ void Map::SaveMapData(SDL_RWops *f)
 			else	// end a same run, then start a diff run
 			{
 				writeRun=-sameLength;
-				SDL_RWwrite(f,&writeRun,1,sizeof(char));
-				SDL_RWwrite(f,src,1,sizeof(saveTile_t));
+				SDL_WriteIO(f,&writeRun,1,sizeof(char));
+				SDL_WriteIO(f,src,1,sizeof(saveTile_t));
 				sameStart=pos;
 				runStart=pos;
 				sameLength=1;
@@ -189,20 +189,20 @@ void Map::SaveMapData(SDL_RWops *f)
 	{
 		// final run is same run
 		writeRun=-sameLength;
-		SDL_RWwrite(f,&writeRun,1,sizeof(char));
-		SDL_RWwrite(f,src,1,sizeof(saveTile_t));
+		SDL_WriteIO(f,&writeRun,1,sizeof(char));
+		SDL_WriteIO(f,src,1,sizeof(saveTile_t));
 	}
 	else
 	{
 		// either it's one lonely unique tile, or a different run, either way...
 		writeRun=diffLength;
-		SDL_RWwrite(f,&writeRun,1,sizeof(char));
-		SDL_RWwrite(f,&mapCopy[runStart],writeRun,sizeof(saveTile_t));
+		SDL_WriteIO(f,&writeRun,1,sizeof(char));
+		SDL_WriteIO(f,&mapCopy[runStart],writeRun,sizeof(saveTile_t));
 	}
 	delete[] mapCopy;
 }
 
-void Map::LoadMapData(SDL_RWops *f)
+void Map::LoadMapData(SDL_IOStream *f)
 {
 	int pos,i;
 	char readRun;
@@ -213,18 +213,18 @@ void Map::LoadMapData(SDL_RWops *f)
 	pos=0;
 	while(pos<width*height)
 	{
-		SDL_RWread(f,&readRun,1,sizeof(char));
+		SDL_ReadIO(f,&readRun,1,sizeof(char));
 		if(readRun<0)	// repeat run
 		{
 			readRun=-readRun;
-			SDL_RWread(f,&mapCopy[pos],1,sizeof(saveTile_t));
+			SDL_ReadIO(f,&mapCopy[pos],1,sizeof(saveTile_t));
 			for(i=1;i<readRun;i++)
 				memcpy(&mapCopy[pos+i],&mapCopy[pos],sizeof(saveTile_t));
 			pos+=readRun;
 		}
 		else	// unique run
 		{
-			SDL_RWread(f,&mapCopy[pos],readRun,sizeof(saveTile_t));
+			SDL_ReadIO(f,&mapCopy[pos],readRun,sizeof(saveTile_t));
 			pos+=readRun;
 		}
 	}
@@ -242,30 +242,30 @@ void Map::LoadMapData(SDL_RWops *f)
 	delete[] mapCopy;
 }
 
-byte Map::Save(SDL_RWops *f)
+byte Map::Save(SDL_IOStream *f)
 {
 	int i;
 	byte count;
 
-	SDL_RWwrite(f,&width,1,sizeof(byte));
-	SDL_RWwrite(f,&height,1,sizeof(byte));
-	SDL_RWwrite(f,name,32,sizeof(char));
-	SDL_RWwrite(f,song,32,sizeof(char));
+	SDL_WriteIO(f,&width,1,sizeof(byte));
+	SDL_WriteIO(f,&height,1,sizeof(byte));
+	SDL_WriteIO(f,name,32,sizeof(char));
+	SDL_WriteIO(f,song,32,sizeof(char));
 
 	count=0;
 	for(i=0;i<MAX_MAPMONS;i++)
 		if(badguy[i].type)
 			count=i+1;
-	SDL_RWwrite(f,&count,1,sizeof(byte));	// num badguys
+	SDL_WriteIO(f,&count,1,sizeof(byte));	// num badguys
 	if(count>0)
-		SDL_RWwrite(f,badguy,count,sizeof(mapBadguy_t));
+		SDL_WriteIO(f,badguy,count,sizeof(mapBadguy_t));
 	GetSpecialsFromMap(this->special);
 	SaveSpecials(f);
 
-	SDL_RWwrite(f,&flags,1,sizeof(word));
-	SDL_RWwrite(f,&numBrains,1,sizeof(word));
-	SDL_RWwrite(f,&numCandles,1,sizeof(word));
-	SDL_RWwrite(f,&itemDrops,1,sizeof(word));
+	SDL_WriteIO(f,&flags,1,sizeof(word));
+	SDL_WriteIO(f,&numBrains,1,sizeof(word));
+	SDL_WriteIO(f,&numCandles,1,sizeof(word));
+	SDL_WriteIO(f,&itemDrops,1,sizeof(word));
 
 	SaveMapData(f);
 	return 1;

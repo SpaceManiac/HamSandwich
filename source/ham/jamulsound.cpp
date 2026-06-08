@@ -134,12 +134,12 @@ void JamulSoundUpdate(void)
 	}
 }
 
-static owned::Mix_Chunk LoadSoundFile(SDL_RWops *rw)
+static owned::Mix_Chunk LoadSoundFile(SDL_IOStream *rw)
 {
 	uint8_t magic[4];
-	if (SDL_RWread(rw, magic, 4, 1) == 1)
+	if (SDL_ReadIO(rw, magic, 4, 1) == 1)
 	{
-		SDL_RWseek(rw, -4, RW_SEEK_CUR);
+		SDL_SeekIO(rw, -4, SDL_IO_SEEK_CUR);
 
 		if (!memcmp(magic, ".snd", 4))
 		{
@@ -186,7 +186,7 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 	if(soundList[which].sample==NULL)
 	{
 		// See if sound loading is overridden for this sound...
-		owned::SDL_RWops rw = g_HamExtern.SoundLoadOverride ? g_HamExtern.SoundLoadOverride(which) : nullptr;
+		owned::SDL_IOStream rw = g_HamExtern.SoundLoadOverride ? g_HamExtern.SoundLoadOverride(which) : nullptr;
 		if (!rw)
 		{
 			// If not, try to load it from a file instead

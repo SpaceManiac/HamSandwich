@@ -139,8 +139,8 @@ byte Mind1At(int x,int y);
 void FindMonsterBrain(int myx,int myy);
 void FindMonsterCandle(int myx,int myy);
 
-void SaveGuys(SDL_RWops *f);
-void LoadGuys(SDL_RWops *f);
+void SaveGuys(SDL_IOStream *f);
+void LoadGuys(SDL_IOStream *f);
 
 void RespawnGuys(Map *map);
 byte EatHay(Guy *me,byte rad);

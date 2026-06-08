@@ -210,10 +210,10 @@ void BackupWorld(const char *name)
 	byte data[8 * 1024];
 	while(true)
 	{
-		bytes = SDL_RWread(inF, data, sizeof(byte), std::size(data));
+		bytes = SDL_ReadIO(inF, data, sizeof(byte), std::size(data));
 		if(bytes <= 0)
 			break;
-		SDL_RWwrite(outF, data, sizeof(byte), bytes);
+		SDL_WriteIO(outF, data, sizeof(byte), bytes);
 	}
 	outF.reset();
 	inF.reset();

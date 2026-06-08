@@ -41,9 +41,9 @@ void FontExit(void);
 
 void FontFree(mfont_t *font);
 
-struct SDL_RWops;
+struct SDL_IOStream;
 FontError FontLoad(const char *fname, mfont_t *font);
-FontError FontLoad(SDL_RWops* rw, mfont_t *font);
+FontError FontLoad(SDL_IOStream* rw, mfont_t *font);
 FontError FontSave(const char *fname, const mfont_t *font);
 
 void FontPrintString(int x, int y, std::string_view s, const mfont_t *font);

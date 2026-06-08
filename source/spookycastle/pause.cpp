@@ -120,11 +120,11 @@ void InitPauseMenu(void)
 	}
 	else
 	{
-		SDL_RWread(f, &p,sizeof(player_t),1);
+		SDL_ReadIO(f, &p,sizeof(player_t),1);
 		percent[0]=CalcTotalPercent(&p)*100;
-		SDL_RWread(f, &p,sizeof(player_t),1);
+		SDL_ReadIO(f, &p,sizeof(player_t),1);
 		percent[1]=CalcTotalPercent(&p)*100;
-		SDL_RWread(f, &p,sizeof(player_t),1);
+		SDL_ReadIO(f, &p,sizeof(player_t),1);
 		percent[2]=CalcTotalPercent(&p)*100;
 		f.reset();
 	}

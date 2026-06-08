@@ -1773,7 +1773,7 @@ void CalculateItemRenderExtents()
 				rect.w = spr->width;
 				rect.h = spr->height;
 
-				SDL_UnionRect(&everything, &rect, &everything);
+				SDL_GetRectUnion(&everything, &rect, &everything);
 
 				if(item.flags&IF_SHADOW)
 				{
@@ -1783,7 +1783,7 @@ void CalculateItemRenderExtents()
 					rect.w = spr->height/2 + spr->width;
 					rect.h = spr->height/2;
 
-					SDL_UnionRect(&everything, &rect, &everything);
+					SDL_GetRectUnion(&everything, &rect, &everything);
 				}
 			}
 		}

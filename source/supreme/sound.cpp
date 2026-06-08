@@ -474,7 +474,7 @@ bool AddCustomSound(const char *fname)
 	auto f = AppdataOpen(fname);
 	if(!f)
 		return false;
-	customLength[numCustom]=SDL_RWsize(f);
+	customLength[numCustom]=SDL_GetIOSize(f);
 	if(customLength[numCustom]<=0)
 	{
 		return false;
@@ -484,7 +484,7 @@ bool AddCustomSound(const char *fname)
 	{
 		return false;
 	}
-	SDL_RWread(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
+	SDL_ReadIO(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
 	f.reset();
 
 	std::string_view fname2 = fname;
@@ -524,7 +524,7 @@ bool ReplaceCustomSound(int n,const char *fname)
 	auto f = AppdataOpen(fname);
 	if(!f)
 		return false;
-	customLength[n]=SDL_RWsize(f);
+	customLength[n]=SDL_GetIOSize(f);
 	if(customLength[n]<=0)
 	{
 		return false;
@@ -534,7 +534,7 @@ bool ReplaceCustomSound(int n,const char *fname)
 	{
 		return false;
 	}
-	SDL_RWread(f,customSound[n],sizeof(byte),customLength[n]);
+	SDL_ReadIO(f,customSound[n],sizeof(byte),customLength[n]);
 	f.reset();
 
 	return true;
@@ -584,14 +584,14 @@ void MakeSpaceSound(int snd,int priority)
 	GoPlaySound(snd,0,0,SND_CUTOFF|GlobalFlags(),priority);
 }
 
-owned::SDL_RWops SoundLoadOverride(int num)
+owned::SDL_IOStream SoundLoadOverride(int num)
 {
 	if (num >= CUSTOM_SND_START && num < CUSTOM_SND_START + GetNumCustomSounds())
 	{
 		std::span<const byte> buf = GetCustomSound(num - CUSTOM_SND_START);
 		if (!buf.empty())
 		{
-			return owned::SDL_RWFromConstMem(buf.data(), buf.size());
+			return owned::SDL_IOFromConstMem(buf.data(), buf.size());
 		}
 	}
 	return nullptr;

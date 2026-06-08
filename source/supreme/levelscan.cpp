@@ -11,7 +11,7 @@
 #include "player.h"
 #include "string_extras.h"
 
-static SDL_RWops *scanF;
+static SDL_IOStream *scanF;
 
 void PrintFX(word flags)
 {

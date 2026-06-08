@@ -18,21 +18,21 @@ byte allSpecialClock;
 word starX[NUM_STARS],starY[NUM_STARS];
 byte starCol[NUM_STARS];
 
-Map::Map(SDL_RWops *f)
+Map::Map(SDL_IOStream *f)
 {
-	SDL_RWread(f,&width,1,sizeof(int));
-	SDL_RWread(f,&height,1,sizeof(int));
+	SDL_ReadIO(f,&width,1,sizeof(int));
+	SDL_ReadIO(f,&height,1,sizeof(int));
 
-	SDL_RWread(f,name,32,sizeof(char));
-	SDL_RWread(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_ReadIO(f,name,32,sizeof(char));
+	SDL_ReadIO(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
 	//memset(special,0,sizeof(special_t)*MAX_SPECIAL);
-	SDL_RWread(f,special,MAX_SPECIAL,sizeof(special_t));
-	SDL_RWread(f,&song,1,1);
-	SDL_RWread(f,&flags,1,1);
+	SDL_ReadIO(f,special,MAX_SPECIAL,sizeof(special_t));
+	SDL_ReadIO(f,&song,1,1);
+	SDL_ReadIO(f,&flags,1,1);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 
-	SDL_RWread(f,map,width*height,sizeof(mapTile_t));
+	SDL_ReadIO(f,map,width*height,sizeof(mapTile_t));
 }
 
 Map::Map(int wid,int hei,const char *name)
@@ -68,17 +68,17 @@ Map::~Map(void)
 	free(map);
 }
 
-byte Map::Save(SDL_RWops *f)
+byte Map::Save(SDL_IOStream *f)
 {
-	SDL_RWwrite(f,&width,1,sizeof(int));
-	SDL_RWwrite(f,&height,1,sizeof(int));
-	SDL_RWwrite(f,name,32,sizeof(char));
-	SDL_RWwrite(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
-	SDL_RWwrite(f,special,MAX_SPECIAL,sizeof(special_t));
-	SDL_RWwrite(f,&song,1,1);
-	SDL_RWwrite(f,&flags,1,1);
+	SDL_WriteIO(f,&width,1,sizeof(int));
+	SDL_WriteIO(f,&height,1,sizeof(int));
+	SDL_WriteIO(f,name,32,sizeof(char));
+	SDL_WriteIO(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_WriteIO(f,special,MAX_SPECIAL,sizeof(special_t));
+	SDL_WriteIO(f,&song,1,1);
+	SDL_WriteIO(f,&flags,1,1);
 
-	SDL_RWwrite(f,map,width*height,sizeof(mapTile_t));
+	SDL_WriteIO(f,map,width*height,sizeof(mapTile_t));
 	return 1;
 }
 
@@ -1272,32 +1272,32 @@ void Map::CopyChunk(int cx,int cy,int cwidth,int cheight,int dx,int dy)
 	AddMapGuys(this);
 }
 
-void Map::LoadFromProgress(SDL_RWops *f)
+void Map::LoadFromProgress(SDL_IOStream *f)
 {
 	int i;
 
 	if(map)
 		free(map);
 
-	SDL_RWread(f,&width,sizeof(int),1);
-	SDL_RWread(f,&height,sizeof(int),1);
-	SDL_RWread(f,&flags,sizeof(byte),1);
+	SDL_ReadIO(f,&width,sizeof(int),1);
+	SDL_ReadIO(f,&height,sizeof(int),1);
+	SDL_ReadIO(f,&flags,sizeof(byte),1);
 	map=(mapTile_t *)malloc(width*height*sizeof(mapTile_t));
-	SDL_RWread(f,map,sizeof(mapTile_t),width*height);
-	SDL_RWread(f,special,sizeof(special_t),MAX_SPECIAL);
+	SDL_ReadIO(f,map,sizeof(mapTile_t),width*height);
+	SDL_ReadIO(f,special,sizeof(special_t),MAX_SPECIAL);
 
 	if(opt.cheats[CH_LIGHT])
 		for(i=0;i<width*height;i++)
 			map[i].light=0;
 }
 
-void Map::SaveProgress(SDL_RWops *f)
+void Map::SaveProgress(SDL_IOStream *f)
 {
-	SDL_RWwrite(f,&width,sizeof(int),1);
-	SDL_RWwrite(f,&height,sizeof(int),1);
-	SDL_RWwrite(f,&flags,sizeof(byte),1);
-	SDL_RWwrite(f,map,sizeof(mapTile_t),width*height);
-	SDL_RWwrite(f,special,sizeof(special_t),MAX_SPECIAL);
+	SDL_WriteIO(f,&width,sizeof(int),1);
+	SDL_WriteIO(f,&height,sizeof(int),1);
+	SDL_WriteIO(f,&flags,sizeof(byte),1);
+	SDL_WriteIO(f,map,sizeof(mapTile_t),width*height);
+	SDL_WriteIO(f,special,sizeof(special_t),MAX_SPECIAL);
 }
 
 byte Map::FindPowerUps(int x,int y)

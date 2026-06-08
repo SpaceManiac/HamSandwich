@@ -7,22 +7,22 @@ constexpr int BUFSZ = 8192;
 class SdlRwBuf : public std::streambuf
 {
 public:
-	explicit SdlRwBuf(SDL_RWops* f) : f(f) {}
+	explicit SdlRwBuf(SDL_IOStream* f) : f(f) {}
 	~SdlRwBuf() {
-		// Because we buffer, when we revert control to the SDL_RWops*,
+		// Because we buffer, when we revert control to the SDL_IOStream*,
 		// we must seek backwards by the amount we haven't read.
-		SDL_RWseek(f, gptr() - egptr(), RW_SEEK_CUR);
+		SDL_SeekIO(f, gptr() - egptr(), SDL_IO_SEEK_CUR);
 	}
 
 private:
-	SDL_RWops* f;
+	SDL_IOStream* f;
 	char buf[BUFSZ];
 
 	int_type underflow() override
 	{
 		if (gptr() == egptr() && f)
 		{
-			size_t size = SDL_RWread(f, buf, 1, BUFSZ);
+			size_t size = SDL_ReadIO(f, buf, 1, BUFSZ);
 			setg(buf, buf, buf + size);
 		}
 		return gptr() == egptr()
@@ -39,7 +39,7 @@ private:
 		else
 		{
 			unsigned char ch2 = ch;
-			if (SDL_RWwrite(f, &ch2, 1, 1) < 1)
+			if (SDL_WriteIO(f, &ch2, 1, 1) < 1)
 				return traits_type::eof();
 			return ch2;
 		}
@@ -47,7 +47,7 @@ private:
 
 	std::streamsize xsputn(const char_type* s, std::streamsize n) override
 	{
-		return SDL_RWwrite(f, s, 1, n);
+		return SDL_WriteIO(f, s, 1, n);
 	}
 
 	int sync() override
@@ -59,19 +59,19 @@ private:
 
 	pos_type seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode) override
 	{
-		int seek = RW_SEEK_SET;
+		int seek = SDL_IO_SEEK_SET;
 		switch (dir)
 		{
-			case std::ios_base::beg: seek = RW_SEEK_SET; break;
-			case std::ios_base::end: seek = RW_SEEK_END; break;
-			case std::ios_base::cur: seek = RW_SEEK_CUR; break;
+			case std::ios_base::beg: seek = SDL_IO_SEEK_SET; break;
+			case std::ios_base::end: seek = SDL_IO_SEEK_END; break;
+			case std::ios_base::cur: seek = SDL_IO_SEEK_CUR; break;
 			default: break;
 		}
-		return SDL_RWseek(f, off, seek);
+		return SDL_SeekIO(f, off, seek);
 	}
 };
 
-SdlRwStream::SdlRwStream(SDL_RWops* f)
+SdlRwStream::SdlRwStream(SDL_IOStream* f)
 	: std::iostream(new SdlRwBuf(f))
 	, sb(rdbuf())
 {

@@ -1646,7 +1646,7 @@ TASK(byte) LunaticEditor(MGLDraw *mgl)
 			Print(8, 8, "The editor is meant for mouse and keyboard. Press BACK on gamepad to exit.", 0, 1);
 		AWAIT editmgl->Flip();
 
-		if(lastKey==27 || (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+		if(lastKey==27 || (GetGamepadButtons() & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 			exitcode=QUITGAME;
 
 		if (lastKey || editmgl->MouseDown())

@@ -1059,7 +1059,7 @@ int GetTotalRarity(void)
 	return totalRare;
 }
 
-void SaveItems(SDL_RWops *f)
+void SaveItems(SDL_IOStream *f)
 {
 	int i;
 	word changedItems;
@@ -1073,29 +1073,29 @@ void SaveItems(SDL_RWops *f)
 			changedItems++;
 	}
 
-	SDL_RWwrite(f,&changedItems,1,sizeof(word));
+	SDL_WriteIO(f,&changedItems,1,sizeof(word));
 	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
 	{
 		if(memcmp(&items[i],&baseItems[i],sizeof(item_t)))
 		{
 			// this item is changed, write it out
 			b=(byte)i;
-			SDL_RWwrite(f,&b,1,sizeof(byte));	// write the item number
-			SDL_RWwrite(f,&items[i],1,sizeof(item_t));
+			SDL_WriteIO(f,&b,1,sizeof(byte));	// write the item number
+			SDL_WriteIO(f,&items[i],1,sizeof(item_t));
 		}
 	}
 	if(numItems>NUM_ORIGINAL_ITEMS)
 	{
 		b=255;	// indicating custom items are beginning here
-		SDL_RWwrite(f,&b,1,sizeof(byte));
+		SDL_WriteIO(f,&b,1,sizeof(byte));
 		for(i=NUM_ORIGINAL_ITEMS;i<numItems;i++)
 		{
-			SDL_RWwrite(f,&items[i],1,sizeof(item_t));
+			SDL_WriteIO(f,&items[i],1,sizeof(item_t));
 		}
 	}
 }
 
-void LoadItems(SDL_RWops *f)
+void LoadItems(SDL_IOStream *f)
 {
 	int i;
 	word changedItems;
@@ -1105,7 +1105,7 @@ void LoadItems(SDL_RWops *f)
 	ExitItems();
 	InitItems();
 
-	SDL_RWread(f,&changedItems,1,sizeof(word));
+	SDL_ReadIO(f,&changedItems,1,sizeof(word));
 
 	getNumber=1;
 	for(i=0;i<changedItems;i++)
@@ -1113,14 +1113,14 @@ void LoadItems(SDL_RWops *f)
 		if(getNumber)
 		{
 			curItem=0;
-			SDL_RWread(f,&curItem,1,sizeof(byte));
+			SDL_ReadIO(f,&curItem,1,sizeof(byte));
 			if(curItem==255)
 			{
 				getNumber=0;
 				curItem=NUM_ORIGINAL_ITEMS;
 			}
 		}
-		SDL_RWread(f,&items[curItem],1,sizeof(item_t));
+		SDL_ReadIO(f,&items[curItem],1,sizeof(item_t));
 		curItem++;
 	}
 
@@ -1130,7 +1130,7 @@ void LoadItems(SDL_RWops *f)
 		numItems=curItem;
 }
 
-byte AppendItems(SDL_RWops *f)
+byte AppendItems(SDL_IOStream *f)
 {
 	int i;
 	word changedItems;
@@ -1140,14 +1140,14 @@ byte AppendItems(SDL_RWops *f)
 
 	stitchItemOffset=numItems;
 
-	SDL_RWread(f,&changedItems,1,sizeof(word));
+	SDL_ReadIO(f,&changedItems,1,sizeof(word));
 
 	getNumber=1;
 	for(i=0;i<changedItems;i++)
 	{
 		if(getNumber)
 		{
-			SDL_RWread(f,&curItem,1,sizeof(byte));
+			SDL_ReadIO(f,&curItem,1,sizeof(byte));
 			if(curItem==255)
 			{
 				getNumber=0;
@@ -1155,10 +1155,10 @@ byte AppendItems(SDL_RWops *f)
 			}
 		}
 		if(curItem<NUM_ORIGINAL_ITEMS)
-			SDL_RWread(f,&garbage,1,sizeof(item_t));	// throw away any mods of regular items
+			SDL_ReadIO(f,&garbage,1,sizeof(item_t));	// throw away any mods of regular items
 		else
 		{
-			SDL_RWread(f,&items[curItem],1,sizeof(item_t));
+			SDL_ReadIO(f,&items[curItem],1,sizeof(item_t));
 			curItem++;
 			numItems++;
 		}

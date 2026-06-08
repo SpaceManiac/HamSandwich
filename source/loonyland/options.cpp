@@ -104,7 +104,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27 || (c2 & ~oldc & CONTROL_B2) || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
+				if(c==27 || (c2 & ~oldc & CONTROL_B2) || (padPressed & ((1 << SDL_GAMEPAD_BUTTON_BACK) | (1 << SDL_GAMEPAD_BUTTON_START))))
 				{
 					return 1;
 				}
@@ -222,7 +222,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				c=mgl->LastKeyPressed();
 				c2=GetControls()|GetArrows();
 
-				if(c==27 || (c2 & ~oldc & CONTROL_B2) || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
+				if(c==27 || (c2 & ~oldc & CONTROL_B2) || (padPressed & ((1 << SDL_GAMEPAD_BUTTON_BACK) | (1 << SDL_GAMEPAD_BUTTON_START))))
 				{
 					optMode=0;
 					controlX=10;
@@ -282,7 +282,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				break;
 			case 2: // entering a specific key
 				c2=LastScanCode();
-				if(c2==SDL_SCANCODE_ESCAPE || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START) | (1 << SDL_CONTROLLER_BUTTON_B))))
+				if(c2==SDL_SCANCODE_ESCAPE || (padPressed & ((1 << SDL_GAMEPAD_BUTTON_BACK) | (1 << SDL_GAMEPAD_BUTTON_START) | (1 << SDL_GAMEPAD_BUTTON_EAST))))
 				{
 					optMode=1;
 					c2=255;
@@ -306,7 +306,7 @@ byte UpdateOptionsMenu(int *lastTime,MGLDraw *mgl)
 				break;
 			case 3: // pressing a joystick button
 				c=mgl->LastKeyPressed();
-				if(c==27 || (padPressed & ((1 << SDL_CONTROLLER_BUTTON_BACK) | (1 << SDL_CONTROLLER_BUTTON_START))))
+				if(c==27 || (padPressed & ((1 << SDL_GAMEPAD_BUTTON_BACK) | (1 << SDL_GAMEPAD_BUTTON_START))))
 				{
 					optMode=1;
 					c2=255;
@@ -543,7 +543,7 @@ void LoadOptions(void)
 	}
 	else
 	{
-		SDL_RWread(f,&opt,1,sizeof(options_t));
+		SDL_ReadIO(f,&opt,1,sizeof(options_t));
 		f.reset();
 
 		if (opt.sound == 1)
@@ -572,7 +572,7 @@ void LoadOptions(void)
 void SaveOptions(void)
 {
 	auto f = AppdataOpen_Write("loony.cfg");
-	SDL_RWwrite(f,&opt,sizeof(options_t),1);
+	SDL_WriteIO(f,&opt,sizeof(options_t),1);
 	f.reset();
 	AppdataSync();
 }

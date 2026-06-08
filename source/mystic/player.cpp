@@ -210,8 +210,8 @@ static bool LoadOldGame(byte which)
 		if (auto f = AppdataOpen("mystic.sav"))
 		{
 			static_assert(sizeof(player_t) == 624);
-			SDL_RWseek(f, sizeof(player_t) * which, RW_SEEK_SET);
-			SDL_RWread(f, &player, sizeof(player_t), 1);
+			SDL_SeekIO(f, sizeof(player_t) * which, SDL_IO_SEEK_SET);
+			SDL_ReadIO(f, &player, sizeof(player_t), 1);
 			player.difficulty = Difficulty::CLASSIC;
 			return true;
 		}
@@ -225,7 +225,7 @@ void PlayerLoadGame(byte which)
 	ham_sprintf(s, "mystic%d.sav", which+1);
 	if (auto f = AppdataOpen(s))
 	{
-		SDL_RWread(f,&player,sizeof(player_t),1);
+		SDL_ReadIO(f,&player,sizeof(player_t),1);
 	}
 	else if (!LoadOldGame(which))
 	{
@@ -254,7 +254,7 @@ void PlayerSaveGame(byte which)
 	player.saveCode[1] = 'I';
 	player.saveCode[2] = 'D';
 	player.saveCode[3] = '\0';
-	SDL_RWwrite(f,&player,sizeof(player_t),1);
+	SDL_WriteIO(f,&player,sizeof(player_t),1);
 	f.reset();
 	AppdataSync();
 }

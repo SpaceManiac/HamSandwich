@@ -160,7 +160,7 @@ byte Recolor::Apply(byte color, byte underlying)
 			// 1. Keys do not animate while the game is paused.
 			// 2. Keys animate at double speed in Manic Mode.
 			// Fixing this is left as an exercise to whoever actually uses this feature.
-			uint64_t timer = SDL_GetTicks64() * 30 / 1000;
+			uint64_t timer = SDL_GetTicks() * 30 / 1000;
 			brightChange += abs((int)(16 - (timer & 31)));
 			return SprModifyLight(SprModifyColor(color, (timer & 255) / 32), brightChange);
 		}

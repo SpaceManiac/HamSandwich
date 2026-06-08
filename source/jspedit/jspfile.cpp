@@ -33,7 +33,7 @@ struct FrameInfo {
 
 JspFrame::JspFrame(int w, int h)
     : texture(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h), SDL_DestroyTexture)
-    , surface(SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_ABGR8888), SDL_FreeSurface)
+    , surface(SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_ABGR8888), SDL_DestroySurface)
     , ofsX(0)
     , ofsY(0)
 {

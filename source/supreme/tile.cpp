@@ -135,7 +135,7 @@ static void SaveTile(std::ostream& f, const byte *t)
 }
 
 
-void Tilegfx::SaveTiles(SDL_RWops *f) const
+void Tilegfx::SaveTiles(SDL_IOStream *f) const
 {
 	SdlRwStream stream(f);
 	SaveTiles(stream);
@@ -229,7 +229,7 @@ static void LoadTile(std::istream &f, byte *t)
 	}
 }
 
-void Tilegfx::LoadTiles(SDL_RWops *f, int numTiles)
+void Tilegfx::LoadTiles(SDL_IOStream *f, int numTiles)
 {
 	SdlRwStream stream(f);
 	LoadTiles(stream, numTiles);

@@ -26,18 +26,18 @@ class InnoVfs : public vanilla::Vfs
 	std::vector<uint8_t> setup_1_bin;
 
 public:
-	explicit InnoVfs(SDL_RWops* rw);
+	explicit InnoVfs(SDL_IOStream* rw);
 
 	bool is_ok()
 	{
 		return setup_1_bin.size();
 	}
 
-	owned::SDL_RWops open_sdl(const char* filename) override;
+	owned::SDL_IOStream open_sdl(const char* filename) override;
 	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 };
 
-std::unique_ptr<vanilla::Vfs> vanilla::open_inno(SDL_RWops* rw)
+std::unique_ptr<vanilla::Vfs> vanilla::open_inno(SDL_IOStream* rw)
 {
 	return std::make_unique<InnoVfs>(rw);
 }
@@ -62,29 +62,29 @@ const size_t APP_PREFIX_SZ = 6;
 const char APP_PREFIX[APP_PREFIX_SZ + 1] = "{app}\\";
 
 // ----------------------------------------------------------------------------
-// 7z-compatible stream from SDL_RWops*
+// 7z-compatible stream from SDL_IOStream*
 
 struct SeekInStream_RW
 {
 	ISeekInStream base;
-	SDL_RWops *rw;
+	SDL_IOStream *rw;
 };
 
 static SRes SeekInStream_RW_Read(const ISeekInStream *p, void *buf, size_t *size)
 {
 	const SeekInStream_RW *self = (const SeekInStream_RW *) p;
-	*size = SDL_RWread(self->rw, buf, 1, *size);
+	*size = SDL_ReadIO(self->rw, buf, 1, *size);
 	return SZ_OK;
 }
 
 // Skip writing a switch by directly mapping the seek types.
-static_assert(SZ_SEEK_SET == RW_SEEK_SET);
-static_assert(SZ_SEEK_CUR == RW_SEEK_CUR);
-static_assert(SZ_SEEK_END == RW_SEEK_END);
+static_assert(SZ_SEEK_SET == SDL_IO_SEEK_SET);
+static_assert(SZ_SEEK_CUR == SDL_IO_SEEK_CUR);
+static_assert(SZ_SEEK_END == SDL_IO_SEEK_END);
 static SRes SeekInStream_RW_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
 {
 	const SeekInStream_RW *self = (const SeekInStream_RW *) p;
-	int ret = SDL_RWseek(self->rw, *pos, origin);
+	int ret = SDL_SeekIO(self->rw, *pos, origin);
 	if (ret < 0)
 		return SZ_ERROR_READ;
 	*pos = ret;
@@ -94,7 +94,7 @@ static SRes SeekInStream_RW_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek ori
 // ----------------------------------------------------------------------------
 // Inno setup data types
 
-static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
+static owned::SDL_IOStream zlib_crc_block_reader(uint8_t** input_buffer)
 {
 	uint32_t header_crc32, compressed_size, uncompressed_size;
 	memcpy(&header_crc32, *input_buffer, 4); *input_buffer += 4;
@@ -148,18 +148,18 @@ static owned::SDL_RWops zlib_crc_block_reader(uint8_t** input_buffer)
 	return vanilla::create_vec_rwops(std::move(uncompressed));
 }
 
-static void binary_string(SDL_RWops* rw, std::string* dest = nullptr)
+static void binary_string(SDL_IOStream* rw, std::string* dest = nullptr)
 {
 	uint32_t size;
-	SDL_RWread(rw, &size, 4, 1);
+	SDL_ReadIO(rw, &size, 4, 1);
 	if (dest)
 	{
 		dest->resize(size);
-		SDL_RWread(rw, dest->data(), size, 1);
+		SDL_ReadIO(rw, dest->data(), size, 1);
 	}
 	else
 	{
-		SDL_RWseek(rw, size, RW_SEEK_CUR);
+		SDL_SeekIO(rw, size, SDL_IO_SEEK_CUR);
 	}
 }
 
@@ -192,15 +192,15 @@ struct LzmaOutBuffer
 
 static bool crc_table_generated = false;
 
-InnoVfs::InnoVfs(SDL_RWops* rw)
+InnoVfs::InnoVfs(SDL_IOStream* rw)
 {
-	if (SDL_RWseek(rw, OFFSET_OF_7Z_IN_EXE, RW_SEEK_CUR) < 0)
+	if (SDL_SeekIO(rw, OFFSET_OF_7Z_IN_EXE, SDL_IO_SEEK_CUR) < 0)
 		return;
 
 	uint8_t signature[k7zSignatureSize];
-	if (!SDL_RWread(rw, signature, k7zSignatureSize, 1))
+	if (!SDL_ReadIO(rw, signature, k7zSignatureSize, 1))
 		return;
-	if (SDL_RWseek(rw, -k7zSignatureSize, RW_SEEK_CUR) < 0)
+	if (SDL_SeekIO(rw, -k7zSignatureSize, SDL_IO_SEEK_CUR) < 0)
 		return;
 
 	if (memcmp(signature, k7zSignature, k7zSignatureSize))
@@ -300,8 +300,8 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	}
 	position += 64;
 
-	owned::SDL_RWops headers2 = zlib_crc_block_reader(&position);
-	SDL_RWops* headers = headers2.get();
+	owned::SDL_IOStream headers2 = zlib_crc_block_reader(&position);
+	SDL_IOStream* headers = headers2.get();
 	binary_string(headers);  // app_name
 	binary_string(headers);  // app_versioned_name
 	binary_string(headers);  // app_id
@@ -325,16 +325,16 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	binary_string(headers);  // default_user_organisation
 	binary_string(headers);  // default_serial
 	binary_string(headers);  // compiled_code
-	SDL_RWseek(headers, 32, RW_SEEK_CUR);  // lead_bytes
+	SDL_SeekIO(headers, 32, SDL_IO_SEEK_CUR);  // lead_bytes
 
 	uint32_t language_count, task_count, file_count, data_entry_count;
-	SDL_RWread(headers, &language_count, 4, 1);
-	SDL_RWseek(headers, 4 * 2, RW_SEEK_CUR);  // type_count, component_count
-	SDL_RWread(headers, &task_count, 4, 1);
-	SDL_RWseek(headers, 4 * 1, RW_SEEK_CUR);  // directory_count
-	SDL_RWread(headers, &file_count, 4, 1);
-	SDL_RWread(headers, &data_entry_count, 4, 1);
-	SDL_RWseek(headers, 91, RW_SEEK_CUR);
+	SDL_ReadIO(headers, &language_count, 4, 1);
+	SDL_SeekIO(headers, 4 * 2, SDL_IO_SEEK_CUR);  // type_count, component_count
+	SDL_ReadIO(headers, &task_count, 4, 1);
+	SDL_SeekIO(headers, 4 * 1, SDL_IO_SEEK_CUR);  // directory_count
+	SDL_ReadIO(headers, &file_count, 4, 1);
+	SDL_ReadIO(headers, &data_entry_count, 4, 1);
+	SDL_SeekIO(headers, 91, SDL_IO_SEEK_CUR);
 
 	// skip languages
 	for (uint32_t i = 0; i < language_count; ++i)
@@ -349,7 +349,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		binary_string(headers);  // license_text
 		binary_string(headers);  // info_before
 		binary_string(headers);  // info_after
-		SDL_RWseek(headers, 4 * 6, RW_SEEK_CUR);
+		SDL_SeekIO(headers, 4 * 6, SDL_IO_SEEK_CUR);
 	}
 	// assume 0 messages, permissions, types, components
 	// skip tasks
@@ -361,10 +361,10 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		binary_string(headers);  // components
 		binary_string(headers);  // languages
 		binary_string(headers);  // check
-		SDL_RWseek(headers, 4 + 1 + (2 * 4 + 2) + 1, RW_SEEK_CUR);
+		SDL_SeekIO(headers, 4 + 1 + (2 * 4 + 2) + 1, SDL_IO_SEEK_CUR);
 	}
 	// assume 0 directories
-	SDL_RWseek(headers, 79, RW_SEEK_CUR);
+	SDL_SeekIO(headers, 79, SDL_IO_SEEK_CUR);
 
 	// read file entries
 	for (uint32_t i = 0; i < file_count; ++i)
@@ -377,10 +377,10 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 		binary_string(headers);  // condition.tasks
 		binary_string(headers);  // condition.languages
 		binary_string(headers);  // condition.check
-		SDL_RWseek(headers, 2 * (2 * 4 + 2), RW_SEEK_CUR);  // windows_version_range
+		SDL_SeekIO(headers, 2 * (2 * 4 + 2), SDL_IO_SEEK_CUR);  // windows_version_range
 		uint32_t location;
-		SDL_RWread(headers, &location, 4, 1);
-		SDL_RWseek(headers, 17, RW_SEEK_CUR);
+		SDL_ReadIO(headers, &location, 4, 1);
+		SDL_SeekIO(headers, 17, SDL_IO_SEEK_CUR);
 
 		if (source.empty() && !memcmp(destination.data(), APP_PREFIX, APP_PREFIX_SZ))
 		{
@@ -394,7 +394,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	headers2.reset();
 
 	// Parse the second zlib'd block containing the data entries.
-	owned::SDL_RWops datas = zlib_crc_block_reader(&position);
+	owned::SDL_IOStream datas = zlib_crc_block_reader(&position);
 	if (position != end)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "InnoVfs: extra data at end of setup.0");
@@ -404,12 +404,12 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	data_entries.resize(data_entry_count);
 	for (uint32_t i = 0; i < data_entry_count; ++i)
 	{
-		SDL_RWseek(datas, 4 * 2, RW_SEEK_CUR);  // first_slice, last_slice
-		SDL_RWread(datas, &data_entries[i].chunk_offset, 4, 1);
-		SDL_RWseek(datas, 8, RW_SEEK_CUR);  // file_offset
-		SDL_RWread(datas, &data_entries[i].file_size, 8, 1);
-		SDL_RWread(datas, &data_entries[i].chunk_size, 8, 1);
-		SDL_RWseek(datas, 4 + 8 + 8 + 1, RW_SEEK_CUR);
+		SDL_SeekIO(datas, 4 * 2, SDL_IO_SEEK_CUR);  // first_slice, last_slice
+		SDL_ReadIO(datas, &data_entries[i].chunk_offset, 4, 1);
+		SDL_SeekIO(datas, 8, SDL_IO_SEEK_CUR);  // file_offset
+		SDL_ReadIO(datas, &data_entries[i].file_size, 8, 1);
+		SDL_ReadIO(datas, &data_entries[i].chunk_size, 8, 1);
+		SDL_SeekIO(datas, 4 + 8 + 8 + 1, SDL_IO_SEEK_CUR);
 	}
 	datas.reset();
 
@@ -434,7 +434,7 @@ InnoVfs::InnoVfs(SDL_RWops* rw)
 	setup_1_bin.assign(outBuffer.raw + offset, outBuffer.raw + offset + outSizeProcessed);
 }
 
-owned::SDL_RWops InnoVfs::open_sdl(const char* path)
+owned::SDL_IOStream InnoVfs::open_sdl(const char* path)
 {
 	size_t data_entry_idx = archive.get_file(path);
 	if (data_entry_idx == SIZE_MAX)
@@ -446,7 +446,7 @@ owned::SDL_RWops InnoVfs::open_sdl(const char* path)
 	{
 		// Skip decompression if contents are nothing but
 		// [magic number:4][zlib header][file]
-		return owned::SDL_RWFromConstMem(&setup_1_bin[entry.chunk_offset + 11], entry.file_size);
+		return owned::SDL_IOFromConstMem(&setup_1_bin[entry.chunk_offset + 11], entry.file_size);
 	}
 
 	std::vector<uint8_t> uncompressed(entry.file_size);

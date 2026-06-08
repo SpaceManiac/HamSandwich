@@ -55,14 +55,14 @@ Android
 		ro: $INTERNAL
 	else:
 		RW: $INTERNAL
-	ro: SDL_RWFromFile, which reads from .apk
+	ro: SDL_IOFromFile, which reads from .apk
 		Tempfiles in $INTERNAL/.bundle_tmp when needed
 		Provided by build process
 Default
 	RW: $PWD
 	ro: installers according to metadata .json
 
-Pseudocode for SDL_RWFromFile(file, mode):
+Pseudocode for SDL_IOFromFile(file, mode):
 	if android:
 		if file is absolute:
 			return fopen(file, mode) if successful
@@ -97,7 +97,7 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	}
 	else if (!strcmp(kind, "zip"))
 	{
-		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
+		owned::SDL_IOStream fp = owned::SDL_IOFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
@@ -106,7 +106,7 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	}
 	else if (!strcmp(kind, "nsis"))
 	{
-		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
+		owned::SDL_IOStream fp = owned::SDL_IOFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
@@ -115,7 +115,7 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	}
 	else if (!strcmp(kind, "inno"))
 	{
-		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
+		owned::SDL_IOStream fp = owned::SDL_IOFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
@@ -124,7 +124,7 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	}
 	else if (!strcmp(kind, "inno3"))
 	{
-		owned::SDL_RWops fp = owned::SDL_RWFromFile(param, "rb");
+		owned::SDL_IOStream fp = owned::SDL_IOFromFile(param, "rb");
 		if (!fp) {
 			LogError("%s: failed to open '%s' in VFS spec '%s@%s@%s'", what, param, mountpoint, kind, param);
 			return { nullptr };
@@ -215,11 +215,11 @@ static VfsStack default_vfs_stack(bool* error) {
 	VfsStack result;
 	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	result.push_back(vanilla::open_android(), "", vanilla::VfsSourceKind::BaseGame);
-	if ((SDL_AndroidGetExternalStorageState() & need_flags) == need_flags) {
-		result.push_back(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()), "", vanilla::VfsSourceKind::Appdata);
-		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetExternalStoragePath()));
+	if ((SDL_GetAndroidExternalStorageState() & need_flags) == need_flags) {
+		result.push_back(vanilla::open_stdio(SDL_GetAndroidInternalStoragePath()), "", vanilla::VfsSourceKind::Appdata);
+		result.set_appdata(vanilla::open_stdio(SDL_GetAndroidExternalStoragePath()));
 	} else {
-		result.set_appdata(vanilla::open_stdio(SDL_AndroidGetInternalStoragePath()));
+		result.set_appdata(vanilla::open_stdio(SDL_GetAndroidInternalStoragePath()));
 	}
 	return result;
 }
@@ -505,11 +505,11 @@ vanilla::VfsStack* Vfs() {
 	return &vfs_stack;
 }
 
-owned::SDL_RWops AppdataOpen(const char* filename) {
+owned::SDL_IOStream AppdataOpen(const char* filename) {
 	return vfs_stack.open_sdl(filename);
 }
 
-owned::SDL_RWops AppdataOpen_Write(const char* filename) {
+owned::SDL_IOStream AppdataOpen_Write(const char* filename) {
 	return vfs_stack.open_write_sdl(filename);
 }
 

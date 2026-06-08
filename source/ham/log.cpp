@@ -13,7 +13,7 @@
 static SDL_LogOutputFunction original = nullptr;
 static void* originalUserdata = nullptr;
 static bool errorLogAttempted = false;
-static owned::SDL_RWops errorLog = nullptr;
+static owned::SDL_IOStream errorLog = nullptr;
 
 static const char *priorityPrefixes[] = {
     "",
@@ -24,7 +24,7 @@ static const char *priorityPrefixes[] = {
     "ERROR: ",
     "CRITICAL: ",
 };
-static_assert(std::size(priorityPrefixes) == SDL_NUM_LOG_PRIORITIES);
+static_assert(std::size(priorityPrefixes) == SDL_LOG_PRIORITY_COUNT);
 
 void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
@@ -32,9 +32,9 @@ void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const 
 	original(originalUserdata, category, priority, message);
 	if (errorLog)
 	{
-		SDL_RWwrite(errorLog, priorityPrefixes[priority], 1, strlen(priorityPrefixes[priority]));
-		SDL_RWwrite(errorLog, message, 1, strlen(message));
-		SDL_RWwrite(errorLog, "\n", 1, 1);
+		SDL_WriteIO(errorLog, priorityPrefixes[priority], 1, strlen(priorityPrefixes[priority]));
+		SDL_WriteIO(errorLog, message, 1, strlen(message));
+		SDL_WriteIO(errorLog, "\n", 1, 1);
 		// We should flush here but SDL_RWflush doesn't exist in SDL2.
 		AppdataSync();
 	}
@@ -45,10 +45,10 @@ void LogInit()
 	if (!original)
 	{
 #ifndef NDEBUG
-		SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
+		SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
 #endif
-		SDL_LogGetOutputFunction(&original, &originalUserdata);
-		SDL_LogSetOutputFunction(HamLogOutput, nullptr);
+		SDL_GetLogOutputFunction(&original, &originalUserdata);
+		SDL_SetLogOutputFunction(HamLogOutput, nullptr);
 	}
 
 	if (!errorLogAttempted && AppdataIsInit())

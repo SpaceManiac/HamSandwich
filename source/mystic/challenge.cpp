@@ -1396,7 +1396,7 @@ byte ChallengeMenuUpdate(MGLDraw *mgl,int *lastTime)
 
 void LoadChallenge(void)
 {
-	owned::SDL_RWops f;
+	owned::SDL_IOStream f;
 
 	if(chalDifficulty==Difficulty::CLASSIC)
 		f = AppdataOpen("challenge_c.sav");
@@ -1413,7 +1413,7 @@ void LoadChallenge(void)
 	}
 	else
 	{
-		SDL_RWread(f,&chalData,1,sizeof(chalData_t));
+		SDL_ReadIO(f,&chalData,1,sizeof(chalData_t));
 		f.reset();
 		memcpy(&player,&chalData.player,sizeof(player_t));
 		player.difficulty = chalDifficulty;
@@ -1431,7 +1431,7 @@ void LoadChallenge(void)
 
 void LoadChallengePercents(byte pcts[4])
 {
-	owned::SDL_RWops f;
+	owned::SDL_IOStream f;
 
 	int i = 0;
 	while ((chal[i].chapter != 255 || chal[i].level != 0))
@@ -1455,7 +1455,7 @@ void LoadChallengePercents(byte pcts[4])
 		}
 		else
 		{
-			SDL_RWread(f, &chalData, 1, sizeof(chalData_t));
+			SDL_ReadIO(f, &chalData, 1, sizeof(chalData_t));
 			f.reset();
 			memcpy(&player, &chalData.player, sizeof(player_t));
 			if (chalData.formerStars > player.chalStars)
@@ -1476,7 +1476,7 @@ void LoadChallengePercents(byte pcts[4])
 
 void SaveChallenge(void)
 {
-	owned::SDL_RWops f;
+	owned::SDL_IOStream f;
 
 	if (chalDifficulty == Difficulty::CLASSIC)
 		f = AppdataOpen_Write("challenge_c.sav");
@@ -1489,7 +1489,7 @@ void SaveChallenge(void)
 	if(f)
 	{
 		memcpy(&chalData.player,&player,sizeof(player_t));
-		SDL_RWwrite(f,&chalData,1,sizeof(chalData_t));
+		SDL_WriteIO(f,&chalData,1,sizeof(chalData_t));
 		f.reset();
 		AppdataSync();
 	}

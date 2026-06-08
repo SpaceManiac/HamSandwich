@@ -46,8 +46,8 @@ bool LoadWorld(world_t *world,const char *fname)
 	if(!f)
 		return false;
 
-	SDL_RWread(f, code, sizeof(char), 8);
-	SDL_RWseek(f, 0, RW_SEEK_SET);
+	SDL_ReadIO(f, code, sizeof(char), 8);
+	SDL_SeekIO(f, 0, SDL_IO_SEEK_SET);
 	code[8]='\0';
 
 	if(!strcmp(code, "HAMSWCH!"))
@@ -99,11 +99,11 @@ bool GetWorldName(const char *fname, StringDestination name, StringDestination a
 {
 	char code[9];
 
-	owned::SDL_RWops f = AppdataOpen(fname);
+	owned::SDL_IOStream f = AppdataOpen(fname);
 	if(!f)
 		return false;
 
-	SDL_RWread(f,code,sizeof(char),8);
+	SDL_ReadIO(f,code,sizeof(char),8);
 	code[8]='\0';
 
 	if(!strcmp(code,"HAMSWCH!"))

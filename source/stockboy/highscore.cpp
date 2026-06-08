@@ -391,8 +391,8 @@ byte LoadAddOnScores(char *fname)
 		return 0;
 	}
 
-	SDL_RWread(f,goldScore,MAX_MAPS*3,sizeof(int));
-	SDL_RWread(f,addOnScore,MAX_MAPS*3,sizeof(highScore_t));
+	SDL_ReadIO(f,goldScore,MAX_MAPS*3,sizeof(int));
+	SDL_ReadIO(f,addOnScore,MAX_MAPS*3,sizeof(highScore_t));
 
 	return 1;
 }
@@ -413,8 +413,8 @@ byte SaveAddOnScores(void)
 	if(!f)
 		return 0;
 
-	SDL_RWwrite(f,goldScore,MAX_MAPS*3,sizeof(int));
-	SDL_RWwrite(f,addOnScore,MAX_MAPS*3,sizeof(highScore_t));
+	SDL_WriteIO(f,goldScore,MAX_MAPS*3,sizeof(int));
+	SDL_WriteIO(f,addOnScore,MAX_MAPS*3,sizeof(highScore_t));
 	f.reset();
 	AppdataSync();
 

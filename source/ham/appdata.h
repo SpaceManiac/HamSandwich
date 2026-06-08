@@ -5,7 +5,7 @@
 #include <string>
 #include "owned_sdl.h"
 
-typedef struct SDL_RWops SDL_RWops;
+typedef struct SDL_IOStream SDL_IOStream;
 struct HamSandwichMetadata;
 namespace vanilla
 {
@@ -22,9 +22,9 @@ bool AppdataIsInit();
 vanilla::VfsStack* Vfs();
 
 // Open for reading.
-owned::SDL_RWops AppdataOpen(const char* filename);
+owned::SDL_IOStream AppdataOpen(const char* filename);
 // Open for writing.
-owned::SDL_RWops AppdataOpen_Write(const char* filename);
+owned::SDL_IOStream AppdataOpen_Write(const char* filename);
 // Delete file. Only applies to written files; cannot delete asset files.
 void AppdataDelete(const char* filename);
 // List the contents of a directory, mixing .

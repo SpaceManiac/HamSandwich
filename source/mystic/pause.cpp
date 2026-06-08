@@ -425,7 +425,7 @@ void RenderRuneMenu(void)
 			x += GetStrLength("Space", 1) + 4;
 			Print(x, y, "/", 0, 1);
 			x += 10;
-			RenderGamepadButton(x, y - 3, SDL_CONTROLLER_BUTTON_B);
+			RenderGamepadButton(x, y - 3, SDL_GAMEPAD_BUTTON_EAST);
 		}
 
 		if (rank >= RUNE_RANK1)	// can be equipped
@@ -441,7 +441,7 @@ void RenderRuneMenu(void)
 				x += GetStrLength("Enter", 1) + 4;
 				Print(x, y, "/", 0, 1);
 				x += 10;
-				RenderGamepadButton(x, y - 3, SDL_CONTROLLER_BUTTON_A);
+				RenderGamepadButton(x, y - 3, SDL_GAMEPAD_BUTTON_SOUTH);
 			}
 			else
 			{
@@ -460,7 +460,7 @@ void RenderRuneMenu(void)
 					x += GetStrLength("Enter", 1) + 4;
 					Print(x, y, "/", 0, 1);
 					x += 10;
-					RenderGamepadButton(x, y - 3, SDL_CONTROLLER_BUTTON_A);
+					RenderGamepadButton(x, y - 3, SDL_GAMEPAD_BUTTON_SOUTH);
 				}
 			}
 		}
@@ -616,7 +616,7 @@ static void GetSaves()
 			{
 				player_t p;
 				static_assert(sizeof(player_t) == 624);
-				SDL_RWread(f, &p, sizeof(player_t), 1);
+				SDL_ReadIO(f, &p, sizeof(player_t), 1);
 				saveLevel[i] = p.level;
 				saveChapter[i] = p.worldNum + 1;
 				saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
@@ -636,7 +636,7 @@ static void GetSaves()
 		if (auto f = AppdataOpen(s))
 		{
 			player_t p;
-			SDL_RWread(f, &p, sizeof(player_t), 1);
+			SDL_ReadIO(f, &p, sizeof(player_t), 1);
 			saveLevel[i] = p.level;
 			saveChapter[i] = p.worldNum + 1;
 			saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));

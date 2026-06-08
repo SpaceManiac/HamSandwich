@@ -199,7 +199,7 @@ void InitItems(void)
 			rect.w = spr->width;
 			rect.h = spr->height;
 
-			SDL_UnionRect(&everything, &rect, &everything);
+			SDL_GetRectUnion(&everything, &rect, &everything);
 
 			// Use precise shadow sprite boundaries.
 			rect.x = 0 - spr->ofsx - spr->height/2;
@@ -207,7 +207,7 @@ void InitItems(void)
 			rect.w = spr->height/2 + spr->width;
 			rect.h = spr->height/2;
 
-			SDL_UnionRect(&everything, &rect, &everything);
+			SDL_GetRectUnion(&everything, &rect, &everything);
 		}
 	}
 

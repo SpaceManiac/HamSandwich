@@ -13,25 +13,25 @@
 class NsisVfs : public vanilla::Vfs
 {
 	vanilla::Archive archive;
-	owned::SDL_RWops archive_rw;
+	owned::SDL_IOStream archive_rw;
 	size_t datablock_start;
 
 	const char* navigate_nsis(const char* path, vanilla::Archive::Directory** current);
 	bool extract_internal(const char* path, bool compressed, uint32_t size, std::vector<uint8_t>* result);
 
 public:
-	explicit NsisVfs(owned::SDL_RWops fp);
+	explicit NsisVfs(owned::SDL_IOStream fp);
 
 	bool is_ok()
 	{
 		return archive_rw != nullptr;
 	}
 
-	owned::SDL_RWops open_sdl(const char* filename) override;
+	owned::SDL_IOStream open_sdl(const char* filename) override;
 	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 };
 
-std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_RWops rw)
+std::unique_ptr<vanilla::Vfs> vanilla::open_nsis(owned::SDL_IOStream rw)
 {
 	return std::make_unique<NsisVfs>(std::move(rw));
 }
@@ -60,11 +60,11 @@ const uint32_t SIZE_COMPRESSED = 0x80000000;
 // ----------------------------------------------------------------------------
 // Decoding the file list
 
-NsisVfs::NsisVfs(owned::SDL_RWops fptr)
+NsisVfs::NsisVfs(owned::SDL_IOStream fptr)
 	: archive_rw(nullptr)
 {
 	// Find the "first header" in the file.
-	Sint64 file_size = SDL_RWseek(fptr, 0, RW_SEEK_END);
+	Sint64 file_size = SDL_SeekIO(fptr, 0, SDL_IO_SEEK_END);
 	if (file_size < 0)
 		return;
 
@@ -72,9 +72,9 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 	size_t firstheader_start = 0;
 	for (size_t search = SEARCH_START; search < file_size - FIRSTHEADER_SIZE; search += SEARCH_INCREMENT)
 	{
-		if (SDL_RWseek(fptr, search, RW_SEEK_SET) < 0)
+		if (SDL_SeekIO(fptr, search, SDL_IO_SEEK_SET) < 0)
 			return;
-		if (!SDL_RWread(fptr, &fh, FIRSTHEADER_SIZE, 1))
+		if (!SDL_ReadIO(fptr, &fh, FIRSTHEADER_SIZE, 1))
 			return;
 		if (!memcmp(&fh.siginfo, NULLSOFT_MAGIC, MAGIC_SIZE))
 		{
@@ -86,18 +86,18 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 		return;
 
 	uint32_t header_size;
-	if (!SDL_RWread(fptr, &header_size, 4, 1))
+	if (!SDL_ReadIO(fptr, &header_size, 4, 1))
 		return;
 
 	if (header_size == 0x8000005D)
 	{
 		// This is the first 4 bytes of an LZMA stream instead of a size, which
 		// means that the installer was compiled with `SetCompressor /SOLID`.
-		if (SDL_RWseek(fptr, -4, RW_SEEK_CUR) < 0)
+		if (SDL_SeekIO(fptr, -4, SDL_IO_SEEK_CUR) < 0)
 			return;
 
 		std::vector<uint8_t> buffer(fh.length_of_all_following_data - FIRSTHEADER_SIZE);
-		if (!SDL_RWread(fptr, buffer.data(), buffer.size(), 1))
+		if (!SDL_ReadIO(fptr, buffer.data(), buffer.size(), 1))
 			return;
 
 		std::vector<uint8_t> datablock;
@@ -105,7 +105,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 			return;
 
 		archive_rw = vanilla::create_vec_rwops(std::move(datablock));
-		if (!SDL_RWread(archive_rw, &header_size, 4, 1))
+		if (!SDL_ReadIO(archive_rw, &header_size, 4, 1))
 		{
 			archive_rw = nullptr;
 			return;
@@ -123,7 +123,7 @@ NsisVfs::NsisVfs(owned::SDL_RWops fptr)
 		archive_rw = nullptr;
 		return;
 	}
-	datablock_start = SDL_RWtell(archive_rw);
+	datablock_start = SDL_TellIO(archive_rw);
 
 	// Decode the block information.
 	block_header blocks[BLOCKS_NUM];
@@ -204,20 +204,20 @@ const char* NsisVfs::navigate_nsis(const char* path, vanilla::Archive::Directory
 // ----------------------------------------------------------------------------
 // Extracting individual files
 
-owned::SDL_RWops NsisVfs::open_sdl(const char* path)
+owned::SDL_IOStream NsisVfs::open_sdl(const char* path)
 {
 	size_t offset = archive.get_file(path);
 	if (offset == SIZE_MAX)
 		return nullptr;
 
-	if (int r = SDL_RWseek(archive_rw, datablock_start + offset, RW_SEEK_SET); r < 0)
+	if (int r = SDL_SeekIO(archive_rw, datablock_start + offset, SDL_IO_SEEK_SET); r < 0)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::open_sdl(%s): seek error: %s", path, SDL_GetError());
 		return nullptr;
 	}
 
 	uint32_t size;
-	if (!SDL_RWread(archive_rw, &size, 4, 1))
+	if (!SDL_ReadIO(archive_rw, &size, 4, 1))
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::open_sdl(%s): read error: %s", path, SDL_GetError());
 		return nullptr;
@@ -226,7 +226,7 @@ owned::SDL_RWops NsisVfs::open_sdl(const char* path)
 	// Optimization to avoid extra copies of already-decompressed data.
 	if ((archive_rw->type == SDL_RWOPS_MEMORY || archive_rw->type == SDL_RWOPS_MEMORY_RO) && !(size & SIZE_COMPRESSED))
 	{
-		return owned::SDL_RWFromConstMem(archive_rw->hidden.mem.here, size);
+		return owned::SDL_IOFromConstMem(archive_rw->hidden.mem.here, size);
 	}
 
 	std::vector<uint8_t> result;
@@ -238,7 +238,7 @@ owned::SDL_RWops NsisVfs::open_sdl(const char* path)
 bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t size, std::vector<uint8_t>* result)
 {
 	std::vector<uint8_t> compressed(size);
-	size_t got = SDL_RWread(archive_rw, compressed.data(), 1, compressed.size());
+	size_t got = SDL_ReadIO(archive_rw, compressed.data(), 1, compressed.size());
 	if (got < compressed.size())
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::extract_internal(%s): expected %u, got %u: %s", path, (unsigned int)(compressed.size()), (unsigned int)(got), SDL_GetError());

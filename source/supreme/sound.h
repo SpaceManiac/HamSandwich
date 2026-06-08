@@ -441,6 +441,6 @@ void ClearCustomSounds();
 int DescIndexToSound(int descIndex);
 int SoundToDescIndex(int snd);
 
-owned::SDL_RWops SoundLoadOverride(int num);
+owned::SDL_IOStream SoundLoadOverride(int num);
 
 #endif

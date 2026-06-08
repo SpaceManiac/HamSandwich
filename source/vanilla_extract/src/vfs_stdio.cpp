@@ -70,8 +70,8 @@ class StdioVfs : public vanilla::WriteVfs
 	owned::FILE open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
 	explicit StdioVfs(std::string&& prefix) : prefix(prefix) {}
-	owned::SDL_RWops open_sdl(const char* filename) override;
-	owned::SDL_RWops open_write_sdl(const char* filename) override;
+	owned::SDL_IOStream open_sdl(const char* filename) override;
+	owned::SDL_IOStream open_write_sdl(const char* filename) override;
 	bool list_dir(const char* directory, std::set<std::string, vanilla::CaseInsensitive>* output) override;
 	bool delete_file(const char* filename) override;
 	bool rename(const char* from, const char* to)  override;
@@ -126,33 +126,33 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 #if defined(_WIN32)
 // The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
 
-owned::SDL_RWops StdioVfs::open_sdl(const char* filename)
+owned::SDL_IOStream StdioVfs::open_sdl(const char* filename)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(filename);
-	return owned::SDL_RWFromFile(buffer.c_str(), "rb");
+	return owned::SDL_IOFromFile(buffer.c_str(), "rb");
 }
 
-owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
+owned::SDL_IOStream StdioVfs::open_write_sdl(const char* filename)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
 	buffer.append(filename);
 	vanilla::mkdir_parents(buffer);
-	return owned::SDL_RWFromFile(buffer.c_str(), "wb");
+	return owned::SDL_IOFromFile(buffer.c_str(), "wb");
 }
 
 #else
 // Delegate to open_stdio above.
 
-owned::SDL_RWops StdioVfs::open_sdl(const char* filename)
+owned::SDL_IOStream StdioVfs::open_sdl(const char* filename)
 {
 	owned::FILE fp = open_stdio_internal(filename, "rb", false);
 	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;
 }
 
-owned::SDL_RWops StdioVfs::open_write_sdl(const char* filename)
+owned::SDL_IOStream StdioVfs::open_write_sdl(const char* filename)
 {
 	owned::FILE fp = open_stdio_internal(filename, "wb", true);
 	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;

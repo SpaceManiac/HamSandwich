@@ -125,7 +125,7 @@ ConversionError convertFontToPNG(string fname, char* outFolder) {
 			fprintf(stderr, "error: bad save %s: %s\n", outFullFileName.c_str(), IMG_GetError());
 		}
 
-		SDL_FreeSurface(surf);
+		SDL_DestroySurface(surf);
 	}
 	in.get();  // apparent padding
 	size_t diff = (size_t)in.tellg() - ofs;
@@ -196,8 +196,8 @@ ConversionError convertTextToFont(string fname, char* outFileName) {
 
 		if (surf->format->format != SDL_PIXELFORMAT_ABGR8888) {
 			fprintf(stderr, "note: converting format\n");
-			SDL_Surface* surf2 = SDL_ConvertSurfaceFormat(surf, SDL_PIXELFORMAT_ABGR8888, 0);
-			SDL_FreeSurface(surf);
+			SDL_Surface* surf2 = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888, 0);
+			SDL_DestroySurface(surf);
 			surf = surf2;
 		}
 
@@ -213,7 +213,7 @@ ConversionError convertTextToFont(string fname, char* outFileName) {
 			}
 		}
 		SDL_UnlockSurface(surf);
-		SDL_FreeSurface(surf);
+		SDL_DestroySurface(surf);
 	}
 	printf("read U+%X.png through U+%X.png\n", (int)header.firstChar, (int)header.firstChar + (int)header.numChars - 1);
 

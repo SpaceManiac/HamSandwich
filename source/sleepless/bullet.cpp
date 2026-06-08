@@ -3386,32 +3386,32 @@ byte GetBulletAttackType(void)
 	return attackType;
 }
 
-void SaveBullets(SDL_RWops *f)
+void SaveBullets(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_RWwrite(f,&config.numBullets,1,sizeof(int));
+	SDL_WriteIO(f,&config.numBullets,1,sizeof(int));
 	for(i=0;i<config.numBullets;i++)
 	{
-		SDL_RWwrite(f,&bullet[i].type,1,sizeof(byte));
+		SDL_WriteIO(f,&bullet[i].type,1,sizeof(byte));
 		if(bullet[i].type!=0)
 		{
-			SDL_RWwrite(f,&bullet[i],sizeof(bullet_t),1);
+			SDL_WriteIO(f,&bullet[i],sizeof(bullet_t),1);
 		}
 	}
 }
 
-void LoadBullets(SDL_RWops *f)
+void LoadBullets(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_RWread(f,&config.numBullets,1,sizeof(int));
+	SDL_ReadIO(f,&config.numBullets,1,sizeof(int));
 	for(i=0;i<config.numBullets;i++)
 	{
-		SDL_RWread(f,&bullet[i].type,1,sizeof(byte));
+		SDL_ReadIO(f,&bullet[i].type,1,sizeof(byte));
 		if(bullet[i].type!=0)
 		{
-			SDL_RWread(f,&bullet[i],sizeof(bullet_t),1);
+			SDL_ReadIO(f,&bullet[i],sizeof(bullet_t),1);
 		}
 	}
 }

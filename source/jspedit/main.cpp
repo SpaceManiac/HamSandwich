@@ -36,19 +36,19 @@ int main(int argc, char** argv) {
     SDL_GetWindowSize(window, &DISPLAY_WIDTH, &DISPLAY_HEIGHT);
 
 #if !defined(_WIN32) && !defined(__clang__)
-    SDL_Surface *surface = IMG_Load_RW(SDL_RWFromConstMem(embed_game_icon, embed_game_icon_size), true);
+    SDL_Surface *surface = IMG_Load_RW(SDL_IOFromConstMem(embed_game_icon, embed_game_icon_size), true);
     SDL_SetWindowIcon(window, surface);
-    SDL_FreeSurface(surface);
+    SDL_DestroySurface(surface);
 #endif
 
-    SDL_Surface *icons = IMG_Load_RW(SDL_RWFromConstMem(embed_icons, embed_icons_size), true);
+    SDL_Surface *icons = IMG_Load_RW(SDL_IOFromConstMem(embed_icons, embed_icons_size), true);
     gIcons = SDL_CreateTextureFromSurface(renderer, icons);
-    SDL_FreeSurface(icons);
+    SDL_DestroySurface(icons);
 
-    SDL_RWops *rwFont = SDL_RWFromConstMem(embed_verdana, embed_verdana_size);
+    SDL_IOStream *rwFont = SDL_IOFromConstMem(embed_verdana, embed_verdana_size);
     gFont = &gFontBuf;
     FontLoad(rwFont, gFont);
-    SDL_RWclose(rwFont);
+    SDL_CloseIO(rwFont);
 
     if (argc > 1) {
         editor::loadOnStartup(argv[1]);
@@ -101,7 +101,7 @@ void DrawText(SDL_Renderer *renderer, int x, int y, Align align, SDL_Color color
                 for (int i = 0; i < charWidth; ++i)
                 {
                     if (*data++)
-                        SDL_RenderDrawPoint(renderer, x + i, y + j + 3);
+                        SDL_RenderPoint(renderer, x + i, y + j + 3);
                 }
             }
 
@@ -113,7 +113,7 @@ void DrawText(SDL_Renderer *renderer, int x, int y, Align align, SDL_Color color
             SDL_Rect dest = { x, y + 1, 15, 15 };
 
             SDL_SetTextureColorMod(gIcons, color.r, color.g, color.b);
-            SDL_RenderCopy(renderer, gIcons, &source, &dest);
+            SDL_RenderTexture(renderer, gIcons, &source, &dest);
             x += 16;
         }
     }

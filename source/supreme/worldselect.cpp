@@ -867,13 +867,13 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 		}
 
 		byte scan = LastScanCode();
-		if (scan == SDL_SCANCODE_PAGEUP || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_LEFTSHOULDER))) {
+		if (scan == SDL_SCANCODE_PAGEUP || (gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_LEFT_SHOULDER))) {
 			listPos = std::max(listPos - WORLDS_PER_SCREEN, 0);
 			choice = std::max(choice - WORLDS_PER_SCREEN, 0);
 			CalcScrollBar();
 			MoveToNewWorld();
 		}
-		if (scan == SDL_SCANCODE_PAGEDOWN || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))) {
+		if (scan == SDL_SCANCODE_PAGEDOWN || (gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER))) {
 			listPos = std::min(listPos + WORLDS_PER_SCREEN, (int)list.size() - WORLDS_PER_SCREEN);
 			choice = std::min(choice + WORLDS_PER_SCREEN, (int)list.size() - 1);
 			CalcScrollBar();
@@ -967,8 +967,8 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			std::set<dword> seen;
 			std::vector<dword> ordered;
 
-			owned::SDL_RWops input = AppdataOpen("worlds/levels.dat");
-			for (dword item; SDL_RWread(input, &item, sizeof(dword), 1) == 1;)
+			owned::SDL_IOStream input = AppdataOpen("worlds/levels.dat");
+			for (dword item; SDL_ReadIO(input, &item, sizeof(dword), 1) == 1;)
 			{
 				seen.insert(item);
 				ordered.push_back(item);
@@ -993,7 +993,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			auto output = AppdataOpen_Write("worlds/levels.dat");
 			for (dword item : ordered)
 			{
-				SDL_RWwrite(output, &item, sizeof(dword), 1);
+				SDL_WriteIO(output, &item, sizeof(dword), 1);
 			}
 			output.reset();
 			AppdataSync();
@@ -1050,7 +1050,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			}
 		}
 
-		if ((c & ~oldc & CONTROL_B2) || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+		if ((c & ~oldc & CONTROL_B2) || (gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 		{
 			MakeNormalSound(SND_MENUSELECT);
 			mode = MODE_PICKWORLD;

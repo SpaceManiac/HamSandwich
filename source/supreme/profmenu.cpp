@@ -836,7 +836,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 				else
 					strcpy(kcBtn[kBtnNum].txt,"? ? ?");
 
-				if(k==27 || (GetGamepadButtons() & ~(1 << SDL_CONTROLLER_BUTTON_A)))
+				if(k==27 || (GetGamepadButtons() & ~(1 << SDL_GAMEPAD_BUTTON_SOUTH)))
 				{
 					InitKeyConfig();
 					kcMode=0;

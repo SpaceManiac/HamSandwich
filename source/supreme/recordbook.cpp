@@ -139,7 +139,7 @@ byte UpdateRecordBook(int *lastTime,MGLDraw *mgl)
 		}
 	}
 
-	if (GetGamepadButtons() & ((1 << SDL_CONTROLLER_BUTTON_B) | (1 << SDL_CONTROLLER_BUTTON_BACK)))
+	if (GetGamepadButtons() & ((1 << SDL_GAMEPAD_BUTTON_EAST) | (1 << SDL_GAMEPAD_BUTTON_BACK)))
 	{
 		return 1;
 	}

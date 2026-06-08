@@ -31,26 +31,26 @@ byte LoadWorld(world_t *world,const char *fname,MGLDraw *mgl)
 	if(!f)
 		return 0;
 
-	SDL_RWread(f,hdr,4,sizeof(char));
+	SDL_ReadIO(f,hdr,4,sizeof(char));
 	hdr[4]='\0';
 	if(strcmp(hdr,"STBY"))
 	{
 		return 0;
 	}
 
-	SDL_RWread(f,&world->version,1,sizeof(byte));
+	SDL_ReadIO(f,&world->version,1,sizeof(byte));
 	if(world->version!=WORLD_VERSION)
 	{
 		return 0;
 	}
 
-	SDL_RWread(f,&world->numMaps,1,1);
-	SDL_RWread(f,&world->tileName,64,sizeof(char));
-	SDL_RWread(f,&world->setname,WORLD_DESC_LINELEN,sizeof(char));
-	SDL_RWread(f,&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char));
+	SDL_ReadIO(f,&world->numMaps,1,1);
+	SDL_ReadIO(f,&world->tileName,64,sizeof(char));
+	SDL_ReadIO(f,&world->setname,WORLD_DESC_LINELEN,sizeof(char));
+	SDL_ReadIO(f,&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char));
 
 	// legacy code, keeps it from crashing to load and save this useless data
-	SDL_RWread(f,world->terrain,200,sizeof(terrain_t));
+	SDL_ReadIO(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -79,16 +79,16 @@ byte SaveWorld(world_t *world,const char *fname)
 	if(!f)
 		return 0;
 
-	SDL_RWwrite(f,hdr,4,sizeof(char));
-	SDL_RWwrite(f,&world->version,1,sizeof(byte));
+	SDL_WriteIO(f,hdr,4,sizeof(char));
+	SDL_WriteIO(f,&world->version,1,sizeof(byte));
 
-	SDL_RWwrite(f,&world->numMaps,1,1);
-	SDL_RWwrite(f,&world->tileName,64,sizeof(char));
-	SDL_RWwrite(f,&world->setname,WORLD_DESC_LINELEN,sizeof(char));
-	SDL_RWwrite(f,&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char));
+	SDL_WriteIO(f,&world->numMaps,1,1);
+	SDL_WriteIO(f,&world->tileName,64,sizeof(char));
+	SDL_WriteIO(f,&world->setname,WORLD_DESC_LINELEN,sizeof(char));
+	SDL_WriteIO(f,&world->desc,WORLD_DESC_LINELEN*WORLD_DESC_LINES,sizeof(char));
 
 	// legacy code, keeps it from crashing to load and save this useless data
-	SDL_RWwrite(f,world->terrain,200,sizeof(terrain_t));
+	SDL_WriteIO(f,world->terrain,200,sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)
 		world->map[i]->Save(f.get());
@@ -139,12 +139,12 @@ void GetWorldName(const char *fname,char *buf,char *auth)
 	// this fseeks past:
 	//	 4 bytes='STBY', 1 byte=version, 1 byte numMaps, 64 bytes=tilesetName
 
-	SDL_RWseek(f,4+1+1+64,RW_SEEK_SET);
+	SDL_SeekIO(f,4+1+1+64,SDL_IO_SEEK_SET);
 	// read the name
-	SDL_RWread(f,buf,1,32);
+	SDL_ReadIO(f,buf,1,32);
 	buf[31]='\0';
 	// read author
-	SDL_RWread(f,auth,1,32);
+	SDL_ReadIO(f,auth,1,32);
 	auth[31]='\0';
 }
 

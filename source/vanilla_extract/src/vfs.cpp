@@ -45,7 +45,7 @@ const char* Mount::matches(const char* filename) const
 	return nullptr;  // No match.
 }
 
-owned::SDL_RWops Mount::open_sdl(const char* filename)
+owned::SDL_IOStream Mount::open_sdl(const char* filename)
 {
 	if (const char* subfilename = matches(filename))
 	{
@@ -72,18 +72,18 @@ std::unique_ptr<WriteVfs> VfsStack::set_appdata(std::unique_ptr<WriteVfs> new_va
 	return new_value;
 }
 
-owned::SDL_RWops VfsStack::open_sdl(const char* filename)
+owned::SDL_IOStream VfsStack::open_sdl(const char* filename)
 {
 	std::string tombstone = tombstone_name(filename);
 
 	// Iterate top to bottom, so we stop as soon as we see a tombstone or the file.
 	if (write_mount)
 	{
-		if (owned::SDL_RWops deleted = write_mount->open_sdl(tombstone.c_str()))
+		if (owned::SDL_IOStream deleted = write_mount->open_sdl(tombstone.c_str()))
 		{
 			return nullptr;
 		}
-		if (owned::SDL_RWops rw = write_mount->open_sdl(filename))
+		if (owned::SDL_IOStream rw = write_mount->open_sdl(filename))
 		{
 			return rw;
 		}
@@ -91,11 +91,11 @@ owned::SDL_RWops VfsStack::open_sdl(const char* filename)
 
 	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
 	{
-		if (owned::SDL_RWops deleted = iter->open_sdl(tombstone.c_str()))
+		if (owned::SDL_IOStream deleted = iter->open_sdl(tombstone.c_str()))
 		{
 			return nullptr;
 		}
-		if (owned::SDL_RWops rw = iter->open_sdl(filename))
+		if (owned::SDL_IOStream rw = iter->open_sdl(filename))
 		{
 			return rw;
 		}
@@ -104,7 +104,7 @@ owned::SDL_RWops VfsStack::open_sdl(const char* filename)
 	return nullptr;
 }
 
-owned::SDL_RWops VfsStack::open_write_sdl(const char* filename)
+owned::SDL_IOStream VfsStack::open_write_sdl(const char* filename)
 {
 	if (write_mount)
 	{
@@ -198,11 +198,11 @@ bool VfsStack::query_bottom(const char* filename, VfsMeta* meta)
 	bool retval = false;
 	if (write_mount)
 	{
-		if (owned::SDL_RWops deleted = write_mount->open_sdl(tombstone.c_str()))
+		if (owned::SDL_IOStream deleted = write_mount->open_sdl(tombstone.c_str()))
 		{
 			return retval;
 		}
-		if (owned::SDL_RWops rw = write_mount->open_sdl(filename))
+		if (owned::SDL_IOStream rw = write_mount->open_sdl(filename))
 		{
 			*meta = VfsMeta { VfsSourceKind::Appdata };
 			retval = true;
@@ -211,11 +211,11 @@ bool VfsStack::query_bottom(const char* filename, VfsMeta* meta)
 
 	for (auto iter = mounts.rbegin(); iter != mounts.rend(); ++iter)
 	{
-		if (owned::SDL_RWops deleted = iter->open_sdl(tombstone.c_str()))
+		if (owned::SDL_IOStream deleted = iter->open_sdl(tombstone.c_str()))
 		{
 			return retval;
 		}
-		if (owned::SDL_RWops rw = iter->open_sdl(filename))
+		if (owned::SDL_IOStream rw = iter->open_sdl(filename))
 		{
 			*meta = iter->meta;
 			retval = true;

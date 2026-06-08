@@ -169,10 +169,10 @@ void BackupWorld(const char *name)
 	byte data[8 * 1024];
 	while(true)
 	{
-		bytes = SDL_RWread(inF, data, sizeof(byte), std::size(data));
+		bytes = SDL_ReadIO(inF, data, sizeof(byte), std::size(data));
 		if (bytes <= 0)
 			break;
-		SDL_RWwrite(outF, data, sizeof(byte), bytes);
+		SDL_WriteIO(outF, data, sizeof(byte), bytes);
 	}
 	outF.reset();
 	inF.reset();
@@ -920,7 +920,7 @@ static TASK(void) HandleKeyPresses(void)
 				break;
 		}
 
-		if ((gamepad & ~oldGamepad) & (1 << SDL_CONTROLLER_BUTTON_BACK))
+		if ((gamepad & ~oldGamepad) & (1 << SDL_GAMEPAD_BUTTON_BACK))
 		{
 			InitYesNoDialog("Exit the editor?", "Yes", "No");
 			editMode = EDITMODE_EXIT;
@@ -958,7 +958,7 @@ static TASK(void) HandleKeyPresses(void)
 	}
 	else if(editMode==EDITMODE_EXIT)
 	{
-		if((gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+		if((gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 		{
 			YesNoDialogKey('y');
 		}
@@ -1025,7 +1025,7 @@ static TASK(void) HandleKeyPresses(void)
 	}
 	else if(editMode==EDITMODE_HELP)
 	{
-		if(!EditHelpKey(lastKey) || (gamepad & ~oldGamepad & (1 << SDL_CONTROLLER_BUTTON_BACK)))
+		if(!EditHelpKey(lastKey) || (gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 		{
 			ExitEditHelp();
 			SetEditMode(EDITMODE_EDIT);

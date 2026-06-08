@@ -38,7 +38,7 @@ public:
 
 class Save final
 {
-	owned::SDL_RWops stream;
+	owned::SDL_IOStream stream;
 	SdlRwStream output;
 public:
 	explicit Save(const char* fname);
@@ -50,7 +50,7 @@ public:
 
 class Load final
 {
-	owned::SDL_RWops stream;
+	owned::SDL_IOStream stream;
 	SdlRwStream input;
 public:
 	explicit Load(const char* fname);

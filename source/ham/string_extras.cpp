@@ -96,7 +96,7 @@ void string_appendf(std::string* buffer, const char* format, ...)
 	va_end(args);
 }
 
-size_t SDL_RWprintf(SDL_RWops* rw, const char* format, ...)
+size_t SDL_RWprintf(SDL_IOStream* rw, const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -105,7 +105,7 @@ size_t SDL_RWprintf(SDL_RWops* rw, const char* format, ...)
 	size_t size = SDL_vasprintf(&buf, format, args);
 	if (!buf)
 		return size;
-	size = SDL_RWwrite(rw, buf, 1, size);
+	size = SDL_WriteIO(rw, buf, 1, size);
 	SDL_free(buf);
 	return size;
 }

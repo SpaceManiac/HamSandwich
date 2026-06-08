@@ -97,21 +97,21 @@ sprite_t::sprite_t(const byte *info) noexcept
 }
 
 // REGULAR MEMBER FUNCTIONS
-bool sprite_t::LoadData(SDL_RWops *f)
+bool sprite_t::LoadData(SDL_IOStream *f)
 {
-	if(SDL_RWread(f,data.data(),1,data.size())!=data.size())
+	if(SDL_ReadIO(f,data.data(),1,data.size())!=data.size())
 	{
 		return false;
 	}
 	return true;
 }
 
-bool sprite_t::SaveData(SDL_RWops *f) const
+bool sprite_t::SaveData(SDL_IOStream *f) const
 {
 	if(data.empty())
 		return true;
 
-	if(SDL_RWwrite(f,data.data(),1,data.size())!=data.size())
+	if(SDL_WriteIO(f,data.data(),1,data.size())!=data.size())
 	{
 		return false;
 	}
@@ -1177,20 +1177,20 @@ bool sprite_set_t::Load(const char *fname)
 
 	spr.clear();
 
-	owned::SDL_RWops f = AppdataOpen(fname);
+	owned::SDL_IOStream f = AppdataOpen(fname);
 	if(!f) {
 		// Asset stack printed error already
 		return false;
 	}
 	// read the count
 	word count;
-	SDL_RWread(f, &count, 2, 1);
+	SDL_ReadIO(f, &count, 2, 1);
 
 	// allocate a buffer to load sprites into
 	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
 
 	// read in the sprite headers
-	if(SDL_RWread(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
+	if(SDL_ReadIO(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
 	{
 		return false;
 	}
@@ -1218,7 +1218,7 @@ bool sprite_set_t::Save(const char *fname) const
 		return false;
 	// write the count
 	word count = spr.size();
-	SDL_RWwrite(f,&count,2,1);
+	SDL_WriteIO(f,&count,2,1);
 
 	// allocate a buffer to copy sprites into
 	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
@@ -1227,7 +1227,7 @@ bool sprite_set_t::Save(const char *fname) const
 		spr[i].GetHeader(&buffer[i*SPRITE_INFO_SIZE]);
 
 	// write the sprites out
-	if(SDL_RWwrite(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
+	if(SDL_WriteIO(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
 	{
 		return false;
 	}

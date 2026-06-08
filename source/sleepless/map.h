@@ -80,13 +80,13 @@ class Map
 	public:
 		Map(byte size,const char *name);
 		Map(Map *m);
-		Map(SDL_RWops *f);
+		Map(SDL_IOStream *f);
 
 		~Map(void);
 
-		byte Save(SDL_RWops *f);
-		void SaveMapData(SDL_RWops *f);
-		void LoadMapData(SDL_RWops *f);
+		byte Save(SDL_IOStream *f);
+		void SaveMapData(SDL_IOStream *f);
+		void LoadMapData(SDL_IOStream *f);
 		void Init(world_t *wrld);
 		void Render(world_t *world,int camX,int camY,byte flags);
 		void RenderEdit(world_t *world,int camX,int camY,byte flags);

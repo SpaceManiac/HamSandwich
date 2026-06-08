@@ -8,7 +8,7 @@ using vanilla::CaseInsensitive;
 using vanilla::Vfs;
 
 // ----------------------------------------------------------------------------
-// For Android's benefit, a wrapper from SDL_RWops to zip i/o
+// For Android's benefit, a wrapper from SDL_IOStream to zip i/o
 
 static void* zsdl_open64(void* userdata, const void* filename, int mode)
 {
@@ -20,36 +20,36 @@ static void* zsdl_open64(void* userdata, const void* filename, int mode)
 static uLong zsdl_read(void* userdata, void* stream, void* buf, uLong size)
 {
 	(void)userdata;
-	return SDL_RWread((SDL_RWops*) stream, buf, 1, size);
+	return SDL_ReadIO((SDL_IOStream*) stream, buf, 1, size);
 }
 
 static uLong zsdl_write(void* userdata, void* stream, const void* buf, uLong size)
 {
 	(void)userdata;
-	return SDL_RWwrite((SDL_RWops*) stream, buf, 1, size);
+	return SDL_WriteIO((SDL_IOStream*) stream, buf, 1, size);
 }
 
 static ZPOS64_T zsdl_tell64(void* userdata, void* stream)
 {
 	(void)userdata;
-	return SDL_RWtell((SDL_RWops*) stream);
+	return SDL_TellIO((SDL_IOStream*) stream);
 }
 
 // Skip writing a switch by directly mapping the seek types.
-static_assert(ZLIB_FILEFUNC_SEEK_SET == RW_SEEK_SET);
-static_assert(ZLIB_FILEFUNC_SEEK_CUR == RW_SEEK_CUR);
-static_assert(ZLIB_FILEFUNC_SEEK_END == RW_SEEK_END);
+static_assert(ZLIB_FILEFUNC_SEEK_SET == SDL_IO_SEEK_SET);
+static_assert(ZLIB_FILEFUNC_SEEK_CUR == SDL_IO_SEEK_CUR);
+static_assert(ZLIB_FILEFUNC_SEEK_END == SDL_IO_SEEK_END);
 static long zsdl_seek64(void* userdata, void* stream, ZPOS64_T offset, int origin)
 {
 	(void)userdata;
-	SDL_RWseek((SDL_RWops*) stream, offset, origin);
+	SDL_SeekIO((SDL_IOStream*) stream, offset, origin);
 	return 0;
 }
 
 static int zsdl_close(void* userdata, void* stream)
 {
 	(void)userdata;
-	return SDL_RWclose((SDL_RWops*) stream);
+	return SDL_CloseIO((SDL_IOStream*) stream);
 }
 
 static int zsdl_testerror(void* userdata, void* stream)
@@ -95,7 +95,7 @@ class ZipVfs : public Vfs
 	std::vector<unz64_file_pos> files;
 	vanilla::Archive archive;
 public:
-	explicit ZipVfs(owned::SDL_RWops rw)
+	explicit ZipVfs(owned::SDL_IOStream rw)
 	{
 		zlib_filefunc64_def sdl_zlib_io =
 		{
@@ -106,7 +106,7 @@ public:
 			zsdl_seek64,
 			zsdl_close,
 			zsdl_testerror,
-			rw.release(),  // Our zsdl_close above will call SDL_RWclose.
+			rw.release(),  // Our zsdl_close above will call SDL_CloseIO.
 		};
 		zip.reset(unzOpen2_64(nullptr, &sdl_zlib_io));
 
@@ -147,16 +147,16 @@ public:
 		}
 	}
 
-	owned::SDL_RWops open_sdl(const char* filename) override;
+	owned::SDL_IOStream open_sdl(const char* filename) override;
 	bool list_dir(const char* directory, std::set<std::string, CaseInsensitive>* output) override;
 };
 
-std::unique_ptr<Vfs> vanilla::open_zip(owned::SDL_RWops rw)
+std::unique_ptr<Vfs> vanilla::open_zip(owned::SDL_IOStream rw)
 {
 	return std::make_unique<ZipVfs>(std::move(rw));
 }
 
-owned::SDL_RWops ZipVfs::open_sdl(const char* filename)
+owned::SDL_IOStream ZipVfs::open_sdl(const char* filename)
 {
 	size_t file = archive.get_file(filename);
 	if (file == SIZE_MAX)
