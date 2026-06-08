@@ -168,8 +168,8 @@ int tje_encode_with_func(tje_write_func* func,
 #ifdef TJE_IMPLEMENTATION
 
 
-#define tjei_min(a, b) ((a) < b) ? (a) : (b);
-#define tjei_max(a, b) ((a) < b) ? (b) : (a);
+#define tjei_min(a, b) ((a) < b) ? (a) : (b)
+#define tjei_max(a, b) ((a) < b) ? (b) : (a)
 
 
 #if defined(_MSC_VER)
@@ -628,7 +628,7 @@ TJEI_FORCE_INLINE void tjei_write_bits(TJEState* state,
 
     // Push the stack.
     uint32_t nloc = *location + num_bits;
-    *bitbuffer |= (uint32_t)(bits << (32 - nloc));
+    *bitbuffer |= (uint32_t)bits << (32 - nloc);
     *location = nloc;
     while ( *location >= 8 ) {
         // Grab the most significant byte.

@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,28 +45,30 @@
  * requires about 13K in binary form.
  */
 
-#include "SDL_image.h"
+#include <SDL3_image/SDL_image.h>
 
 #ifdef LOAD_XPM
 
 /* See if an image is contained in a data source */
-int IMG_isXPM(SDL_RWops *src)
+bool IMG_isXPM(SDL_IOStream *src)
 {
     Sint64 start;
-    int is_XPM;
+    bool is_XPM;
     char magic[9];
 
-    if ( !src )
-        return 0;
-    start = SDL_RWtell(src);
-    is_XPM = 0;
-    if ( SDL_RWread(src, magic, sizeof(magic), 1) ) {
+    if (!src) {
+        return false;
+    }
+
+    start = SDL_TellIO(src);
+    is_XPM = false;
+    if (SDL_ReadIO(src, magic, sizeof(magic)) == sizeof(magic) ) {
         if ( SDL_memcmp(magic, "/* XPM */", sizeof(magic)) == 0 ) {
-            is_XPM = 1;
+            is_XPM = true;
         }
     }
-    SDL_RWseek(src, start, RW_SEEK_SET);
-    return(is_XPM);
+    SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    return is_XPM;
 }
 
 /* Hash table to look up colors from pixel strings */
@@ -116,8 +118,8 @@ static struct color_hash *create_colorhash(int maxnum)
 
     bytes = hash->size * sizeof(struct hash_entry **);
     /* Check for overflow */
-    if ((bytes / sizeof(struct hash_entry **)) != hash->size) {
-        IMG_SetError("memory allocation overflow");
+    if ((bytes / sizeof(struct hash_entry **)) != (Uint32)hash->size) {
+        SDL_SetError("memory allocation overflow");
         SDL_free(hash);
         return NULL;
     }
@@ -129,8 +131,8 @@ static struct color_hash *create_colorhash(int maxnum)
 
     bytes = maxnum * sizeof(struct hash_entry);
     /* Check for overflow */
-    if ((bytes / sizeof(struct hash_entry)) != maxnum) {
-        IMG_SetError("memory allocation overflow");
+    if ((bytes / sizeof(struct hash_entry)) != (Uint32)maxnum) {
+        SDL_SetError("memory allocation overflow");
         SDL_free(hash->table);
         SDL_free(hash);
         return NULL;
@@ -156,9 +158,6 @@ static int add_colorhash(struct color_hash *hash,
     hash->table[index] = e;
     return 1;
 }
-
-/* fast lookup that works if cpp == 1 */
-#define QUICK_COLORHASH(hash, key) ((hash)->table[*(Uint8 *)(key)]->color)
 
 static Uint32 get_colorhash(struct color_hash *hash, const char *key, int cpp)
 {
@@ -196,8 +195,7 @@ static int color_to_argb(char *spec, int speclen, Uint32 *argb)
         { "red",                  0xffFF0000 },
         { "green",                0xff00FF00 },
         { "blue",                 0xff0000FF },
-/* This table increases the size of the library by 40K, so it's disabled by default */
-#ifdef EXTENDED_XPM_COLORS
+#ifndef DISABLE_EXTENDED_XPM_COLORS
         { "aliceblue",            0xfff0f8ff },
         { "antiquewhite",         0xfffaebd7 },
         { "antiquewhite1",        0xffffefdb },
@@ -875,7 +873,7 @@ static int color_to_argb(char *spec, int speclen, Uint32 *argb)
         { "yellow3",              0xffCDCD00 },
         { "yellow4",              0xff8B8B00 },
         { "yellowgreen",          0xff9acd32 },
-#endif /* EXTENDED_XPM_COLORS */
+#endif /* !DISABLE_EXTENDED_XPM_COLORS */
     };
 
     if (spec[0] == '#') {
@@ -902,7 +900,7 @@ static int color_to_argb(char *spec, int speclen, Uint32 *argb)
         *argb = 0xff000000 | (Uint32)SDL_strtol(buf, NULL, 16);
         return 1;
     } else {
-        int i;
+        size_t i;
         for (i = 0; i < SDL_arraysize(known); i++) {
             if (SDL_strncasecmp(known[i].name, spec, speclen) == 0) {
                 *argb = known[i].argb;
@@ -914,7 +912,7 @@ static int color_to_argb(char *spec, int speclen, Uint32 *argb)
 }
 
 static char *linebuf;
-static int buflen;
+static size_t buflen;
 static char *error;
 
 /*
@@ -922,7 +920,7 @@ static char *error;
  * If len > 0, it's assumed to be at least len chars (for efficiency).
  * Return NULL and set error upon EOF or parse error.
  */
-static char *get_next_line(char ***lines, SDL_RWops *src, int len)
+static char *get_next_line(char ***lines, SDL_IOStream *src, size_t len)
 {
     char *linebufnew;
 
@@ -930,15 +928,15 @@ static char *get_next_line(char ***lines, SDL_RWops *src, int len)
         return *(*lines)++;
     } else {
         char c;
-        int n;
+        size_t n;
         do {
-            if (!SDL_RWread(src, &c, 1, 1)) {
+            if (SDL_ReadIO(src, &c, 1) != 1) {
                 error = "Premature end of data";
                 return NULL;
             }
         } while (c != '"');
         if (len) {
-            len += 4;   /* "\",\n\0" */
+            len += 3;   /* "\",\n" */
             if (len > buflen){
                 buflen = len;
                 linebufnew = (char *)SDL_realloc(linebuf, buflen);
@@ -949,15 +947,15 @@ static char *get_next_line(char ***lines, SDL_RWops *src, int len)
                 }
                 linebuf = linebufnew;
             }
-            if (!SDL_RWread(src, linebuf, len - 1, 1)) {
+            if (SDL_ReadIO(src, linebuf, len) != len) {
                 error = "Premature end of data";
                 return NULL;
             }
-            n = len - 2;
+            n = len - 1;
         } else {
             n = 0;
             do {
-                if (n >= buflen - 1) {
+                if (n >= buflen) {
                     if (buflen == 0)
                         buflen = 16;
                     buflen *= 2;
@@ -969,7 +967,7 @@ static char *get_next_line(char ***lines, SDL_RWops *src, int len)
                     }
                     linebuf = linebufnew;
                 }
-                if (!SDL_RWread(src, linebuf + n, 1, 1)) {
+                if (SDL_ReadIO(src, linebuf + n, 1) != 1) {
                     error = "Premature end of data";
                     return NULL;
                 }
@@ -993,8 +991,8 @@ do {                            \
           ++(p);                    \
 } while (0)
 
-/* read XPM from either array or RWops */
-static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
+/* read XPM from either array or IOStream */
+static SDL_Surface *load_xpm(char **xpm, SDL_IOStream *src, bool force_32bit)
 {
     Sint64 start = 0;
     SDL_Surface *image = NULL;
@@ -1008,14 +1006,14 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
     char *keystrings = NULL, *nextkey;
     char *line;
     char ***xpmlines = NULL;
-    int pixels_len;
+    size_t pixels_len;
 
     error = NULL;
     linebuf = NULL;
     buflen = 0;
 
     if (src)
-        start = SDL_RWtell(src);
+        start = SDL_TellIO(src);
 
     if (xpm)
         xpmlines = &xpm;
@@ -1039,7 +1037,7 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
     }
 
     /* Check for allocation overflow */
-    if ((size_t)(ncolors * cpp)/cpp != ncolors) {
+    if ((size_t)((Uint32)ncolors * cpp)/cpp != (Uint32)ncolors) {
         error = "Invalid color specification";
         goto done;
     }
@@ -1053,12 +1051,22 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
     /* Create the new surface */
     if (ncolors <= 256 && !force_32bit) {
         indexed = 1;
-        image = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, SDL_PIXELFORMAT_INDEX8);
-        im_colors = image->format->palette->colors;
-        image->format->palette->ncolors = ncolors;
+        image = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_INDEX8);
+        if (image) {
+            SDL_Palette *palette = SDL_CreateSurfacePalette(image);
+            if (!palette) {
+                error = "Couldn't create palette";
+                goto done;
+            }
+            if (ncolors > palette->ncolors) {
+                ncolors = palette->ncolors;
+            }
+            palette->ncolors = ncolors;
+            im_colors = palette->colors;
+        }
     } else {
         indexed = 0;
-        image = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, SDL_PIXELFORMAT_ARGB8888);
+        image = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ARGB8888);
     }
     if (!image) {
         /* Hmm, some SDL error (out of memory?) */
@@ -1083,7 +1091,7 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
         for (;;) {
             char nametype;
             char *colname;
-            Uint32 argb, pixel;
+            Uint32 argb, pixelvalue;
 
             SKIPSPACE(p);
             if (!*p) {
@@ -1108,14 +1116,14 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
                 c->r = (Uint8)(argb >> 16);
                 c->g = (Uint8)(argb >> 8);
                 c->b = (Uint8)(argb);
-                pixel = index;
+                pixelvalue = index;
                 if (argb == 0x00000000) {
-                    SDL_SetColorKey(image, SDL_TRUE, pixel);
+                    SDL_SetSurfaceColorKey(image, true, pixelvalue);
                 }
             } else {
-                pixel = argb;
+                pixelvalue = argb;
             }
-            add_colorhash(colors, nextkey, cpp, pixel);
+            add_colorhash(colors, nextkey, cpp, pixelvalue);
             nextkey += cpp;
             break;
         }
@@ -1132,9 +1140,11 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
         if (indexed) {
             /* optimization for some common cases */
             if (cpp == 1)
-                for (x = 0; x < w; x++)
-                    dst[x] = (Uint8)QUICK_COLORHASH(colors,
-                                 line + x);
+                for (x = 0; x < w; x++) {
+                    /* fast lookup that works if cpp == 1 */
+                    const struct hash_entry *entry = colors->table[*(Uint8 *)(line + x)];
+                    dst[x] = entry ? (Uint8) entry->color : 0;
+                }
             else
                 for (x = 0; x < w; x++)
                     dst[x] = (Uint8)get_colorhash(colors,
@@ -1152,26 +1162,26 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src, SDL_bool force_32bit)
 done:
     if (error) {
         if ( src )
-            SDL_RWseek(src, start, RW_SEEK_SET);
+            SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
         if ( image ) {
-            SDL_FreeSurface(image);
+            SDL_DestroySurface(image);
             image = NULL;
         }
-        IMG_SetError("%s", error);
+        SDL_SetError("%s", error);
     }
     if (keystrings)
         SDL_free(keystrings);
     free_colorhash(colors);
     if (linebuf)
         SDL_free(linebuf);
-    return(image);
+    return image;
 }
 
-/* Load a XPM type image from an RWops datasource */
-SDL_Surface *IMG_LoadXPM_RW(SDL_RWops *src)
+/* Load a XPM type image from an IOStream datasource */
+SDL_Surface *IMG_LoadXPM_IO(SDL_IOStream *src)
 {
     if ( !src ) {
-        /* The error message has been set in SDL_RWFromFile */
+        /* The error message has been set in SDL_IOFromFile */
         return NULL;
     }
     return load_xpm(NULL, src, 0);
@@ -1180,46 +1190,45 @@ SDL_Surface *IMG_LoadXPM_RW(SDL_RWops *src)
 SDL_Surface *IMG_ReadXPMFromArray(char **xpm)
 {
     if (!xpm) {
-        IMG_SetError("array is NULL");
+        SDL_SetError("array is NULL");
         return NULL;
     }
-    return load_xpm(xpm, NULL, SDL_FALSE);
+    return load_xpm(xpm, NULL, false);
 }
 
 SDL_Surface *IMG_ReadXPMFromArrayToRGB888(char **xpm)
 {
     if (!xpm) {
-        IMG_SetError("array is NULL");
+        SDL_SetError("array is NULL");
         return NULL;
     }
-    return load_xpm(xpm, NULL, SDL_TRUE /* force_32bit */);
+    return load_xpm(xpm, NULL, true);
 }
 
 #else  /* not LOAD_XPM */
-#if _MSC_VER >= 1300
-#pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
-#endif
 
 /* See if an image is contained in a data source */
-int IMG_isXPM(SDL_RWops *src)
+bool IMG_isXPM(SDL_IOStream *src)
 {
-    return(0);
+    return false;
 }
 
-
 /* Load a XPM type image from an SDL datasource */
-SDL_Surface *IMG_LoadXPM_RW(SDL_RWops *src)
+SDL_Surface *IMG_LoadXPM_IO(SDL_IOStream *src)
 {
-    return(NULL);
+    SDL_SetError("SDL_image built without XPM support");
+    return NULL;
 }
 
 SDL_Surface *IMG_ReadXPMFromArray(char **xpm)
 {
+    SDL_SetError("SDL_image built without XPM support");
     return NULL;
 }
 
 SDL_Surface *IMG_ReadXPMFromArrayToRGB888(char **xpm)
 {
+    SDL_SetError("SDL_image built without XPM support");
     return NULL;
 }
 

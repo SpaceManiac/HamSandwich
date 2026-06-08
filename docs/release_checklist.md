@@ -1,18 +1,23 @@
 # Release checklist
 
+* Run `build-scripts/create-release.py -R libsdl-org/SDL_image --ref <branch>` to do
+  a dry run creating the release assets. Verify that the archives are correct.
+
+* Tag the release, e.g. `git tag release-3.8.0; git push --tags`
+
+* Run `build-scripts/create-release.py -R libsdl-org/SDL_image --ref <release-tag>`
+  to have GitHub Actions create release assets. This makes sure the revision
+  string baked into the archives is correct.
+
 ## New feature release
 
 * Update `CHANGES.txt`
 
-* Bump version number to 2.EVEN.0 in all these locations:
+* Bump version number to 3.EVEN.0 in all these locations:
 
-    * `SDL_image.h`:
-        `SDL_IMAGE_MAJOR_VERSION`, `SDL_IMAGE_MINOR_VERSION`, `SDL_IMAGE_PATCHLEVEL`
-    * `configure.ac`:
-        `MAJOR_VERSION_MACRO`, `MINOR_VERSION_MACRO`, `MICRO_VERSION_MACRO`
+    * `include/SDL3_image/SDL_image.h`:
+        `SDL_IMAGE_MAJOR_VERSION`, `SDL_IMAGE_MINOR_VERSION`, `SDL_IMAGE_MICRO_VERSION`
     * `CMakeLists.txt`:
-        `MAJOR_VERSION`, `MINOR_VERSION`, `MICRO_VERSION`
-    * `Makefile.os2`:
         `MAJOR_VERSION`, `MINOR_VERSION`, `MICRO_VERSION`
     * `src/version.rc`:
         `FILEVERSION`, `PRODUCTVERSION`, `FileVersion`, `ProductVersion`
@@ -30,8 +35,6 @@
         * set second number in `DYLIB_CURRENT_VERSION` to 0
         * set `DYLIB_COMPATIBILITY_VERSION` to the same value
 
-* Regenerate `configure`
-
 * Run `./build-scripts/test-versioning.sh` to verify that everything is consistent
 
 * Do the release
@@ -42,7 +45,7 @@
 
     * If it was, do a new feature release (see above) instead
 
-* Bump version number from 2.Y.Z to 2.Y.(Z+1) (Y is even)
+* Bump version number from 3.Y.Z to 3.Y.(Z+1) (Y is even)
 
     * Same places as listed above
 
@@ -53,17 +56,15 @@
         * set second number in `DYLIB_CURRENT_VERSION` to *patchlevel*
         * Leave `DYLIB_COMPATIBILITY_VERSION` unchanged
 
-* Regenerate `configure`
-
 * Run `./build-scripts/test-versioning.sh` to verify that everything is consistent
 
 * Do the release
 
 ## After a feature release
 
-* Create a branch like `release-2.6.x`
+* Create a branch like `release-3.6.x`
 
-* Bump version number to 2.ODD.0 for next development branch
+* Bump version number to 3.ODD.0 for next development branch
 
     * Same places as listed above
 
@@ -78,7 +79,7 @@
 
 ## New development prerelease
 
-* Bump version number from 2.Y.Z to 2.Y.(Z+1) (Y is odd)
+* Bump version number from 3.Y.Z to 3.Y.(Z+1) (Y is odd)
 
     * Same places as listed above
 
@@ -90,8 +91,6 @@
             (100 * *minor*) + *patchlevel* + 1
         * set second number in `DYLIB_CURRENT_VERSION` to 0
         * set `DYLIB_COMPATIBILITY_VERSION` to the same value
-
-* Regenerate `configure`
 
 * Run `./build-scripts/test-versioning.sh` to verify that everything is consistent
 

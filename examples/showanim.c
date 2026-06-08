@@ -1,6 +1,6 @@
 /*
   showanim:  A test application for the SDL image loading library.
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,33 +19,50 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL.h"
-#include "SDL_image.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3_image/SDL_image.h>
 
 
 /* Draw a Gimpish background pattern to show transparency in the image */
-static void draw_background(SDL_Renderer *renderer, int w, int h)
+static void draw_background(SDL_Renderer *renderer)
 {
-    SDL_Color col[2] = {
+    const SDL_Color col[2] = {
         { 0x66, 0x66, 0x66, 0xff },
-        { 0x99, 0x99, 0x99, 0xff },
+        { 0x99, 0x99, 0x99, 0xff }
     };
-    int i, x, y;
-    SDL_Rect rect;
+    const int dx = 8, dy = 8;
+    SDL_FRect rect;
+    int i, x, y, w, h;
 
-    rect.w = 8;
-    rect.h = 8;
-    for (y = 0; y < h; y += rect.h) {
-        for (x = 0; x < w; x += rect.w) {
+    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
+
+    rect.w = (float)dx;
+    rect.h = (float)dy;
+    for (y = 0; y < h; y += dy) {
+        for (x = 0; x < w; x += dx) {
             /* use an 8x8 checkerboard pattern */
             i = (((x ^ y) >> 3) & 1);
             SDL_SetRenderDrawColor(renderer, col[i].r, col[i].g, col[i].b, col[i].a);
 
-            rect.x = x;
-            rect.y = y;
+            rect.x = (float)x;
+            rect.y = (float)y;
             SDL_RenderFillRect(renderer, &rect);
         }
     }
+}
+
+static const char *get_file_path(const char *file)
+{
+    static char path[4096];
+
+    if (*file != '/' && !SDL_GetPathInfo(file, NULL)) {
+        SDL_snprintf(path, sizeof(path), "%s%s", SDL_GetBasePath(), file);
+        if (SDL_GetPathInfo(path, NULL)) {
+            return path;
+        }
+    }
+    return file;
 }
 
 int main(int argc, char *argv[])
@@ -57,29 +74,34 @@ int main(int argc, char *argv[])
     Uint32 flags;
     int i, j, w, h, done;
     int once = 0;
+    int played = 0;
+    int loop_count = 0;
     int current_frame, delay;
     SDL_Event event;
+    const char *saveFile = NULL;
+
+    (void)argc;
 
     /* Check command line usage */
     if ( ! argv[1] ) {
-        SDL_Log("Usage: %s [-fullscreen] <image_file> ...\n", argv[0]);
+        SDL_Log("Usage: %s [-fullscreen] [-save file] <image_file> ...\n", argv[0]);
         return(1);
     }
 
     flags = SDL_WINDOW_HIDDEN;
     for ( i=1; argv[i]; ++i ) {
         if ( SDL_strcmp(argv[i], "-fullscreen") == 0 ) {
-            SDL_ShowCursor(0);
+            SDL_HideCursor();
             flags |= SDL_WINDOW_FULLSCREEN;
         }
     }
 
-    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("SDL_Init(SDL_INIT_VIDEO) failed: %s\n", SDL_GetError());
         return(2);
     }
 
-    if (SDL_CreateWindowAndRenderer(0, 0, flags, &window, &renderer) < 0) {
+    if (!SDL_CreateWindowAndRenderer("animation demo", 0, 0, flags, &window, &renderer)) {
         SDL_Log("SDL_CreateWindowAndRenderer() failed: %s\n", SDL_GetError());
         return(2);
     }
@@ -94,14 +116,27 @@ int main(int argc, char *argv[])
             continue;
         }
 
+        if (SDL_strcmp(argv[i], "-save") == 0 && argv[i + 1]) {
+            ++i;
+            saveFile = argv[i];
+            continue;
+        }
+
         /* Open the image file */
-        anim = IMG_LoadAnimation(argv[i]);
+        anim = IMG_LoadAnimation(get_file_path(argv[i]));
         if (!anim) {
             SDL_Log("Couldn't load %s: %s\n", argv[i], SDL_GetError());
             continue;
         }
+        loop_count = (int)SDL_GetNumberProperty(SDL_GetSurfaceProperties(anim->frames[0]), IMG_PROP_METADATA_LOOP_COUNT_NUMBER, -1);
         w = anim->w;
         h = anim->h;
+
+        if (saveFile) {
+            if (!IMG_SaveAnimation(anim, saveFile)) {
+                SDL_Log("Couldn't save animation: %s", SDL_GetError());
+            }
+        }
 
         textures = (SDL_Texture **)SDL_calloc(anim->count, sizeof(*textures));
         if (!textures) {
@@ -112,6 +147,7 @@ int main(int argc, char *argv[])
         for (j = 0; j < anim->count; ++j) {
             textures[j] = SDL_CreateTextureFromSurface(renderer, anim->frames[j]);
         }
+        played = 0;
         current_frame = 0;
 
         /* Show the window */
@@ -123,8 +159,8 @@ int main(int argc, char *argv[])
         while ( ! done ) {
             while ( SDL_PollEvent(&event) ) {
                 switch (event.type) {
-                    case SDL_KEYUP:
-                        switch (event.key.keysym.sym) {
+                    case SDL_EVENT_KEY_UP:
+                        switch (event.key.key) {
                             case SDLK_LEFT:
                                 if ( i > 1 ) {
                                     i -= 2;
@@ -137,9 +173,9 @@ int main(int argc, char *argv[])
                                 }
                                 break;
                             case SDLK_ESCAPE:
-                            case SDLK_q:
+                            case SDLK_Q:
                                 argv[i+1] = NULL;
-                            /* Drop through to done */
+                                SDL_FALLTHROUGH;
                             case SDLK_SPACE:
                             case SDLK_TAB:
                             done = 1;
@@ -148,10 +184,10 @@ int main(int argc, char *argv[])
                             break;
                         }
                         break;
-                    case SDL_MOUSEBUTTONDOWN:
+                    case SDL_EVENT_MOUSE_BUTTON_DOWN:
                         done = 1;
                         break;
-                    case SDL_QUIT:
+                    case SDL_EVENT_QUIT:
                         argv[i+1] = NULL;
                         done = 1;
                         break;
@@ -160,10 +196,10 @@ int main(int argc, char *argv[])
                 }
             }
             /* Draw a background pattern in case the image has transparency */
-            draw_background(renderer, w, h);
+            draw_background(renderer);
 
             /* Display the image */
-            SDL_RenderCopy(renderer, textures[current_frame], NULL, NULL);
+            SDL_RenderTexture(renderer, textures[current_frame], NULL, NULL);
             SDL_RenderPresent(renderer);
 
             if (anim->delays[current_frame]) {
@@ -173,16 +209,24 @@ int main(int argc, char *argv[])
             }
             SDL_Delay(delay);
 
-            current_frame = (current_frame + 1) % anim->count;
+            if (current_frame < (anim->count - 1)) {
+                ++current_frame;
+            } else {
+                if (played != (loop_count - 1)) {
+                    ++played;
+                    current_frame = 0;
+                }
 
-            if (once && current_frame == 0) {
-                break;
+                if (once) {
+                    break;
+                }
             }
         }
 
         for (j = 0; j < anim->count; ++j) {
             SDL_DestroyTexture(textures[j]);
         }
+        SDL_free(textures);
         IMG_FreeAnimation(anim);
     }
 

@@ -1,6 +1,6 @@
 /*
   SDL_image:  An example image loading library for use with SDL
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,14 +21,14 @@
 
 /* This is a XV thumbnail image file loading framework */
 
-#include "SDL_image.h"
+#include <SDL3_image/SDL_image.h>
 
 #ifdef LOAD_XV
 
-static int get_line(SDL_RWops *src, char *line, int size)
+static int get_line(SDL_IOStream *src, char *line, int size)
 {
     while ( size > 0 ) {
-        if ( !SDL_RWread(src, line, 1, 1) ) {
+        if (SDL_ReadIO(src, line, 1) != 1 ) {
             return -1;
         }
         if ( *line == '\r' ) {
@@ -45,7 +45,7 @@ static int get_line(SDL_RWops *src, char *line, int size)
     return -1;
 }
 
-static int get_header(SDL_RWops *src, int *w, int *h)
+static int get_header(SDL_IOStream *src, int *w, int *h)
 {
     char line[1024];
 
@@ -79,25 +79,27 @@ static int get_header(SDL_RWops *src, int *w, int *h)
 }
 
 /* See if an image is contained in a data source */
-int IMG_isXV(SDL_RWops *src)
+bool IMG_isXV(SDL_IOStream *src)
 {
     Sint64 start;
-    int is_XV;
+    bool is_XV;
     int w, h;
 
-    if ( !src )
-        return 0;
-    start = SDL_RWtell(src);
-    is_XV = 0;
-    if ( get_header(src, &w, &h) == 0 ) {
-        is_XV = 1;
+    if (!src) {
+        return false;
     }
-    SDL_RWseek(src, start, RW_SEEK_SET);
-    return(is_XV);
+
+    start = SDL_TellIO(src);
+    is_XV = false;
+    if ( get_header(src, &w, &h) == 0 ) {
+        is_XV = true;
+    }
+    SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
+    return is_XV;
 }
 
 /* Load a XV thumbnail image from an SDL datasource */
-SDL_Surface *IMG_LoadXV_RW(SDL_RWops *src)
+SDL_Surface *IMG_LoadXV_IO(SDL_IOStream *src)
 {
     Sint64 start;
     const char *error = NULL;
@@ -106,10 +108,10 @@ SDL_Surface *IMG_LoadXV_RW(SDL_RWops *src)
     Uint8 *pixels;
 
     if ( !src ) {
-        /* The error message has been set in SDL_RWFromFile */
+        /* The error message has been set in SDL_IOFromFile */
         return NULL;
     }
-    start = SDL_RWtell(src);
+    start = SDL_TellIO(src);
 
     /* Read the header */
     if ( get_header(src, &w, &h) < 0 ) {
@@ -118,7 +120,7 @@ SDL_Surface *IMG_LoadXV_RW(SDL_RWops *src)
     }
 
     /* Create the 3-3-2 indexed palette surface */
-    surface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 0, SDL_PIXELFORMAT_RGB332);
+    surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGB332);
     if ( surface == NULL ) {
         error = "Out of memory";
         goto done;
@@ -126,7 +128,7 @@ SDL_Surface *IMG_LoadXV_RW(SDL_RWops *src)
 
     /* Load the image data */
     for ( pixels = (Uint8 *)surface->pixels; h > 0; --h ) {
-        if ( !SDL_RWread(src, pixels, w, 1) ) {
+        if (SDL_ReadIO(src, pixels, w) != (size_t)w ) {
             error = "Couldn't read image data";
             goto done;
         }
@@ -135,31 +137,29 @@ SDL_Surface *IMG_LoadXV_RW(SDL_RWops *src)
 
 done:
     if ( error ) {
-        SDL_RWseek(src, start, RW_SEEK_SET);
+        SDL_SeekIO(src, start, SDL_IO_SEEK_SET);
         if ( surface ) {
-            SDL_FreeSurface(surface);
+            SDL_DestroySurface(surface);
             surface = NULL;
         }
-        IMG_SetError("%s", error);
+        SDL_SetError("%s", error);
     }
     return surface;
 }
 
 #else
-#if _MSC_VER >= 1300
-#pragma warning(disable : 4100) /* warning C4100: 'op' : unreferenced formal parameter */
-#endif
 
 /* See if an image is contained in a data source */
-int IMG_isXV(SDL_RWops *src)
+bool IMG_isXV(SDL_IOStream *src)
 {
-    return(0);
+    return false;
 }
 
 /* Load a XXX type image from an SDL datasource */
-SDL_Surface *IMG_LoadXV_RW(SDL_RWops *src)
+SDL_Surface *IMG_LoadXV_IO(SDL_IOStream *src)
 {
-    return(NULL);
+    SDL_SetError("SDL_image built without XV support");
+    return NULL;
 }
 
 #endif /* LOAD_XV */
