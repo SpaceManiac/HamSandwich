@@ -68,7 +68,7 @@ byte Music_Load(char *fname)
 		free(curSong.seq);
 
 	// read in the basic data
-	SDL_ReadIO(f,&curSong,76,1);
+	SDL_ReadIO(f,&curSong,76);
 
 	curSong.seq=(songSeq_t *)malloc(sizeof(songSeq_t)*curSong.numSeqs);
 	if(!curSong.seq)
@@ -79,17 +79,17 @@ byte Music_Load(char *fname)
 	// load each sequence
 	for(i=0;i<curSong.numSeqs;i++)
 	{
-		SDL_ReadIO(f,curSong.seq[i].name,sizeof(char),32);
-		SDL_ReadIO(f,&curSong.seq[i].length,sizeof(word),1);
-		SDL_ReadIO(f,&curSong.seq[i].playLength,sizeof(word),1);
-		SDL_ReadIO(f,&curSong.seq[i].instrument,sizeof(byte),1);
-		SDL_ReadIO(f,&curSong.seq[i].volume,sizeof(short),1);
-		SDL_ReadIO(f,&curSong.seq[i].insFlags,sizeof(byte),1);
+		SDL_ReadIO(f,curSong.seq[i].name,32);
+		SDL_ReadIO(f,&curSong.seq[i].length,sizeof(word));
+		SDL_ReadIO(f,&curSong.seq[i].playLength,sizeof(word));
+		SDL_ReadIO(f,&curSong.seq[i].instrument,sizeof(byte));
+		SDL_ReadIO(f,&curSong.seq[i].volume,sizeof(short));
+		SDL_ReadIO(f,&curSong.seq[i].insFlags,sizeof(byte));
 		memset(curSong.seq[i].note,0,SEQ_LENGTH*NUM_PITCHES);
 		memset(curSong.seq[i].play,0,SONG_LENGTH);
 		for(j=0;j<NUM_PITCHES;j++)
-			SDL_ReadIO(f,curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE);
-		SDL_ReadIO(f,curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength);
+			SDL_ReadIO(f,curSong.seq[i].note[j],sizeof(byte)*curSong.seq[i].length*SEQ_BLOCK_SIZE);
+		SDL_ReadIO(f,curSong.seq[i].play,sizeof(byte)*curSong.seq[i].playLength);
 	}
 
 	playSeq=-1;
@@ -112,20 +112,20 @@ byte Music_Save(char *fname)
 		return 0;
 
 	// write out the basic data
-	SDL_WriteIO(f,&curSong,76,1);
+	SDL_WriteIO(f,&curSong,76);
 
 	// write each sequence
 	for(i=0;i<curSong.numSeqs;i++)
 	{
-		SDL_WriteIO(f,curSong.seq[i].name,sizeof(char),32);
-		SDL_WriteIO(f,&curSong.seq[i].length,sizeof(word),1);
-		SDL_WriteIO(f,&curSong.seq[i].playLength,sizeof(word),1);
-		SDL_WriteIO(f,&curSong.seq[i].instrument,sizeof(byte),1);
-		SDL_WriteIO(f,&curSong.seq[i].volume,sizeof(short),1);
-		SDL_WriteIO(f,&curSong.seq[i].insFlags,sizeof(byte),1);
+		SDL_WriteIO(f,curSong.seq[i].name,32);
+		SDL_WriteIO(f,&curSong.seq[i].length,sizeof(word));
+		SDL_WriteIO(f,&curSong.seq[i].playLength,sizeof(word));
+		SDL_WriteIO(f,&curSong.seq[i].instrument,sizeof(byte));
+		SDL_WriteIO(f,&curSong.seq[i].volume,sizeof(short));
+		SDL_WriteIO(f,&curSong.seq[i].insFlags,sizeof(byte));
 		for(j=0;j<NUM_PITCHES;j++)
-			SDL_WriteIO(f,curSong.seq[i].note[j],sizeof(byte),curSong.seq[i].length*SEQ_BLOCK_SIZE);
-		SDL_WriteIO(f,curSong.seq[i].play,sizeof(byte),curSong.seq[i].playLength);
+			SDL_WriteIO(f,curSong.seq[i].note[j],sizeof(byte)*curSong.seq[i].length*SEQ_BLOCK_SIZE);
+		SDL_WriteIO(f,curSong.seq[i].play,sizeof(byte)*curSong.seq[i].playLength);
 	}
 
 	f.reset();
@@ -145,8 +145,8 @@ byte Music_GetSongName(char *fname,char *title,char *author)
 		return 0;
 
 	SDL_SeekIO(f, 4, SDL_IO_SEEK_CUR); // skip tempo
-	SDL_ReadIO(f, title, sizeof(char), 32);
-	SDL_ReadIO(f, author, sizeof(char), 32);
+	SDL_ReadIO(f, title, 32);
+	SDL_ReadIO(f, author, 32);
 
 	return 1;
 }

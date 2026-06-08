@@ -509,11 +509,11 @@ void InitGameSlotPicker(MGLDraw *mgl,title_t *title)
 	}
 	else
 	{
-		SDL_ReadIO(f,&p,sizeof(player_t),1);
+		SDL_ReadIO(f,&p,sizeof(player_t));
 		title->percent[0]=CalcTotalPercent(&p)*100;
-		SDL_ReadIO(f,&p,sizeof(player_t),1);
+		SDL_ReadIO(f,&p,sizeof(player_t));
 		title->percent[1]=CalcTotalPercent(&p)*100;
-		SDL_ReadIO(f,&p,sizeof(player_t),1);
+		SDL_ReadIO(f,&p,sizeof(player_t));
 		title->percent[2]=CalcTotalPercent(&p)*100;
 		f.reset();
 	}

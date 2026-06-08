@@ -324,7 +324,7 @@ int md5_rw(SDL_IOStream *stream, void *resblock)
 		/* Read block.  Take care for partial reads.  */
 		do
 		{
-			n = SDL_ReadIO(stream, buffer + sum, 1, BLOCKSIZE - sum);
+			n = SDL_ReadIO(stream, buffer + sum, BLOCKSIZE - sum);
 
 			sum += n;
 		} while (sum < BLOCKSIZE && n != 0);

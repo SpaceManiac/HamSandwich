@@ -33,12 +33,12 @@ byte LoadWorld(world_t *world,const char *fname)
 	if(!f)
 		return 0;
 
-	SDL_ReadIO(f, &world->numMaps,1,1);
-	SDL_ReadIO(f, &world->totalPoints,1,4);
+	SDL_ReadIO(f, &world->numMaps, 1);
+	SDL_ReadIO(f, &world->totalPoints, 4);
 
 	LoadTiles(f.get());
 
-	SDL_ReadIO(f, world->terrain,NUMTILES,sizeof(terrain_t));
+	SDL_ReadIO(f, world->terrain, NUMTILES*sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -66,12 +66,12 @@ byte SaveWorld(world_t *world,const char *fname)
 	if(!f)
 		return 0;
 
-	SDL_WriteIO(f, &world->numMaps,1,1);
-	SDL_WriteIO(f, &world->totalPoints,1,sizeof(int));
+	SDL_WriteIO(f, &world->numMaps, 1);
+	SDL_WriteIO(f, &world->totalPoints, sizeof(int));
 
 	SaveTiles(f.get());
 
-	SDL_WriteIO(f, world->terrain,NUMTILES,sizeof(terrain_t));
+	SDL_WriteIO(f, world->terrain, NUMTILES*sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)
 		world->map[i]->Save(f.get());

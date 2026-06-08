@@ -41,7 +41,7 @@ void LoadOptions(void)
 	}
 	else
 	{
-		SDL_ReadIO(f,&opt,sizeof(options_t),1);
+		SDL_ReadIO(f,&opt,sizeof(options_t));
 		f.reset();
 	}
 	InitProfile();
@@ -50,7 +50,7 @@ void LoadOptions(void)
 void SaveOptions(void)
 {
 	auto f = AppdataOpen_Write("stock.cfg");
-	SDL_WriteIO(f,&opt,sizeof(options_t),1);
+	SDL_WriteIO(f,&opt,sizeof(options_t));
 	f.reset();
 	AppdataSync();
 }

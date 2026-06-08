@@ -388,7 +388,7 @@ void LoadOptions(void)
 	}
 	else
 	{
-		SDL_ReadIO(f, &opt, sizeof (options_t), 1);
+		SDL_ReadIO(f, &opt, sizeof (options_t));
 		f.reset();
 	}
 	ApplyControlSettings();
@@ -397,7 +397,7 @@ void LoadOptions(void)
 void SaveOptions(void)
 {
 	auto f = AppdataOpen_Write("lunatic.cfg");
-	SDL_WriteIO(f, &opt, sizeof (options_t), 1);
+	SDL_WriteIO(f, &opt, sizeof (options_t));
 	f.reset();
 	AppdataSync();
 }

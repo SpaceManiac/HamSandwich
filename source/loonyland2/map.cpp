@@ -24,22 +24,22 @@ byte starCol[NUM_STARS];
 
 Map::Map(SDL_IOStream *f)
 {
-	SDL_ReadIO(f,&width,1,sizeof(int));
-	SDL_ReadIO(f,&height,1,sizeof(int));
+	SDL_ReadIO(f,&width,sizeof(int));
+	SDL_ReadIO(f,&height,sizeof(int));
 
-	SDL_ReadIO(f,name,32,sizeof(char));
+	SDL_ReadIO(f,name,32);
 	static_assert(sizeof(mapBadguy_t) == 3);
-	SDL_ReadIO(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_ReadIO(f,badguy,MAX_MAPMONS*sizeof(mapBadguy_t));
 	//memset(special,0,sizeof(special_t)*MAX_SPECIAL);
 	static_assert(sizeof(special_t) == 80);
-	SDL_ReadIO(f,special,MAX_SPECIAL,sizeof(special_t));
-	SDL_ReadIO(f,&song,1,1);
-	SDL_ReadIO(f,&flags,1,1);
+	SDL_ReadIO(f,special,MAX_SPECIAL*sizeof(special_t));
+	SDL_ReadIO(f,&song,1);
+	SDL_ReadIO(f,&flags,1);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 
 	static_assert(sizeof(mapTile_t) == 10);
-	SDL_ReadIO(f,map,width*height,sizeof(mapTile_t));
+	SDL_ReadIO(f,map,width*height*sizeof(mapTile_t));
 }
 
 Map::Map(int wid,int hei,const char *name)
@@ -77,18 +77,18 @@ Map::~Map(void)
 
 byte Map::Save(SDL_IOStream *f)
 {
-	SDL_WriteIO(f,&width,1,sizeof(int));
-	SDL_WriteIO(f,&height,1,sizeof(int));
-	SDL_WriteIO(f,name,32,sizeof(char));
+	SDL_WriteIO(f,&width,sizeof(int));
+	SDL_WriteIO(f,&height,sizeof(int));
+	SDL_WriteIO(f,name,32);
 	static_assert(sizeof(mapBadguy_t) == 3);
-	SDL_WriteIO(f,badguy,MAX_MAPMONS,sizeof(mapBadguy_t));
+	SDL_WriteIO(f,badguy,MAX_MAPMONS*sizeof(mapBadguy_t));
 	static_assert(sizeof(special_t) == 80);
-	SDL_WriteIO(f,special,MAX_SPECIAL,sizeof(special_t));
-	SDL_WriteIO(f,&song,1,1);
-	SDL_WriteIO(f,&flags,1,1);
+	SDL_WriteIO(f,special,MAX_SPECIAL*sizeof(special_t));
+	SDL_WriteIO(f,&song,1);
+	SDL_WriteIO(f,&flags,1);
 
 	static_assert(sizeof(mapTile_t) == 10);
-	SDL_WriteIO(f,map,width*height,sizeof(mapTile_t));
+	SDL_WriteIO(f,map,width*height*sizeof(mapTile_t));
 	return 1;
 }
 
@@ -1161,21 +1161,21 @@ void Map::LoadFromProgress(SDL_IOStream *f)
 	if(map)
 		free(map);
 
-	SDL_ReadIO(f,&width,sizeof(int),1);
-	SDL_ReadIO(f,&height,sizeof(int),1);
-	SDL_ReadIO(f,&flags,sizeof(byte),1);
+	SDL_ReadIO(f,&width,sizeof(int));
+	SDL_ReadIO(f,&height,sizeof(int));
+	SDL_ReadIO(f,&flags,1);
 	map=(mapTile_t *)malloc(width*height*sizeof(mapTile_t));
-	SDL_ReadIO(f,map,sizeof(mapTile_t),width*height);
-	SDL_ReadIO(f,special,sizeof(special_t),MAX_SPECIAL);
+	SDL_ReadIO(f,map,sizeof(mapTile_t)*width*height);
+	SDL_ReadIO(f,special,sizeof(special_t)*MAX_SPECIAL);
 }
 
 void Map::SaveProgress(SDL_IOStream *f)
 {
-	SDL_WriteIO(f,&width,sizeof(int),1);
-	SDL_WriteIO(f,&height,sizeof(int),1);
-	SDL_WriteIO(f,&flags,sizeof(byte),1);
-	SDL_WriteIO(f,map,sizeof(mapTile_t),width*height);
-	SDL_WriteIO(f,special,sizeof(special_t),MAX_SPECIAL);
+	SDL_WriteIO(f,&width,sizeof(int));
+	SDL_WriteIO(f,&height,sizeof(int));
+	SDL_WriteIO(f,&flags,sizeof(byte));
+	SDL_WriteIO(f,map,sizeof(mapTile_t)*width*height);
+	SDL_WriteIO(f,special,sizeof(special_t)*MAX_SPECIAL);
 }
 
 void ZapWall(Map *map,int x,int y,word newFloor)

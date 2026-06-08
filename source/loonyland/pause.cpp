@@ -436,7 +436,7 @@ void GetSaves(void)
 		}
 		else
 		{
-			SDL_ReadIO(f,&p,sizeof(player_t),1);
+			SDL_ReadIO(f,&p,sizeof(player_t));
 			f.reset();
 
 			DescribeSave(saveDesc[i], &p);
@@ -456,7 +456,7 @@ void LoadGame(int i)
 	}
 	else
 	{
-		SDL_ReadIO(f, &player,sizeof(player_t),1);
+		SDL_ReadIO(f, &player,sizeof(player_t));
 		if(player.worldNum==WORLD_REMIX)
 		{
 			FreeWorld(&curWorld);
@@ -543,7 +543,7 @@ void SaveGame(int i)
 		player.desty=goodguy->mapy;
 		if(!(player.cheatsOn&PC_HARDCORE))
 			player.numSaves++;	// saves do not count in hardcore mode
-		SDL_WriteIO(f,&player,sizeof(player_t),1);
+		SDL_WriteIO(f,&player,sizeof(player_t));
 		player.destx=0;
 		player.desty=0;
 		SaveGuys(f.get());

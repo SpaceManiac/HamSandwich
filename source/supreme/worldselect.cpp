@@ -968,7 +968,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			std::vector<dword> ordered;
 
 			owned::SDL_IOStream input = AppdataOpen("worlds/levels.dat");
-			for (dword item; SDL_ReadIO(input, &item, sizeof(dword), 1) == 1;)
+			for (dword item; SDL_ReadIO(input, &item, sizeof(dword)) == sizeof(dword);)
 			{
 				seen.insert(item);
 				ordered.push_back(item);
@@ -993,7 +993,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 			auto output = AppdataOpen_Write("worlds/levels.dat");
 			for (dword item : ordered)
 			{
-				SDL_WriteIO(output, &item, sizeof(dword), 1);
+				SDL_WriteIO(output, &item, sizeof(dword));
 			}
 			output.reset();
 			AppdataSync();

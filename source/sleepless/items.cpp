@@ -1073,24 +1073,24 @@ void SaveItems(SDL_IOStream *f)
 			changedItems++;
 	}
 
-	SDL_WriteIO(f,&changedItems,1,sizeof(word));
+	SDL_WriteIO(f,&changedItems,sizeof(word));
 	for(i=0;i<NUM_ORIGINAL_ITEMS;i++)
 	{
 		if(memcmp(&items[i],&baseItems[i],sizeof(item_t)))
 		{
 			// this item is changed, write it out
 			b=(byte)i;
-			SDL_WriteIO(f,&b,1,sizeof(byte));	// write the item number
-			SDL_WriteIO(f,&items[i],1,sizeof(item_t));
+			SDL_WriteIO(f,&b,sizeof(byte));	// write the item number
+			SDL_WriteIO(f,&items[i],sizeof(item_t));
 		}
 	}
 	if(numItems>NUM_ORIGINAL_ITEMS)
 	{
 		b=255;	// indicating custom items are beginning here
-		SDL_WriteIO(f,&b,1,sizeof(byte));
+		SDL_WriteIO(f,&b,sizeof(byte));
 		for(i=NUM_ORIGINAL_ITEMS;i<numItems;i++)
 		{
-			SDL_WriteIO(f,&items[i],1,sizeof(item_t));
+			SDL_WriteIO(f,&items[i],sizeof(item_t));
 		}
 	}
 }
@@ -1105,7 +1105,7 @@ void LoadItems(SDL_IOStream *f)
 	ExitItems();
 	InitItems();
 
-	SDL_ReadIO(f,&changedItems,1,sizeof(word));
+	SDL_ReadIO(f,&changedItems,sizeof(word));
 
 	getNumber=1;
 	for(i=0;i<changedItems;i++)
@@ -1113,14 +1113,14 @@ void LoadItems(SDL_IOStream *f)
 		if(getNumber)
 		{
 			curItem=0;
-			SDL_ReadIO(f,&curItem,1,sizeof(byte));
+			SDL_ReadIO(f,&curItem,sizeof(byte));
 			if(curItem==255)
 			{
 				getNumber=0;
 				curItem=NUM_ORIGINAL_ITEMS;
 			}
 		}
-		SDL_ReadIO(f,&items[curItem],1,sizeof(item_t));
+		SDL_ReadIO(f,&items[curItem],sizeof(item_t));
 		curItem++;
 	}
 
@@ -1140,14 +1140,14 @@ byte AppendItems(SDL_IOStream *f)
 
 	stitchItemOffset=numItems;
 
-	SDL_ReadIO(f,&changedItems,1,sizeof(word));
+	SDL_ReadIO(f,&changedItems,sizeof(word));
 
 	getNumber=1;
 	for(i=0;i<changedItems;i++)
 	{
 		if(getNumber)
 		{
-			SDL_ReadIO(f,&curItem,1,sizeof(byte));
+			SDL_ReadIO(f,&curItem,sizeof(byte));
 			if(curItem==255)
 			{
 				getNumber=0;
@@ -1155,10 +1155,10 @@ byte AppendItems(SDL_IOStream *f)
 			}
 		}
 		if(curItem<NUM_ORIGINAL_ITEMS)
-			SDL_ReadIO(f,&garbage,1,sizeof(item_t));	// throw away any mods of regular items
+			SDL_ReadIO(f,&garbage,sizeof(item_t));	// throw away any mods of regular items
 		else
 		{
-			SDL_ReadIO(f,&items[curItem],1,sizeof(item_t));
+			SDL_ReadIO(f,&items[curItem],sizeof(item_t));
 			curItem++;
 			numItems++;
 		}

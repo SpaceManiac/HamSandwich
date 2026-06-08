@@ -130,7 +130,7 @@ void InitOptions(void)
 	char optCode[5];
 	if(f)
 	{
-		SDL_ReadIO(f, optCode,sizeof(char), 4);
+		SDL_ReadIO(f, optCode, 4);
 		if (optCode[0] == 'K' && optCode[1] == 'I' && optCode[2] == 'D')
 		{
 			byte b = (byte)optCode[3];
@@ -139,7 +139,7 @@ void InitOptions(void)
 				// do whatever we need to do to update
 				// from version 1-2, nothing needed. It just won't be able to load the cheatstone data, but that's already been cleared by default options
 			}
-			SDL_ReadIO(f, &opt, sizeof(option_t), 1);
+			SDL_ReadIO(f, &opt, sizeof(option_t));
 		}
 		else // this is so old it doesn't even have the cool KID code, so we need to reset it
 		{
@@ -158,8 +158,8 @@ void ExitOptions(void)
 	auto f = AppdataOpen_Write("options.cfg");
 	char optCode[5]="KID0";
 	optCode[3] = (char)OPT_VERSION;
-	SDL_WriteIO(f, optCode, sizeof(char), 4);
-	SDL_WriteIO(f,&opt,sizeof(option_t),1);
+	SDL_WriteIO(f, optCode, 4);
+	SDL_WriteIO(f,&opt,sizeof(option_t));
 	f.reset();
 	AppdataSync();
 }

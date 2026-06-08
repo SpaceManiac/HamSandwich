@@ -44,7 +44,7 @@ byte LoadProfile(byte n)
 	if(!f)
 		return 0;
 
-	if(SDL_ReadIO(f,&profile,sizeof(profile_t),1)!=1)
+	if(SDL_ReadIO(f,&profile,sizeof(profile_t))!=sizeof(profile_t))
 	{
 		return 0;
 	}
@@ -85,7 +85,7 @@ byte SaveProfile(byte n)
 	if(!f)
 		return 0;
 
-	if(SDL_WriteIO(f,&profile,sizeof(profile_t),1)!=1)
+	if(SDL_WriteIO(f,&profile,sizeof(profile_t))!=sizeof(profile_t))
 	{
 		return 0;
 	}

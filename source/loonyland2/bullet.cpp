@@ -2522,12 +2522,12 @@ void SaveBullets(SDL_IOStream *f)
 			b++;
 	}
 
-	SDL_WriteIO(f,&b,sizeof(word),1);
+	SDL_WriteIO(f,&b,sizeof(word));
 	for(i=0;i<MAX_BULLETS;i++)
 	{
 		static_assert(sizeof(bullet_t) == 57);
 		if(bullet[i].type)
-			SDL_WriteIO(f,&bullet[i],sizeof(bullet_t),1);
+			SDL_WriteIO(f,&bullet[i],sizeof(bullet_t));
 	}
 }
 
@@ -2543,11 +2543,11 @@ void LoadBullets(SDL_IOStream *f)
 			bullet[i].type=BLT_NONE;
 	}
 
-	SDL_ReadIO(f,&b,sizeof(word),1);
+	SDL_ReadIO(f,&b,sizeof(word));
 	for(i=0;i<b;i++)
 	{
 		static_assert(sizeof(bullet_t) == 57);
-		SDL_ReadIO(f,&bullet[i],sizeof(bullet_t),1);
+		SDL_ReadIO(f,&bullet[i],sizeof(bullet_t));
 	}
 }
 

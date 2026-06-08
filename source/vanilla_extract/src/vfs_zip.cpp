@@ -20,13 +20,13 @@ static void* zsdl_open64(void* userdata, const void* filename, int mode)
 static uLong zsdl_read(void* userdata, void* stream, void* buf, uLong size)
 {
 	(void)userdata;
-	return SDL_ReadIO((SDL_IOStream*) stream, buf, 1, size);
+	return SDL_ReadIO((SDL_IOStream*) stream, buf, size);
 }
 
 static uLong zsdl_write(void* userdata, void* stream, const void* buf, uLong size)
 {
 	(void)userdata;
-	return SDL_WriteIO((SDL_IOStream*) stream, buf, 1, size);
+	return SDL_WriteIO((SDL_IOStream*) stream, buf, size);
 }
 
 static ZPOS64_T zsdl_tell64(void* userdata, void* stream)

@@ -18,13 +18,13 @@ Map::Map(SDL_IOStream *f)
 	width=MAP_SIZE;
 	height=MAP_SIZE;
 
-	SDL_ReadIO(f,name,sizeof(char),32);
-	SDL_ReadIO(f,&goal,sizeof(goal_t),1);
-	SDL_ReadIO(f,&antigoal,sizeof(goal_t),1);
-	SDL_ReadIO(f,&timer,sizeof(word),1);
+	SDL_ReadIO(f,name,32);
+	SDL_ReadIO(f,&goal,sizeof(goal_t));
+	SDL_ReadIO(f,&antigoal,sizeof(goal_t));
+	SDL_ReadIO(f,&timer,sizeof(word));
 
-	SDL_ReadIO(f,&genTime,sizeof(word),1);
-	SDL_ReadIO(f,map,sizeof(mapTile_t),width*height);
+	SDL_ReadIO(f,&genTime,sizeof(word));
+	SDL_ReadIO(f,map,sizeof(mapTile_t)*width*height);
 }
 
 Map::Map(int wid,int hei,const char *name)
@@ -60,12 +60,12 @@ Map::~Map(void)
 
 byte Map::Save(SDL_IOStream *f)
 {
-	SDL_WriteIO(f,name,sizeof(char),32);
-	SDL_WriteIO(f,&goal,sizeof(goal_t),1);
-	SDL_WriteIO(f,&antigoal,sizeof(goal_t),1);
-	SDL_WriteIO(f,&timer,sizeof(word),1);
-	SDL_WriteIO(f,&genTime,sizeof(word),1);
-	SDL_WriteIO(f,map,sizeof(mapTile_t),width*height);
+	SDL_WriteIO(f,name,32);
+	SDL_WriteIO(f,&goal,sizeof(goal_t));
+	SDL_WriteIO(f,&antigoal,sizeof(goal_t));
+	SDL_WriteIO(f,&timer,sizeof(word));
+	SDL_WriteIO(f,&genTime,sizeof(word));
+	SDL_WriteIO(f,map,sizeof(mapTile_t)*width*height);
 	return 1;
 }
 

@@ -221,13 +221,13 @@ static void FLI_nextchunk(SDL_IOStream* FLI_file, MGLDraw *mgl, int scrWidth)
 {
 	chunkheader chead;
 
-	SDL_ReadIO(FLI_file, &chead,1,sizeofchunkheader);
+	SDL_ReadIO(FLI_file, &chead, sizeofchunkheader);
 	if(chead.kind==FLI_COPY)
 		chead.size=fliWidth*fliHeight+sizeofchunkheader;	// a hack to make up for a bug in Animator?
 
 	std::vector<byte> buffer(chead.size-sizeofchunkheader, 0);
 	byte *p = buffer.data();
-	SDL_ReadIO(FLI_file, p,1,chead.size-sizeofchunkheader);
+	SDL_ReadIO(FLI_file, p, chead.size-sizeofchunkheader);
 
 	switch(chead.kind)
 	{
@@ -262,7 +262,7 @@ static void FLI_nextfr(SDL_IOStream* FLI_file, MGLDraw *mgl, int scrWidth)
 	long start = SDL_TellIO(FLI_file);
 
 	frmheader fhead;
-	SDL_ReadIO(FLI_file,&fhead,1,sizeof(frmheader));
+	SDL_ReadIO(FLI_file,&fhead,sizeof(frmheader));
 
 	// check to see if this is a FLC file's special frame... if it is, skip it
 	if (fhead.magic == 0xF1FA)
@@ -296,7 +296,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	}
 
 	// Read the main part of the header.
-	SDL_ReadIO(FLI_file, &FLI_hdr, 1, sizeof(fliheader));
+	SDL_ReadIO(FLI_file, &FLI_hdr, sizeof(fliheader));
 	fliWidth = FLI_hdr.width;
 	fliHeight = FLI_hdr.height;
 
@@ -313,7 +313,7 @@ TASK(byte) FLI_play(const char *name, byte loop, word wait, MGLDraw *mgl, FlicCa
 	// frame between the header and this location that must be skipped.
 	int32_t ofs1;
 	SDL_SeekIO(FLI_file, 80, SDL_IO_SEEK_SET);
-	SDL_ReadIO(FLI_file, &ofs1, 4, 1);
+	SDL_ReadIO(FLI_file, &ofs1, 4);
 	// There is also the offset of the second frame following this, but all
 	// released movies have it at its expected location.
 

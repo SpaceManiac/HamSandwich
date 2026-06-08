@@ -151,11 +151,11 @@ static owned::SDL_IOStream zlib_crc_block_reader(uint8_t** input_buffer)
 static void binary_string(SDL_IOStream* rw, std::string* dest = nullptr)
 {
 	uint32_t size;
-	SDL_ReadIO(rw, &size, 4, 1);
+	SDL_ReadIO(rw, &size, 4);
 	if (dest)
 	{
 		dest->resize(size);
-		SDL_ReadIO(rw, dest->data(), size, 1);
+		SDL_ReadIO(rw, dest->data(), size);
 	}
 	else
 	{
@@ -198,7 +198,7 @@ InnoVfs::InnoVfs(SDL_IOStream* rw)
 		return;
 
 	uint8_t signature[k7zSignatureSize];
-	if (!SDL_ReadIO(rw, signature, k7zSignatureSize, 1))
+	if (!SDL_ReadIO(rw, signature, k7zSignatureSize))
 		return;
 	if (SDL_SeekIO(rw, -k7zSignatureSize, SDL_IO_SEEK_CUR) < 0)
 		return;
@@ -328,12 +328,12 @@ InnoVfs::InnoVfs(SDL_IOStream* rw)
 	SDL_SeekIO(headers, 32, SDL_IO_SEEK_CUR);  // lead_bytes
 
 	uint32_t language_count, task_count, file_count, data_entry_count;
-	SDL_ReadIO(headers, &language_count, 4, 1);
+	SDL_ReadIO(headers, &language_count, 4);
 	SDL_SeekIO(headers, 4 * 2, SDL_IO_SEEK_CUR);  // type_count, component_count
-	SDL_ReadIO(headers, &task_count, 4, 1);
+	SDL_ReadIO(headers, &task_count, 4);
 	SDL_SeekIO(headers, 4 * 1, SDL_IO_SEEK_CUR);  // directory_count
-	SDL_ReadIO(headers, &file_count, 4, 1);
-	SDL_ReadIO(headers, &data_entry_count, 4, 1);
+	SDL_ReadIO(headers, &file_count, 4);
+	SDL_ReadIO(headers, &data_entry_count, 4);
 	SDL_SeekIO(headers, 91, SDL_IO_SEEK_CUR);
 
 	// skip languages
@@ -379,7 +379,7 @@ InnoVfs::InnoVfs(SDL_IOStream* rw)
 		binary_string(headers);  // condition.check
 		SDL_SeekIO(headers, 2 * (2 * 4 + 2), SDL_IO_SEEK_CUR);  // windows_version_range
 		uint32_t location;
-		SDL_ReadIO(headers, &location, 4, 1);
+		SDL_ReadIO(headers, &location, 4);
 		SDL_SeekIO(headers, 17, SDL_IO_SEEK_CUR);
 
 		if (source.empty() && !memcmp(destination.data(), APP_PREFIX, APP_PREFIX_SZ))
@@ -405,10 +405,10 @@ InnoVfs::InnoVfs(SDL_IOStream* rw)
 	for (uint32_t i = 0; i < data_entry_count; ++i)
 	{
 		SDL_SeekIO(datas, 4 * 2, SDL_IO_SEEK_CUR);  // first_slice, last_slice
-		SDL_ReadIO(datas, &data_entries[i].chunk_offset, 4, 1);
+		SDL_ReadIO(datas, &data_entries[i].chunk_offset, 4);
 		SDL_SeekIO(datas, 8, SDL_IO_SEEK_CUR);  // file_offset
-		SDL_ReadIO(datas, &data_entries[i].file_size, 8, 1);
-		SDL_ReadIO(datas, &data_entries[i].chunk_size, 8, 1);
+		SDL_ReadIO(datas, &data_entries[i].file_size, 8);
+		SDL_ReadIO(datas, &data_entries[i].chunk_size, 8);
 		SDL_SeekIO(datas, 4 + 8 + 8 + 1, SDL_IO_SEEK_CUR);
 	}
 	datas.reset();

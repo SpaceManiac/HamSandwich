@@ -216,7 +216,7 @@ void GetSavesForMenu(void)
 		else if(f)
 		{
 			static_assert(sizeof(player_t) == 6118);
-			SDL_ReadIO(f, &p,sizeof(player_t),1);
+			SDL_ReadIO(f, &p,sizeof(player_t));
 			f.reset();
 
 			save[n].percentage=CalcPercent(&p);

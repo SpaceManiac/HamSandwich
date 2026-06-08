@@ -89,7 +89,7 @@ void SaveTile(SDL_IOStream *f,byte *t)
 	}
 
 	// now that all 24 have been checked, "compress" contains bits for whether to RLE each one
-	SDL_WriteIO(f,compress,3,sizeof(byte));
+	SDL_WriteIO(f,compress,3);
 	curComp=0;
 	curBit=1;
 	// now write out the rows themselves
@@ -109,19 +109,19 @@ void SaveTile(SDL_IOStream *f,byte *t)
 				else
 				{
 					// write out the current run and start a new one
-					SDL_WriteIO(f,&size,1,sizeof(byte));
-					SDL_WriteIO(f,&c,1,sizeof(byte));
+					SDL_WriteIO(f,&size,1);
+					SDL_WriteIO(f,&c,1);
 					c=t[row*TILE_WIDTH+i];
 					size=1;
 				}
 			}
 			// write out the final run
-			SDL_WriteIO(f,&size,1,sizeof(byte));
-			SDL_WriteIO(f,&c,1,sizeof(byte));
+			SDL_WriteIO(f,&size,1);
+			SDL_WriteIO(f,&c,1);
 		}
 		else	// straight format, simple
 		{
-			SDL_WriteIO(f,&t[row*TILE_WIDTH],32,sizeof(byte));	// just write the 32 bytes
+			SDL_WriteIO(f,&t[row*TILE_WIDTH],32);	// just write the 32 bytes
 		}
 
 		curBit*=2;
@@ -204,7 +204,7 @@ void LoadTile(SDL_IOStream *f,byte *t)
 	byte compress[3],curComp;
 	dword curBit;
 
-	SDL_ReadIO(f,compress,3,sizeof(byte));
+	SDL_ReadIO(f,compress,3);
 
 	curComp=0;
 	curBit=1;
@@ -216,15 +216,15 @@ void LoadTile(SDL_IOStream *f,byte *t)
 			x=0;
 			while(x<32)
 			{
-				SDL_ReadIO(f,&size,1,sizeof(byte));
-				SDL_ReadIO(f,&c,1,sizeof(byte));
+				SDL_ReadIO(f,&size,1);
+				SDL_ReadIO(f,&c,1);
 				memset(&t[row*TILE_WIDTH+x],c,size);
 				x+=size;
 			}
 		}
 		else	// straight format, simple
 		{
-			SDL_ReadIO(f,&t[row*TILE_WIDTH],32,sizeof(byte));	// just write the 32 bytes
+			SDL_ReadIO(f,&t[row*TILE_WIDTH],32);	// just write the 32 bytes
 		}
 
 		curBit*=2;

@@ -42,13 +42,13 @@ void SetTiles(byte *scrn,byte wall)
 void SaveTiles(SDL_IOStream *f)
 {
 	static_assert(sizeof(tile_t) == 768);
-	SDL_WriteIO(f,tiles,NUMTILES,sizeof(tile_t));
+	SDL_WriteIO(f,tiles,NUMTILES*sizeof(tile_t));
 }
 
 void LoadTiles(SDL_IOStream *f)
 {
 	static_assert(sizeof(tile_t) == 768);
-	SDL_ReadIO(f,tiles,NUMTILES,sizeof(tile_t));
+	SDL_ReadIO(f,tiles,NUMTILES*sizeof(tile_t));
 }
 
 void RenderFloorTile(int x,int y,int t,char light)

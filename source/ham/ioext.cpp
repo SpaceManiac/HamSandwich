@@ -22,7 +22,7 @@ private:
 	{
 		if (gptr() == egptr() && f)
 		{
-			size_t size = SDL_ReadIO(f, buf, 1, BUFSZ);
+			size_t size = SDL_ReadIO(f, buf, BUFSZ);
 			setg(buf, buf, buf + size);
 		}
 		return gptr() == egptr()
@@ -39,7 +39,7 @@ private:
 		else
 		{
 			unsigned char ch2 = ch;
-			if (SDL_WriteIO(f, &ch2, 1, 1) < 1)
+			if (SDL_WriteIO(f, &ch2, 1) < 1)
 				return traits_type::eof();
 			return ch2;
 		}
@@ -47,7 +47,7 @@ private:
 
 	std::streamsize xsputn(const char_type* s, std::streamsize n) override
 	{
-		return SDL_WriteIO(f, s, 1, n);
+		return SDL_WriteIO(f, s, n);
 	}
 
 	int sync() override

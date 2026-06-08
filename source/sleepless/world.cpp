@@ -46,23 +46,23 @@ byte LoadWorld(world_t *world,const char *fname)
 	if(!f)
 		return 0;
 
-	SDL_ReadIO(f,code,sizeof(char),8);
+	SDL_ReadIO(f,code,8);
 	code[8]='\0';
 	if(strcmp(code,WORLDCODE))
 	{
 		return 0;
 	}
 
-	SDL_ReadIO(f,&world->author,sizeof(char),32);
-	SDL_ReadIO(f,&code,sizeof(char),32);	// name of the world, not needed here
-	SDL_ReadIO(f,&world->numMaps,1,1);
-	SDL_ReadIO(f,&world->totalPoints,1,sizeof(int));
-	SDL_ReadIO(f,&world->numTiles,1,sizeof(word));	// tile count
+	SDL_ReadIO(f,&world->author,32);
+	SDL_ReadIO(f,&code,32);	// name of the world, not needed here
+	SDL_ReadIO(f,&world->numMaps,1);
+	SDL_ReadIO(f,&world->totalPoints,sizeof(int));
+	SDL_ReadIO(f,&world->numTiles,sizeof(word));	// tile count
 	SetNumTiles(world->numTiles);
 
 	LoadTiles(f.get());
 
-	SDL_ReadIO(f,world->terrain,world->numTiles,sizeof(terrain_t));
+	SDL_ReadIO(f,world->terrain,world->numTiles*sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -94,7 +94,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 		return 0;
 	}
 
-	SDL_ReadIO(f,code,sizeof(char),8);
+	SDL_ReadIO(f,code,8);
 	code[8]='\0';
 	if(strcmp(code,WORLDCODE))
 	{
@@ -102,11 +102,11 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 		return 0;
 	}
 
-	SDL_ReadIO(f,&world->author,sizeof(char),32);
-	SDL_ReadIO(f,&code,sizeof(char),32);	// name of the world, not needed here
-	SDL_ReadIO(f,&world->numMaps,1,1);
-	SDL_ReadIO(f,&world->totalPoints,1,sizeof(int));
-	SDL_ReadIO(f,&world->numTiles,1,sizeof(word));	// tile count
+	SDL_ReadIO(f,&world->author,32);
+	SDL_ReadIO(f,&code,32);	// name of the world, not needed here
+	SDL_ReadIO(f,&world->numMaps,1);
+	SDL_ReadIO(f,&world->totalPoints,sizeof(int));
+	SDL_ReadIO(f,&world->numTiles,sizeof(word));	// tile count
 
 	if(world->numTiles+GetNumTiles()>NUMTILES)
 	{
@@ -119,7 +119,7 @@ byte BeginAppendWorld(world_t *world,const char *fname)
 
 	AppendTiles(stitchTileOffset,f.get());
 
-	SDL_ReadIO(f,world->terrain,world->numTiles,sizeof(terrain_t));
+	SDL_ReadIO(f,world->terrain,world->numTiles*sizeof(terrain_t));
 
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -167,16 +167,16 @@ byte SaveWorld(world_t *world,const char *fname)
 	if(!f)
 		return 0;
 
-	SDL_WriteIO(f,code,8,sizeof(char));	// identifier code
-	SDL_WriteIO(f,&world->author,sizeof(char),32);
-	SDL_WriteIO(f,&world->map[0]->name,sizeof(char),32);
-	SDL_WriteIO(f,&world->numMaps,1,1);
-	SDL_WriteIO(f,&world->totalPoints,1,sizeof(int));
-	SDL_WriteIO(f,&world->numTiles,1,sizeof(word));
+	SDL_WriteIO(f,code,8);	// identifier code
+	SDL_WriteIO(f,&world->author,32);
+	SDL_WriteIO(f,&world->map[0]->name,32);
+	SDL_WriteIO(f,&world->numMaps,1);
+	SDL_WriteIO(f,&world->totalPoints,sizeof(int));
+	SDL_WriteIO(f,&world->numTiles,sizeof(word));
 
 	SaveTiles(f.get());
 
-	SDL_WriteIO(f,world->terrain,world->numTiles,sizeof(terrain_t));
+	SDL_WriteIO(f,world->terrain,world->numTiles*sizeof(terrain_t));
 
 	for(i=0;i<world->numMaps;i++)
 		world->map[i]->Save(f.get());

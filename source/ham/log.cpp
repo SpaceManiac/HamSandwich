@@ -33,10 +33,10 @@ void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const 
 	original(originalUserdata, category, priority, message);
 	if (errorLog)
 	{
-		SDL_WriteIO(errorLog, priorityPrefixes[priority], 1, strlen(priorityPrefixes[priority]));
-		SDL_WriteIO(errorLog, message, 1, strlen(message));
-		SDL_WriteIO(errorLog, "\n", 1, 1);
-		// We should flush here but SDL_RWflush doesn't exist in SDL2.
+		SDL_WriteIO(errorLog, priorityPrefixes[priority], strlen(priorityPrefixes[priority]));
+		SDL_WriteIO(errorLog, message, strlen(message));
+		SDL_WriteIO(errorLog, "\n", 1);
+		SDL_FlushIO(errorLog);
 		AppdataSync();
 	}
 }

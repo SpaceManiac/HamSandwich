@@ -74,7 +74,7 @@ NsisVfs::NsisVfs(owned::SDL_IOStream fptr)
 	{
 		if (SDL_SeekIO(fptr, search, SDL_IO_SEEK_SET) < 0)
 			return;
-		if (!SDL_ReadIO(fptr, &fh, FIRSTHEADER_SIZE, 1))
+		if (!SDL_ReadIO(fptr, &fh, FIRSTHEADER_SIZE))
 			return;
 		if (!memcmp(&fh.siginfo, NULLSOFT_MAGIC, MAGIC_SIZE))
 		{
@@ -86,7 +86,7 @@ NsisVfs::NsisVfs(owned::SDL_IOStream fptr)
 		return;
 
 	uint32_t header_size;
-	if (!SDL_ReadIO(fptr, &header_size, 4, 1))
+	if (!SDL_ReadIO(fptr, &header_size, 4))
 		return;
 
 	if (header_size == 0x8000005D)
@@ -97,7 +97,7 @@ NsisVfs::NsisVfs(owned::SDL_IOStream fptr)
 			return;
 
 		std::vector<uint8_t> buffer(fh.length_of_all_following_data - FIRSTHEADER_SIZE);
-		if (!SDL_ReadIO(fptr, buffer.data(), buffer.size(), 1))
+		if (!SDL_ReadIO(fptr, buffer.data(), buffer.size()))
 			return;
 
 		std::vector<uint8_t> datablock;
@@ -105,7 +105,7 @@ NsisVfs::NsisVfs(owned::SDL_IOStream fptr)
 			return;
 
 		archive_rw = vanilla::create_vec_rwops(std::move(datablock));
-		if (!SDL_ReadIO(archive_rw, &header_size, 4, 1))
+		if (!SDL_ReadIO(archive_rw, &header_size, 4))
 		{
 			archive_rw = nullptr;
 			return;
@@ -217,7 +217,7 @@ owned::SDL_IOStream NsisVfs::open_sdl(const char* path)
 	}
 
 	uint32_t size;
-	if (!SDL_ReadIO(archive_rw, &size, 4, 1))
+	if (!SDL_ReadIO(archive_rw, &size, 4))
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::open_sdl(%s): read error: %s", path, SDL_GetError());
 		return nullptr;
@@ -240,7 +240,7 @@ owned::SDL_IOStream NsisVfs::open_sdl(const char* path)
 bool NsisVfs::extract_internal(const char* path, bool is_compressed, uint32_t size, std::vector<uint8_t>* result)
 {
 	std::vector<uint8_t> compressed(size);
-	size_t got = SDL_ReadIO(archive_rw, compressed.data(), 1, compressed.size());
+	size_t got = SDL_ReadIO(archive_rw, compressed.data(), compressed.size());
 	if (got < compressed.size())
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "NsisVfs::extract_internal(%s): expected %u, got %u: %s", path, (unsigned int)(compressed.size()), (unsigned int)(got), SDL_GetError());

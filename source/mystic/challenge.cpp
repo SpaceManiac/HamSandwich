@@ -1413,7 +1413,7 @@ void LoadChallenge(void)
 	}
 	else
 	{
-		SDL_ReadIO(f,&chalData,1,sizeof(chalData_t));
+		SDL_ReadIO(f,&chalData,sizeof(chalData_t));
 		f.reset();
 		memcpy(&player,&chalData.player,sizeof(player_t));
 		player.difficulty = chalDifficulty;
@@ -1455,7 +1455,7 @@ void LoadChallengePercents(byte pcts[4])
 		}
 		else
 		{
-			SDL_ReadIO(f, &chalData, 1, sizeof(chalData_t));
+			SDL_ReadIO(f, &chalData, sizeof(chalData_t));
 			f.reset();
 			memcpy(&player, &chalData.player, sizeof(player_t));
 			if (chalData.formerStars > player.chalStars)
@@ -1489,7 +1489,7 @@ void SaveChallenge(void)
 	if(f)
 	{
 		memcpy(&chalData.player,&player,sizeof(player_t));
-		SDL_WriteIO(f,&chalData,1,sizeof(chalData_t));
+		SDL_WriteIO(f,&chalData,sizeof(chalData_t));
 		f.reset();
 		AppdataSync();
 	}

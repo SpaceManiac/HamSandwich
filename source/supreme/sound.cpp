@@ -484,7 +484,7 @@ bool AddCustomSound(const char *fname)
 	{
 		return false;
 	}
-	SDL_ReadIO(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
+	SDL_ReadIO(f,customSound[numCustom],customLength[numCustom]);
 	f.reset();
 
 	std::string_view fname2 = fname;
@@ -534,7 +534,7 @@ bool ReplaceCustomSound(int n,const char *fname)
 	{
 		return false;
 	}
-	SDL_ReadIO(f,customSound[n],sizeof(byte),customLength[n]);
+	SDL_ReadIO(f,customSound[n],customLength[n]);
 	f.reset();
 
 	return true;

@@ -54,9 +54,9 @@ bool Inno3Vfs::list_dir(const char* directory, std::set<std::string, vanilla::Ca
 static owned::SDL_IOStream zlib_crc_block_reader(SDL_IOStream* input)
 {
 	uint32_t header_crc32, compressed_size, uncompressed_size;
-	SDL_ReadIO(input, &header_crc32, 4, 1);
-	SDL_ReadIO(input, &compressed_size, 4, 1);
-	SDL_ReadIO(input, &uncompressed_size, 4, 1);
+	SDL_ReadIO(input, &header_crc32, 4);
+	SDL_ReadIO(input, &compressed_size, 4);
+	SDL_ReadIO(input, &uncompressed_size, 4);
 
 	std::vector<uint8_t> uncompressed(uncompressed_size);
 	z_stream zip {};
@@ -67,11 +67,11 @@ static owned::SDL_IOStream zlib_crc_block_reader(SDL_IOStream* input)
 	while (compressed_size > 0)
 	{
 		uint32_t block_crc32;
-		SDL_ReadIO(input, &block_crc32, 4, 1);
+		SDL_ReadIO(input, &block_crc32, 4);
 
 		uint8_t buf[4096];
 		uint32_t to_read = std::min(compressed_size, uint32_t(sizeof(buf)));
-		SDL_ReadIO(input, buf, to_read, 1);
+		SDL_ReadIO(input, buf, to_read);
 		zip.next_in = buf;
 		zip.avail_in = to_read;
 
@@ -109,11 +109,11 @@ static owned::SDL_IOStream zlib_crc_block_reader(SDL_IOStream* input)
 static void binary_string(SDL_IOStream* rw, std::string* dest = nullptr)
 {
 	uint32_t size;
-	SDL_ReadIO(rw, &size, 4, 1);
+	SDL_ReadIO(rw, &size, 4);
 	if (dest)
 	{
 		dest->resize(size);
-		SDL_ReadIO(rw, dest->data(), size, 1);
+		SDL_ReadIO(rw, dest->data(), size);
 	}
 	else
 	{
@@ -145,7 +145,7 @@ Inno3Vfs::Inno3Vfs(owned::SDL_IOStream rw)
 		return;
 
 	uint8_t signature[INNO_MAGIC_SZ];
-	if (!SDL_ReadIO(rw, signature, INNO_MAGIC_SZ, 1))
+	if (!SDL_ReadIO(rw, signature, INNO_MAGIC_SZ))
 		return;
 
 	if (memcmp(signature, INNO_MAGIC, INNO_MAGIC_SZ))
@@ -155,8 +155,8 @@ Inno3Vfs::Inno3Vfs(owned::SDL_IOStream rw)
 	}
 
 	uint32_t offset, notOffset;
-	SDL_ReadIO(rw, &offset, 4, 1);
-	SDL_ReadIO(rw, &notOffset, 4, 1);
+	SDL_ReadIO(rw, &offset, 4);
+	SDL_ReadIO(rw, &notOffset, 4);
 	if (offset != ~notOffset)
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Inno3Vfs: apparent offset 0x%x != ~%x", offset, notOffset);
@@ -165,7 +165,7 @@ Inno3Vfs::Inno3Vfs(owned::SDL_IOStream rw)
 
 	SDL_SeekIO(rw, start + offset, SDL_IO_SEEK_SET);
 	uint8_t signature2[LOADER_HEADER_MAGIC_SZ];
-	SDL_ReadIO(rw, signature2, LOADER_HEADER_MAGIC_SZ, 1);
+	SDL_ReadIO(rw, signature2, LOADER_HEADER_MAGIC_SZ);
 	if (memcmp(signature2, LOADER_HEADER_MAGIC, LOADER_HEADER_MAGIC_SZ))
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Inno3Vfs: loader signature missing at offset 0x%x", offset);
@@ -174,12 +174,12 @@ Inno3Vfs::Inno3Vfs(owned::SDL_IOStream rw)
 
 	SDL_SeekIO(rw, 24, SDL_IO_SEEK_CUR);  // various offsets we don't care about
 	uint32_t header_offset, data_offset;
-	SDL_ReadIO(rw, &header_offset, 4, 1);
-	SDL_ReadIO(rw, &data_offset, 4, 1);
+	SDL_ReadIO(rw, &header_offset, 4);
+	SDL_ReadIO(rw, &data_offset, 4);
 
 	SDL_SeekIO(rw, start + header_offset, SDL_IO_SEEK_SET);
 	uint8_t signature3[sizeof(INNO_VERSION)];
-	SDL_ReadIO(rw, signature3, sizeof(INNO_VERSION), 1);
+	SDL_ReadIO(rw, signature3, sizeof(INNO_VERSION));
 	if (memcmp(signature3, INNO_VERSION, sizeof(INNO_VERSION)))
 	{
 		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Inno3Vfs: bad inno version %s", signature3);
@@ -216,10 +216,10 @@ Inno3Vfs::Inno3Vfs(owned::SDL_IOStream rw)
 	uint32_t language_count, task_count, file_count, data_entry_count, directory_count;
 	language_count = 1;
 	SDL_SeekIO(headers, 4 * 2, SDL_IO_SEEK_CUR);  // type_count, component_count
-	SDL_ReadIO(headers, &task_count, 4, 1);
-	SDL_ReadIO(headers, &directory_count, 4, 1);
-	SDL_ReadIO(headers, &file_count, 4, 1);
-	SDL_ReadIO(headers, &data_entry_count, 4, 1);
+	SDL_ReadIO(headers, &task_count, 4);
+	SDL_ReadIO(headers, &directory_count, 4);
+	SDL_ReadIO(headers, &file_count, 4);
+	SDL_ReadIO(headers, &data_entry_count, 4);
 	// 4 icon count
 	// 4 ini_entry_count
 	// 4 registry_entry_count
@@ -282,7 +282,7 @@ Inno3Vfs::Inno3Vfs(owned::SDL_IOStream rw)
 		binary_string(headers);  // condition.tasks
 		SDL_SeekIO(headers, 2 * (2 * 4 + 2), SDL_IO_SEEK_CUR);  // windows_version_range
 		uint32_t location;
-		SDL_ReadIO(headers, &location, 4, 1);
+		SDL_ReadIO(headers, &location, 4);
 		SDL_SeekIO(headers, 12, SDL_IO_SEEK_CUR);
 
 		if (source.empty() && !memcmp(destination.data(), APP_PREFIX, APP_PREFIX_SZ))
@@ -308,9 +308,9 @@ Inno3Vfs::Inno3Vfs(owned::SDL_IOStream rw)
 	for (uint32_t i = 0; i < data_entry_count; ++i)
 	{
 		SDL_SeekIO(datas, 4 * 2, SDL_IO_SEEK_CUR);  // first_slice, last_slice
-		SDL_ReadIO(datas, &data_entries[i].chunk_offset, 4, 1);
-		SDL_ReadIO(datas, &data_entries[i].file_size, 4, 1);
-		SDL_ReadIO(datas, &data_entries[i].chunk_size, 4, 1);
+		SDL_ReadIO(datas, &data_entries[i].chunk_offset, 4);
+		SDL_ReadIO(datas, &data_entries[i].file_size, 4);
+		SDL_ReadIO(datas, &data_entries[i].chunk_size, 4);
 		SDL_SeekIO(datas, 21, SDL_IO_SEEK_CUR);
 	}
 	datas.reset();
@@ -329,7 +329,7 @@ owned::SDL_IOStream Inno3Vfs::open_sdl(const char* path)
 
 	std::vector<uint8_t> compressed(entry.chunk_size);
 	SDL_SeekIO(file, net_data_offset + entry.chunk_offset, SDL_IO_SEEK_SET);
-	SDL_ReadIO(file, compressed.data(), entry.chunk_size, 1);
+	SDL_ReadIO(file, compressed.data(), entry.chunk_size);
 
 	if (entry.chunk_size + 11 == entry.file_size)
 	{

@@ -3865,20 +3865,20 @@ void SaveGuys(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_WriteIO(f,&maxGuys,sizeof(int),1);
+	SDL_WriteIO(f,&maxGuys,sizeof(int));
 
 	for(i=0;i<maxGuys;i++)
 	{
-		SDL_WriteIO(f,&guys[i]->type,sizeof(byte),1);
+		SDL_WriteIO(f,&guys[i]->type,sizeof(byte));
 		if(guys[i]->type)
 		{
 			dword target = guys[i]->target ? guys[i]->target->ID : NO_SUCH_GUY;
 			dword parent = guys[i]->parent ? guys[i]->parent->ID : NO_SUCH_GUY;
 			// sizes should total to 136
-			SDL_WriteIO(f,guys[i],offsetof(Guy, target),1);
-			SDL_WriteIO(f,&target,4,1);
-			SDL_WriteIO(f,&parent,4,1);
-			SDL_WriteIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
+			SDL_WriteIO(f,guys[i],offsetof(Guy, target));
+			SDL_WriteIO(f,&target,4);
+			SDL_WriteIO(f,&parent,4);
+			SDL_WriteIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp));
 			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
@@ -3889,20 +3889,20 @@ void LoadGuys(SDL_IOStream *f)
 	int i;
 
 	ExitGuys();
-	SDL_ReadIO(f,&maxGuys,sizeof(int),1);
+	SDL_ReadIO(f,&maxGuys,sizeof(int));
 	InitGuys(maxGuys);
 
 	for(i=0;i<maxGuys;i++)
 	{
-		SDL_ReadIO(f,&guys[i]->type,sizeof(byte),1);
+		SDL_ReadIO(f,&guys[i]->type,sizeof(byte));
 		if(guys[i]->type)
 		{
 			dword target, parent;
 			// sizes should total to 136
-			SDL_ReadIO(f,guys[i],offsetof(Guy, target),1);
-			SDL_ReadIO(f,&target,4,1);
-			SDL_ReadIO(f,&parent,4,1);
-			SDL_ReadIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
+			SDL_ReadIO(f,guys[i],offsetof(Guy, target));
+			SDL_ReadIO(f,&target,4);
+			SDL_ReadIO(f,&parent,4);
+			SDL_ReadIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp));
 			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 
 			if(target==NO_SUCH_GUY)

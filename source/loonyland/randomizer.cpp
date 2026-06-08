@@ -742,9 +742,9 @@ void PlaceItems(std::vector<RandoLocation>& locList)
 	sprintf(buff, "randomizer/%s rando.llw", seed.c_str());
 	auto newWorld = AppdataOpen_Write(buff);
 
-	while (int n = SDL_ReadIO(baseWorld, buff, 1, 4096))
+	while (int n = SDL_ReadIO(baseWorld, buff, 4096))
 	{
-		SDL_WriteIO(newWorld, buff, 1, 4096);
+		SDL_WriteIO(newWorld, buff, n);
 	}
 
 	newWorld.reset();

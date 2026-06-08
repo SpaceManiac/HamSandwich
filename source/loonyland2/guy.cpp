@@ -2812,7 +2812,7 @@ void SaveGuys(SDL_IOStream *f)
 		}
 	}
 
-	SDL_WriteIO(f,&num,sizeof(int),1);
+	SDL_WriteIO(f,&num,sizeof(int));
 	for(i=0;i<maxGuys;i++)
 	{
 		if(guys[i]->type!=MONS_NONE)
@@ -2821,10 +2821,10 @@ void SaveGuys(SDL_IOStream *f)
 			dword parent = guys[i]->parent ? guys[i]->parent->ID : 65535;
 
 			// sizes should total to 124
-			SDL_WriteIO(f,guys[i],offsetof(Guy, target),1);
-			SDL_WriteIO(f,&target,4,1);
-			SDL_WriteIO(f,&parent,4,1);
-			SDL_WriteIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1);
+			SDL_WriteIO(f,guys[i],offsetof(Guy, target));
+			SDL_WriteIO(f,&target,4);
+			SDL_WriteIO(f,&parent,4);
+			SDL_WriteIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp));
 			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
@@ -2838,16 +2838,16 @@ void LoadGuys(SDL_IOStream *f)
 	ExitGuys();
 	InitGuys(MAX_MAPMONS);
 
-	SDL_ReadIO(f,&num,sizeof(int),1);
+	SDL_ReadIO(f,&num,sizeof(int));
 
 	for(i=0;i<num;i++)
 	{
 		dword target, parent;
 		// sizes should total to 124
-		SDL_ReadIO(f,&g,offsetof(Guy, target),1);
-		SDL_ReadIO(f,&target,4,1);
-		SDL_ReadIO(f,&parent,4,1);
-		SDL_ReadIO(f,&g.hp,sizeof(Guy) - offsetof(Guy, hp),1);
+		SDL_ReadIO(f,&g,offsetof(Guy, target));
+		SDL_ReadIO(f,&target,4);
+		SDL_ReadIO(f,&parent,4);
+		SDL_ReadIO(f,&g.hp,sizeof(Guy) - offsetof(Guy, hp));
 		static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124, "save compatibility broken; adjust this assertion if you are sure");
 
 		(*guys[g.ID])=g;

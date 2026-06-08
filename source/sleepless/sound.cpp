@@ -517,7 +517,7 @@ byte AddCustomSound(const char *fname)
 	{
 		return 0;
 	}
-	SDL_ReadIO(f,customSound[numCustom],sizeof(byte),customLength[numCustom]);
+	SDL_ReadIO(f,customSound[numCustom],customLength[numCustom]);
 	f.reset();
 
 	strcpy(soundInfo[CUSTOM_SND_START+numCustom].name,"New Sound");
@@ -546,7 +546,7 @@ byte ReplaceCustomSound(int n,const char *fname)
 	{
 		return 0;
 	}
-	SDL_ReadIO(f, customSound[n],sizeof(byte),customLength[n]);
+	SDL_ReadIO(f, customSound[n],customLength[n]);
 
 	return 1;
 }
@@ -577,12 +577,12 @@ void SaveCustomSounds(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_WriteIO(f,&numCustom,1,sizeof(int));
+	SDL_WriteIO(f,&numCustom,sizeof(int));
 	for(i=0;i<numCustom;i++)
 	{
-		SDL_WriteIO(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));	// write out the descriptor
-		SDL_WriteIO(f,&customLength[i],sizeof(int32_t),1);	// write out the data length
-		SDL_WriteIO(f,customSound[i],sizeof(byte),customLength[i]);	// write out the data
+		SDL_WriteIO(f,&soundInfo[CUSTOM_SND_START+i],sizeof(soundDesc_t));	// write out the descriptor
+		SDL_WriteIO(f,&customLength[i],sizeof(int32_t));	// write out the data length
+		SDL_WriteIO(f,customSound[i],customLength[i]);	// write out the data
 	}
 }
 
@@ -592,13 +592,13 @@ void LoadCustomSounds(SDL_IOStream *f)
 
 	ClearCustomSounds();
 
-	SDL_ReadIO(f,&numCustom,1,sizeof(int));
+	SDL_ReadIO(f,&numCustom,sizeof(int));
 	for(i=0;i<numCustom;i++)
 	{
-		SDL_ReadIO(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
-		SDL_ReadIO(f,&customLength[i],sizeof(int32_t),1);
+		SDL_ReadIO(f,&soundInfo[CUSTOM_SND_START+i],sizeof(soundDesc_t));
+		SDL_ReadIO(f,&customLength[i],sizeof(int32_t));
 		customSound[i]=(byte *)malloc(customLength[i]);
-		SDL_ReadIO(f,customSound[i],sizeof(byte),customLength[i]);
+		SDL_ReadIO(f,customSound[i],customLength[i]);
 	}
 }
 
@@ -606,7 +606,7 @@ int AppendCustomSounds(SDL_IOStream *f)
 {
 	int i,more,start;
 
-	SDL_ReadIO(f,&more,1,sizeof(int));
+	SDL_ReadIO(f,&more,sizeof(int));
 
 	if(numCustom+more>MAX_CUSTOM_SOUNDS)
 		return -1;
@@ -615,11 +615,11 @@ int AppendCustomSounds(SDL_IOStream *f)
 	numCustom+=more;
 	for(i=start;i<numCustom;i++)
 	{
-		SDL_ReadIO(f,&soundInfo[CUSTOM_SND_START+i],1,sizeof(soundDesc_t));
+		SDL_ReadIO(f,&soundInfo[CUSTOM_SND_START+i],sizeof(soundDesc_t));
 		soundInfo[CUSTOM_SND_START+i].num=CUSTOM_SND_START+i;
-		SDL_ReadIO(f,&customLength[i],sizeof(int32_t),1);
+		SDL_ReadIO(f,&customLength[i],sizeof(int32_t));
 		customSound[i]=(byte *)malloc(customLength[i]);
-		SDL_ReadIO(f,customSound[i],sizeof(byte),customLength[i]);
+		SDL_ReadIO(f,customSound[i],customLength[i]);
 	}
 
 	return (start);

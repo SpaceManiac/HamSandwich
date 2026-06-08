@@ -99,7 +99,7 @@ sprite_t::sprite_t(const byte *info) noexcept
 // REGULAR MEMBER FUNCTIONS
 bool sprite_t::LoadData(SDL_IOStream *f)
 {
-	if(SDL_ReadIO(f,data.data(),1,data.size())!=data.size())
+	if(SDL_ReadIO(f,data.data(),data.size())!=data.size())
 	{
 		return false;
 	}
@@ -111,7 +111,7 @@ bool sprite_t::SaveData(SDL_IOStream *f) const
 	if(data.empty())
 		return true;
 
-	if(SDL_WriteIO(f,data.data(),1,data.size())!=data.size())
+	if(SDL_WriteIO(f,data.data(),data.size())!=data.size())
 	{
 		return false;
 	}
@@ -1184,13 +1184,13 @@ bool sprite_set_t::Load(const char *fname)
 	}
 	// read the count
 	word count;
-	SDL_ReadIO(f, &count, 2, 1);
+	SDL_ReadIO(f, &count, 2);
 
 	// allocate a buffer to load sprites into
 	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
 
 	// read in the sprite headers
-	if(SDL_ReadIO(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
+	if(SDL_ReadIO(f,buffer.data(),SPRITE_INFO_SIZE*count)!=SPRITE_INFO_SIZE*count)
 	{
 		return false;
 	}
@@ -1218,7 +1218,7 @@ bool sprite_set_t::Save(const char *fname) const
 		return false;
 	// write the count
 	word count = spr.size();
-	SDL_WriteIO(f,&count,2,1);
+	SDL_WriteIO(f,&count,2);
 
 	// allocate a buffer to copy sprites into
 	std::vector<byte> buffer(SPRITE_INFO_SIZE*count);
@@ -1227,7 +1227,7 @@ bool sprite_set_t::Save(const char *fname) const
 		spr[i].GetHeader(&buffer[i*SPRITE_INFO_SIZE]);
 
 	// write the sprites out
-	if(SDL_WriteIO(f,buffer.data(),SPRITE_INFO_SIZE,count)!=count)
+	if(SDL_WriteIO(f,buffer.data(),SPRITE_INFO_SIZE*count)!=count)
 	{
 		return false;
 	}

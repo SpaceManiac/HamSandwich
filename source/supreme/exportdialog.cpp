@@ -376,7 +376,7 @@ static void SaveZip()
 			}
 			while (true)
 			{
-				size_t read = SDL_ReadIO(rw, buf, 1, BUFSIZE);
+				size_t read = SDL_ReadIO(rw, buf, BUFSIZE);
 				if (read == 0)
 					break;
 				err = zipWriteInFileInZip(zf, buf, read);
@@ -467,7 +467,7 @@ static std::string PrepareWorkshopFolder()
 
 			while (true)
 			{
-				size_t read = SDL_ReadIO(rw, buf, 1, BUFSIZE);
+				size_t read = SDL_ReadIO(rw, buf, BUFSIZE);
 				if (read == 0)
 					break;
 				if (fwrite(buf, 1, read, f) < read)

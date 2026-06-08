@@ -616,7 +616,7 @@ static void GetSaves()
 			{
 				player_t p;
 				static_assert(sizeof(player_t) == 624);
-				SDL_ReadIO(f, &p, sizeof(player_t), 1);
+				SDL_ReadIO(f, &p, sizeof(player_t));
 				saveLevel[i] = p.level;
 				saveChapter[i] = p.worldNum + 1;
 				saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
@@ -636,7 +636,7 @@ static void GetSaves()
 		if (auto f = AppdataOpen(s))
 		{
 			player_t p;
-			SDL_ReadIO(f, &p, sizeof(player_t), 1);
+			SDL_ReadIO(f, &p, sizeof(player_t));
 			saveLevel[i] = p.level;
 			saveChapter[i] = p.worldNum + 1;
 			saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));

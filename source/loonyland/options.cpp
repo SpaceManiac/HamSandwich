@@ -543,7 +543,7 @@ void LoadOptions(void)
 	}
 	else
 	{
-		SDL_ReadIO(f,&opt,1,sizeof(options_t));
+		SDL_ReadIO(f,&opt,sizeof(options_t));
 		f.reset();
 
 		if (opt.sound == 1)
@@ -572,7 +572,7 @@ void LoadOptions(void)
 void SaveOptions(void)
 {
 	auto f = AppdataOpen_Write("loony.cfg");
-	SDL_WriteIO(f,&opt,sizeof(options_t),1);
+	SDL_WriteIO(f,&opt,sizeof(options_t));
 	f.reset();
 	AppdataSync();
 }

@@ -363,9 +363,9 @@ void SaveSpecial(special_t *s,SDL_IOStream *f)
 	byte numTrig,numEff,b;
 	int i;
 
-	SDL_WriteIO(f,&s->x,1,sizeof(byte));
-	SDL_WriteIO(f,&s->y,1,sizeof(byte));
-	SDL_WriteIO(f,&s->uses,1,sizeof(byte));
+	SDL_WriteIO(f,&s->x,1);
+	SDL_WriteIO(f,&s->y,1);
+	SDL_WriteIO(f,&s->uses,1);
 
 	numTrig=0;
 	numEff=0;
@@ -381,19 +381,19 @@ void SaveSpecial(special_t *s,SDL_IOStream *f)
 			numEff=i+1;
 
 	b=numTrig+numEff*8;
-	SDL_WriteIO(f,&b,1,sizeof(byte));	// write a combined number indicating #trigs & #effs
+	SDL_WriteIO(f,&b,1);	// write a combined number indicating #trigs & #effs
 
 	if(numTrig>0)
-		SDL_WriteIO(f,s->trigger,numTrig,sizeof(trigger_t));
+		SDL_WriteIO(f,s->trigger,numTrig*sizeof(trigger_t));
 	if(numEff>0)
-		SDL_WriteIO(f,s->effect,numEff,sizeof(effect_t));
+		SDL_WriteIO(f,s->effect,numEff*sizeof(effect_t));
 }
 
 void SaveSpecials(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_WriteIO(f,&numSpecials,1,sizeof(byte));	// num specials
+	SDL_WriteIO(f,&numSpecials,1);	// num specials
 	if(numSpecials>0)
 	{
 		for(i=0;i<numSpecials;i++)
@@ -407,19 +407,19 @@ void LoadSpecial(special_t *s,SDL_IOStream *f)
 
 	memset(s,0,sizeof(special_t));
 
-	SDL_ReadIO(f,&s->x,1,sizeof(byte));
-	SDL_ReadIO(f,&s->y,1,sizeof(byte));
-	SDL_ReadIO(f,&s->uses,1,sizeof(byte));
+	SDL_ReadIO(f,&s->x,1);
+	SDL_ReadIO(f,&s->y,1);
+	SDL_ReadIO(f,&s->uses,1);
 
-	SDL_ReadIO(f,&b,1,sizeof(byte));	// read a combined number indicating #trigs & #effs
+	SDL_ReadIO(f,&b,1);	// read a combined number indicating #trigs & #effs
 
 	numTrig=b%8;
 	numEff=b/8;
 
 	if(numTrig>0)
-		SDL_ReadIO(f,s->trigger,numTrig,sizeof(trigger_t));
+		SDL_ReadIO(f,s->trigger,numTrig*sizeof(trigger_t));
 	if(numEff>0)
-		SDL_ReadIO(f,s->effect,numEff,sizeof(effect_t));
+		SDL_ReadIO(f,s->effect,numEff*sizeof(effect_t));
 }
 
 void LoadSpecials(SDL_IOStream *f,special_t *list)
@@ -428,7 +428,7 @@ void LoadSpecials(SDL_IOStream *f,special_t *list)
 
 	InitSpecials(list);
 
-	SDL_ReadIO(f,&numSpecials,1,sizeof(byte));	// num specials
+	SDL_ReadIO(f,&numSpecials,1);	// num specials
 	if(numSpecials>0)
 	{
 		for(i=0;i<numSpecials;i++)

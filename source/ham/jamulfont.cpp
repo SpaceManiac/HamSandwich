@@ -57,7 +57,7 @@ FontError FontLoad(const char *fname, mfont_t *font)
 
 FontError FontLoad(SDL_IOStream* f, mfont_t* font)
 {
-	if (SDL_ReadIO(f, font, MFONT_SIZE_READ, 1) != 1)
+	if (SDL_ReadIO(f, font, MFONT_SIZE_READ) != MFONT_SIZE_READ)
 	{
 		return FONT_INVALIDFILE;
 	}
@@ -72,7 +72,7 @@ FontError FontLoad(SDL_IOStream* f, mfont_t* font)
 		return FONT_CANTALLOC;
 	}
 
-	if (SDL_ReadIO(f, font->data, font->dataSize, 1) != 1)
+	if (SDL_ReadIO(f, font->data, font->dataSize) != font->dataSize)
 	{
 		free(font->data);
 		return FONT_INVALIDFILE;
@@ -91,13 +91,13 @@ FontError FontSave(const char *fname, const mfont_t *font)
 	if (!f)
 		return FONT_FILENOTFOUND;
 
-	if (SDL_WriteIO(f, font, MFONT_SIZE_READ, 1) != 1)
+	if (SDL_WriteIO(f, font, MFONT_SIZE_READ) != MFONT_SIZE_READ)
 		return FONT_INVALIDFILE;
 
 	if (SDL_SeekIO(f, MFONT_SIZE_TOTAL, SDL_IO_SEEK_SET) != 0)
 		return FONT_INVALIDFILE;
 
-	if (SDL_WriteIO(f, font->data, font->dataSize, 1) != 1)
+	if (SDL_WriteIO(f, font->data, font->dataSize) != font->dataSize)
 		return FONT_INVALIDFILE;
 
 	f.reset();

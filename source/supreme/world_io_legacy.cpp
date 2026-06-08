@@ -124,18 +124,18 @@ static void ConvertToNewWorld(world_t *world)
 
 static void LoadOldMap(old_map_t *map,SDL_IOStream *f)
 {
-	SDL_ReadIO(f,&map->width,1,sizeof(int));
-	SDL_ReadIO(f,&map->height,1,sizeof(int));
+	SDL_ReadIO(f,&map->width,sizeof(int));
+	SDL_ReadIO(f,&map->height,sizeof(int));
 
-	SDL_ReadIO(f,map->name,32,sizeof(char));
-	SDL_ReadIO(f,map->badguy,OLD_MAX_MAPMONS,sizeof(old_mapBadguy_t));
-	SDL_ReadIO(f,map->special,OLD_MAX_SPECIAL,sizeof(old_special_t));
-	SDL_ReadIO(f,&map->song,1,1);
-	SDL_ReadIO(f,&map->flags,1,1);
+	SDL_ReadIO(f,map->name,32);
+	SDL_ReadIO(f,map->badguy,OLD_MAX_MAPMONS*sizeof(old_mapBadguy_t));
+	SDL_ReadIO(f,map->special,OLD_MAX_SPECIAL*sizeof(old_special_t));
+	SDL_ReadIO(f,&map->song,1);
+	SDL_ReadIO(f,&map->flags,1);
 
 	map->map=(old_mapTile_t *)calloc(sizeof(old_mapTile_t)*map->width*map->height,1);
 
-	SDL_ReadIO(f,map->map,map->width*map->height,sizeof(old_mapTile_t));
+	SDL_ReadIO(f,map->map,map->width*map->height*sizeof(old_mapTile_t));
 }
 
 bool Legacy_LoadWorld(world_t *world, SDL_IOStream *f)
@@ -144,13 +144,13 @@ bool Legacy_LoadWorld(world_t *world, SDL_IOStream *f)
 
 	oldWorld=new old_world_t;
 
-	SDL_ReadIO(f,&oldWorld->numMaps,1,1);
-	SDL_ReadIO(f,&oldWorld->totalPoints,1,4);
+	SDL_ReadIO(f,&oldWorld->numMaps,1);
+	SDL_ReadIO(f,&oldWorld->totalPoints,4);
 
 	world->tilegfx.numTiles = 400;
-	SDL_ReadIO(f, world->tilegfx.GetTileData(0), 32 * 24, 400);
+	SDL_ReadIO(f, world->tilegfx.GetTileData(0), 32 * 24 * 400);
 
-	SDL_ReadIO(f,oldWorld->terrain,200,sizeof(old_terrain_t));
+	SDL_ReadIO(f,oldWorld->terrain,200*sizeof(old_terrain_t));
 
 	for(i=0;i<24;i++)
 		oldWorld->map[i]=NULL;
@@ -676,7 +676,7 @@ bool Legacy_GetWorldName(SDL_IOStream *f, StringDestination name)
 		return false;
 
 	// read the name
-	if (SDL_ReadIO(f, buf, 32, 1) < 1)
+	if (SDL_ReadIO(f, buf, 32) < 32)
 		return false;
 
 	buf[31] = 0;

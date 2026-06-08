@@ -46,7 +46,7 @@ bool LoadWorld(world_t *world,const char *fname)
 	if(!f)
 		return false;
 
-	SDL_ReadIO(f, code, sizeof(char), 8);
+	SDL_ReadIO(f, code, 8);
 	SDL_SeekIO(f, 0, SDL_IO_SEEK_SET);
 	code[8]='\0';
 
@@ -103,7 +103,7 @@ bool GetWorldName(const char *fname, StringDestination name, StringDestination a
 	if(!f)
 		return false;
 
-	SDL_ReadIO(f,code,sizeof(char),8);
+	SDL_ReadIO(f,code,8);
 	code[8]='\0';
 
 	if(!strcmp(code,"HAMSWCH!"))

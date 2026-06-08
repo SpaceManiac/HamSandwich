@@ -99,7 +99,7 @@ bool VerifyLevel(Map *map)
 		return false;
 
 	dword index = 0;
-	while(SDL_ReadIO(f,&cmp,sizeof(dword),1))
+	while(SDL_ReadIO(f,&cmp,sizeof(dword)))
 	{
 		++index;
 		if(cmp==chk)

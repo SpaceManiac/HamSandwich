@@ -211,7 +211,7 @@ static bool LoadOldGame(byte which)
 		{
 			static_assert(sizeof(player_t) == 624);
 			SDL_SeekIO(f, sizeof(player_t) * which, SDL_IO_SEEK_SET);
-			SDL_ReadIO(f, &player, sizeof(player_t), 1);
+			SDL_ReadIO(f, &player, sizeof(player_t));
 			player.difficulty = Difficulty::CLASSIC;
 			return true;
 		}
@@ -225,7 +225,7 @@ void PlayerLoadGame(byte which)
 	ham_sprintf(s, "mystic%d.sav", which+1);
 	if (auto f = AppdataOpen(s))
 	{
-		SDL_ReadIO(f,&player,sizeof(player_t),1);
+		SDL_ReadIO(f,&player,sizeof(player_t));
 	}
 	else if (!LoadOldGame(which))
 	{
@@ -254,7 +254,7 @@ void PlayerSaveGame(byte which)
 	player.saveCode[1] = 'I';
 	player.saveCode[2] = 'D';
 	player.saveCode[3] = '\0';
-	SDL_WriteIO(f,&player,sizeof(player_t),1);
+	SDL_WriteIO(f,&player,sizeof(player_t));
 	f.reset();
 	AppdataSync();
 }

@@ -3390,13 +3390,13 @@ void SaveBullets(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_WriteIO(f,&config.numBullets,1,sizeof(int));
+	SDL_WriteIO(f,&config.numBullets,sizeof(int));
 	for(i=0;i<config.numBullets;i++)
 	{
-		SDL_WriteIO(f,&bullet[i].type,1,sizeof(byte));
+		SDL_WriteIO(f,&bullet[i].type,sizeof(byte));
 		if(bullet[i].type!=0)
 		{
-			SDL_WriteIO(f,&bullet[i],sizeof(bullet_t),1);
+			SDL_WriteIO(f,&bullet[i],sizeof(bullet_t));
 		}
 	}
 }
@@ -3405,13 +3405,13 @@ void LoadBullets(SDL_IOStream *f)
 {
 	int i;
 
-	SDL_ReadIO(f,&config.numBullets,1,sizeof(int));
+	SDL_ReadIO(f,&config.numBullets,sizeof(int));
 	for(i=0;i<config.numBullets;i++)
 	{
-		SDL_ReadIO(f,&bullet[i].type,1,sizeof(byte));
+		SDL_ReadIO(f,&bullet[i].type,sizeof(byte));
 		if(bullet[i].type!=0)
 		{
-			SDL_ReadIO(f,&bullet[i],sizeof(bullet_t),1);
+			SDL_ReadIO(f,&bullet[i],sizeof(bullet_t));
 		}
 	}
 }
