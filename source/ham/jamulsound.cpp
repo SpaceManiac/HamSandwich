@@ -67,6 +67,7 @@ bool JamulSoundInit(int numBuffers)
 		LogError("SDL_Init(AUDIO): %s", SDL_GetError());
 		return false;
 	}
+	SDL_setenv_unsafe("TIMIDITY_CFG", "assets/supreme/midi/timidity.cfg", true);
 	if (!MIX_Init())
 	{
 		LogError("Mix_Init: %s", SDL_GetError());
