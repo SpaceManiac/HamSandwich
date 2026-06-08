@@ -13,11 +13,11 @@
 [submodule "external/opus"]
 	path = external/opus
 	url = https://github.com/libsdl-org/opus.git
-	branch = v1.4-SDL
+	branch = v1.4.x-SDL
 [submodule "external/opusfile"]
 	path = external/opusfile
 	url = https://github.com/libsdl-org/opusfile.git
-	branch = v0.12-SDL
+	branch = v0.13-git-SDL
 [submodule "external/tremor"]
 	path = external/tremor
 	url = https://github.com/libsdl-org/tremor.git
@@ -25,16 +25,16 @@
 [submodule "external/mpg123"]
 	path = external/mpg123
 	url = https://github.com/libsdl-org/mpg123.git
-	branch = v1.31.3-SDL
-[submodule "libxmp"]
+	branch = v1.33.4-SDL
+[submodule "external/libxmp"]
 	path = external/libxmp
 	url = https://github.com/libsdl-org/libxmp.git
-	branch = 4.6.x-SDL
+	branch = 4.7.0-SDL
 [submodule "external/wavpack"]
 	path = external/wavpack
 	url = https://github.com/libsdl-org/wavpack.git
-	branch = 5.6.0-sdl
+	branch = 5.9.0-SDL
 [submodule "external/libgme"]
 	path = external/libgme
 	url = https://github.com/libsdl-org/game-music-emu.git
-	branch = v0.6.3-SDL
+	branch = v0.6.4-SDL

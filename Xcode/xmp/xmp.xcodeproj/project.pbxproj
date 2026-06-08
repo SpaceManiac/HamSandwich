@@ -6,6 +6,20 @@
 	objectVersion = 55;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		F3B38D4F296F8E1F005DA6D3 /* xmp.xcframework */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = F3B38D52296F8E1F005DA6D3 /* Build configuration list for PBXAggregateTarget "xmp.xcframework" */;
+			buildPhases = (
+				F3B38D53296F8E3B005DA6D3 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = xmp.xcframework;
+			productName = xcFramework;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		631064392A98AF290082F715 /* extras.c in Sources */ = {isa = PBXBuildFile; fileRef = 631064382A98AF290082F715 /* extras.c */; };
 		631064402A98AF6F0082F715 /* far_extras.c in Sources */ = {isa = PBXBuildFile; fileRef = 6310643A2A98AF6F0082F715 /* far_extras.c */; };
@@ -68,6 +82,7 @@
 		631064AF2A98B0A00082F715 /* voltable.c in Sources */ = {isa = PBXBuildFile; fileRef = 631064A32A98B0A00082F715 /* voltable.c */; };
 		631064B02A98B0A00082F715 /* vorbis.c in Sources */ = {isa = PBXBuildFile; fileRef = 631064A42A98B0A00082F715 /* vorbis.c */; };
 		631064B12A98B0A00082F715 /* xmf_load.c in Sources */ = {isa = PBXBuildFile; fileRef = 631064A52A98B0A00082F715 /* xmf_load.c */; };
+		631F06822F4FEEFE00AA5114 /* path.c in Sources */ = {isa = PBXBuildFile; fileRef = 631F06812F4FEEFE00AA5114 /* path.c */; };
 		F3023FB22881D74E002F32D6 /* xmp.h in Headers */ = {isa = PBXBuildFile; fileRef = F3023FB12881D74E002F32D6 /* xmp.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3023FCE2881DB7C002F32D6 /* effects.c in Sources */ = {isa = PBXBuildFile; fileRef = F3023FB42881DB7C002F32D6 /* effects.c */; };
 		F3023FD02881DB7C002F32D6 /* smix.c in Sources */ = {isa = PBXBuildFile; fileRef = F3023FB62881DB7C002F32D6 /* smix.c */; };
@@ -90,6 +105,8 @@
 		F33AA3312881F70D00F836D8 /* it_load.c in Sources */ = {isa = PBXBuildFile; fileRef = F33AA32D2881F70D00F836D8 /* it_load.c */; };
 		F33AA3322881F70D00F836D8 /* xm_load.c in Sources */ = {isa = PBXBuildFile; fileRef = F33AA32E2881F70D00F836D8 /* xm_load.c */; };
 		F33AA3342881F70D00F836D8 /* s3m_load.c in Sources */ = {isa = PBXBuildFile; fileRef = F33AA3302881F70D00F836D8 /* s3m_load.c */; };
+		F341229F2D406C2000D6C2B7 /* rng.c in Sources */ = {isa = PBXBuildFile; fileRef = F341229E2D406C2000D6C2B7 /* rng.c */; };
+		F34122A12D406C6500D6C2B7 /* flow.c in Sources */ = {isa = PBXBuildFile; fileRef = F34122A02D406C6500D6C2B7 /* flow.c */; };
 		F3E29CE62881FB380006D108 /* README in Resources */ = {isa = PBXBuildFile; fileRef = F3E29CE52881FB370006D108 /* README */; };
 		F3E29CE82881FB610006D108 /* format.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E29CE72881FB610006D108 /* format.c */; };
 		F3E29CEA2881FB840006D108 /* mod_load.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E29CE92881FB840006D108 /* mod_load.c */; };
@@ -161,6 +178,7 @@
 		631064A32A98B0A00082F715 /* voltable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = voltable.c; path = ../../external/libxmp/src/loaders/voltable.c; sourceTree = SOURCE_ROOT; };
 		631064A42A98B0A00082F715 /* vorbis.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = vorbis.c; path = ../../external/libxmp/src/loaders/vorbis.c; sourceTree = SOURCE_ROOT; };
 		631064A52A98B0A00082F715 /* xmf_load.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xmf_load.c; path = ../../external/libxmp/src/loaders/xmf_load.c; sourceTree = SOURCE_ROOT; };
+		631F06812F4FEEFE00AA5114 /* path.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = path.c; path = ../../external/libxmp/src/path.c; sourceTree = SOURCE_ROOT; };
 		F3023FB12881D74E002F32D6 /* xmp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xmp.h; path = ../../external/libxmp/include/xmp.h; sourceTree = "<group>"; };
 		F3023FB42881DB7C002F32D6 /* effects.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = effects.c; path = ../../external/libxmp/src/effects.c; sourceTree = "<group>"; };
 		F3023FB62881DB7C002F32D6 /* smix.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = smix.c; path = ../../external/libxmp/src/smix.c; sourceTree = "<group>"; };
@@ -183,6 +201,8 @@
 		F33AA32D2881F70D00F836D8 /* it_load.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = it_load.c; path = ../../external/libxmp/src/loaders/it_load.c; sourceTree = "<group>"; };
 		F33AA32E2881F70D00F836D8 /* xm_load.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = xm_load.c; path = ../../external/libxmp/src/loaders/xm_load.c; sourceTree = "<group>"; };
 		F33AA3302881F70D00F836D8 /* s3m_load.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = s3m_load.c; path = ../../external/libxmp/src/loaders/s3m_load.c; sourceTree = "<group>"; };
+		F341229E2D406C2000D6C2B7 /* rng.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = rng.c; path = ../../external/libxmp/src/rng.c; sourceTree = "<group>"; };
+		F34122A02D406C6500D6C2B7 /* flow.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = flow.c; path = ../../external/libxmp/src/flow.c; sourceTree = "<group>"; };
 		F3968D85281FBB1900661875 /* xmp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = xmp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3E29CE52881FB370006D108 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README; path = ../../external/libxmp/README; sourceTree = "<group>"; };
 		F3E29CE72881FB610006D108 /* format.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../external/libxmp/src/format.c; sourceTree = "<group>"; };
@@ -297,30 +317,33 @@
 				F3023FBD2881DB7C002F32D6 /* control.c */,
 				F3023FC82881DB7C002F32D6 /* dataio.c */,
 				F3023FB42881DB7C002F32D6 /* effects.c */,
+				631064382A98AF290082F715 /* extras.c */,
+				6310643A2A98AF6F0082F715 /* far_extras.c */,
 				F3E29D6E288237030006D108 /* filetype.c */,
 				F3023FBC2881DB7C002F32D6 /* filter.c */,
+				F34122A02D406C6500D6C2B7 /* flow.c */,
 				F3E29CE72881FB610006D108 /* format.c */,
 				F3023FC22881DB7C002F32D6 /* hio.c */,
+				6310643B2A98AF6F0082F715 /* hmn_extras.c */,
 				F3023FBB2881DB7C002F32D6 /* lfo.c */,
-				F3023FCC2881DB7C002F32D6 /* load_helpers.c */,
 				F3023FCA2881DB7C002F32D6 /* load.c */,
+				F3023FCC2881DB7C002F32D6 /* load_helpers.c */,
+				6310643C2A98AF6F0082F715 /* md5.c */,
+				6310643D2A98AF6F0082F715 /* med_extras.c */,
 				F3023FC62881DB7C002F32D6 /* memio.c */,
+				6310643E2A98AF6F0082F715 /* miniz_tinfl.c */,
 				F3023FB72881DB7C002F32D6 /* misc.c */,
 				F3023FC52881DB7C002F32D6 /* mix_all.c */,
+				6310643F2A98AF6F0082F715 /* mix_paula.c */,
 				F3023FC92881DB7C002F32D6 /* mixer.c */,
+				631F06812F4FEEFE00AA5114 /* path.c */,
 				F3023FBE2881DB7C002F32D6 /* period.c */,
 				F3023FC72881DB7C002F32D6 /* player.c */,
 				F3023FC42881DB7C002F32D6 /* read_event.c */,
+				F341229E2D406C2000D6C2B7 /* rng.c */,
 				F3023FB92881DB7C002F32D6 /* scan.c */,
 				F3023FB62881DB7C002F32D6 /* smix.c */,
 				F3023FBA2881DB7C002F32D6 /* virtual.c */,
-				631064382A98AF290082F715 /* extras.c */,
-				6310643A2A98AF6F0082F715 /* far_extras.c */,
-				6310643B2A98AF6F0082F715 /* hmn_extras.c */,
-				6310643C2A98AF6F0082F715 /* md5.c */,
-				6310643D2A98AF6F0082F715 /* med_extras.c */,
-				6310643F2A98AF6F0082F715 /* mix_paula.c */,
-				6310643E2A98AF6F0082F715 /* miniz_tinfl.c */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -369,7 +392,7 @@
 			dependencies = (
 			);
 			name = xmp;
-			productName = libmodplug;
+			productName = libxmp;
 			productReference = F3968D85281FBB1900661875 /* xmp.framework */;
 			productType = "com.apple.product-type.framework";
 		};
@@ -384,6 +407,9 @@
 				TargetAttributes = {
 					F3968D84281FBB1900661875 = {
 						CreatedOnToolsVersion = 13.3.1;
+					};
+					F3B38D4F296F8E1F005DA6D3 = {
+						CreatedOnToolsVersion = 14.2;
 					};
 				};
 			};
@@ -401,6 +427,7 @@
 			projectRoot = "";
 			targets = (
 				F3968D84281FBB1900661875 /* xmp */,
+				F3B38D4F296F8E1F005DA6D3 /* xmp.xcframework */,
 			);
 		};
 /* End PBXProject section */
@@ -415,6 +442,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F3B38D53296F8E3B005DA6D3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Build an xcframework with both device and simulator files for all platforms.\n# Adapted from an answer in\n# https://developer.apple.com/forums/thread/666335?answerId=685927022#685927022\n\nif [ \"$XCODE_VERSION_ACTUAL\" -lt 1100 ]\nthen\n    echo \"error: Building an xcframework requires Xcode 11 minimum.\"\n    exit 1\nfi\n\nFRAMEWORK_NAME=\"xmp\"\nPROJECT_NAME=\"xmp\"\nSCHEME=\"xmp\"\n\nMACOS_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-macosx.xcarchive\"\nIOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphonesimulator.xcarchive\"\nIOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphoneos.xcarchive\"\nTVOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvsimulator.xcarchive\"\nTVOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvos.xcarchive\"\n\nOUTPUT_DIR=\"../build/\"\n\n# macOS\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${MACOS_ARCHIVE_PATH} \\\n    -sdk macosx \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n    \n# iOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_SIMULATOR_ARCHIVE_PATH} \\\n    -sdk iphonesimulator \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# iOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_DEVICE_ARCHIVE_PATH} \\\n    -sdk iphoneos \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_SIMULATOR_ARCHIVE_PATH} \\\n    -sdk appletvsimulator \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_DEVICE_ARCHIVE_PATH} \\\n    -sdk appletvos \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# Clean-up any existing instance of this xcframework from the Products directory\nrm -rf \"${OUTPUT_DIR}${FRAMEWORK_NAME}.xcframework\"\n\n# Create final xcframework\nxcodebuild -create-xcframework \\\n    -framework \"${MACOS_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${IOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${IOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -output ${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework\n\n# Ensure git doesn't pick up on our Products folder. \nrm -rf ${OUTPUT_DIR}/.gitignore\necho \"*\" >> ${OUTPUT_DIR}/.gitignore\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F3968D81281FBB1900661875 /* Sources */ = {
@@ -454,7 +502,9 @@
 				631064422A98AF6F0082F715 /* md5.c in Sources */,
 				631064432A98AF6F0082F715 /* med_extras.c in Sources */,
 				631064442A98AF6F0082F715 /* miniz_tinfl.c in Sources */,
+				F341229F2D406C2000D6C2B7 /* rng.c in Sources */,
 				631064452A98AF6F0082F715 /* mix_paula.c in Sources */,
+				F34122A12D406C6500D6C2B7 /* flow.c in Sources */,
 				631064622A98AFEE0082F715 /* gal4_load.c in Sources */,
 				631064632A98AFEE0082F715 /* gal5_load.c in Sources */,
 				631064642A98AFEE0082F715 /* gdm_load.c in Sources */,
@@ -509,6 +559,7 @@
 				631064AF2A98B0A00082F715 /* voltable.c in Sources */,
 				631064B02A98B0A00082F715 /* vorbis.c in Sources */,
 				631064B12A98B0A00082F715 /* xmf_load.c in Sources */,
+				631F06822F4FEEFE00AA5114 /* path.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -570,14 +621,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -615,7 +666,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -636,13 +686,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SUPPORTED_PLATFORMS = "watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
-				TVOS_DEPLOYMENT_TARGET = 9.0;
+				TVOS_DEPLOYMENT_TARGET = 11.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -700,6 +750,18 @@
 			};
 			name = Release;
 		};
+		F3B38D50296F8E1F005DA6D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		F3B38D51296F8E1F005DA6D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -717,6 +779,15 @@
 			buildConfigurations = (
 				F3968D8D281FBB1900661875 /* Debug */,
 				F3968D8E281FBB1900661875 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F3B38D52296F8E1F005DA6D3 /* Build configuration list for PBXAggregateTarget "xmp.xcframework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3B38D50296F8E1F005DA6D3 /* Debug */,
+				F3B38D51296F8E1F005DA6D3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
