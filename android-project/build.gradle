@@ -6,7 +6,7 @@ buildscript {
 	}
 
 	dependencies {
-		classpath 'com.android.tools.build:gradle:7.0.4'
+		classpath 'com.android.tools.build:gradle:7.4.0'
 	}
 }
 
@@ -32,15 +32,17 @@ dependencies {
 }
 
 android {
-	compileSdkVersion 31
+	// Modify this line to distinguish your app from the upstream.
+	// Example: 'io.github.YourUsername.hamsandwich'
+	namespace 'com.platymuus.hamsandwich'
+
 	ndkVersion "24.0.8215888"
+	compileSdkVersion 33
 
 	defaultConfig {
-		// Modify this line to distinguish your app from the upstream.
-		// Example: 'io.github.YourUsername.hamsandwich'
-		applicationId 'com.platymuus.hamsandwich'
+		applicationId = namespace
 		minSdk 16
-		targetSdkVersion 31
+		targetSdkVersion 33
 		externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
 	}
 

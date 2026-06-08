@@ -32,7 +32,7 @@ import android.view.ScaleGestureDetector;
     Because of this, that's where we set up the SDL thread
 */
 public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
-    View.OnApplyWindowInsetsListener, View.OnKeyListener, View.OnTouchListener,
+    View.OnKeyListener, View.OnTouchListener,
     SensorEventListener, ScaleGestureDetector.OnScaleGestureListener {
 
     // Sensors
@@ -61,7 +61,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
-        setOnApplyWindowInsetsListener(this);
         setOnKeyListener(this);
         setOnTouchListener(this);
 
@@ -85,7 +84,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setFocusable(true);
         setFocusableInTouchMode(true);
         requestFocus();
-        setOnApplyWindowInsetsListener(this);
         setOnKeyListener(this);
         setOnTouchListener(this);
         enableSensor(Sensor.TYPE_ACCELEROMETER, true);
@@ -201,7 +199,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     // Window inset
-    @Override
     public WindowInsets onApplyWindowInsets(View v, WindowInsets insets) {
         if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
             Insets combined = insets.getInsets(WindowInsets.Type.systemBars() |
