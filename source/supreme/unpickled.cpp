@@ -33,6 +33,7 @@ void UnpickledMain()
 			fprintf(stderr, "bad LoadWorld(%s)\n", fullname.c_str());
 			//continue;
 		}
+		SetCurrentTilegfx(&curWorld.tilegfx);
 
 		for (int i = 0; i < curWorld.numMaps; ++i)
 		{
@@ -44,6 +45,7 @@ void UnpickledMain()
 			player.playAs=0;
 			player.worldProg = new worldData_t;
 			player.worldProg->levels = 0;
+			memset(player.worldProg->var, 0, sizeof(player.worldProg->var));
 			player.vehicle=0;
 			SetPlayerStart(-1, -1);
 
@@ -78,7 +80,7 @@ void UnpickledMain()
 			pngName = "./appdata/unpickled/worlds/";
 			pngName.append(fname);
 			pngName.append("/pic_");
-			pngName.append(std::to_string(i));
+			string_appendf(&pngName, "%d", i);
 			pngName.append(".png");
 			vanilla::mkdir_parents(pngName);
 			mgl->SavePNG(pngName.c_str());
@@ -87,7 +89,7 @@ void UnpickledMain()
 			if (now - start > 1000)
 			{
 				start = now;
-				GetDisplayMGL()->Flip();
+				mgl->Flip();
 			}
 
 			mgl->RealizePalette();  // Fix up in case the above set underwater or underlava palette.
@@ -96,7 +98,7 @@ void UnpickledMain()
 			pngName = "./appdata/unpickled/worlds/";
 			pngName.append(fname);
 			pngName.append("/mini_");
-			pngName.append(std::to_string(i));
+			string_appendf(&pngName, "%d", i);
 			pngName.append(".png");
 			vanilla::mkdir_parents(pngName);
 			mgl->SavePNG(pngName.c_str());
