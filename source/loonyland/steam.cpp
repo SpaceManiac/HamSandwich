@@ -22,7 +22,6 @@ void SteamManager::OpenURLOverlay(const char *url)
 #include "log.h"
 #include "appdata.h"
 #include "vanilla_extract.h"
-#include "erase_if.h"
 #include "highscore.h"
 #include "string_extras.h"
 #include "steam_utils.inl"
@@ -199,7 +198,7 @@ public:
 		vanilla::VfsStack* vfs_stack = Vfs();
 
 		// Unmount all existing Workshop content and remount it in the loop below.
-		erase_if(vfs_stack->mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
+		std::erase_if(vfs_stack->mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
 
 		uint32_t subscribedCount = SteamUGC()->GetNumSubscribedItems();
 		subscribedItemIds.resize(subscribedCount);

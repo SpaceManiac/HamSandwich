@@ -21,7 +21,6 @@ void SteamManager::OpenURLOverlay(const char *url)
 #include "vanilla_extract.h"
 #include "game.h"
 #include "log.h"
-#include "erase_if.h"
 #include "shop.h"
 #include "theater.h"
 #include "hiscore.h"
@@ -335,7 +334,7 @@ public:
 		vanilla::VfsStack* vfs_stack = Vfs();
 
 		// Unmount all existing Workshop content and remount it in the loop below.
-		erase_if(vfs_stack->mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
+		std::erase_if(vfs_stack->mounts, [](const vanilla::Mount& mount) { return mount.meta.steamWorkshopId != 0; });
 
 		uint32_t subscribedCount = SteamUGC()->GetNumSubscribedItems();
 		subscribedItemIds.resize(subscribedCount);

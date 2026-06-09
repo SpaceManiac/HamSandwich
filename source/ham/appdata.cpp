@@ -27,7 +27,6 @@
 #include "vanilla_extract.h"
 
 #include "log.h"
-#include "erase_if.h"
 #include "jamultypes.h"
 #include "metadata.h"
 #include "extern.h"
@@ -428,7 +427,7 @@ static void filter_files(std::set<std::string, vanilla::CaseInsensitive>* files,
 	if (extension || maxlen > 0)
 	{
 		size_t extlen = extension ? strlen(extension) : 0;
-		erase_if(*files, [=](const std::string& value)
+		std::erase_if(*files, [=](const std::string& value)
 		{
 			size_t len = value.size();
 			if (maxlen > 0 && len >= maxlen)

@@ -10,7 +10,6 @@
 #include "shop.h"
 #include "hiscore.h"
 #include "appdata.h"
-#include "erase_if.h"
 #include "vanilla_extract.h"
 #include "steam.h"
 #include "leaderboard.h"
@@ -244,7 +243,7 @@ void InputWorld(const char *fname)
 TASK(void) ScanWorlds(void)
 {
 	std::vector<std::string> files = ListDirectory("worlds", ".dlw", 32);
-	erase_if(files, [](const std::string& name) {
+	std::erase_if(files, [](const std::string& name) {
 		return name == "backup_load.dlw"
 			|| name == "backup_exit.dlw"
 			|| name == "backup_save.dlw";
