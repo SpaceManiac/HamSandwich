@@ -1,5 +1,5 @@
 #include "vfs_zip.h"
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <unzip.h>
 #include "vec_rw.h"
 #include "base_archive.h"

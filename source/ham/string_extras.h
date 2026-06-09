@@ -7,7 +7,7 @@
 #include <string_view>
 #include <array>
 #include <span>
-#include <SDL_stdinc.h>
+#include <SDL3/SDL_stdinc.h>
 
 // A variant describing several possible places a string might be written.
 class StringDestination

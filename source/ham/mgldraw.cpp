@@ -12,9 +12,9 @@
 #include "ico.h"
 #include "string_extras.h"
 
-#include <SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 #ifdef _WIN32
-	#include <SDL_syswm.h>
+	#include <SDL3/SDL_syswm.h>
 #endif  // _WIN32
 
 #ifdef __EMSCRIPTEN__

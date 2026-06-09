@@ -1,6 +1,6 @@
 #include "ioext.h"
 #include <streambuf>
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 
 constexpr int BUFSZ = 8192;
 

@@ -2,7 +2,7 @@
 #define OWNED_MIXER_H
 
 #include <memory>
-#include <SDL_mixer.h>
+#include <SDL3_mixer/SDL_mixer.h>
 #include "owned_sdl.h"
 
 // ----------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <curl/curl.h>
-#include <SDL_log.h>
+#include <SDL3/SDL_log.h>
 
 // ----------------------------------------------------------------------------
 // CURL

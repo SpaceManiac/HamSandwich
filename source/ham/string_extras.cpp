@@ -1,8 +1,8 @@
 #include "string_extras.h"
 #include <string.h>
 #include <algorithm>
-#include <SDL_assert.h>
-#include <SDL_rwops.h>
+#include <SDL3/SDL_assert.h>
+#include <SDL3/SDL_iostream.h>
 
 char* StringDestination::prepare(size_t *len)
 {

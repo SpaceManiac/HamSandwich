@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 #include <memory>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <steam/steam_api.h>
 
 // ------------------------------------------------------------------------

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <errno.h>
 #include <memory>
-#include <SDL_log.h>
+#include <SDL3/SDL_log.h>
 
 namespace owned
 {

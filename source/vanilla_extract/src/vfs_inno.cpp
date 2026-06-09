@@ -4,7 +4,7 @@
 #include <zlib.h>
 #include <7z.h>
 #include <7zCrc.h>
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 #include "base_archive.h"
 #include "lzma_helpers.h"
 #include "vec_rw.h"

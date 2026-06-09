@@ -1,6 +1,6 @@
 #include "vfs.h"
 #include <string.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 namespace vanilla {
 

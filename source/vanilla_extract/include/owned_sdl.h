@@ -2,7 +2,7 @@
 #define OWNED_SDL_H
 
 #include <memory>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include "rw_functions.h"
 #include "owned_stdio.h"
 

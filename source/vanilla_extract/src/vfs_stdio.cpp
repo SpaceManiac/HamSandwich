@@ -2,8 +2,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <SDL_rwops.h>
-#include <SDL_log.h>
+#include <SDL3/SDL_iostream.h>
+#include <SDL3/SDL_log.h>
 
 #if __has_include(<filesystem>)
 #include <filesystem>

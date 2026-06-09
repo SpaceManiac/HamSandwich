@@ -1,7 +1,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <string>
 #include <string_view>
 #include "jamulfont.h"

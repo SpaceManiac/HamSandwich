@@ -2,9 +2,9 @@
 #include "vfs_android.h"
 #include <string.h>
 #include <jni.h>
-#include <SDL_system.h>
-#include <SDL_assert.h>
-#include <SDL_log.h>
+#include <SDL3/SDL_system.h>
+#include <SDL3/SDL_assert.h>
+#include <SDL3/SDL_log.h>
 
 // Android VFS implementation
 class AndroidBundleVfs : public vanilla::Vfs

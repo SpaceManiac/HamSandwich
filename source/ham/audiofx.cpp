@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <memory.h>
 #include <utility>
-#include <SDL.h>
-#include <SDL_mixer.h>
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
 #include "jamultypes.h"
 
 static int SampleSize(uint16_t format)

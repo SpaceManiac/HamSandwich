@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <math.h>
 
-#include <SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 #ifndef M_PI
 	#define M_PI 3.1415926535897

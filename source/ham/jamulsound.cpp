@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 #include <utility>
-#include <SDL.h>
-#include <SDL_mixer.h>
+#include <SDL3/SDL.h>
+#include <SDL3_mixer/SDL_mixer.h>
 #include "hammusic.h"
 #include "log.h"
 #include "audiofx.h"

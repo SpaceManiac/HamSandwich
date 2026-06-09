@@ -1,5 +1,5 @@
 #include "world_io_supreme.h"
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 #include "appdata.h"
 #include "world.h"
 #include "map.h"

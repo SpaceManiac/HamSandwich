@@ -1,7 +1,7 @@
 #include "hammusic.h"
 #include <stdio.h>
 #include <utility>
-#include <SDL_mixer.h>
+#include <SDL3_mixer/SDL_mixer.h>
 #include "mgldraw.h"
 #include "log.h"
 #include "appdata.h"

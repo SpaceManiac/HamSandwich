@@ -1,6 +1,6 @@
 #include "gui.h"
 #include <string>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 Gui::Gui()
     : mx(0)

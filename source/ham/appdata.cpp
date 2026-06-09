@@ -22,7 +22,7 @@
 #include <sys/wait.h>
 #endif
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "vanilla_extract.h"
 
@@ -207,7 +207,7 @@ void AppdataSync() {
 #elif defined(__ANDROID__) && __ANDROID__
 // Android configuration
 
-#include <SDL_system.h>
+#include <SDL3/SDL_system.h>
 
 static VfsStack default_vfs_stack(bool* error) {
 	(void) error;

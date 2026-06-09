@@ -1,7 +1,7 @@
 #ifndef RW_FUNCTIONS_H
 #define RW_FUNCTIONS_H
 
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 
 // Some versions of SDL2 use a macro for SDL_CloseIO, which we can't overload,
 // so undef it and make it a normal function so we can overload it later.

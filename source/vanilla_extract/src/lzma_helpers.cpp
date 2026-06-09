@@ -1,7 +1,7 @@
 #include "lzma_helpers.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <SDL_log.h>
+#include <SDL3/SDL_log.h>
 #include <LzmaDec.h>
 
 // ----------------------------------------------------------------------------

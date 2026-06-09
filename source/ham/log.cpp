@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <SDL_platform.h>
-#include <SDL_log.h>
+#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_log.h>
 
 #ifdef __ANDROID__
 	#include <android/log.h>

@@ -1,7 +1,7 @@
 #include "vfs_nsis.h"
 #include <string.h>
 #include <vector>
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 #include <fileform.h>
 #include "base_archive.h"
 #include "vec_rw.h"

@@ -1,7 +1,7 @@
 #include "recolor.h"
 #include <string.h>
 #include <algorithm>
-#include <SDL_timer.h>
+#include <SDL3/SDL_timer.h>
 
 // ----------------------------------------------------------------------------
 // Basic color manipulation

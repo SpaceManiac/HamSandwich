@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <utility>
-#include <SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 #include <tinyfiledialogs.h>
 #include "globals.h"
 #include "jspfile.h"

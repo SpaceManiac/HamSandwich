@@ -3,7 +3,7 @@
 #include <string.h>
 #include <vector>
 #include <utility>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #define ZLIB_CONST
 #include <zlib.h>
 
