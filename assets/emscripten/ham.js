@@ -384,7 +384,10 @@ var Module = (function() {
 				var getWasmImports = window.getWasmImports;
 				window.getWasmImports = function() {
 					var original = getWasmImports();
-					original.env.emscripten_set_window_title = function (title) {
+					// Work around 'env' and 'emscripten_set_window_title' being optimized out
+					var env = Object.values(original)[0];
+					var [key,] = Object.entries(env).find(([k, v]) => v.name === '_emscripten_set_window_title');
+					env[key] = function (title) {
 						title = UTF8ToString(title);
 						HamSandwich.setWindowTitle(title);
 						canvas.style.opacity = '1';
