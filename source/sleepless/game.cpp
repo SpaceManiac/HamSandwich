@@ -436,7 +436,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			if (!IsCustomWorld())
 			{
 				auto f = AppdataOpen_Write("profiles/editor.dat");
-				SDL_RWprintf(f.get(), "Editor unlocked by %s, what a cool guy!\n", profile.name);
+				SDL_IOprintf(f.get(), "Editor unlocked by %s, what a cool guy!\n", profile.name);
 				f.reset();
 				AppdataSync();
 			}

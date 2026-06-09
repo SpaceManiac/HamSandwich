@@ -97,7 +97,7 @@ void SaveProfile(void)
 	int i,j;
 
 	auto f = AppdataOpen_Write("profile.cfg");
-	SDL_RWprintf(f.get(), "%s\n", profile.name);
+	SDL_IOprintf(f.get(), "%s\n", profile.name);
 	f.reset();
 
 	sprintf(prfName,"profiles/%s.prf",profile.name);
@@ -167,7 +167,7 @@ void LoadProfile(const char *name)
 
 	// save this profile as the current one.
 	auto f = AppdataOpen_Write("profile.cfg");
-	SDL_RWprintf(f.get(), "%s\n", profile.name);
+	SDL_IOprintf(f.get(), "%s\n", profile.name);
 	f.reset();
 	AppdataSync();
 

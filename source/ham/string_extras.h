@@ -53,8 +53,4 @@ void ham_sprintf(std::string& dst, SDL_PRINTF_FORMAT_STRING const char* format, 
 // sprintf-style append to a std::string.
 void string_appendf(std::string* buffer, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
 
-// fprintf-like to an SDL_IOStream.
-struct SDL_IOStream;
-size_t SDL_RWprintf(SDL_IOStream* rw, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
-
 #endif

@@ -253,11 +253,11 @@ void CryptoTest(void)
 	SetupCrypto(3574,858734,298437);
 	auto f = AppdataOpen_Write("test.txt");
 	EncryptScore(&test);
-	SDL_RWprintf(f.get(),"Encrypted:\n%s\n\n",enc_score);
+	SDL_IOprintf(f.get(),"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
-	SDL_RWprintf(f.get(),"Decrypted:\n");
-	SDL_RWprintf(f.get(),"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
-	SDL_RWprintf(f.get(),"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
+	SDL_IOprintf(f.get(),"Decrypted:\n");
+	SDL_IOprintf(f.get(),"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
+	SDL_IOprintf(f.get(),"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
 	ExitCrypto();
 	f.reset();
 	AppdataSync();

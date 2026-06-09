@@ -83,7 +83,7 @@ namespace
 		void SaveWorkshopDataFile()
 		{
 			auto f = AppdataOpen_Write(workshopDataFilename.c_str());
-			SDL_RWprintf(f.get(), "workshop_item_id=%" PRIu64 "\n", workshopItemId);
+			SDL_IOprintf(f.get(), "workshop_item_id=%" PRIu64 "\n", workshopItemId);
 			f.reset();
 			AppdataSync();
 		}
@@ -299,23 +299,23 @@ static bool BadCharacter(char ch)
 static void SaveReqFilesTxt()
 {
 	auto f = AppdataOpen_Write("req_files.txt");
-	SDL_RWprintf(f.get(), "# World: %s\n", title.c_str());
+	SDL_IOprintf(f.get(), "# World: %s\n", title.c_str());
 	for (const auto& file : files)
 	{
 		switch (file.kind)
 		{
 			case FileKind::Root:
-				SDL_RWprintf(f.get(), "# Root: %s\n", file.filename.c_str());
+				SDL_IOprintf(f.get(), "# Root: %s\n", file.filename.c_str());
 				break;
 			case FileKind::DependencyMissing:
-				SDL_RWprintf(f.get(), "%s    # MISSING!\n", file.filename.c_str());
+				SDL_IOprintf(f.get(), "%s    # MISSING!\n", file.filename.c_str());
 				break;
 			case FileKind::DependencyAppdata:
 			case FileKind::DependencyOtherAddon:
-				SDL_RWprintf(f.get(), "%s\n", file.filename.c_str());
+				SDL_IOprintf(f.get(), "%s\n", file.filename.c_str());
 				break;
 			case FileKind::DependencyBaseGame:
-				SDL_RWprintf(f.get(), "# Base game: %s\n", file.filename.c_str());
+				SDL_IOprintf(f.get(), "# Base game: %s\n", file.filename.c_str());
 				break;
 			default:
 				break;

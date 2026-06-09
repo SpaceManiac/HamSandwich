@@ -1858,13 +1858,13 @@ void ScanChests(void)
 			if(world.map[i]->map[j].item==IT_PRESENT)
 			{
 				if(pres[world.map[i]->map[j].tag]!=0)
-					SDL_RWprintf(f.get(), "Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
+					SDL_IOprintf(f.get(), "Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
 				pres[world.map[i]->map[j].tag]=i+1;
 			}
 			if(world.map[i]->map[j].item>=IT_CHEST1 && world.map[i]->map[j].item<=IT_CHEST5)
 			{
 				if(chest[world.map[i]->map[j].tag]!=0)
-					SDL_RWprintf(f.get(), "Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
+					SDL_IOprintf(f.get(), "Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
 				chest[world.map[i]->map[j].tag]=i+1;
 			}
 		}
@@ -1872,9 +1872,9 @@ void ScanChests(void)
 	for(i=0;i<99;i++)
 	{
 		if(pres[i]==0)
-			SDL_RWprintf(f.get(), "Present #%d missing!\n",i);
+			SDL_IOprintf(f.get(), "Present #%d missing!\n",i);
 		if(i<50 && chest[i]==0)
-			SDL_RWprintf(f.get(), "Chest #%d missing!\n",i);
+			SDL_IOprintf(f.get(), "Chest #%d missing!\n",i);
 	}
 	f.reset();
 	AppdataSync();

@@ -231,7 +231,7 @@ void LogRequirements(world_t *w)
 	int i,j,k;
 
 	auto f = AppdataOpen_Write("req_files.txt");
-	SDL_RWprintf(f.get(),"World: %s\n",w->map[0]->name);
+	SDL_IOprintf(f.get(),"World: %s\n",w->map[0]->name);
 
 	for(i=0;i<w->numMaps;i++)
 	{
@@ -244,7 +244,7 @@ void LogRequirements(world_t *w)
 					byte type = w->map[i]->special[j].effect[k].type;
 					if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
 					{
-						SDL_RWprintf(f.get(),"user/%s\n",w->map[i]->special[j].effect[k].text);
+						SDL_IOprintf(f.get(),"user/%s\n",w->map[i]->special[j].effect[k].text);
 					}
 				}
 			}
