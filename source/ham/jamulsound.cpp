@@ -6,7 +6,6 @@
 #include <utility>
 #include <SDL3/SDL.h>
 #include <SDL3_mixer/SDL_mixer.h>
-#include "hammusic.h"
 #include "log.h"
 #include "audiofx.h"
 #include "appdata.h"

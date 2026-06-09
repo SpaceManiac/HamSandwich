@@ -4,7 +4,7 @@
 #include "options.h"
 #include "control.h"
 #include "display.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 #include "jamultypes.h"
 #include "loop.h"
 #include "register.h"

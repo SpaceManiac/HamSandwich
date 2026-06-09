@@ -3,7 +3,7 @@
 #include "control.h"
 #include "display.h"
 #include "guy.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 #include "jamulspr.h"
 #include "loop.h"
 #include "title.h"

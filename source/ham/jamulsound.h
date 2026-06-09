@@ -44,4 +44,17 @@ bool JamulSoundStop(int which);
 void JamulSoundVolume(int v);
 void JamulSoundChangeSoundVolume(int snd, int volume);
 
+// ----------------------------------------------------------------------------
+
+void SetHamMusicEnabled(bool enabled);
+
+void UpdateMusic();
+
+void SetMusicVolume(int vol);
+
+// Accepts full path, including leading "sound/" or "music/".
+void PlaySongFile(const char* path);
+void StopSong();
+bool IsSongPlaying();
+
 #endif  // JAMULSOUND_H

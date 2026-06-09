@@ -2,7 +2,7 @@
 #include <math.h>
 #include "display.h"
 #include "player.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 #include "spell.h"
 #include "fairy.h"
 

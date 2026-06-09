@@ -4,7 +4,6 @@
 #include <algorithm>
 #include "clock.h"
 #include "jamulsound.h"
-#include "hammusic.h"
 #include "log.h"
 #include "softjoystick.h"
 #include "appdata.h"

@@ -9,7 +9,7 @@
 #include "plasma.h"
 #include "appdata.h"
 #include "steam.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 #include "randomizer.h"
 
 static_assert(sizeof(options_t) == 7144, "Save compatibility at risk");

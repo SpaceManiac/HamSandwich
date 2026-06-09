@@ -1,7 +1,7 @@
 #include "sound.h"
 #include "display.h"
 #include "player.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 #include "options.h"
 
 static int curSong;

@@ -1,7 +1,6 @@
 #include "sound.h"
 #include <stdio.h>
 #include "jamulsound.h"
-#include "hammusic.h"
 #include "options.h"
 
 void PlaySound(int sound, int priority)

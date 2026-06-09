@@ -3,7 +3,7 @@
 #include "progress.h"
 #include "config.h"
 #include "editor.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 
 char curSongName[64];
 byte lastSong=255;

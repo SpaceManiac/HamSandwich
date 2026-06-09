@@ -1,7 +1,7 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
-#include "hammusic.h"
+#include "jamulsound.h"
 
 // songs
 #define SONG_UNDERWORLD	(240)

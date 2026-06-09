@@ -1,7 +1,7 @@
 #include "sound.h"
 #include <stdio.h>
 #include "options.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 
 byte curSong;
 
