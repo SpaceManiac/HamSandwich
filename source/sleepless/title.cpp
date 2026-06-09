@@ -512,6 +512,7 @@ TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 		curpal[i].r=0;
 		curpal[i].g=0;
 		curpal[i].b=0;
+		curpal[i].a=255;
 	}
 	mgl->SetPalette(curpal);
 	mgl->RealizePalette();
@@ -626,6 +627,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		curpal[i].r=0;
 		curpal[i].g=0;
 		curpal[i].b=0;
+		curpal[i].a=255;
 	}
 	mgl->SetPalette(curpal);
 	mgl->RealizePalette();

@@ -549,7 +549,7 @@ TASK(void) LunaticDraw(void)
 			PrintGlow(5,150,s,8,2);
 
 			int KEY_MAX = 0;
-			const byte* key = SDL_GetKeyboardState(&KEY_MAX);
+			const bool* key = SDL_GetKeyboardState(&KEY_MAX);
 			char* end = s + sprintf(s,"Keys: ");
 			for (int i = 0; i < KEY_MAX; ++i)
 				if (key[i])

@@ -37,9 +37,9 @@ public class HamSandwichActivity extends SDLActivity {
 	@Override
 	protected String[] getLibraries() {
 		return new String[]{
-			"SDL2",
-			"SDL2_image",
-			"SDL2_mixer",
+			"SDL3",
+			"SDL3_image",
+			"SDL3_mixer",
 			game
 		};
 	}

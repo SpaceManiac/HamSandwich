@@ -9,7 +9,7 @@ based on HamSandwich.
 
 ## All games (2019–present)
 
-* Migrate graphics and audio to SDL2
+* Migrate graphics and audio to SDL3
     * Fix graphical glitches by implementing 8-bit to 32-bit conversion in software
     * Control settings are not compatible with official releases due to this change
     * Variously replaces SciTech MGL, Allegro, DirectSound, and FMOD

@@ -252,7 +252,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			CO_RETURN LEVEL_ABORT;
 		}
 
-		SDL_SetRelativeMouseMode(gameMode == GAMEMODE_PLAY ? true : false);
+		gamemgl->SetMouseRelative(gameMode == GAMEMODE_PLAY ? true : false);
 		if(gameMode==GAMEMODE_PLAY)
 		{
 			profile.progress.totalTime=player.clock;
@@ -545,7 +545,7 @@ TASK(void) LunaticDraw(void)
 		PrintGlow(120,101,s,8,1);
 
 		int KEY_MAX = 0;
-		const byte* key = SDL_GetKeyboardState(&KEY_MAX);
+		const bool* key = SDL_GetKeyboardState(&KEY_MAX);
 		char* end = s + sprintf(s,"Keys: ");
 		for (int i = 0; i < KEY_MAX; ++i)
 			if (key[i])

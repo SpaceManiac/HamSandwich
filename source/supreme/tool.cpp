@@ -19,6 +19,7 @@
 #include "leveldialog.h"
 #include "viewdialog.h"
 #include "appdata.h"
+#include "owned_stdio.h"
 
 // Begin JspEdit crap
 #if defined(_WIN32)

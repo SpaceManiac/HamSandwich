@@ -2,6 +2,7 @@
 set(zlib "${CMAKE_CURRENT_LIST_DIR}/zlib")
 
 set(ZLIB_BUILD_SHARED OFF)
+set(ZLIB_BUILD_TESTING OFF)
 add_subdirectory("${zlib}" "${CMAKE_CURRENT_BINARY_DIR}/zlib" EXCLUDE_FROM_ALL)
 add_library(z ALIAS zlibstatic)
 

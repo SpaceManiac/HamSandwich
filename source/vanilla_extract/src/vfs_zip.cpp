@@ -42,7 +42,7 @@ static_assert(ZLIB_FILEFUNC_SEEK_END == SDL_IO_SEEK_END);
 static long zsdl_seek64(void* userdata, void* stream, ZPOS64_T offset, int origin)
 {
 	(void)userdata;
-	SDL_SeekIO((SDL_IOStream*) stream, offset, origin);
+	SDL_SeekIO((SDL_IOStream*) stream, offset, (SDL_IOWhence)origin);
 	return 0;
 }
 

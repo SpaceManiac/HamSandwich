@@ -105,8 +105,8 @@ int main(int argc, char** argv)
 		SDL_Surface* img = IMG_Load(openPath);
 		if (!img)
 		{
-			//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error loading image file", IMG_GetError(), nullptr);
-			tinyfd_messageBox("Error loading image", IMG_GetError(), "ok", "error", 0);
+			//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error loading image file", SDL_GetError(), nullptr);
+			tinyfd_messageBox("Error loading image", SDL_GetError(), "ok", "error", 0);
 			continue;
 		}
 

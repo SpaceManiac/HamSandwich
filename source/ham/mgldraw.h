@@ -3,7 +3,8 @@
 Once a wrapper around SciTech Multi-platform Graphics Library;
 then Allegro;
 briefly PixelToaster;
-now SDL2.
+SDL2 from 2017-2026,
+now SDL3.
 
 */
 
@@ -95,11 +96,12 @@ public:
 
 	// Like SDL's text input functions but in MGL coordinates.
 	void StartTextInput(int x, int y, int x2, int y2);
-	static void StopTextInput();
+	void StopTextInput();
 
 	// mouse functions
 	void GetMouse(int *x, int *y);
 	void SetMouse(int x, int y);
+	void SetMouseRelative(bool relative);
 	bool MouseDown();
 	bool RMouseDown();
 	bool MouseTap();

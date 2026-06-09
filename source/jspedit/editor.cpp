@@ -81,7 +81,7 @@ bool showOkCancel(const char* head, bool def) {
         nullptr,
     };
     int buttonid;
-    if (SDL_ShowMessageBox(&data, &buttonid) < 0) {
+    if (!SDL_ShowMessageBox(&data, &buttonid)) {
         fprintf(stderr, "SDL_ShowMessageBox: %s\n", SDL_GetError());
         return def;
     }
@@ -267,12 +267,12 @@ bool Editor::import_frame(string fname, bool batch) {
 
     std::shared_ptr<SDL_Surface> surface(IMG_Load(fname.c_str()), SDL_DestroySurface);
     if (!surface) {
-        if (!batch) dialog::error("Failed to import", IMG_GetError());
+        if (!batch) dialog::error("Failed to import", SDL_GetError());
         return false;
     }
 
-    if (surface->format->format != SDL_PIXELFORMAT_ABGR8888) {
-        surface = {SDL_ConvertSurface(surface.get(), SDL_PIXELFORMAT_ABGR8888, 0), SDL_DestroySurface};
+    if (surface->format != SDL_PIXELFORMAT_ABGR8888) {
+        surface = {SDL_ConvertSurface(surface.get(), SDL_PIXELFORMAT_ABGR8888), SDL_DestroySurface};
     }
 
     if (lunaticpal::ReduceImage(surface.get()) && !batch) {
@@ -302,7 +302,7 @@ bool Editor::export_frame(string fname, bool batch) {
     }
 
     if (IMG_SavePNG(file.jsp.frames[file.curSprite].surface.get(), fname.c_str())) {
-        if (!batch) dialog::error("Failed to export", IMG_GetError());
+        if (!batch) dialog::error("Failed to export", SDL_GetError());
         return false;
     }
     return true;
@@ -443,7 +443,7 @@ void Editor::render() {
 
     SDL_Color lightbg = {200, 200, 200, 255};
     SDL_Color black = {0, 0, 0, 255};
-    SDL_Rect region;
+    SDL_FRect region;
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
@@ -464,7 +464,7 @@ void Editor::render() {
                 if (y >= DISPLAY_HEIGHT) {
                     break;
                 }
-                region = {x, y, frame.surface->w, frame.surface->h};
+                region = {(float)x, (float)y, (float)frame.surface->w, (float)frame.surface->h};
                 SDL_RenderTexture(renderer, frame.texture.get(), nullptr, &region);
 
                 if (i == file->curSprite) {
@@ -487,7 +487,7 @@ void Editor::render() {
             SDL_RenderLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
             SDL_RenderLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
             SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
-            region = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
+            region = {(float)CENTER_X - 16, (float)CENTER_Y - 12, 32, 24};
             SDL_RenderRect(renderer, &region);
         }
 
@@ -495,10 +495,10 @@ void Editor::render() {
         if (FileInfo* file = getCurFile()) {
             if (JspFrame* current = file->getCurFrame()) {
                 region = {
-                    CENTER_X - current->ofsX,
-                    CENTER_Y - current->ofsY,
-                    current->surface->w,
-                    current->surface->h,
+                    (float)(CENTER_X - current->ofsX),
+                    (float)(CENTER_Y - current->ofsY),
+                    (float)current->surface->w,
+                    (float)current->surface->h,
                 };
                 SDL_RenderTexture(renderer, current->texture.get(), nullptr, &region);
             }
@@ -510,14 +510,14 @@ void Editor::render() {
             SDL_RenderLine(renderer, 180, CENTER_Y, DISPLAY_WIDTH, CENTER_Y);
             SDL_RenderLine(renderer, CENTER_X, 30, CENTER_X, DISPLAY_HEIGHT);
             SDL_SetRenderDrawColor(renderer, 0, 196, 0, 255);
-            region = {CENTER_X - 16, CENTER_Y - 12, 32, 24};
+            region = {(float)CENTER_X - 16, (float)CENTER_Y - 12, 32, 24};
             SDL_RenderRect(renderer, &region);
         }
     }
 
     // left bar
     SDL_SetRenderDrawColor(renderer, lightbg.r, lightbg.g, lightbg.b, lightbg.a);
-    region = {0, 0, 180, DISPLAY_HEIGHT};
+    region = {0, 0, 180, (float)DISPLAY_HEIGHT};
     SDL_RenderFillRect(renderer, &region);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderLine(renderer, 180, 0, 180, DISPLAY_HEIGHT);
@@ -605,7 +605,7 @@ void Editor::render() {
             SDL_Surface *surface = frames[file->curSprite].surface.get();
             int w = surface->w, h = surface->h;
             int spr_ = file->curSprite, y_ = 200 + (DISPLAY_HEIGHT - 200 - 24 - h) / 2;
-            SDL_Rect rect = { 90 - w / 2, y_, w, h };
+            SDL_FRect rect = { (float)(90 - w / 2), (float)y_, (float)w, (float)h };
             SDL_RenderTexture(renderer, curBmp, nullptr, &rect);
 
             // frames before
@@ -636,7 +636,7 @@ void Editor::render() {
 
             // red box
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-            rect = { 90 - w / 2 - 1, y_ - 1, 2 + w, 2 + h };
+            rect = { (float)(90 - w / 2 - 1), (float)(y_ - 1), (float)(2 + w), (float)(2 + h) };
             SDL_RenderRect(renderer, &rect);
         }
         SDL_SetRenderClipRect(renderer, nullptr);
@@ -644,7 +644,7 @@ void Editor::render() {
 
     // top bar
     SDL_SetRenderDrawColor(renderer, lightbg.r, lightbg.g, lightbg.b, lightbg.a);
-    region = { 0, 0, DISPLAY_WIDTH, 60 };
+    region = { 0, 0, (float)DISPLAY_WIDTH, 60 };
     SDL_RenderFillRect(renderer, &region);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -745,15 +745,12 @@ void Editor::handleEvent(const SDL_Event &event) {
         break;
 
     case SDL_EVENT_DROP_FILE:
-        load(event.drop.file);
-        SDL_free(event.drop.file);
+        load(event.drop.data);
         break;
 
-    case SDL_WINDOWEVENT:
-        if (event.window.event == SDL_EVENT_WINDOW_RESIZED) {
-            DISPLAY_WIDTH = event.window.data1;
-            DISPLAY_HEIGHT = event.window.data2;
-        }
+    case SDL_EVENT_WINDOW_RESIZED:
+		DISPLAY_WIDTH = event.window.data1;
+		DISPLAY_HEIGHT = event.window.data2;
         break;
 
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -798,7 +795,7 @@ void Editor::handleEvent(const SDL_Event &event) {
         int move = 1;
         if (shift) move = 10;
 
-        switch (event.key.keysym.scancode) {
+        switch (event.key.scancode) {
         case SDL_SCANCODE_LEFT:
             if (ctrl) {
                 file.jsp.frames[file.curSprite].ofsX += move;

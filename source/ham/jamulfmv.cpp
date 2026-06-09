@@ -75,6 +75,7 @@ static void FLI_docolor2(byte *p,MGLDraw *mgl)
 			FLI_pal[palpos].r = p[pos++];
 			FLI_pal[palpos].g = p[pos++];
 			FLI_pal[palpos].b = p[pos++];
+			FLI_pal[palpos].a = 255;
 			palpos++;
 			--numcol;
 		} while(numcol>0);

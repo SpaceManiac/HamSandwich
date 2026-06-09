@@ -13,34 +13,38 @@
 #include "extern.h"
 #include "owned_mixer.h"
 #include "string_extras.h"
-#include "next_soundfile.h"
 
-struct soundList_t
+struct Sound
 {
-	owned::Mix_Chunk sample;
+	owned::MIX_Audio sample;
 };
 
-struct schannel_t
+struct Channel
 {
 	int soundNum;
 	int priority;
-	int voice;
-	owned::Mix_Chunk sample;
+	owned::MIX_Track track;
+	owned::MIX_Audio sample;
 };
 
 namespace
 {
+	bool soundIsOn = false;
 	bool soundEnabled = true;
 	int configNumSounds = 32;
+	bool musicEnabled = true;
 
-	int sndVolume;
+	int sndVolume = 128;
+	int musVolume = 255;
+
+	owned::MIX_Mixer mixer;
+	owned::MIX_Track musicTrack;
+	owned::MIX_Audio musicAudio;
+
+	std::vector<Sound> soundList;
 
 	int NUM_SOUNDS = 0;
-
-	bool soundIsOn = false;
-	int bufferCount;
-	std::vector<soundList_t> soundList;
-	std::vector<schannel_t> schannel;
+	std::vector<Channel> schannel;
 }  // namespace
 
 void SetJamulSoundEnabled(bool enable, int numSounds)
@@ -58,40 +62,46 @@ bool JamulSoundInit(int numBuffers)
 		LogDebug("sound disabled in config");
 		return false;
 	}
-	if (SDL_Init(SDL_INIT_AUDIO) != 0)
+	if (!SDL_Init(SDL_INIT_AUDIO))
 	{
 		LogError("SDL_Init(AUDIO): %s", SDL_GetError());
 		return false;
 	}
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) != 0)
+	if (!MIX_Init())
 	{
-		LogError("Mix_OpenAudio: %s", Mix_GetError());
+		LogError("Mix_Init: %s", SDL_GetError());
+	}
+
+	mixer = owned::MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
+	if (!mixer)
+	{
+		LogError("MIX_CreateMixerDevice: %s", SDL_GetError());
 		return false;
 	}
-	if (Mix_Init(MIX_INIT_OGG | MIX_INIT_MID) != (MIX_INIT_OGG | MIX_INIT_MID))
+
+	SDL_AudioSpec spec;
+	if (MIX_GetMixerFormat(mixer.get(), &spec))
 	{
-		LogError("Mix_Init: %s", Mix_GetError());
+		LogDebug("audio format: freq=%d, channels=%d, format=0x%x %s\n", spec.freq, spec.channels, spec.format, SDL_GetAudioFormatName(spec.format));
+	}
+	else
+	{
+		LogError("MIX_GetMixerFormat: %s", SDL_GetError());
 	}
 
-	int frequency, channels;
-	uint16_t format;
-	Mix_QuerySpec(&frequency, &format, &channels);
-	LogDebug("audio format: freq=%d, channels=%d, format=0x%x\n", frequency, channels, format);
+	musicTrack = owned::MIX_CreateTrack(mixer.get());
 
 	NUM_SOUNDS = configNumSounds;  // Only copied over here to avoid problems if SetJamulSoundEnabled is called after init.
-	Mix_AllocateChannels(NUM_SOUNDS + 1);
 
-	bufferCount=numBuffers;
 	soundList.clear();
-	soundList.reserve(bufferCount);
-	schannel.resize(NUM_SOUNDS+1);
+	soundList.reserve(numBuffers);
+	schannel.resize(NUM_SOUNDS);
 	for(i=0;i<NUM_SOUNDS;i++)
 	{
 		schannel[i].priority=INT_MIN;
 		schannel[i].soundNum=-1;
-		schannel[i].voice=-1;
+		schannel[i].track = owned::MIX_CreateTrack(mixer.get());
 	}
-	sndVolume=128;
 	return soundIsOn = true;
 }
 
@@ -104,7 +114,8 @@ void JamulSoundExit(void)
 		StopSong();
 		schannel.clear();
 		soundList.clear();
-		Mix_CloseAudio();
+		musicTrack.reset();
+		mixer.reset();
 	}
 }
 
@@ -124,35 +135,13 @@ void JamulSoundUpdate(void)
 	{
 		if(schannel[i].soundNum>-1)
 		{
-			if(!Mix_Playing(schannel[i].voice))
+			if(!MIX_TrackPlaying(schannel[i].track.get()))
 			{
 				schannel[i].soundNum=-1;
 				schannel[i].priority=INT_MIN;
-				schannel[i].voice=-1;
 			}
 		}
 	}
-}
-
-static owned::Mix_Chunk LoadSoundFile(SDL_IOStream *rw)
-{
-	uint8_t magic[4];
-	if (SDL_ReadIO(rw, magic, 4, 1) == 1)
-	{
-		SDL_SeekIO(rw, -4, SDL_IO_SEEK_CUR);
-
-		if (!memcmp(magic, ".snd", 4))
-		{
-			return LoadNextSoundfile(rw);
-		}
-		else
-		{
-			return owned::Mix_LoadWAV_RW(rw);
-		}
-	}
-
-	SDL_SetError("failed to read first 4 bytes");
-	return nullptr;
 }
 
 // pan: -128 (left) to 127 (right)
@@ -167,7 +156,7 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 
 	JamulSoundUpdate();
 
-	vol = (vol + 255) * ((playFlags & SND_MUSICVOLUME) ? (2 * Mix_VolumeMusic(-1)) : sndVolume) / 255;
+	vol = (vol + 255) * ((playFlags & SND_MUSICVOLUME) ? musVolume : sndVolume) / 255;
 	pan += 128;
 	if (pan < 0)
 		pan = 0;
@@ -199,10 +188,10 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 		}
 
 		// Now try to load it
-		soundList[which].sample = LoadSoundFile(rw.get());
+		soundList[which].sample = owned::MIX_LoadAudio_IO(mixer.get(), rw.get(), true);
 		if(soundList[which].sample==NULL)
 		{
-			LogError("LoadWAV(%d): %s", which, Mix_GetError());
+			LogError("LoadAudio(%d): %s", which, SDL_GetError());
 			return false;
 		}
 	}
@@ -216,10 +205,9 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 				// erased from schannel.
 				if (playFlags&SND_CUTOFF)
 				{
-					Mix_HaltChannel(schannel[i].voice);
+					MIX_StopTrack(schannel[i].track.get(), 0);
 					schannel[i].soundNum=-1;
 					schannel[i].priority=INT_MIN;
-					schannel[i].voice=-1;
 				}
 				else
 					return false;
@@ -249,38 +237,42 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 	if(chosen==-1)	// no sounds of lower priority to kick out, give up
 		return false;
 
+	MIX_Track* track = schannel[chosen].track.get();
+	MIX_Audio* playing = soundList[which].sample.get();
+
 	// if you're replacing a sound, stop it first
 	if(schannel[chosen].soundNum!=-1)
-		Mix_HaltChannel(schannel[chosen].voice);
+		MIX_StopTrack(track, 0);
 
-	Mix_Chunk* playing = soundList[which].sample.get();
+	float freqRatio = 1.f;
 	if (playFlags & SND_RANDOM)
 	{
-		schannel[chosen].sample = FxRandomPitch(playing);
-		playing = schannel[chosen].sample.get();
+		freqRatio = 1.f - 0.2f + 0.4f * SDL_randf();
 	}
+#if 0 // SDL3 TODO
 	if (playFlags & SND_BACKWARDS)
 	{
 		schannel[chosen].sample = FxBackwards(playing);
 		playing = schannel[chosen].sample.get();
 	}
+#endif
 	if (playFlags & SND_DOUBLESPEED)
 	{
-		schannel[chosen].sample = FxDoubleSpeed(playing);
-		playing = schannel[chosen].sample.get();
+		freqRatio *= 2.f;
 	}
 
-	i=Mix_PlayChannel(-1, playing, (playFlags & SND_LOOPING) ? -1 : 0);
-	if (i == -1)
-		return false;
-
-	Mix_Volume(i, vol / 2);
-	Mix_SetPanning(i, 255 - pan, pan);
+	SDL_PropertiesID options = SDL_CreateProperties();
+	SDL_SetNumberProperty(options, MIX_PROP_PLAY_LOOPS_NUMBER, (playFlags & SND_LOOPING) ? -1 : 0);
+	MIX_SetTrackAudio(track, playing);
+	MIX_SetTrackGain(track, vol / 255.f);
+	MIX_StereoGains gains = { .left = 1.f - pan / 256.f, .right = pan / 256.f };
+	MIX_SetTrackStereo(track, &gains);
+	MIX_SetTrackFrequencyRatio(track, freqRatio);
+	MIX_PlayTrack(track, options);
+	SDL_DestroyProperties(options);
 
 	schannel[chosen].soundNum=which;
 	schannel[chosen].priority=priority;
-	schannel[chosen].voice=i;
-
 	return true;
 }
 
@@ -295,10 +287,9 @@ bool JamulSoundStop(int which)
 	{
 		if(schannel[i].soundNum==which)
 		{
-			Mix_HaltChannel(schannel[i].voice);
+			MIX_StopTrack(schannel[i].track.get(), 0);
 			schannel[i].soundNum=-1;
 			schannel[i].priority=INT_MIN;
-			schannel[i].voice=-1;
 		}
 	}
 
@@ -314,10 +305,9 @@ void JamulSoundPurge(void)
 	for (int i = 0; i < NUM_SOUNDS; i++)
 	{
 		if (schannel[i].soundNum != -1)
-			Mix_HaltChannel(schannel[i].voice);
+			MIX_StopTrack(schannel[i].track.get(), 0);
 		schannel[i].soundNum = -1;
 		schannel[i].priority = INT_MIN;
-		schannel[i].voice = -1;
 		schannel[i].sample.reset();
 	}
 
@@ -348,7 +338,78 @@ void JamulSoundChangeSoundVolume(int snd, int volume)
 	{
 		if (schannel[i].soundNum == snd)
 		{
-			Mix_Volume(schannel[i].voice, v/2);
+			MIX_SetTrackGain(schannel[i].track.get(), v / 255.f);
 		}
 	}
+}
+
+// ----------------------------------------------------------------------------
+
+void SetHamMusicEnabled(bool enabled)
+{
+	musicEnabled = enabled;
+}
+
+void UpdateMusic()
+{
+	if (musicEnabled && musicAudio && !MIX_TrackPlaying(musicTrack.get()))
+	{
+		MIX_PlayTrack(musicTrack.get(), 0);
+		if (g_HamExtern.ChooseNextSong)
+			g_HamExtern.ChooseNextSong();
+	}
+}
+
+void SetMusicVolume(int vol)
+{
+	musVolume = vol;
+	MIX_SetTrackGain(musicTrack.get(), musVolume / 255.f);
+}
+
+int GetMusicVolume()
+{
+	return musVolume;
+}
+
+void PlaySongFile(const char* fullname)
+{
+	if (!musicEnabled)
+		return;
+
+	StopSong();
+
+	owned::SDL_IOStream rw = AppdataOpen(fullname);
+	if (!rw)
+	{
+		return;
+	}
+
+	musicAudio = owned::MIX_LoadAudio_IO(mixer.get(), std::move(rw), false);
+	if (!musicAudio)
+	{
+		LogError("Mix_LoadMUS(%s): %s", fullname, SDL_GetError());
+		return;
+	}
+
+	MIX_SetTrackGain(musicTrack.get(), musVolume / 255.f);
+	MIX_SetTrackAudio(musicTrack.get(), musicAudio.get());
+	if (!MIX_PlayTrack(musicTrack.get(), 0))
+	{
+		LogError("MIX_PlayTrack(%s): %s", fullname, SDL_GetError());
+	}
+	UpdateMusic();
+}
+
+void StopSong()
+{
+	if (musicAudio)
+	{
+		MIX_StopTrack(musicTrack.get(), 0);
+		musicAudio.reset();
+	}
+}
+
+bool IsSongPlaying()
+{
+	return musicAudio && MIX_TrackPlaying(musicTrack.get());
 }

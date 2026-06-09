@@ -224,9 +224,11 @@ owned::SDL_IOStream NsisVfs::open_sdl(const char* path)
 	}
 
 	// Optimization to avoid extra copies of already-decompressed data.
-	if ((archive_rw->type == SDL_RWOPS_MEMORY || archive_rw->type == SDL_RWOPS_MEMORY_RO) && !(size & SIZE_COMPRESSED))
+	SDL_PropertiesID props = SDL_GetIOProperties(archive_rw.get());
+	void* data = SDL_GetPointerProperty(props, SDL_PROP_IOSTREAM_MEMORY_POINTER, nullptr);
+	if (data && !(size & SIZE_COMPRESSED))
 	{
-		return owned::SDL_IOFromConstMem(archive_rw->hidden.mem.here, size);
+		return owned::SDL_IOFromConstMem((uint8_t*)data + SDL_TellIO(archive_rw.get()), size);
 	}
 
 	std::vector<uint8_t> result;

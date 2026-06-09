@@ -468,6 +468,7 @@ TASK(void) SplashScreen(const char *fname,int delay,byte sound,byte specialdeal)
 		curpal[i].r=0;
 		curpal[i].g=0;
 		curpal[i].b=0;
+		curpal[i].a=255;
 	}
 	dispmgl->SetPalette(curpal);
 	dispmgl->RealizePalette();

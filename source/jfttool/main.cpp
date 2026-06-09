@@ -95,7 +95,7 @@ ConversionError convertFontToPNG(string fname, char* outFolder) {
 	for (int i = 0; i < header.numChars; ++i) {
 		uint8_t width = in.get();
 
-		SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, width, header.height, 32, SDL_PIXELFORMAT_ABGR8888);
+		SDL_Surface* surf = SDL_CreateSurface(width, header.height, SDL_PIXELFORMAT_ABGR8888);
 		SDL_LockSurface(surf);
 
 		SDL_Color *pixels = (SDL_Color*) surf->pixels;
@@ -122,7 +122,7 @@ ConversionError convertFontToPNG(string fname, char* outFolder) {
 		printf("writing: %s\n", outFullFileName.c_str());
 
 		if (IMG_SavePNG(surf, outFullFileName.c_str()) != 0) {
-			fprintf(stderr, "error: bad save %s: %s\n", outFullFileName.c_str(), IMG_GetError());
+			fprintf(stderr, "error: bad save %s: %s\n", outFullFileName.c_str(), SDL_GetError());
 		}
 
 		SDL_DestroySurface(surf);
@@ -186,7 +186,7 @@ ConversionError convertTextToFont(string fname, char* outFileName) {
 
 		SDL_Surface* surf = IMG_Load(fullFileName.c_str());
 		if (!surf) {
-			fprintf(stderr, "error: bad %s: %s\n", infname, IMG_GetError());
+			fprintf(stderr, "error: bad %s: %s\n", infname, SDL_GetError());
 			return ConversionError::BadFile;
 		}
 		if (surf->h != header.height) {
@@ -194,9 +194,9 @@ ConversionError convertTextToFont(string fname, char* outFileName) {
 			return ConversionError::BadFile;
 		}
 
-		if (surf->format->format != SDL_PIXELFORMAT_ABGR8888) {
+		if (surf->format != SDL_PIXELFORMAT_ABGR8888) {
 			fprintf(stderr, "note: converting format\n");
-			SDL_Surface* surf2 = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888, 0);
+			SDL_Surface* surf2 = SDL_ConvertSurface(surf, SDL_PIXELFORMAT_ABGR8888);
 			SDL_DestroySurface(surf);
 			surf = surf2;
 		}

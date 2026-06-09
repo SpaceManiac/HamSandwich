@@ -246,7 +246,7 @@ byte UpdateProfMenu(int *lastTime,MGLDraw *mgl)
 	int i,j;
 
 	int KEY_MAX = 0;
-	const byte* key = SDL_GetKeyboardState(&KEY_MAX);
+	const bool* key = SDL_GetKeyboardState(&KEY_MAX);
 
 	int oldMsx = msx, oldMsy = msy;
 	mgl->GetMouse(&msx,&msy);

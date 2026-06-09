@@ -47,7 +47,7 @@ void InitPlayer(void)
 	mouseX=0;
 	mouseY=0;
 	mainmgl->SetMouse(320,240);
-	SDL_SetRelativeMouseMode(true);
+	mainmgl->SetMouseRelative(true);
 }
 
 void ExitPlayer(void)

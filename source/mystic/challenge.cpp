@@ -704,7 +704,7 @@ void CalcChallengePercent(void)
 	for(i=0;i<numChals;i++)
 		if(chal[i].chapter>=0 && chal[i].chapter<=7)
 			n++;
-	
+
 	percent=(byte)(player.chalTotalStars*100/(n*5));
 }
 

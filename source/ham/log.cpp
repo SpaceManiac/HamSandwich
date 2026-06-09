@@ -17,6 +17,7 @@ static owned::SDL_IOStream errorLog = nullptr;
 
 static const char *priorityPrefixes[] = {
     "",
+	"TRACE: ",
     "VERBOSE: ",
     "DEBUG: ",
     "INFO: ",

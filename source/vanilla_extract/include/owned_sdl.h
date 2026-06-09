@@ -3,8 +3,23 @@
 
 #include <memory>
 #include <SDL3/SDL.h>
-#include "rw_functions.h"
-#include "owned_stdio.h"
+
+// ----------------------------------------------------------------------------
+// SDL_malloc / SDL_free
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SdlMem
+		{
+			void operator()(void* ptr) { return ::SDL_free(ptr); }
+		};
+	}
+
+	template<class T>
+	using SdlMem = std::unique_ptr<T, _deleter::SdlMem>;
+}
 
 // ----------------------------------------------------------------------------
 // SDL_IOStream
@@ -17,7 +32,7 @@ namespace owned
 		{
 			void operator()(::SDL_IOStream* ptr)
 			{
-				if (ptr && SDL_CloseIO(ptr) != 0)
+				if (ptr && !SDL_CloseIO(ptr))
 				{
 					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CloseIO: %s", SDL_GetError());
 				}
@@ -26,16 +41,6 @@ namespace owned
 	}
 
 	typedef std::unique_ptr<::SDL_IOStream, _deleter::SDL_IOStream> SDL_IOStream;
-
-	inline SDL_IOStream SDL_RWFromFP(::FILE* fp)
-	{
-		return SDL_IOStream { ::SDL_RWFromFP(fp, false) };
-	}
-
-	inline SDL_IOStream SDL_RWFromFP(owned::FILE fp)
-	{
-		return SDL_IOStream { ::SDL_RWFromFP(fp.release(), true) };
-	}
 
 	inline SDL_IOStream SDL_IOFromConstMem(const void *mem, int size)
 	{
@@ -50,27 +55,32 @@ namespace owned
 
 inline Sint64 SDL_GetIOSize(const owned::SDL_IOStream& context)
 {
-	return context->size(context.get());
+	return SDL_GetIOSize(context.get());
 }
 
-inline Sint64 SDL_SeekIO(const owned::SDL_IOStream& context, Sint64 offset, int whence)
+inline Sint64 SDL_SeekIO(const owned::SDL_IOStream& context, Sint64 offset, SDL_IOWhence whence)
 {
-	return context->seek(context.get(), offset, whence);
+	return SDL_SeekIO(context.get(), offset, whence);
 }
 
 inline Sint64 SDL_TellIO(const owned::SDL_IOStream& context)
 {
-	return context->seek(context.get(), 0, SDL_IO_SEEK_CUR);
+	return SDL_TellIO(context.get());
 }
 
-inline size_t SDL_ReadIO(const owned::SDL_IOStream& context, void *ptr, size_t size, size_t maxnum)
+inline size_t SDL_ReadIO(const owned::SDL_IOStream& context, void *ptr, size_t size)
 {
-	return context->read(context.get(), ptr, size, maxnum);
+	return SDL_ReadIO(context.get(), ptr, size);
 }
 
-inline size_t SDL_WriteIO(const owned::SDL_IOStream& context, const void *ptr, size_t size, size_t num)
+inline size_t SDL_WriteIO(const owned::SDL_IOStream& context, const void *ptr, size_t size)
 {
-	return context->write(context.get(), ptr, size, num);
+	return SDL_WriteIO(context.get(), ptr, size);
+}
+
+inline bool SDL_FlushIO(const owned::SDL_IOStream& context)
+{
+	return SDL_FlushIO(context.get());
 }
 
 [[nodiscard]] // If you don't care about the return value, use .reset() instead.
@@ -102,6 +112,27 @@ namespace owned
 	inline SDL_Surface SDL_LoadBMP_IO(owned::SDL_IOStream rw)
 	{
 		return SDL_Surface { SDL_LoadBMP_IO(rw.release(), true) };
+	}
+}
+
+// ----------------------------------------------------------------------------
+// SDL_Palette
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct SDL_Palette
+		{
+			void operator()(::SDL_Palette* ptr) { return SDL_DestroyPalette(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::SDL_Palette, _deleter::SDL_Palette> SDL_Palette;
+
+	inline SDL_Palette SDL_CreatePalette(int ncolors)
+	{
+		return SDL_Palette { ::SDL_CreatePalette(ncolors) };
 	}
 }
 
@@ -162,7 +193,13 @@ namespace owned
 	{
 		struct SDL_GLContext
 		{
-			void operator()(::SDL_GLContext ptr) { return SDL_GL_DestroyContext(ptr); }
+			void operator()(::SDL_GLContext ptr)
+			{
+				if (ptr && !SDL_GL_DestroyContext(ptr))
+				{
+					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_DestroyContext: %s", SDL_GetError());
+				}
+			}
 		};
 	}
 

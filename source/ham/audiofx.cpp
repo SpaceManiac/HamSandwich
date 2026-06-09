@@ -6,32 +6,14 @@
 #include <SDL3_mixer/SDL_mixer.h>
 #include "jamultypes.h"
 
+#if 0 // SDL3 TODO
+
 static int SampleSize(uint16_t format)
 {
 	return SDL_AUDIO_BITSIZE(format) / 8;
 }
 
-owned::Mix_Chunk FxRandomPitch(Mix_Chunk* sample)
-{
-	int freq, channels;
-	uint16_t format;
-	Mix_QuerySpec(&freq, &format, &channels);
-
-	int new_freq = freq - (freq / 5) + (rand() % ((freq / 5) * 2 + 1));
-
-	SDL_AudioCVT cvt;
-	SDL_BuildAudioCVT(&cvt, format, channels, freq, format, channels, new_freq);
-	cvt.len = sample->alen;
-	cvt.buf = (byte*) SDL_malloc(cvt.len * cvt.len_mult);
-	memcpy(cvt.buf, sample->abuf, sample->alen);
-	SDL_ConvertAudio(&cvt);
-
-	owned::Mix_Chunk output { Mix_QuickLoad_RAW(cvt.buf, cvt.len_cvt) };
-	output->allocated = true;
-	return output;
-}
-
-owned::Mix_Chunk FxBackwards(Mix_Chunk* sample)
+owned::MIX_Audio FxBackwards(MIX_Audio* sample)
 {
 	int channels;
 	uint16_t format;
@@ -49,28 +31,9 @@ owned::Mix_Chunk FxBackwards(Mix_Chunk* sample)
 		to += each_len;
 	}
 
-	owned::Mix_Chunk output { Mix_QuickLoad_RAW(buf, sample->alen) };
+	owned::MIX_Audio output { Mix_QuickLoad_RAW(buf, sample->alen) };
 	output->allocated = true;
 	return output;
 }
 
-owned::Mix_Chunk FxDoubleSpeed(Mix_Chunk* sample)
-{
-	int channels;
-	uint16_t format;
-	Mix_QuerySpec(nullptr, &format, &channels);
-
-	int new_len = sample->alen / 2;
-	byte* buf = (byte*) SDL_malloc(new_len);
-
-	int each_len = SampleSize(format) * channels;
-	int num_samples = sample->alen / each_len / 2;
-	for (int i = 0; i < num_samples; ++i)
-	{
-		memcpy(&buf[i * each_len], &sample->abuf[2 * i * each_len], each_len);
-	}
-
-	owned::Mix_Chunk output { Mix_QuickLoad_RAW(buf, new_len) };
-	output->allocated = true;
-	return output;
-}
+#endif

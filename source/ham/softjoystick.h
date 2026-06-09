@@ -11,7 +11,7 @@ byte SoftJoystickState();
 byte SoftJoystickTaps();
 
 struct Element {
-	SDL_Rect rect;
+	SDL_FRect rect;
 	owned::SDL_Texture tex;
 	void draw(SDL_Renderer* renderer);
 };

@@ -18,7 +18,7 @@ struct mfont_t
 	byte spaceSize;		// # of pixels wide to make spaces
 	byte gapSize;		// # of pixels between adjacent letters
 	byte gapHeight;		// # of pixels to descend for a carriage return
-	int32_t dataSize;		// the size in bytes of the data of the characters themselves
+	uint32_t dataSize;		// the size in bytes of the data of the characters themselves
 	byte *data;			// pointer to the character data
 	byte *chars[FONT_MAX_CHARS]; // pointers to each character's data (can't have more than FONT_MAX_CHARS)
 };

@@ -74,6 +74,7 @@ FontError FontLoad(SDL_IOStream* f, mfont_t* font)
 
 	if (SDL_ReadIO(f, font->data, font->dataSize, 1) != 1)
 	{
+		free(font->data);
 		return FONT_INVALIDFILE;
 	}
 

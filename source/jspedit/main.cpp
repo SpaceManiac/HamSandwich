@@ -28,10 +28,9 @@ int DISPLAY_HEIGHT = 768;
 
 int main(int argc, char** argv) {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
-    IMG_Init(IMG_INIT_PNG);
 
-    window = SDL_CreateWindow("JspEdit 3", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
+    window = SDL_CreateWindow("JspEdit 3", DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
+    renderer = SDL_CreateRenderer(window, nullptr);
     SDL_ShowWindow(window);
     SDL_GetWindowSize(window, &DISPLAY_WIDTH, &DISPLAY_HEIGHT);
 
@@ -41,7 +40,7 @@ int main(int argc, char** argv) {
     SDL_DestroySurface(surface);
 #endif
 
-    SDL_Surface *icons = IMG_Load_RW(SDL_IOFromConstMem(embed_icons, embed_icons_size), true);
+    SDL_Surface *icons = IMG_Load_IO(SDL_IOFromConstMem(embed_icons, embed_icons_size), true);
     gIcons = SDL_CreateTextureFromSurface(renderer, icons);
     SDL_DestroySurface(icons);
 
@@ -109,8 +108,8 @@ void DrawText(SDL_Renderer *renderer, int x, int y, Align align, SDL_Color color
         }
         else if (ch > 0)
         {
-            SDL_Rect source = { 15 * (ch - 1), 0, 15, 15 };
-            SDL_Rect dest = { x, y + 1, 15, 15 };
+            SDL_FRect source = { (float)(15 * (ch - 1)), 0, 15, 15 };
+            SDL_FRect dest = { (float)x, (float)(y + 1), 15, 15 };
 
             SDL_SetTextureColorMod(gIcons, color.r, color.g, color.b);
             SDL_RenderTexture(renderer, gIcons, &source, &dest);

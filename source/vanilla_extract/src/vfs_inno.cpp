@@ -73,18 +73,18 @@ struct SeekInStream_RW
 static SRes SeekInStream_RW_Read(const ISeekInStream *p, void *buf, size_t *size)
 {
 	const SeekInStream_RW *self = (const SeekInStream_RW *) p;
-	*size = SDL_ReadIO(self->rw, buf, 1, *size);
+	*size = SDL_ReadIO(self->rw, buf, *size);
 	return SZ_OK;
 }
 
 // Skip writing a switch by directly mapping the seek types.
-static_assert(SZ_SEEK_SET == SDL_IO_SEEK_SET);
-static_assert(SZ_SEEK_CUR == SDL_IO_SEEK_CUR);
-static_assert(SZ_SEEK_END == SDL_IO_SEEK_END);
+static_assert((int)SZ_SEEK_SET == (int)SDL_IO_SEEK_SET);
+static_assert((int)SZ_SEEK_CUR == (int)SDL_IO_SEEK_CUR);
+static_assert((int)SZ_SEEK_END == (int)SDL_IO_SEEK_END);
 static SRes SeekInStream_RW_Seek(const ISeekInStream *p, Int64 *pos, ESzSeek origin)
 {
 	const SeekInStream_RW *self = (const SeekInStream_RW *) p;
-	int ret = SDL_SeekIO(self->rw, *pos, origin);
+	int ret = SDL_SeekIO(self->rw, *pos, (SDL_IOWhence)origin);
 	if (ret < 0)
 		return SZ_ERROR_READ;
 	*pos = ret;

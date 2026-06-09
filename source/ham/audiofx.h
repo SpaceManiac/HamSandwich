@@ -3,8 +3,8 @@
 
 #include "owned_mixer.h"
 
-owned::Mix_Chunk FxRandomPitch(Mix_Chunk* sample);
-owned::Mix_Chunk FxBackwards(Mix_Chunk* sample);
-owned::Mix_Chunk FxDoubleSpeed(Mix_Chunk* sample);
+owned::MIX_Audio FxRandomPitch(MIX_Audio* sample);
+owned::MIX_Audio FxBackwards(MIX_Audio* sample);
+owned::MIX_Audio FxDoubleSpeed(MIX_Audio* sample);
 
 #endif  // AUDIOFX_H

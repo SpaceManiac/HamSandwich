@@ -12,6 +12,8 @@ else()
 	set(ENABLE_CURL_MANUAL OFF)
 	set(CURL_USE_LIBPSL OFF) # Not included in Steam Runtime SDK.
 	set(CURL_ENABLE_EXPORT_TARGET OFF)
+	set(BUILD_EXAMPLES OFF)
+	set(BUILD_TESTING OFF)
 
 	if(WIN32)
 		set(CURL_USE_SCHANNEL ON)

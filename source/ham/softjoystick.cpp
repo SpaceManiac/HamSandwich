@@ -28,7 +28,7 @@ byte SoftJoystickTaps() {
 	return w;
 }
 
-static inline bool rect_contains(const SDL_Rect &r, int x, int y) {
+static inline bool rect_contains(const SDL_FRect &r, int x, int y) {
     return r.x <= x && x < r.x + r.w && r.y <= y && y < r.y + r.h;
 }
 
@@ -52,7 +52,7 @@ SoftJoystick::SoftJoystick(MGLDraw* mgl) {
 }
 
 void SoftJoystick::update(MGLDraw* mgl, float scale) {
-	int spare = std::clamp(
+	float spare = std::clamp(
 		// Preferred: the entire width of the letterbox.
 		(int)(mgl->winWidth - mgl->xRes * scale) / 2,
 		// Minimum: buttons too small will be unclickable.
@@ -62,7 +62,7 @@ void SoftJoystick::update(MGLDraw* mgl, float scale) {
 		mgl->winHeight / (2 + MAX_BUTTONS)
 	);
 
-	int right = mgl->winWidth - spare;
+	float right = mgl->winWidth - spare;
 	trough.rect = { 0, 0, 3 * spare, 3 * spare };
 	stick.rect = { 0, 0, 3 * spare, 3 * spare };
 	if (state & CONTROL_UP) stick.rect.y -= spare;
@@ -99,7 +99,7 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 		if (rect_contains(esc.rect, x, y)) {
 			mgl->lastKeyPressed = SDLK_ESCAPE;
 		} else if (rect_contains(keyboard.rect, x, y)) {
-			SDL_StartTextInput();
+			SDL_StartTextInput(mgl->window);
 		} else if (rect_contains(mode[0].rect, x, y)) {
 			enableStick = !enableStick;
 		}
@@ -107,7 +107,7 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 		int bit = CONTROL_B1;
 		for (int i = 0; i < numButtons; ++i) {
 			if (rect_contains(button[i].rect, x, y)) {
-				fingerHeld[e.tfinger.fingerId] |= bit;
+				fingerHeld[e.tfinger.fingerID] |= bit;
 				state |= bit;
 				taps |= bit;
 			}
@@ -149,15 +149,15 @@ void SoftJoystick::handle_event(MGLDraw *mgl, const SDL_Event& e) {
 				}
 			}
 
-			byte last = fingerHeld[e.tfinger.fingerId];
-			fingerHeld[e.tfinger.fingerId] = curState;
+			byte last = fingerHeld[e.tfinger.fingerID];
+			fingerHeld[e.tfinger.fingerID] = curState;
 			recalculate_state();
 			taps |= (curState & ~last);
 		}
 	}
 
 	if (e.type == SDL_EVENT_FINGER_UP) {
-		auto iter = fingerHeld.find(e.tfinger.fingerId);
+		auto iter = fingerHeld.find(e.tfinger.fingerID);
 		if (iter != fingerHeld.end()) {
 			fingerHeld.erase(iter);
 			recalculate_state();

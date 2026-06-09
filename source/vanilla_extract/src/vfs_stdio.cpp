@@ -67,7 +67,7 @@ bool vanilla::mkdir_parents(std::string_view path)
 class StdioVfs : public vanilla::WriteVfs
 {
 	std::string prefix;
-	owned::FILE open_stdio_internal(const char* filename, const char* mode, bool write);
+	owned::SDL_IOStream open_stdio_internal(const char* filename, const char* mode, bool write);
 public:
 	explicit StdioVfs(std::string&& prefix) : prefix(prefix) {}
 	owned::SDL_IOStream open_sdl(const char* filename) override;
@@ -82,7 +82,7 @@ std::unique_ptr<vanilla::WriteVfs> vanilla::open_stdio(std::string_view prefix)
 	return std::make_unique<StdioVfs>(std::string { prefix });
 }
 
-owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bool write)
+owned::SDL_IOStream StdioVfs::open_stdio_internal(const char* file, const char* mode, bool write)
 {
 	std::string buffer = prefix;
 	buffer.append("/");
@@ -91,7 +91,7 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 	{
 		vanilla::mkdir_parents(buffer);
 	}
-	owned::FILE fp { fopen(buffer.c_str(), mode) };
+	owned::SDL_IOStream fp { SDL_IOFromFile(buffer.c_str(), mode) };
 
 #ifndef _WIN32
 	// On non-Windows, try to case-correct file lookups
@@ -109,7 +109,7 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 			{
 				buffer[i] = '/';
 				memcpy(&buffer[i + 1], name.data(), name.length());
-				fp.reset(fopen(buffer.c_str(), mode));
+				fp.reset(SDL_IOFromFile(buffer.c_str(), mode));
 				break;
 			}
 		}
@@ -118,47 +118,20 @@ owned::FILE StdioVfs::open_stdio_internal(const char* file, const char* mode, bo
 
 	if (!fp && write)
 	{
-		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen(%s, %s): %s", buffer.c_str(), mode, strerror(errno));
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_IOFromFile(%s, %s): %s", buffer.c_str(), mode, SDL_GetError());
 	}
 	return fp;
 }
 
-#if defined(_WIN32)
-// The public MSVC binaries of SDL2 are compiled without support for SDL_RWFromFP.
-
 owned::SDL_IOStream StdioVfs::open_sdl(const char* filename)
 {
-	std::string buffer = prefix;
-	buffer.append("/");
-	buffer.append(filename);
-	return owned::SDL_IOFromFile(buffer.c_str(), "rb");
+	return open_stdio_internal(filename, "rb", false);
 }
 
 owned::SDL_IOStream StdioVfs::open_write_sdl(const char* filename)
 {
-	std::string buffer = prefix;
-	buffer.append("/");
-	buffer.append(filename);
-	vanilla::mkdir_parents(buffer);
-	return owned::SDL_IOFromFile(buffer.c_str(), "wb");
+	return open_stdio_internal(filename, "wb", true);
 }
-
-#else
-// Delegate to open_stdio above.
-
-owned::SDL_IOStream StdioVfs::open_sdl(const char* filename)
-{
-	owned::FILE fp = open_stdio_internal(filename, "rb", false);
-	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;
-}
-
-owned::SDL_IOStream StdioVfs::open_write_sdl(const char* filename)
-{
-	owned::FILE fp = open_stdio_internal(filename, "wb", true);
-	return fp ? owned::SDL_RWFromFP(std::move(fp)) : nullptr;
-}
-
-#endif
 
 #ifdef __GNUC__
 #include <dirent.h>
@@ -190,7 +163,7 @@ bool StdioVfs::list_dir(const char* directory, std::set<std::string, vanilla::Ca
 	buffer.append("/*");
 
 	struct _finddata_t finddata;
-	long hFile = _findfirst(buffer.c_str(), &finddata);
+	long hFile = (long)_findfirst(buffer.c_str(), &finddata);
 	if (hFile == -1)
 		return false;
 

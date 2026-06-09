@@ -119,7 +119,7 @@ byte LastScanCode()
 }
 
 const char *ScanCodeText(byte s) {
-	return SDL_GetKeyName(SDL_GetKeyFromScancode((SDL_Scancode) s));
+	return SDL_GetKeyName(SDL_GetKeyFromScancode((SDL_Scancode) s, SDL_KMOD_NONE, false));
 }
 
 // Gamepad special
@@ -369,12 +369,12 @@ void ControlHandleEvent(const SDL_Event &e)
 {
 	if (e.type == SDL_EVENT_KEY_DOWN)
 	{
-		ControlKeyDown(e.key.keysym.scancode);
+		ControlKeyDown(e.key.scancode);
 		activeController = nullptr;
 	}
 	else if (e.type == SDL_EVENT_KEY_UP)
 	{
-		ControlKeyUp(e.key.keysym.scancode);
+		ControlKeyUp(e.key.scancode);
 		activeController = nullptr;
 	}
 	else if (e.type == SDL_EVENT_GAMEPAD_ADDED)
@@ -387,7 +387,7 @@ void ControlHandleEvent(const SDL_Event &e)
 	}
 	else if (e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN)
 	{
-		activeController = SDL_GetGamepadFromID(e.cbutton.which);
+		activeController = SDL_GetGamepadFromID(e.gbutton.which);
 	}
 }
 
@@ -417,7 +417,7 @@ static byte GetJoyState(void)
 		int leftY = SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY);
 		if (leftX * leftX + leftY * leftY > DEADZONE * DEADZONE)
 		{
-			double angle = atan2(leftY, leftX) * 180.0 / M_PI;
+			double angle = atan2(leftY, leftX) * 180.0 / SDL_PI_D;
 			if (angle < 22.5 + -4*45) {
 				joyState |= CONTROL_LF;
 			} else if (angle < 22.5 + -3*45) {
@@ -629,10 +629,10 @@ void UpdateRawJoystick(void)
 	}
 	short deadZone;
 	deadZone = SDL_JOYSTICK_AXIS_MAX * (short)stickDeadZone / 100;
-	
+
 	if (lx * lx + ly * ly > deadZone*deadZone)
 	{
-		double angle = atan2(ly, lx) * 180.0 / M_PI;
+		double angle = atan2(ly, lx) * 180.0 / SDL_PI_D;
 		if (angle < 22.5 + -4 * 45)
 		{
 			rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
@@ -678,7 +678,7 @@ void UpdateRawJoystick(void)
 	if (dpadToMove && (rawGamepad & (1 << SDL_GAMEPAD_BUTTON_DPAD_LEFT)))
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_LF));
 	if (dpadToMove && (rawGamepad & (1 << SDL_GAMEPAD_BUTTON_DPAD_UP)))
-		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));	
+		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_UP));
 	if (dpadToMove && (rawGamepad & (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT)))
 		rawGamepad |= (1 << (RAWGAMEPADAXIS_BASE + RawGamepadAxis::LS_RT));
 	if (dpadToMove && (rawGamepad & (1 << SDL_GAMEPAD_BUTTON_DPAD_DOWN)))

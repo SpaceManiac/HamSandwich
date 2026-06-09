@@ -64,9 +64,9 @@ void InitNameEntry(MGLDraw *mgl)
 	GetTaps();
 }
 
-void ExitNameEntry()
+void ExitNameEntry(MGLDraw *mgl)
 {
-	MGLDraw::StopTextInput();
+	mgl->StopTextInput();
 	free(backgd);
 }
 
@@ -363,7 +363,7 @@ TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 		EndClock();
 	}
 
-	ExitNameEntry();
+	ExitNameEntry(mgl);
 	if(FirstTime() && done == 255)
 	{
 		exit(0);
