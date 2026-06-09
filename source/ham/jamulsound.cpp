@@ -144,11 +144,24 @@ void JamulSoundUpdate(void)
 	}
 }
 
+static owned::SDL_IOStream OpenSoundFile(int which)
+{
+	// See if sound loading is overridden for this sound...
+	owned::SDL_IOStream rw = g_HamExtern.SoundLoadOverride ? g_HamExtern.SoundLoadOverride(which) : nullptr;
+	if (!rw)
+	{
+		// If not, try to load it from a file instead
+		char s[32];
+		ham_sprintf(s,"sound/snd%03d.wav",which);
+		rw = AppdataOpen(s);
+	}
+	return rw;
+}
+
 // pan: -128 (left) to 127 (right)
 // vol: -255 (silent) to 0 (no attenuation)
 bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 {
-	char s[32];
 	int i,chosen,lowpriority;
 
 	if(!soundIsOn)
@@ -175,16 +188,10 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 	if(soundList[which].sample==NULL)
 	{
 		// See if sound loading is overridden for this sound...
-		owned::SDL_IOStream rw = g_HamExtern.SoundLoadOverride ? g_HamExtern.SoundLoadOverride(which) : nullptr;
+		owned::SDL_IOStream rw = OpenSoundFile(which);
 		if (!rw)
 		{
-			// If not, try to load it from a file instead
-			ham_sprintf(s,"sound/snd%03d.wav",which);
-			rw = AppdataOpen(s);
-			if (!rw)
-			{
-				return false;
-			}
+			return false;
 		}
 
 		// Now try to load it
@@ -249,13 +256,12 @@ bool JamulSoundPlay(int which, long pan, long vol, int playFlags, int priority)
 	{
 		freqRatio = 1.f - 0.2f + 0.4f * SDL_randf();
 	}
-#if 0 // SDL3 TODO
 	if (playFlags & SND_BACKWARDS)
 	{
-		schannel[chosen].sample = FxBackwards(playing);
+		owned::SDL_IOStream rw = OpenSoundFile(which);
+		schannel[chosen].sample = FxBackwards(rw.get(), mixer.get());
 		playing = schannel[chosen].sample.get();
 	}
-#endif
 	if (playFlags & SND_DOUBLESPEED)
 	{
 		freqRatio *= 2.f;

@@ -3,8 +3,6 @@
 
 #include "owned_mixer.h"
 
-owned::MIX_Audio FxRandomPitch(MIX_Audio* sample);
-owned::MIX_Audio FxBackwards(MIX_Audio* sample);
-owned::MIX_Audio FxDoubleSpeed(MIX_Audio* sample);
+owned::MIX_Audio FxBackwards(SDL_IOStream *file, MIX_Mixer *mixer);
 
 #endif  // AUDIOFX_H

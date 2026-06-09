@@ -73,4 +73,30 @@ namespace owned
 	}
 }
 
+// ----------------------------------------------------------------------------
+// MIX_AudioDecoder
+
+namespace owned
+{
+	namespace _deleter
+	{
+		struct MIX_AudioDecoder
+		{
+			void operator()(::MIX_AudioDecoder* ptr) { return MIX_DestroyAudioDecoder(ptr); }
+		};
+	}
+
+	typedef std::unique_ptr<::MIX_AudioDecoder, _deleter::MIX_AudioDecoder> MIX_AudioDecoder;
+
+	inline MIX_AudioDecoder MIX_CreateAudioDecoder_IO(::SDL_IOStream *io, SDL_PropertiesID props)
+	{
+		return MIX_AudioDecoder { ::MIX_CreateAudioDecoder_IO(io, false, props) };
+	}
+
+	inline MIX_AudioDecoder MIX_CreateAudioDecoder_IO(owned::SDL_IOStream io, SDL_PropertiesID props)
+	{
+		return MIX_AudioDecoder { ::MIX_CreateAudioDecoder_IO(io.release(), true, props) };
+	}
+}
+
 #endif
