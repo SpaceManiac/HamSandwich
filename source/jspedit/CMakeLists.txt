@@ -1,7 +1,7 @@
 # Launcher executable.
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_executable(jspedit ${sources})
-target_link_libraries(jspedit lunaticpal_lib SDL3 SDL3_image ham tinyfiledialogs)
+target_link_libraries(jspedit lunaticpal_lib SDL3 SDL3_image ham)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	target_compile_options(jspedit PRIVATE -Wall -Wextra -Wpedantic)

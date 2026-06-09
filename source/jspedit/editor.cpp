@@ -6,7 +6,6 @@
 #include <string>
 #include <utility>
 #include <SDL3_image/SDL_image.h>
-#include <tinyfiledialogs.h>
 #include "globals.h"
 #include "jspfile.h"
 #include "fontawesome.h"
@@ -22,37 +21,48 @@ namespace editor {
 
 namespace dialog {
 
-struct FileTypeInfo {
-	const char* description;
-	int numPatterns;
-	const char* const* patterns;
-};
+const SDL_DialogFileFilter JSP = { "JSP files", "jsp" };
+const SDL_DialogFileFilter PNG = { "PNG files", "png" };
+const SDL_DialogFileFilter IMAGES = { "Image files", "png;bmp;ico;jpg;jpeg" };
 
-const char* const JSP_EXTS[] = { "*.jsp" };
-const char* const PNG_EXTS[] = { "*.png" };
-const char* const IMAGE_EXTS[] = { "*.png", "*.bmp", "*.tga", "*.pcx", "*.jpg", "*.jpeg", "*.tif", "*.tiff" };
-const FileTypeInfo JSP = { "JSP files", std::size(JSP_EXTS), JSP_EXTS };
-const FileTypeInfo PNG = { "PNG files", std::size(PNG_EXTS), PNG_EXTS };
-const FileTypeInfo IMAGES = { "Image files", std::size(IMAGE_EXTS), IMAGE_EXTS };
+typedef std::function<void(std::string)> Callback;
 
-bool open(const char* title, FileTypeInfo fileType, std::string *buf) {
-	char* chosen = tinyfd_openFileDialog(title, nullptr, fileType.numPatterns, fileType.patterns, fileType.description, false);
-	if (!chosen)
-		return false;
+void SDLCALL on_file_selected(void *ud, char const* const* filelist, int filter)
+{
+	std::unique_ptr<Callback> callback { (Callback*)ud };
 
-	buf->assign(chosen);
-	//free(chosen);
-	return true;
+	if (!filelist)
+	{
+		// Error.
+		fprintf(stderr, "SDL_ShowFileDialogWithProperties: %s\n", SDL_GetError());
+		return;
+	}
+	if (!filelist[0])
+	{
+		// Cancelled.
+		return;
+	}
+
+	std::string str = filelist[0];
+	std::move(*callback)(std::move(str));
 }
 
-bool save(const char* title, FileTypeInfo fileType, std::string *buf) {
-	char* chosen = tinyfd_saveFileDialog(title, nullptr, fileType.numPatterns, fileType.patterns, fileType.description);
-	if (!chosen)
-		return false;
+void open(const char* title, SDL_DialogFileFilter fileType, Callback callback) {
+	SDL_PropertiesID props = SDL_CreateProperties();
+	SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, title);
+	SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, &fileType);
+	SDL_SetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
+	SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_OPENFILE, on_file_selected, new Callback(std::move(callback)), props);
+	SDL_DestroyProperties(props);
+}
 
-	buf->assign(chosen);
-	//free(chosen);
-	return true;
+void save(const char* title, SDL_DialogFileFilter fileType, Callback callback) {
+	SDL_PropertiesID props = SDL_CreateProperties();
+	SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, title);
+	SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, &fileType);
+	SDL_SetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 1);
+	SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_SAVEFILE, on_file_selected, new Callback(std::move(callback)), props);
+	SDL_DestroyProperties(props);
 }
 
 void showMessage(const char* body) {
@@ -224,10 +234,7 @@ void Editor::save() {
     FileInfo& file = files[curFile];
     if (file.fname == "") {
         // call save as which calls this instead
-        std::string str;
-        if (dialog::save("Save JSP", dialog::JSP, &str)) {
-            saveAs(str);
-        }
+        dialog::save("Save JSP", dialog::JSP, std::bind(&Editor::saveAs, this, std::placeholders::_1));
         return;
     }
 
@@ -301,7 +308,7 @@ bool Editor::export_frame(string fname, bool batch) {
         fname += ".png";
     }
 
-    if (IMG_SavePNG(file.jsp.frames[file.curSprite].surface.get(), fname.c_str())) {
+    if (!IMG_SavePNG(file.jsp.frames[file.curSprite].surface.get(), fname.c_str())) {
         if (!batch) dialog::error("Failed to export", SDL_GetError());
         return false;
     }
@@ -655,9 +662,7 @@ void Editor::render() {
     std::string str;
     x = 6; y = 4; w = 80; g = 90; h = 22;
     if (gui.button(rect(x, y, w, h), "Open", "Open JSP (Ctrl+O)", { SDL_KMOD_CTRL, SDL_SCANCODE_O })) {
-        if (dialog::open("Open JSP", dialog::JSP, &str)) {
-            load(str);
-        }
+        dialog::open("Open JSP", dialog::JSP, std::bind(&Editor::load, this, std::placeholders::_1));
     }
     if (gui.button(rect(x += g, y, w, h), "New JSP", "New JSP", {})) {
         files.push_back(FileInfo());
@@ -677,30 +682,20 @@ void Editor::render() {
             save();
         }
         if (gui.button(rect(x += g, y, w, h), "Save As", "Save JSP As (Ctrl+Shift+S)", { SDL_KMOD_CTRL | SDL_KMOD_SHIFT, SDL_SCANCODE_S })) {
-            if (dialog::save("Save JSP", dialog::JSP, &str)) {
-                saveAs(str);
-            }
+            dialog::save("Save JSP", dialog::JSP, std::bind(&Editor::saveAs, this, std::placeholders::_1));
         }
         if (file->getCurFrame()) {
             if (gui.button(rect(x += g, y, w, h), "Import", "Import from image (Ctrl+I)", { SDL_KMOD_CTRL, SDL_SCANCODE_I })) {
-                if (dialog::open("Import Image", dialog::IMAGES, &str)) {
-                    import_frame(str);
-                }
+                dialog::open("Import Image", dialog::IMAGES, std::bind(&Editor::import_frame, this, std::placeholders::_1, false));
             }
             if (gui.button(rect(x += g, y, w, h), "Export", "Export to image (Ctrl+E)", { SDL_KMOD_CTRL, SDL_SCANCODE_E })) {
-                if (dialog::save("Export Image", dialog::IMAGES, &str)) {
-                    export_frame(str);
-                }
+                dialog::save("Export Image", dialog::IMAGES, std::bind(&Editor::export_frame, this, std::placeholders::_1, false));
             }
             if (gui.button(rect(x += g, y, w, h), "Import All", "Import from folder (Ctrl+Shift+I)", { SDL_KMOD_CTRL | SDL_KMOD_SHIFT, SDL_SCANCODE_I })) {
-                if (dialog::open("Select first frame (0.png)", dialog::PNG, &str)) {
-                    import_batch(str);
-                }
+                dialog::open("Select first frame (0.png)", dialog::PNG, std::bind(&Editor::import_batch, this, std::placeholders::_1));
             }
             if (gui.button(rect(x += g, y, w, h), "Export All", "Export to folder (Ctrl+Shift+E)", { SDL_KMOD_CTRL | SDL_KMOD_SHIFT, SDL_SCANCODE_E })) {
-                if (dialog::save("Export all frames", dialog::PNG, &str)) {
-                    export_batch(str);
-                }
+                dialog::save("Export all frames", dialog::PNG, std::bind(&Editor::export_batch, this, std::placeholders::_1));
             }
         }
     }

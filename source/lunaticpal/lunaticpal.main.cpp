@@ -6,8 +6,8 @@
 #include <fstream>
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
-#include <tinyfiledialogs.h>
 #include "lunaticpal.h"
+#include "../vanilla_extract/include/owned_sdl.h"
 
 void putshort(std::ostream& out, short value)
 {
@@ -77,12 +77,98 @@ void write_bmp(int width, int height, const uint8_t* pixels, const char* dest)
 	SDL_assert(out.tellp() == headersize + imagesize);
 }
 
-SDL_Color GetPixelColor(const SDL_Surface* surface, const int x, const int y)
+SDL_Color GetPixelColor(SDL_Surface* surface, const int x, const int y)
 {
-	uint32_t pixel = *(uint32_t*)((uint8_t*)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel);
+	uint32_t pixel = *(uint32_t*)((uint8_t*)surface->pixels + y * surface->pitch + x * SDL_BYTESPERPIXEL(surface->format));
 	SDL_Color color = { 0, 0, 0, 255 };
-	SDL_GetRGBA(pixel, surface->format, &color.r, &color.g, &color.b, &color.a);
+	SDL_GetRGBA(pixel, SDL_GetPixelFormatDetails(surface->format), SDL_GetSurfacePalette(surface), &color.r, &color.g, &color.b, &color.a);
 	return color;
+}
+
+void open_file();
+void save_file(owned::SDL_Surface img);
+
+void quit()
+{
+	SDL_Event quit;
+	quit.type = SDL_EVENT_QUIT;
+	SDL_PushEvent(&quit);
+}
+
+void SDLCALL on_open_file(void *, char const* const* filelist, int filter)
+{
+	if (!filelist)
+	{
+		// Error.
+		fprintf(stderr, "SDL_ShowOpenFileDialog: %s\n", SDL_GetError());
+		return quit();
+	}
+	if (!filelist[0])
+	{
+		// Cancelled.
+		return quit();
+	}
+
+	owned::SDL_Surface img { IMG_Load(filelist[0]) };
+	if (!img)
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error loading image file", SDL_GetError(), nullptr);
+		open_file();
+		return;
+	}
+	save_file(std::move(img));
+}
+
+void open_file()
+{
+	SDL_PropertiesID props = SDL_CreateProperties();
+	SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, "LunaticPal: Open Image");
+	SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_OPENFILE, on_open_file, nullptr, props);
+	SDL_DestroyProperties(props);
+}
+
+void SDLCALL on_save_file(void *ud, char const* const* filelist, int filter)
+{
+	owned::SDL_Surface img { (SDL_Surface*)ud };
+
+	if (!filelist)
+	{
+		// Error.
+		fprintf(stderr, "SDL_ShowSaveFileDialog: %s\n", SDL_GetError());
+		return quit();
+	}
+	if (!filelist[0])
+	{
+		// Cancelled.
+		return quit();
+	}
+
+	std::vector<uint8_t> pixels(img->w * img->h);
+	for (int y = 0; y < img->h; ++y)
+	{
+		for (int x = 0; x < img->w; ++x)
+		{
+			pixels[y * img->w + x] = lunaticpal::GetNearest(GetPixelColor(img.get(), x, y));
+		}
+	}
+
+	write_bmp(img->w, img->h, pixels.data(), filelist[0]);
+
+	open_file();
+}
+
+void save_file(owned::SDL_Surface img)
+{
+	static const SDL_DialogFileFilter FILTERS[] = {
+		{ "Windows Bitmap", "bmp" },
+	};
+
+	SDL_PropertiesID props = SDL_CreateProperties();
+	SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, "LunaticPal: Save BMP As");
+	SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void*)FILTERS);
+	SDL_SetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, std::size(FILTERS));
+	SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_SAVEFILE, on_save_file, img.release(), props);
+	SDL_DestroyProperties(props);
 }
 
 int main(int argc, char** argv)
@@ -90,42 +176,26 @@ int main(int argc, char** argv)
 	(void)argc;
 	(void)argv;
 
-	if (SDL_Init(SDL_INIT_VIDEO) != 0)
+	if (!SDL_Init(SDL_INIT_EVENTS))
 	{
-		printf("Error: %s\n", SDL_GetError());
-		return -1;
+		fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
+		return 1;
 	}
 
+	open_file();
 	while (true)
 	{
-		const char* openPath = tinyfd_openFileDialog("LunaticPal: Open Image", "", 0, nullptr, nullptr, false);
-		if (!openPath)
-			break;
-
-		SDL_Surface* img = IMG_Load(openPath);
-		if (!img)
+		SDL_Event event;
+		if (!SDL_WaitEvent(&event))
 		{
-			//SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error loading image file", SDL_GetError(), nullptr);
-			tinyfd_messageBox("Error loading image", SDL_GetError(), "ok", "error", 0);
-			continue;
+			fprintf(stderr, "SDL_WaitEvent: %s\n", SDL_GetError());
+			return 1;
 		}
 
-		const char* filters[1] = { "*.bmp" };
-		const char* savePath = tinyfd_saveFileDialog("LunaticPal: Save BMP As", "", 1, filters, "Windows Bitmap");
-		if (!savePath)
-			break;
-
-		std::vector<uint8_t> pixels(img->w * img->h);
-		for (int y = 0; y < img->h; ++y)
+		switch (event.type)
 		{
-			for (int x = 0; x < img->w; ++x)
-			{
-				pixels[y * img->w + x] = lunaticpal::GetNearest(GetPixelColor(img, x, y));
-			}
+			case SDL_EVENT_QUIT:
+				return 0;
 		}
-
-		write_bmp(img->w, img->h, pixels.data(), savePath);
 	}
-
-	return 0;
 }

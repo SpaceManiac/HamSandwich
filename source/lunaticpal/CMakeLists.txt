@@ -22,4 +22,5 @@ HamSandwich_embed_file(lunaticpal_lib "${compressed}" embed_compressed_lookup_ta
 # A simple `lunaticpal` tool which presents open/save dialogs on loop.
 add_executable(lunaticpal lunaticpal.main.cpp)
 gnu_compile_options(lunaticpal PRIVATE -Wall -Wextra -Wpedantic -Wno-missing-field-initializers)
-target_link_libraries(lunaticpal lunaticpal_lib SDL3 SDL3_image tinyfiledialogs)
+target_link_libraries(lunaticpal lunaticpal_lib SDL3 SDL3_image)
+install(TARGETS lunaticpal COMPONENT "lunaticpal/executables")

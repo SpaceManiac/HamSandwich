@@ -121,7 +121,7 @@ ConversionError convertFontToPNG(string fname, char* outFolder) {
 
 		printf("writing: %s\n", outFullFileName.c_str());
 
-		if (IMG_SavePNG(surf, outFullFileName.c_str()) != 0) {
+		if (!IMG_SavePNG(surf, outFullFileName.c_str())) {
 			fprintf(stderr, "error: bad save %s: %s\n", outFullFileName.c_str(), SDL_GetError());
 		}
 

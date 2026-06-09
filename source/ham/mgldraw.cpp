@@ -1226,7 +1226,7 @@ bool MGLDraw::SavePNG(const char* name)
 		palette->colors[i] = { thePal[i].r, thePal[i].g, thePal[i].b, thePal[i].a };
 	}
 	// NB: Unlike SaveBMP, this expects an absolute path. Maybe slightly surprising.
-	bool ok = IMG_SavePNG_IO(surface, SDL_IOFromFile(name, "wb"), true) == 0;
+	bool ok = IMG_SavePNG_IO(surface, SDL_IOFromFile(name, "wb"), true);
 	SDL_DestroySurface(surface);
 	return ok;
 }
