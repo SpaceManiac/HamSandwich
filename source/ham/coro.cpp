@@ -7,6 +7,8 @@
 #include <stack>
 
 #undef main
+#undef SDL_MAIN_HANDLED
+#include <SDL/SDL_main.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>

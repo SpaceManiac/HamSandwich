@@ -10,6 +10,7 @@
 #include "guy.h"
 #include "title.h"
 #include "loop.h"
+#include <SDL3/SDL_main.h>
 
 MGLDraw *mgl;
 

@@ -154,4 +154,5 @@ struct std::coroutine_traits<coro::task<Result>, Arg...> {
 #define AWAIT co_await
 #define CO_RETURN co_return
 
+#define SDL_MAIN_HANDLED
 #define main coro__main

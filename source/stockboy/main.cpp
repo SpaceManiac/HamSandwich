@@ -19,6 +19,8 @@
 #include "extern.h"
 #include "appdata.h"
 
+#include <SDL3/SDL_main.h>
+
 #ifdef _WIN32
 #include <crtdbg.h>
 #endif

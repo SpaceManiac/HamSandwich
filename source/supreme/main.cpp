@@ -34,6 +34,8 @@
 #include "steam.h"
 #include "unpickled.h"
 
+#include <SDL3/SDL_main.h>
+
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 void AfterFlip()

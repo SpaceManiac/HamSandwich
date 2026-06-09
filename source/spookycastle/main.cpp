@@ -21,6 +21,8 @@
 #include "monster.h"
 #include "title.h"
 
+#include <SDL3/SDL_main.h>
+
 MGLDraw *mainmgl;
 
 extern const HamSandwichMetadata* GetHamSandwichMetadata();

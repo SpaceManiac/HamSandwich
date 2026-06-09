@@ -22,6 +22,8 @@
 #include "options.h"
 #include "appdata.h"
 
+#include <SDL3/SDL_main.h>
+
 #ifdef _WIN32
 #include <shellapi.h>
 #endif

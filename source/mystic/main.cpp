@@ -24,6 +24,8 @@
 #include "skills.h"
 #include "steam.h"
 
+#include <SDL3/SDL_main.h>
+
 extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])

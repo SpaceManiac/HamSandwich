@@ -16,6 +16,8 @@
 #include "music.h"
 #include "appdata.h"
 
+#include <SDL3/SDL_main.h>
+
 // SPISPOPD helper for atkins!
 /*
 void GetPal(void)

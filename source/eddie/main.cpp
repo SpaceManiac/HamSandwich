@@ -13,6 +13,7 @@
 #include "game.h"
 #include "extern.h"
 #include "appdata.h"
+#include <SDL3/SDL_main.h>
 
 MGLDraw *mainmgl;
 

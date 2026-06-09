@@ -7,6 +7,8 @@
 #include "jamulfont.h"
 #include "fontawesome.h"
 
+#include <SDL3/SDL_main.h>
+
 extern const size_t embed_verdana_size;
 extern const unsigned char embed_verdana[];
 extern const size_t embed_icons_size;
@@ -27,6 +29,7 @@ int DISPLAY_WIDTH = 1024;
 int DISPLAY_HEIGHT = 768;
 
 int main(int argc, char** argv) {
+#undef main
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
     window = SDL_CreateWindow("JspEdit 3", DISPLAY_WIDTH, DISPLAY_HEIGHT, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN);
