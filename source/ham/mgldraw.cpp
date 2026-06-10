@@ -433,7 +433,7 @@ TASK(void) MGLDraw::FinishFlip(void)
 			lastRawCode = e.key.scancode;
 			if (!(e.key.key & ~0xff))
 			{
-				lastKeyPressed = e.key.key;
+				lastKeyPressed = SDL_GetKeyFromScancode(e.key.scancode, e.key.mod, false);
 			}
 
 			if (e.key.scancode == SDL_SCANCODE_F11)
