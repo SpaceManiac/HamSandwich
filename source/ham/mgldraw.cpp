@@ -228,7 +228,13 @@ void MGLDraw::SetMouseRelative(bool relative)
 bool MGLDraw::Process(void)
 {
 	UpdateMusic();
-	return (!readyToQuit);
+
+	// Peep the queue to get quit events immediately without having to drain it.
+	SDL_PumpEvents();
+	if (SDL_PeepEvents(nullptr, 1, SDL_PEEKEVENT, SDL_EVENT_QUIT, SDL_EVENT_QUIT))
+		readyToQuit = true;
+
+	return !readyToQuit;
 }
 
 void MGLDraw::Quit()

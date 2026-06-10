@@ -63,7 +63,7 @@ TASK(int) main(int argc, char* argv[])
 	AppdataInit(GetHamSandwichMetadata());
 	LoadConfig();
 	SetHamMusicEnabled(config.music && !unpickled);
-	SetJamulSoundEnabled(config.sound && !unpickled, config.numSounds);
+	SetJamulSoundEnabled(config.sound || unpickled, unpickled ? 0 : config.numSounds);
 	SteamManager::Init("2547330");
 	MGLDraw *mainmgl = new MGLDraw("Supreme With Cheese", SCRWID, SCRHEI, windowedGame || unpickled);
 	if(!mainmgl)
@@ -74,6 +74,11 @@ TASK(int) main(int argc, char* argv[])
 	if (unpickled)
 	{
 		UnpickledMain();
+		StopSong();
+		LunaticExit();
+		delete mainmgl;
+		SteamManager::Quit();
+		JamulSoundExit();
 		CO_RETURN 0;
 	}
 

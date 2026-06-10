@@ -7,7 +7,7 @@
 void InitLevelDialog(world_t *wrld,byte currentMap);
 void ExitLevelDialog(void);
 void RenderLevelDialog(int msx,int msy,MGLDraw *mgl);
-void RenderLevelDialogZoom(MGLDraw *mgl);
+void RenderLevelDialogZoom(MGLDraw *mgl, world_t *world, byte mapNum);
 byte LevelDialogKey(char key);
 byte LevelDialogClick(int msx,int msy);
 byte LevelDialogRClick(int msx,int msy);

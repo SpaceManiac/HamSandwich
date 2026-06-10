@@ -1,4 +1,5 @@
 #include "unpickled.h"
+#include <span>
 #include "editor.h"
 #include "mgldraw.h"
 #include "config.h"
@@ -6,10 +7,68 @@
 #include "vanilla_extract.h"
 #include "leveldialog.h"
 #include "appdata.h"
+#include "sound.h"
+#include "owned_mixer.h"
+#include <SDL3_image/SDL_image.h>
+#include "log.h"
+
+#ifdef __EMSCRIPTEN__
+void UnpickledMain()
+{
+}
+#else
+
+static bool CheckImageFile(owned::SDL_IOStream stream)
+{
+	owned::SDL_Surface b { IMG_Load_IO(stream.release(), true) };
+	return b != nullptr;
+}
+
+static bool CheckAudioFile(owned::SDL_IOStream stream)
+{
+	owned::MIX_AudioDecoder decoder = owned::MIX_CreateAudioDecoder_IO(stream.get(), 0);
+	if (!decoder)
+	{
+		return false;
+	}
+
+	SDL_AudioSpec spec = {
+		.format = SDL_AUDIO_S16LE,
+		.channels = 2,
+		.freq = 44100,
+	};
+
+	std::vector<uint8_t> pcm;
+	while (true)
+	{
+		size_t start = pcm.size();
+		size_t end = (start + 4096) * 2;
+		pcm.resize(end);
+		int read = MIX_DecodeAudio(decoder.get(), &pcm[start], end - start, &spec);
+		if (read < 0)
+		{
+			return false;
+		}
+		pcm.resize(start + read);
+		if (read == 0)
+		{
+			break;
+		}
+	}
+
+	for (size_t i = 0; i < pcm.size(); ++i)
+	{
+		if (pcm[i])
+		{
+			return true;
+		}
+	}
+	SDL_SetError("Decoded to silence");
+	return false;
+}
 
 void UnpickledMain()
 {
-#ifndef __EMSCRIPTEN__
 	MGLDraw* mgl = GetDisplayMGL();
 	mgl->ClearScreen();
 	PALETTE pal;
@@ -23,17 +82,65 @@ void UnpickledMain()
 
 	dword start = timeGetTime();
 
-	std::vector<std::string> vec = ListDirectory("worlds", ".dlw");
-	for (const auto &fname : vec)
+	int bmpTotal = 0, bmpBad = 0, musTotal = 0, musBad = 0, sndTotal = 0, sndBad = 0;
+
+	LogDebug("Checking images");
+	for (const auto &fname : ListDirectory("user", ".bmp"))
+	{
+		++bmpTotal;
+		fullname = "user/";
+		fullname.append(fname);
+		if (!CheckImageFile(AppdataOpen(fullname.c_str())))
+		{
+			LogError("%s: bad image: %s", fullname.c_str(), SDL_GetError());
+			++bmpBad;
+		}
+
+		if (!mgl->Process()) break;
+	}
+
+	LogDebug("Checking music");
+	for (const auto &fname : ListDirectory("music", ".ogg"))
+	{
+		++musTotal;
+		fullname = "music/";
+		fullname.append(fname);
+		if (!CheckAudioFile(AppdataOpen(fullname.c_str())))
+		{
+			LogError("%s: bad audio: %s", fullname.c_str(), SDL_GetError());
+			++musBad;
+		}
+
+		if (!mgl->Process()) break;
+	}
+
+	LogDebug("Checking worlds");
+	for (const auto &fname : ListDirectory("worlds", ".dlw"))
 	{
 		fullname = "worlds/";
 		fullname.append(fname);
 		if (!LoadWorld(&curWorld, fullname.c_str()))
 		{
-			fprintf(stderr, "bad LoadWorld(%s)\n", fullname.c_str());
-			//continue;
+			LogError("bad LoadWorld(%s)", fullname.c_str());
+			continue;
 		}
 		SetCurrentTilegfx(&curWorld.tilegfx);
+
+		int num = GetNumCustomSounds();
+		for (int i = 0; i < num; ++i)
+		{
+			// Exempt dummy rainbow.dlw sounds.
+			if (GetSoundInfo(CUSTOM_SND_START)->theme == 0)
+				continue;
+
+			++sndTotal;
+			std::span<const byte> bytes = GetCustomSound(i);
+			if (!CheckAudioFile(owned::SDL_IOFromConstMem(bytes.data(), bytes.size())))
+			{
+				LogError("%s: custom sound %d \"%s\": bad audio: %s", fname.c_str(), i, GetSoundInfo(CUSTOM_SND_START + i)->name, SDL_GetError());
+				++sndBad;
+			}
+		}
 
 		for (int i = 0; i < curWorld.numMaps; ++i)
 		{
@@ -93,8 +200,8 @@ void UnpickledMain()
 			}
 
 			mgl->RealizePalette();  // Fix up in case the above set underwater or underlava palette.
-			InitLevelDialog(&curWorld, i);
-			RenderLevelDialogZoom(mgl);
+			RenderLevelDialogZoom(mgl, &curWorld, i);
+
 			pngName = "./appdata/unpickled/worlds/";
 			pngName.append(fname);
 			pngName.append("/mini_");
@@ -109,7 +216,15 @@ void UnpickledMain()
 
 			if (!mgl->Process()) break;
 		}
+
+		FreeWorld(&curWorld);
+
 		if (!mgl->Process()) break;
 	}
-#endif
+
+	LogDebug("Images: %d bad / %d total", bmpBad, bmpTotal);
+	LogDebug("Music: %d bad / %d total", musBad, musTotal);
+	LogDebug("Sound: %d bad / %d total", sndBad, sndTotal);
 }
+
+#endif

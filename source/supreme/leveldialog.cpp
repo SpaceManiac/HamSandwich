@@ -51,7 +51,7 @@ static const LevelFlags flagNum[]={
 	MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN,
 };
 
-static byte *mapZoom;
+static byte mapZoom[MAX_MAPSIZE * MAX_MAPSIZE];
 static byte desiredWidth,desiredHeight;
 static sprite_set_t *levelSpr;
 
@@ -420,19 +420,20 @@ void InitLevelDialog(world_t *wrld,byte currentMap)
 
 	levelSpr=new sprite_set_t("graphics/pause.jsp");
 	LevelDialogButtons();
-	mapZoom=new byte[MAX_MAPSIZE*MAX_MAPSIZE];
 	RenderZoomMap();
 }
 
 void ExitLevelDialog(void)
 {
 	ClearButtons();
-	delete[] mapZoom;
 	delete levelSpr;
 }
 
-void RenderLevelDialogZoom(MGLDraw *mgl)
+void RenderLevelDialogZoom(MGLDraw *mgl, world_t *world_, byte mapNum_)
 {
+	world = world_;
+	mapNum = mapNum_;
+	RenderZoomMap();
 	mgl->ResizeBuffer(world->map[mapNum]->width, world->map[mapNum]->height);
 	for (int y = 0; y < mgl->GetHeight(); ++y)
 		memcpy(mgl->GetScreen() + mgl->GetWidth() * y, &mapZoom[y * MAX_MAPSIZE], mgl->GetWidth());
