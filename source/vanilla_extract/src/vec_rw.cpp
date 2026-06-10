@@ -51,8 +51,11 @@ namespace vanilla
 			size = available;
 			*status = SDL_IO_STATUS_EOF;
 		}
-		memcpy(dest, &vec->buffer[vec->cursor], size);
-		vec->cursor += size;
+		if (size > 0)
+		{
+			memcpy(dest, &vec->buffer[vec->cursor], size);
+			vec->cursor += size;
+		}
 		return size;
 	}
 
