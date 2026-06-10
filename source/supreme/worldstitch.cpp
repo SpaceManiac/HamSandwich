@@ -204,8 +204,8 @@ byte AddWorldIn(world_t *world1,const char *fname)
 
 	EditorSaveWorld("worlds/backup_load.dlw");
 	stitchTileOffset = world1->tilegfx.numTiles;
-	stitchSoundOffset = NumItems();
-	stitchItemOffset = GetNumCustomSounds();
+	stitchSoundOffset = GetNumCustomSounds();
+	stitchItemOffset = NumItems();
 
 	SetStitchError("No problems!  Append OK!");
 	world2=(world_t *)malloc(sizeof(world_t));
