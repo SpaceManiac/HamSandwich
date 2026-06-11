@@ -202,7 +202,7 @@ void ExitShowPic(void)
 		GetDisplayMGL()->LoadBMP("graphics/title.bmp");
 	}
 
-	delete image;
+	delete[] image;
 }
 
 byte UpdateShowPic(int *lastTime,MGLDraw *mgl)
