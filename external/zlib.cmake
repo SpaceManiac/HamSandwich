@@ -1,10 +1,17 @@
 # zlib target
 set(zlib "${CMAKE_CURRENT_LIST_DIR}/zlib")
 
-set(ZLIB_BUILD_SHARED OFF)
+if(EMSCRIPTEN OR ANDROID)
+	set(ZLIB_BUILD_SHARED OFF)
+endif()
 set(ZLIB_BUILD_TESTING OFF)
+set(ZLIB_INSTALL OFF)
 add_subdirectory("${zlib}" "${CMAKE_CURRENT_BINARY_DIR}/zlib" EXCLUDE_FROM_ALL)
-add_library(z ALIAS zlibstatic)
+if(ZLIB_BUILD_SHARED)
+	add_library(z ALIAS zlib)
+else()
+	add_library(z ALIAS zlibstatic)
+endif()
 
 add_library(minizip STATIC
 	"${zlib}/contrib/minizip/zip.c"
@@ -22,4 +29,13 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
 endif()
 if(ANDROID)
 	target_compile_definitions(minizip PRIVATE IOAPI_NO_64)
+endif()
+
+if(ZLIB_BUILD_SHARED)
+	install(
+		TARGETS zlib
+		ARCHIVE EXCLUDE_FROM_ALL
+		LIBRARY COMPONENT generic/executables
+		RUNTIME COMPONENT generic/executables
+	)
 endif()
