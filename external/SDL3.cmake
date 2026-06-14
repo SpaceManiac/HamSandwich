@@ -11,6 +11,7 @@
 set(HAVE_ROAPI_H OFF)
 set(HAVE_WINDOWS_GAMING_INPUT_H OFF)
 
+set(SDL_TEST_LIBRARY OFF)
 add_subdirectory("SDL3")
 
 # -----------------------------------------------------------------------------
