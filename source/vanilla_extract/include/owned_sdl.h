@@ -42,7 +42,7 @@ namespace owned
 
 	typedef std::unique_ptr<::SDL_IOStream, _deleter::SDL_IOStream> SDL_IOStream;
 
-	inline SDL_IOStream SDL_IOFromConstMem(const void *mem, int size)
+	inline SDL_IOStream SDL_IOFromConstMem(const void *mem, size_t size)
 	{
 		return SDL_IOStream { ::SDL_IOFromConstMem(mem, size) };
 	}
@@ -84,7 +84,7 @@ inline bool SDL_FlushIO(const owned::SDL_IOStream& context)
 }
 
 [[nodiscard]] // If you don't care about the return value, use .reset() instead.
-inline int SDL_CloseIO(owned::SDL_IOStream context)
+inline bool SDL_CloseIO(owned::SDL_IOStream context)
 {
 	return SDL_CloseIO(context.release());
 }
@@ -104,14 +104,14 @@ namespace owned
 
 	typedef std::unique_ptr<::SDL_Surface, _deleter::SDL_Surface> SDL_Surface;
 
-	inline SDL_Surface SDL_LoadBMP_IO(::SDL_IOStream* rw)
+	inline SDL_Surface SDL_LoadBMP_IO(::SDL_IOStream* src)
 	{
-		return SDL_Surface { SDL_LoadBMP_IO(rw, false) };
+		return SDL_Surface { SDL_LoadBMP_IO(src, false) };
 	}
 
-	inline SDL_Surface SDL_LoadBMP_IO(owned::SDL_IOStream rw)
+	inline SDL_Surface SDL_LoadBMP_IO(owned::SDL_IOStream src)
 	{
-		return SDL_Surface { SDL_LoadBMP_IO(rw.release(), true) };
+		return SDL_Surface { SDL_LoadBMP_IO(src.release(), true) };
 	}
 }
 
@@ -221,9 +221,9 @@ namespace owned
 
 	typedef std::unique_ptr<::SDL_Joystick, _deleter::SDL_Joystick> SDL_Joystick;
 
-	inline SDL_Joystick SDL_OpenJoystick(int device_index)
+	inline SDL_Joystick SDL_OpenJoystick(SDL_JoystickID instance_id)
 	{
-		return SDL_Joystick { ::SDL_OpenJoystick(device_index) };
+		return SDL_Joystick { ::SDL_OpenJoystick(instance_id) };
 	}
 
 	// NB: SDL_GetJoystickFromID does not return an owned ptr
@@ -244,9 +244,9 @@ namespace owned
 
 	typedef std::unique_ptr<::SDL_Gamepad, _deleter::SDL_Gamepad> SDL_Gamepad;
 
-	inline SDL_Gamepad SDL_OpenGamepad(int device_index)
+	inline SDL_Gamepad SDL_OpenGamepad(SDL_JoystickID instance_id)
 	{
-		return SDL_Gamepad { ::SDL_OpenGamepad(device_index) };
+		return SDL_Gamepad { ::SDL_OpenGamepad(instance_id) };
 	}
 }
 

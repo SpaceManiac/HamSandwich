@@ -20,9 +20,9 @@ namespace owned
 
 	typedef std::unique_ptr<::MIX_Mixer, _deleter::MIX_Mixer> MIX_Mixer;
 
-	inline MIX_Mixer MIX_CreateMixerDevice(SDL_AudioDeviceID device, const SDL_AudioSpec *spec)
+	inline MIX_Mixer MIX_CreateMixerDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec)
 	{
-		return MIX_Mixer { ::MIX_CreateMixerDevice(device, spec) };
+		return MIX_Mixer { ::MIX_CreateMixerDevice(devid, spec) };
 	}
 }
 
