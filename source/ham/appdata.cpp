@@ -212,7 +212,7 @@ static VfsStack default_vfs_stack(bool* error) {
 	(void) error;
 
 	VfsStack result;
-	int need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
+	uint32_t need_flags = SDL_ANDROID_EXTERNAL_STORAGE_READ | SDL_ANDROID_EXTERNAL_STORAGE_WRITE;
 	result.push_back(vanilla::open_android(), "", vanilla::VfsSourceKind::BaseGame);
 	if ((SDL_GetAndroidExternalStorageState() & need_flags) == need_flags) {
 		result.push_back(vanilla::open_stdio(SDL_GetAndroidInternalStoragePath()), "", vanilla::VfsSourceKind::Appdata);
