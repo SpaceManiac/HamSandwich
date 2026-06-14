@@ -1,5 +1,5 @@
 add_subdirectory("jtjson" EXCLUDE_FROM_ALL)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(double-conversion PRIVATE -Wno-unknown-warning-option)
     target_compile_options(jtjson PRIVATE -Wno-tautological-constant-out-of-range-compare)
 endif()

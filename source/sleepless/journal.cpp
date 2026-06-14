@@ -139,8 +139,8 @@ char journal[NUM_PAGES][600]={
 	// 19 - happy glade
 	"Ah, just doing some doodling...",
 	// 20 - fishing journal
-	"The waters here are polluted with minerals.  This makes electrofishing easy with an Electroreel!  It attaches to "
-	"your Red Hammer, allowing you to magnetically catch fish!",
+	("The waters here are polluted with minerals.  This makes electrofishing easy with an Electroreel!  It attaches to "
+	"your Red Hammer, allowing you to magnetically catch fish!"),
 };
 
 void FishingPage(int offX,int offY)

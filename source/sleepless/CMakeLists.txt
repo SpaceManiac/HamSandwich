@@ -5,6 +5,11 @@ HamSandwich_add_executable(
 	SOURCES ${sources}
 )
 
-if(CMAKE_COMPILER_IS_GNUCC)
-	target_compile_options(sleepless PRIVATE -Wall -Wextra -Wno-missing-field-initializers -Wno-unused-parameter -Wno-unused-but-set-variable)
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$" AND NOT MSVC)
+	target_compile_options(sleepless PRIVATE
+		-Wall -Wextra -Wpedantic
+		-Wno-missing-field-initializers
+		-Wno-unused-parameter
+		-Wno-unused-but-set-variable
+	)
 endif()

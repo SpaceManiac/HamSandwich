@@ -7,10 +7,12 @@ HamSandwich_add_executable(
 target_sources(supreme PRIVATE supreme.manifest)
 target_link_libraries(supreme steam_api minizip strnatcmp)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$" AND NOT MSVC)
 	target_compile_options(supreme PRIVATE
 		# Lots of warnings, but some exclusions
 		-Wall -Wextra -Wpedantic
-		-Wno-unused-parameter -Wno-unused-but-set-variable -Wno-unknown-warning-option
+		-Wno-unused-parameter
+		-Wno-unused-but-set-variable
+		-Wno-unknown-warning-option
 	)
 endif()

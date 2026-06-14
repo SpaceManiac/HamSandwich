@@ -24,7 +24,7 @@ else()
 	endif()
 
 	add_subdirectory("curl" EXCLUDE_FROM_ALL)
-	if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
 		target_compile_options(libcurl_shared PRIVATE -Wno-format)
 	endif()
 	install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/curl/COPYING" TYPE BIN COMPONENT launcher/executables RENAME "LICENSE.curl.txt")

@@ -20,7 +20,7 @@ if(ham_library_type STREQUAL "SHARED")
 	install(TARGETS ham LIBRARY COMPONENT generic/executables RUNTIME COMPONENT generic/executables)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT MSVC)
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$" AND NOT MSVC)
 	target_compile_options(ham PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
