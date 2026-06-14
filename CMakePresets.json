@@ -9,7 +9,7 @@
 			"name": "base",
 			"hidden": true,
 			"generator": "Ninja",
-			"binaryDir": "${sourceDir}/build/cmake-${presetName}$env{VisualStudioVersion}",
+			"binaryDir": "${sourceDir}/build/cmake-${presetName}$env{VisualStudioVersion}$env{MSYSTEM}",
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Debug"
 			}

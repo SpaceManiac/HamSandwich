@@ -53,7 +53,7 @@ endif
 
 # Variables
 CMAKE ?= cmake
-BUILD_DIR := build/cmake-$(preset)
+BUILD_DIR := build/cmake-$(preset)$(MSYSTEM)
 BUILD_NINJA := $(BUILD_DIR)/build.ninja
 
 ifeq ($(MAKECMDGOALS),)

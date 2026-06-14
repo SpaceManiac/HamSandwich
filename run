@@ -139,11 +139,13 @@ fi
 debugext=
 if test "$os" = "windows"; then
 	debugext=".exe"
+else
+	MSYSTEM=
 fi
 
 # Default debug configuration
 debugdir="$PWD/build/install"
-cmakedir="$PWD/build/cmake-$preset"
+cmakedir="$PWD/build/cmake-$preset${MSYSTEM:-}"
 debugcommand="$debugdir/$project$debugext"
 debugargs=()
 debugenvs=()
