@@ -14,12 +14,19 @@ else()
 	set(CURL_ENABLE_EXPORT_TARGET OFF)
 	set(BUILD_EXAMPLES OFF)
 	set(BUILD_TESTING OFF)
-	set(CURL_ZLIB OFF CACHE INTERNAL "") # Skip find_package(zlib)...
-	set(ZLIB_FOUND TRUE) # ...but take the targets from add_subdirectory.
 	set(CURL_BROTLI OFF CACHE INTERNAL "")
 	set(CURL_ZSTD OFF CACHE INTERNAL "")
 	set(USE_LIBIDN2 OFF)
 	set(USE_NGHTTP2 OFF)
+
+	# Skip find_package(zlib) but build with zlib support anyways.
+	set(CURL_ZLIB OFF CACHE INTERNAL "")
+	set(ZLIB_FOUND TRUE)
+	# Preseed OpenSSL checks, because our ZLIB::ZLIB is not imported and thus
+	# not available at check time.
+	set(HAVE_DES_ECB_ENCRYPT TRUE)
+	set(HAVE_SSL_SET0_WBIO TRUE)
+	set(HAVE_OPENSSL_SRP TRUE)
 
 	if(WIN32)
 		set(CURL_USE_SCHANNEL ON)
