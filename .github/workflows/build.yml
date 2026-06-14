@@ -11,15 +11,15 @@ env:
 jobs:
   windows:
     name: Windows (MSVC)
-    runs-on: windows-2025
+    runs-on: windows-2025-vs2026
     steps:
       - uses: actions/checkout@v6
       - name: Build Windows release
         shell: cmd
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+          call "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
           cmake --preset windows-i686-release
-          cmake --build build/cmake-windows-i686-release17.0 --target install
+          cmake --build build/cmake-windows-i686-release18.0 --target install
       - if: github.event_name == 'push' && github.ref_name == 'master' && env.ITCH_GAME && env.BUTLER_API_KEY
         run: tools/bootstrap/butler push --if-changed build/install "${ENV:ITCH_GAME}:windows" ("--userversion=" + (git rev-parse --short=10 HEAD))
   mingw32:
