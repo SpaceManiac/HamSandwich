@@ -32,8 +32,8 @@ struct DisplayObj
 	word hue;
 	char bright;
 	char light[9];
-	int prev,next;
 };
+bool operator<(const DisplayObj& lhs, const DisplayObj &rhs);
 
 class DisplayList
 {
@@ -45,9 +45,7 @@ class DisplayList
 		void Render();
 
 	private:
-		void HookIn(int me);
-
-		int head,nextfree;
+		int nextfree;
 		DisplayObj dispObj[MAX_DISPLAY_OBJS];
 };
 

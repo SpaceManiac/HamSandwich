@@ -1,4 +1,5 @@
 #include "display.h"
+#include <algorithm>
 #include "particle.h"
 #include "jamulfmv.h"
 #include "game.h"
@@ -262,60 +263,8 @@ void ParticleDraw(int x,int y,int z,byte color,byte size,byte flags)
 // from here on out it's class DISPLAYLIST
 
 DisplayList::DisplayList()
+	: nextfree(0)
 {
-	ClearList();
-}
-
-void DisplayList::HookIn(int me)
-{
-	int i;
-
-	if(head==-1)
-	{
-		head=me;
-		dispObj[me].prev=-1;
-		dispObj[me].next=-1;
-		return;
-	}
-	else
-	{
-		// shadows go on the head of the list always, drawn before anything else
-		// (and the order of shadows doesn't matter, of course)
-		if(dispObj[me].flags&DISPLAY_SHADOW)
-		{
-			dispObj[me].next=head;
-			dispObj[head].prev=me;
-			dispObj[me].prev=-1;
-			head=me;
-			return;
-		}
-
-		i=head;
-		while(i!=-1)
-		{
-			if((!(dispObj[i].flags&DISPLAY_SHADOW)) &&
-				(dispObj[i].y>dispObj[me].y || (dispObj[i].y==dispObj[me].y && dispObj[i].z>dispObj[me].z)))
-			{
-				dispObj[me].prev=dispObj[i].prev;
-				dispObj[me].next=i;
-				if(dispObj[me].prev!=-1)
-					dispObj[dispObj[me].prev].next=me;
-				dispObj[i].prev=me;
-				if(head==i)
-					head=me;
-				return;
-			}
-			if(dispObj[i].next==-1)
-			{
-				dispObj[i].next=me;
-				dispObj[me].prev=i;
-				dispObj[me].next=-1;
-				return;
-			}
-			i=dispObj[i].next;
-		}
-		return; // this would be bad, but hopefully can't occur
-	}
 }
 
 bool DisplayList::DrawSprite(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags)
@@ -337,31 +286,41 @@ bool DisplayList::DrawSprite(int x,int y,int z,byte hue,char bright,sprite_t *sp
 	dispObj[i].x=x;
 	dispObj[i].y=y;
 	dispObj[i].z=z;
-	HookIn(i);
 	return true;
 }
 
 void DisplayList::ClearList()
 {
-	int i;
+	nextfree = 0;
+}
 
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
+bool operator<(const DisplayObj& lhs, const DisplayObj& rhs)
+{
+	if ((lhs.flags & DISPLAY_SHADOW) != (rhs.flags & DISPLAY_SHADOW))
 	{
-		dispObj[i].prev=-1;
-		dispObj[i].next=-1;
-		dispObj[i].flags=0;
+		// shadows go on the head of the list always, drawn before anything else
+		// (and the order of shadows doesn't matter, of course)
+		return (lhs.flags & DISPLAY_SHADOW) > (rhs.flags & DISPLAY_SHADOW);
 	}
-	head=-1;
-	nextfree=0;
+	else if (lhs.y != rhs.y)
+	{
+		return lhs.y < rhs.y;
+	}
+	else if (lhs.z != rhs.z)
+	{
+		return lhs.z < rhs.z;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void DisplayList::Render()
 {
-	int i;
+	std::stable_sort(&dispObj[0], &dispObj[nextfree]);
 
-	i=head;
-
-	while(i!=-1)
+	for(int i = 0; i < nextfree; ++i)
 	{
 		if((dispObj[i].flags&DISPLAY_DRAWME) && (dispObj[i].spr))
 		{
@@ -415,7 +374,6 @@ void DisplayList::Render()
 				}
 			}
 		}
-		i=dispObj[i].next;
 	}
 }
 
