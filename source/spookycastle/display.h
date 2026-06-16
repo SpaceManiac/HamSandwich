@@ -27,33 +27,30 @@
 #define DISPLAY_GLOW		64
 #define DISPLAY_TRANSTILE	128
 
-typedef struct displayObj_t
+struct DisplayObj
 {
-	int x,y,z;
 	sprite_t *spr;
+	int x,y,z;
+	byte flags;
 	byte hue;
 	char bright;
-	byte flags;
 	int prev,next;
-} displayObj_t;
+};
 
 class DisplayList
 {
 	public:
-		DisplayList(void);
-		~DisplayList(void);
+		DisplayList();
 
 		bool DrawSprite(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags);
-		void ClearList(void);
-		void Render(void);
+		void ClearList();
+		void Render();
+
 	private:
-
 		void HookIn(int me);
-		int GetOpenSlot(void);
 
-
-		displayObj_t dispObj[MAX_DISPLAY_OBJS];
 		int head,nextfree;
+		DisplayObj dispObj[MAX_DISPLAY_OBJS];
 };
 
 bool InitDisplay(MGLDraw *mainmgl);

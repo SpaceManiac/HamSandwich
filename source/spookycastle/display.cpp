@@ -261,27 +261,9 @@ void ParticleDraw(int x,int y,int z,byte color,byte size,byte flags)
 //---------------------------------------------------------------------------------------
 // from here on out it's class DISPLAYLIST
 
-DisplayList::DisplayList(void)
+DisplayList::DisplayList()
 {
 	ClearList();
-}
-
-DisplayList::~DisplayList(void)
-{
-	// nothin
-}
-
-int DisplayList::GetOpenSlot(void)
-{
-	int i;
-
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
-	{
-		if(dispObj[i].flags==0)
-			return i;
-	}
-
-	return -1;
 }
 
 void DisplayList::HookIn(int me)
@@ -338,15 +320,16 @@ void DisplayList::HookIn(int me)
 
 bool DisplayList::DrawSprite(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags)
 {
-	int i;
+	if (nextfree >= MAX_DISPLAY_OBJS)
+	{
+		return false;
+	}
 
 	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
 	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
 		return true;
-	i=GetOpenSlot();
-	if(i==-1)
-		return false;
 
+	int i = nextfree++;
 	dispObj[i].hue=hue;
 	dispObj[i].bright=bright;
 	dispObj[i].flags=flags;
@@ -358,7 +341,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,byte hue,char bright,sprite_t *sp
 	return true;
 }
 
-void DisplayList::ClearList(void)
+void DisplayList::ClearList()
 {
 	int i;
 
@@ -372,7 +355,7 @@ void DisplayList::ClearList(void)
 	nextfree=0;
 }
 
-void DisplayList::Render(void)
+void DisplayList::Render()
 {
 	int i;
 

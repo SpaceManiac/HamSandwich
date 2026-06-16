@@ -37,34 +37,31 @@
 #define TEXTFILE_COMPUTER	2
 #define TEXTFILE_MAX		3
 
-typedef struct displayObj_t
+struct DisplayObj
 {
-	int x,y,z,z2;
 	sprite_t *spr;
+	int x,y,z,z2;
+	word flags;
 	word hue;
 	char bright;
-	word flags;
 	char light[9];
 	int prev,next;
-} displayObj_t;
+};
 
 class DisplayList
 {
 	public:
-		DisplayList(void);
-		~DisplayList(void);
+		DisplayList();
 
 		bool DrawSprite(int x,int y,int z,int z2,word hue,char bright,sprite_t *spr,word flags);
-		void ClearList(void);
-		void Render(void);
+		void ClearList();
+		void Render();
+
 	private:
-
 		void HookIn(int me);
-		int GetOpenSlot(void);
 
-
-		displayObj_t dispObj[MAX_DISPLAY_OBJS];
 		int head,nextfree;
+		DisplayObj dispObj[MAX_DISPLAY_OBJS];
 };
 
 bool InitDisplay(MGLDraw *mainmgl);

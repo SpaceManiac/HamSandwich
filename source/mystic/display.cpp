@@ -333,7 +333,7 @@ void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression
 	int x;
 
 	x = midx - FontStrLen(s, gameFont[font]) * (int)compression/200;
-	
+
 	for (char ch : s)
 	{
 		FontPrintCharBright(x, y, ch, bright, gameFont[font]);
@@ -413,21 +413,9 @@ void ParticleDraw(int x,int y,int z,byte color,byte size,byte flags)
 //---------------------------------------------------------------------------------------
 // from here on out it's class DISPLAYLIST
 
-DisplayList::DisplayList(void)
+DisplayList::DisplayList()
 {
 	ClearList();
-}
-
-DisplayList::~DisplayList(void)
-{
-	// nothin
-}
-
-int DisplayList::GetOpenSlot(void)
-{
-	if (nextfree >= MAX_DISPLAY_OBJS)
-		return -1;
-	return nextfree++;
 }
 
 void DisplayList::HookIn(int me)
@@ -484,6 +472,11 @@ void DisplayList::HookIn(int me)
 
 bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *spr,byte flags)
 {
+	if (nextfree >= MAX_DISPLAY_OBJS)
+	{
+		return false;
+	}
+
 	SDL_Rect rect;
 	if (!spr || spr == (sprite_t*)1 || (flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE)))
 	{
@@ -518,10 +511,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *sp
 	}
 
 	// Actually insert.
-	int i=GetOpenSlot();
-	if(i==-1)
-		return false;
-
+	int i = nextfree++;
 	dispObj[i].hue=hue;
 	dispObj[i].bright=bright;
 	dispObj[i].flags=flags;
@@ -535,7 +525,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *sp
 	return true;
 }
 
-void DisplayList::ClearList(void)
+void DisplayList::ClearList()
 {
 	int i;
 
@@ -549,7 +539,7 @@ void DisplayList::ClearList(void)
 	nextfree=0;
 }
 
-void DisplayList::Render(void)
+void DisplayList::Render()
 {
 	int i;
 

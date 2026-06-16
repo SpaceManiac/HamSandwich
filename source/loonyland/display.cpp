@@ -464,21 +464,9 @@ void LightningDraw(int x,int y,int x2,int y2,byte bright,char range)
 //---------------------------------------------------------------------------------------
 // from here on out it's class DISPLAYLIST
 
-DisplayList::DisplayList(void)
+DisplayList::DisplayList()
 {
 	ClearList();
-}
-
-DisplayList::~DisplayList(void)
-{
-	// nothin
-}
-
-int DisplayList::GetOpenSlot(void)
-{
-	if (nextfree >= MAX_DISPLAY_OBJS)
-		return -1;
-	return nextfree++;
 }
 
 void DisplayList::HookIn(int me)
@@ -535,6 +523,11 @@ void DisplayList::HookIn(int me)
 
 bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite_t *spr,word flags)
 {
+	if (nextfree >= MAX_DISPLAY_OBJS)
+	{
+		return false;
+	}
+
 	SDL_Rect rect;
 	if (!spr || spr==(sprite_t*)1 || (flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE)))
 	{
@@ -569,10 +562,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite
 	}
 
 	// Actually insert.
-	int i=GetOpenSlot();
-	if(i==-1)
-		return false;
-
+	int i = nextfree++;
 	dispObj[i].hue=hue;
 	dispObj[i].bright=bright;
 	dispObj[i].flags=flags;
@@ -592,7 +582,7 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite
 	return true;
 }
 
-void DisplayList::ClearList(void)
+void DisplayList::ClearList()
 {
 	int i;
 
@@ -603,10 +593,10 @@ void DisplayList::ClearList(void)
 		dispObj[i].flags=0;
 	}
 	head=-1;
-	nextfree=0;
+	nextfree = 0;
 }
 
-void DisplayList::Render(void)
+void DisplayList::Render()
 {
 	int i;
 
