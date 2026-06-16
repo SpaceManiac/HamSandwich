@@ -75,6 +75,7 @@ void DarkPalette(MGLDraw* mgl)
 		pal2[i].r = (byte)(pal[i].r >> 1);
 		pal2[i].g = (byte)(pal[i].g >> 1);
 		pal2[i].b = (byte)(pal[i].b >> 1);
+		pal2[i].a = 255;
 	}
 	pal2[175] = pal[175];
 	pal2[255] = pal[255];
@@ -132,6 +133,7 @@ void GammaCorrect(MGLDraw *mgl, byte gamma)
 		pal2[i].r = r;
 		pal2[i].g = g;
 		pal2[i].b = b;
+		pal2[i].a = 255;
 	}
 
 	mgl->SetSecondaryPalette(pal2);
