@@ -138,7 +138,6 @@ void sprite_t::GetCoords(int x,int y,int *rx,int *ry,int *rx2,int *ry2) const
 
 void sprite_t::Draw(int x, int y, MGLDraw *mgl) const
 {
-	return Draw(x, y, mgl, Recolor());
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -246,7 +245,6 @@ void sprite_t::Draw(int x, int y, MGLDraw *mgl) const
 
 void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright) const
 {
-	return Draw(x, y, mgl, Recolor::Bright(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -366,7 +364,6 @@ void sprite_t::DrawBright(int x, int y, MGLDraw *mgl, char bright) const
 
 void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) const
 {
-	return Draw(x, y, mgl, Recolor::Colored(color, bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -477,7 +474,6 @@ void sprite_t::DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) 
 
 void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright) const
 {
-	return Draw(x, y, mgl, Recolor::OffColor(fromColor, toColor, bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -595,7 +591,6 @@ void sprite_t::DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toC
 // Default in Spooky Castle, Lunatic, Supreme, Eddie, Mystic, Sleepless.
 void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 {
-	return Draw(x, y, mgl, Recolor::Ghost(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -709,7 +704,6 @@ void sprite_t::DrawGhost(int x, int y, MGLDraw *mgl, char bright) const
 // Default in Stockboy, Loonyland, Loonyland 2.
 void sprite_t::DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const
 {
-	return Draw(x, y, mgl, Recolor::GhostBright(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
@@ -820,7 +814,6 @@ void sprite_t::DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const
 
 void sprite_t::DrawGlow(int x, int y, MGLDraw *mgl, char bright) const
 {
-	return Draw(x, y, mgl, Recolor::Glow(bright));
 	const byte *src;
 	byte *dst, b, skip;
 	int pitch;
