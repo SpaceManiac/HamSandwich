@@ -3,12 +3,18 @@
 
 #include "jamultypes.h"
 
-byte SprModifyColor(byte color, byte hue);
 byte SprGetColor(byte color);
+byte SprModifyColor(byte color, byte hue);
 byte SprModifyLight(byte color, int8_t bright);
-byte SprModifyGhost(byte src, byte dst, int8_t bright);
-byte SprModifyGhostBright(byte src, byte dst, int8_t bright);
 byte SprModifyGlow(byte src, byte dst, int8_t bright);
+// Ghostly parts are NOT affected by brightness.
+// Default in Spooky Castle, Lunatic, Supreme, Eddie, Mystic, Sleepless.
+byte SprModifyGhost(byte src, byte dst, int8_t bright);
+// Ghostly parts ARE affected by brightness.
+// Default in Stockboy, Loonyland, Loonyland 2.
+byte SprModifyGhostBright(byte src, byte dst, int8_t bright);
+
+#include "recolor.inl"
 
 // Fully-general recolor map. Each input hue has an independent output hue and draw mode.
 class Recolor
