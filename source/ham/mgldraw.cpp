@@ -55,6 +55,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	, lastKeyPressed(0)
 	, lastRawCode(0)
 	, buffer(nullptr)
+	, prevTexture(nullptr)
 {
 	_globalMGLDraw = this;
 
@@ -338,8 +339,9 @@ void MGLDraw::ResizeBuffer(int w, int h, bool clamp)
 	}
 
 	// Resize the 8-bit buffer, truecolor buffer, and GPU texture.
-	SDL_DestroyTexture(texture);
-
+	// Save the texture and delete it at the start of the next frame to avoid
+	// having to flush the GPU command queue here just to delete it.
+	prevTexture = texture;
 	xRes = pitch = w;
 	yRes = h;
 
@@ -615,6 +617,12 @@ TASK(void) MGLDraw::FinishFlip(void)
 		{
 			softJoystick->handle_event(this, e);
 		}
+	}
+
+	if (prevTexture)
+	{
+		SDL_DestroyTexture(prevTexture);
+		prevTexture = nullptr;
 	}
 
 	AWAIT coro::next_frame();

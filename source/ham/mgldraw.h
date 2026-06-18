@@ -139,6 +139,8 @@ protected:
 	SDL_Texture *texture;
 	std::unique_ptr<RGB[]> buffer;
 
+	SDL_Texture *prevTexture;
+
 	friend class SoftJoystick;
 	std::unique_ptr<SoftJoystick> softJoystick;
 };
