@@ -673,11 +673,7 @@ SteamManager* SteamManager::Init(const char* appId)
 	if (appId && !getenv("SteamAppId"))
 	{
 		// setenv is wildly non-threadsafe, so do this before spawning threads
-#ifdef _WIN32
-		_putenv_s("SteamAppId", appId);
-#else
-		setenv("SteamAppId", appId, 0);
-#endif
+		SDL_setenv_unsafe("SteamAppId", appId, 0);
 	}
 
 	if (SteamAPI_Init())
