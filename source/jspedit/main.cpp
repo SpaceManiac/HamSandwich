@@ -13,7 +13,7 @@ extern const size_t embed_verdana_size;
 extern const unsigned char embed_verdana[];
 extern const size_t embed_icons_size;
 extern const unsigned char embed_icons[];
-#if !defined(_WIN32) && !defined(__clang__)
+#if !defined(_WIN32)
 extern const size_t embed_game_icon_size;
 extern const unsigned char embed_game_icon[];
 #endif
@@ -37,8 +37,8 @@ int main(int argc, char** argv) {
     SDL_ShowWindow(window);
     SDL_GetWindowSize(window, &DISPLAY_WIDTH, &DISPLAY_HEIGHT);
 
-#if !defined(_WIN32) && !defined(__clang__)
-    SDL_Surface *surface = IMG_Load_RW(SDL_IOFromConstMem(embed_game_icon, embed_game_icon_size), true);
+#if !defined(_WIN32)
+    SDL_Surface *surface = IMG_Load_IO(SDL_IOFromConstMem(embed_game_icon, embed_game_icon_size), true);
     SDL_SetWindowIcon(window, surface);
     SDL_DestroySurface(surface);
 #endif
