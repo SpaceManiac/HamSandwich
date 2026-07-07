@@ -4,7 +4,7 @@
 #include <functional>
 
 #ifdef USE_COROUTINES
-#include "coro_active.inc.h"
+#include "coro.inl"
 #else  // USE_COROUTINES
 
 namespace coro {
