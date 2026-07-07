@@ -11,7 +11,7 @@ typedef struct SDL_IOStream SDL_IOStream;
 
 class MGLDraw;
 
-class sprite_t
+class HAM_API sprite_t
 {
 	sprite_t(const sprite_t &) = delete;
 	void operator=(const sprite_t &) = delete;
@@ -47,11 +47,16 @@ protected:
 	std::vector<byte> data;
 };
 
-class sprite_set_t
+class HAM_API sprite_set_t
 {
+	sprite_set_t(const sprite_set_t &) = delete;
+	void operator=(const sprite_set_t &) = delete;
 public:
 	sprite_set_t();
 	explicit sprite_set_t(const char *fname);
+
+	sprite_set_t(sprite_set_t &&) noexcept = default;
+	sprite_set_t &operator=(sprite_set_t &&) noexcept = default;
 
 	bool Save(const char *fname) const;
 	bool Load(const char *fname);
@@ -62,9 +67,9 @@ protected:
 	std::vector<sprite_t> spr;
 };
 
-void NewComputerSpriteFix(const char *fname);
+HAM_API void NewComputerSpriteFix(const char *fname);
 // x2 and y2 are inclusive.
-void SetSpriteConstraints(int x, int y, int x2, int y2);
-void ClearSpriteConstraints();
+HAM_API void SetSpriteConstraints(int x, int y, int x2, int y2);
+HAM_API void ClearSpriteConstraints();
 
 #endif

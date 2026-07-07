@@ -8,9 +8,10 @@
 #include <array>
 #include <span>
 #include <SDL3/SDL_stdinc.h>
+#include "jamultypes.h"
 
 // A variant describing several possible places a string might be written.
-class StringDestination
+class HAM_API StringDestination
 {
 	void* ptr;
 	size_t sz;
@@ -41,16 +42,16 @@ public:
 
 // Like strlcpy. Always leaves a null terminator. Returns the remaining slice of the buffer.
 // Use in preference to strcpy, strcat, strncpy, strncat, strlcpy, strlcat.
-std::span<char> ham_strcpy(std::span<char> dst, std::string_view src);
+HAM_API std::span<char> ham_strcpy(std::span<char> dst, std::string_view src);
 // To avoid mistakes. Use operator= or .assign instead.
 void ham_strcpy(std::string& dst, std::string_view src) = delete;
 
 // Like sprintf or snprintf but auto-detects destination buffer length.
-std::span<char> ham_sprintf(std::span<char> dst, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
+HAM_API std::span<char> ham_sprintf(std::span<char> dst, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
 // To avoid mistakes. Use .clear() and string_appendf instead.
 void ham_sprintf(std::string& dst, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2) = delete;
 
 // sprintf-style append to a std::string.
-void string_appendf(std::string* buffer, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
+HAM_API void string_appendf(std::string* buffer, SDL_PRINTF_FORMAT_STRING const char* format, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 #endif

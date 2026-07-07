@@ -1,6 +1,8 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "jamultypes.h"
+
 // Conditionals for warnings/analysis based on SDL_stdinc.h
 // The difference is we use `gnu_printf` instead of just `printf`.
 #ifdef __GNUC__
@@ -21,9 +23,9 @@
 #endif  // _MSC_VER
 
 // Debug and error logging functions
-void LogInit();
-void LogDebug(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
-void LogError(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
+HAM_API void LogInit();
+HAM_API void LogDebug(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
+HAM_API void LogError(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
 
 #undef PRINTF_FUNC
 #undef PRINTF_FMT

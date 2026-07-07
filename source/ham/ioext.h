@@ -3,10 +3,11 @@
 
 #include <istream>
 #include <memory>
+#include "jamultypes.h"
 
 struct SDL_IOStream;
 
-class SdlRwStream : public std::iostream
+class HAM_API SdlRwStream : public std::iostream
 {
 	std::unique_ptr<std::streambuf> sb;
 public:

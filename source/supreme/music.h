@@ -20,17 +20,12 @@
 
 void PlaySong(const char *fname);
 void PlaySongForce(const char *fname);
-void StopSong(void);
-
-void SetMusicVolume(int vol);
 
 const char *CurSongTitle(void);
 
-void PickSongToPlay(void);
 void PlayNextSong(void);
 void PlayPrevSong(void);
 
-void UpdateMusic(void);
 void ChooseNextSong(void);
 
 #endif

@@ -4,8 +4,9 @@
 #include <vector>
 #include <string>
 #include "vanilla_extract.h"
+#include "jamultypes.h"
 
-struct AssetSpec
+struct HAM_API AssetSpec
 {
 	const char* mountpoint;
 	const char* kind;
@@ -16,13 +17,13 @@ struct AssetSpec
 	bool set_enabled(bool enabled);
 };
 
-struct HamSandwichMetadata
+struct HAM_API HamSandwichMetadata
 {
 	const char* appdata_folder_name;
 	const AssetSpec* default_asset_specs;
 };
 
-struct AddonSpec
+struct HAM_API AddonSpec
 {
 	vanilla::WriteVfs* source_vfs;
 	std::string filename;

@@ -318,7 +318,6 @@ void ExitSound(void);
 void MakeSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalSound(int snd);
 void PlaySong(int sng);
-void StopSong(void);
 void ReplaySong(void);
 void VolumeSong(byte hi);
 void VolumeSound(byte hi);

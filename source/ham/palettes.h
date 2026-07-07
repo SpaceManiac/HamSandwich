@@ -5,14 +5,14 @@
 
 class MGLDraw;
 
-void WaterPalette(MGLDraw *mgl);
-void LavaPalette(MGLDraw *mgl);
-void DumbSidePalette(MGLDraw *mgl);
-void GreyPalette(MGLDraw *mgl);
-void DarkPalette(MGLDraw *mgl);
-void CyclePalette(MGLDraw *mgl, int c);
-void ReversePalette(MGLDraw *mgl);
+HAM_API void WaterPalette(MGLDraw *mgl);
+HAM_API void LavaPalette(MGLDraw *mgl);
+HAM_API void DumbSidePalette(MGLDraw *mgl);
+HAM_API void GreyPalette(MGLDraw *mgl);
+HAM_API void DarkPalette(MGLDraw *mgl);
+HAM_API void CyclePalette(MGLDraw *mgl, int c);
+HAM_API void ReversePalette(MGLDraw *mgl);
 
-void GammaCorrect(MGLDraw *mgl, byte gamma);
+HAM_API void GammaCorrect(MGLDraw *mgl, byte gamma);
 
 #endif // PALETTES_H

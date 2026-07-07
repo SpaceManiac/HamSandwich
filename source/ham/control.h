@@ -72,45 +72,45 @@ enum RawGamepadAxis :byte
 };
 #define RAWGAMEPADAXIS_BASE (22)
 
-void InitControls(byte scheme=NORMAL_CONTROL_SCHEME);
+HAM_API void InitControls(byte scheme=NORMAL_CONTROL_SCHEME);
 
 // Get controls which are currently held. Union of all keyboards and joysticks.
-byte GetKeyControls();
-byte GetControls();
-byte GetPlayerControls(byte player);
-byte GetTaps();  // Tapped since last GetTaps().
+HAM_API byte GetKeyControls();
+HAM_API byte GetControls();
+HAM_API byte GetPlayerControls(byte player);
+HAM_API byte GetTaps();  // Tapped since last GetTaps().
 
 // Get arrow keys (non-mappable) which are currently held. Return=B1.
-byte GetArrows();
-byte GetArrowTaps();  // Tapped since last GetArrowTaps().
+HAM_API byte GetArrows();
+HAM_API byte GetArrowTaps();  // Tapped since last GetArrowTaps().
 
-byte LastScanCode();
-const char *ScanCodeText(byte s);
+HAM_API byte LastScanCode();
+HAM_API const char *ScanCodeText(byte s);
 
-dword GetJoyButtons();  // Joystick-specific indexes.
-dword GetGamepadButtons();  // x & (1 << SDL_GAMECONTROLLER_BUTTON_*)
-void GetLeftStick(int16_t* x, int16_t* y, byte* dpad);
-bool ShowGamepadText();
+HAM_API dword GetJoyButtons();  // Joystick-specific indexes.
+HAM_API dword GetGamepadButtons();  // x & (1 << SDL_GAMECONTROLLER_BUTTON_*)
+HAM_API void GetLeftStick(int16_t* x, int16_t* y, byte* dpad);
+HAM_API bool ShowGamepadText();
 
 // Options menu support.
-void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
-void SetJoystickBindings(int nbuttons, const byte* buttons);
-void ControlSetUseJoystick(byte player, byte joystickNumber);
+HAM_API void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
+HAM_API void SetJoystickBindings(int nbuttons, const byte* buttons);
+HAM_API void ControlSetUseJoystick(byte player, byte joystickNumber);
 
 typedef struct SDL_Gamepad SDL_Gamepad;
-SDL_Gamepad* ActiveController();
+HAM_API SDL_Gamepad* ActiveController();
 
 // mystic control mode --------------
-bool AutoRepeatTapped(dword c);
-bool ButtonTapped(dword c);
-bool ButtonHeld(dword c);
-dword RawGamepadToControls(void);
-dword GetRawGamepad(void);
-void UpdateControls(void);
-void UpdateRawJoystick(void);
-void LockOutControl(dword c,bool locked);
-byte ControlScheme(void);
-void SetDpadToMode(bool yep);
-void SetInMenu(bool inMenu);
+HAM_API bool AutoRepeatTapped(dword c);
+HAM_API bool ButtonTapped(dword c);
+HAM_API bool ButtonHeld(dword c);
+HAM_API dword RawGamepadToControls(void);
+HAM_API dword GetRawGamepad(void);
+HAM_API void UpdateControls(void);
+HAM_API void UpdateRawJoystick(void);
+HAM_API void LockOutControl(dword c,bool locked);
+HAM_API byte ControlScheme(void);
+HAM_API void SetDpadToMode(bool yep);
+HAM_API void SetInMenu(bool inMenu);
 
 #endif  // HAMCONTROL_H

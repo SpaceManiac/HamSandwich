@@ -74,7 +74,6 @@
 
 void MakeSound(int snd,int priority);
 void PlaySong(int sng);
-void StopSong(void);
 void ReplaySong(void);
 void VolumeSong(byte hi);
 

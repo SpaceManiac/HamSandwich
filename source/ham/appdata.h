@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "jamultypes.h"
 #include "owned_sdl.h"
 
 typedef struct SDL_IOStream SDL_IOStream;
@@ -16,21 +17,21 @@ namespace vanilla
 // go to the write location; reads check write location first then descend the
 // stack. See appdata.cpp for details on what the stack is on each platform.
 
-const char* EscapeBinDirectory();
-void AppdataInit(const HamSandwichMetadata* metadata);
-bool AppdataIsInit();
-vanilla::VfsStack* Vfs();
+HAM_API const char* EscapeBinDirectory();
+HAM_API void AppdataInit(const HamSandwichMetadata* metadata);
+HAM_API bool AppdataIsInit();
+HAM_API vanilla::VfsStack* Vfs();
 
 // Open for reading.
-owned::SDL_IOStream AppdataOpen(const char* filename);
+HAM_API owned::SDL_IOStream AppdataOpen(const char* filename);
 // Open for writing.
-owned::SDL_IOStream AppdataOpen_Write(const char* filename);
+HAM_API owned::SDL_IOStream AppdataOpen_Write(const char* filename);
 // Delete file. Only applies to written files; cannot delete asset files.
-void AppdataDelete(const char* filename);
+HAM_API void AppdataDelete(const char* filename);
 // List the contents of a directory, mixing .
-std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
+HAM_API std::vector<std::string> ListDirectory(const char* directory, const char* extension = nullptr, size_t maxlen = 0);
 
 // On platforms that need it, ensure appdata is really saved.
-void AppdataSync();
+HAM_API void AppdataSync();
 
 #endif  // APPDATA_H

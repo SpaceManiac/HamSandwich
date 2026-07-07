@@ -1,7 +1,5 @@
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
-if(WIN32 OR EMSCRIPTEN)
-	# TODO: Must explicitly declare exported symbols on Windows before it can
-	# be a shared library.
+if(EMSCRIPTEN)
 	set(ham_library_type STATIC)
 else()
 	set(ham_library_type SHARED)
@@ -17,7 +15,17 @@ endif()
 target_include_directories(ham INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}")
 
 if(ham_library_type STREQUAL "SHARED")
-	install(TARGETS ham LIBRARY COMPONENT generic/executables RUNTIME COMPONENT generic/executables)
+	if(WIN32)
+		target_compile_definitions(ham PRIVATE "HAM_API=__declspec(dllexport)")
+		target_compile_definitions(ham INTERFACE "HAM_API=__declspec(dllimport)")
+	endif()
+
+	install(
+		TARGETS ham
+		ARCHIVE EXCLUDE_FROM_ALL
+		LIBRARY COMPONENT generic/executables
+		RUNTIME COMPONENT generic/executables
+	)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$" AND NOT MSVC)

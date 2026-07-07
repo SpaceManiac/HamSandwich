@@ -6,9 +6,9 @@
 #include "owned_sdl.h"
 #include <map>
 
-void SoftJoystickNumButtons(byte n);
-byte SoftJoystickState();
-byte SoftJoystickTaps();
+HAM_API void SoftJoystickNumButtons(byte n);
+HAM_API byte SoftJoystickState();
+HAM_API byte SoftJoystickTaps();
 
 struct Element {
 	SDL_FRect rect;
