@@ -1,5 +1,5 @@
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
-if(EMSCRIPTEN)
+if(WIN32 OR EMSCRIPTEN)
 	set(ham_library_type STATIC)
 else()
 	set(ham_library_type SHARED)
