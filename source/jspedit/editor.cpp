@@ -29,6 +29,7 @@ typedef std::function<void(std::string)> Callback;
 
 void SDLCALL on_file_selected(void *ud, char const* const* filelist, int filter)
 {
+	(void)filter;
 	std::unique_ptr<Callback> callback { (Callback*)ud };
 
 	if (!filelist)

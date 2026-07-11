@@ -10,8 +10,8 @@
 
 namespace coro {
 
-HAM_API inline void next_frame() {}
-HAM_API inline void launch(std::function<void()> entry_point) { entry_point(); }
+inline void next_frame() {}
+inline void launch(std::function<void()> entry_point) { entry_point(); }
 
 }  // namespace coro
 
