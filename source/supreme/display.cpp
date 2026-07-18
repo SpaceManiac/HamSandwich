@@ -11,6 +11,7 @@
 #include "message.h"
 #include "appdata.h"
 #include "ioext.h"
+#include "log.h"
 
 mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
@@ -136,59 +137,62 @@ void LoadText(const char *nm,byte mode)
 
 TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 {
-	int speed;
-
-	char *fname;
-	char *other;
 	char nm[64];
-
 	std::string copy = str;
 
-	fname=strtok(copy.data(),",\n");
+	char *fname = strtok(copy.data(),",\n");
 	if(!fname)
 		CO_RETURN;
 
-	other=strtok(NULL,",\n");
+	char *other = strtok(NULL,",\n");
+
+	const char* extension = "";
+	size_t dot = std::string_view(fname).rfind('.');
+	if (dot != std::string::npos)
+	{
+		extension = &fname[dot];
+	}
 
 	// BMP loading
-	if((fname[strlen(fname)-3]=='b' || fname[strlen(fname)-3]=='B') &&
-	   (fname[strlen(fname)-2]=='m' || fname[strlen(fname)-2]=='M') &&
-	   (fname[strlen(fname)-1]=='p' || fname[strlen(fname)-1]=='P'))
+	if (!strcasecmp(extension, ".bmp"))
 	{
 		EnterPictureDisplay();
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
 		sprintf(nm,"user/%s",fname);
 		GetDisplayMGL()->LoadBMPResize(nm);
-		CO_RETURN;
 	}
-	if((fname[strlen(fname)-3]=='t' || fname[strlen(fname)-3]=='T') &&
-	   (fname[strlen(fname)-2]=='x' || fname[strlen(fname)-2]=='X') &&
-	   (fname[strlen(fname)-1]=='t' || fname[strlen(fname)-1]=='T'))
+	else if (!strcasecmp(extension, ".txt"))
 	{
 		EnterPictureDisplay();
 		if(!nosnd)
 			MakeNormalSound(SND_MESSAGE);
 		sprintf(nm,"user/%s",fname);
 		LoadText(nm,mode);
-		CO_RETURN;
 	}
-
-	if(other)
-		speed=atoi(other);
-	else
-		speed=60;
-
-	sprintf(nm,"user/%s",fname);
-
-	AWAIT FLI_play(nm,0,speed,mgl);
-	mgl->LoadBMP("graphics/title.bmp");
-	RestoreGameplayGfx();
-
-	if(!editing && (verified || shopping))
+	else if (!strcasecmp(extension, ".flc"))
 	{
-		SeeMovie(fname);
-		GoalPurchase();
+		int speed;
+		if(other)
+			speed=atoi(other);
+		else
+			speed=60;
+
+		sprintf(nm,"user/%s",fname);
+
+		AWAIT FLI_play(nm,0,speed,mgl);
+		mgl->LoadBMP("graphics/title.bmp");
+		RestoreGameplayGfx();
+
+		if(!editing && (verified || shopping))
+		{
+			SeeMovie(fname);
+			GoalPurchase();
+		}
+	}
+	else
+	{
+		LogError("Unknown Show Pic/Movie type \"%s\" in \"%s\"", extension, fname);
 	}
 }
 
