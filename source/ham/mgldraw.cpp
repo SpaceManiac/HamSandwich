@@ -1139,24 +1139,15 @@ bool MGLDraw::LoadBMPResize(const char *name)
 bool MGLDraw::LoadBMP(const char *name, PALETTE pal, bool resize)
 {
 	owned::SDL_IOStream rw = AppdataOpen(name);
-	if (!rw) {
+	if (!rw)
+	{
 		// Asset stack printed error already
 		return false;
 	}
 
-#ifdef __EMSCRIPTEN__
-	// Under Emscripten, IMG_Load can't load some files which SDL_LoadBMP can.
-	owned::SDL_Surface b { SDL_LoadBMP_IO(rw.get(), false) };
+	owned::SDL_Surface b { IMG_Load_IO(rw.release(), true) };
 	if (!b)
 	{
-		b.reset(IMG_Load_IO(rw.get(), false));
-	}
-	rw.reset();
-#else  // __EMSCRIPTEN__
-	owned::SDL_Surface b { IMG_Load_IO(rw.release(), true) };
-#endif  // __EMSCRIPTEN__
-
-	if (!b) {
 		LogError("%s: %s", name, SDL_GetError());
 		return false;
 	}
