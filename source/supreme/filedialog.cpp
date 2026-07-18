@@ -36,7 +36,7 @@ static void ObtainFilenames(const char *dir, const char *ext)
 			extension = &str[dot];
 		}
 
-		if ((menuItems & FM_PICMOVIE) && !(!strcasecmp(extension, ".txt") || !strcasecmp(extension, ".bmp") || !strcasecmp(extension, ".flc")))
+		if ((menuItems & FM_PICMOVIE) && !(!strcasecmp(extension, ".txt") || !strcasecmp(extension, ".bmp") || !strcasecmp(extension, ".png") || !strcasecmp(extension, ".flc")))
 			continue;
 		if ((menuItems & FM_SOUNDS) && !(!strcasecmp(extension, ".wav") || !strcasecmp(extension, ".ogg")))
 			continue;

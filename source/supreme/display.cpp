@@ -154,7 +154,7 @@ TASK(void) ShowImageOrFlic(const char *str,byte nosnd,byte mode)
 	}
 
 	// BMP loading
-	if (!strcasecmp(extension, ".bmp"))
+	if (!strcasecmp(extension, ".bmp") || !strcasecmp(extension, ".png"))
 	{
 		EnterPictureDisplay();
 		if(!nosnd)
