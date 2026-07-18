@@ -828,7 +828,9 @@ TASK(void) TestLevel(world_t *world,byte level)
 		else if(result==WORLD_QUITGAME || result==WORLD_ABORT)
 			break;
 	}
-	curWorld = {};
+	// `curWorld = {};` is more C++ey here, but stack overflows on unoptimized Emscripten builds.
+	// sizeof(world_t) ~= 776560 >> 65536 due to large embedded Tilegfx.
+	memset(&curWorld, 0, sizeof(world_t));
 	InitGuys(256);
 	GetSpecialsFromMap(EditorGetMap()->special);
 	editing=1;
