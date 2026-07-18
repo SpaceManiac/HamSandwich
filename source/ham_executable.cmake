@@ -187,7 +187,13 @@ function(HamSandwich_add_executable target_name)
 
 		target_link_libraries("${target_name}" idbfs.js)
 		if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-			target_link_options("${target_name}" PRIVATE --emrun)
+			target_link_options("${target_name}" PRIVATE --emrun -gsource-map)
+			install(
+				FILES
+				"${CMAKE_CURRENT_BINARY_DIR}/${target_name}.wasm.map"
+				DESTINATION "."
+				COMPONENT "${target_name}/web"
+			)
 		endif()
 
 		install(
@@ -295,4 +301,16 @@ else()
 	endfunction()
 	function(msvc_compile_options)
 	endfunction()
+endif()
+
+# Emscripten source map links
+if(EMSCRIPTEN AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+	install(
+		CODE [[
+			file(CREATE_LINK "${CMAKE_SOURCE_DIR}/source" "${CMAKE_INSTALL_PREFIX}/source" SYMBOLIC)
+			file(CREATE_LINK "${CMAKE_SOURCE_DIR}/external" "${CMAKE_INSTALL_PREFIX}/external" SYMBOLIC)
+			file(CREATE_LINK "${CMAKE_SOURCE_DIR}/external/emsdk/upstream" "${CMAKE_INSTALL_PREFIX}/emsdk" SYMBOLIC)
+		]]
+		COMPONENT generic/web
+	)
 endif()

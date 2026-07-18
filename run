@@ -166,6 +166,7 @@ if test -z "$nobuild"; then
 			# Single project: build and install just that project.
 			make preset="$preset" "$project"
 			cmake --install "$cmakedir" --component "$project"/web --config Debug
+			cmake --install "$cmakedir" --component generic/web --config Debug
 		else
 			# Otherwise, build and install everything.
 			make preset="$preset" install
