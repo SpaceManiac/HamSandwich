@@ -199,6 +199,7 @@ void ExitLevel(void)
 
 void RestoreGameplayGfx(void)
 {
+	gamemgl->ResizeBuffer(SCRWID, SCRHEI);
 	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
 	{
 		gamemgl->ClearScreen();
