@@ -28,23 +28,49 @@ static const char *priorityPrefixes[] = {
 };
 static_assert(std::size(priorityPrefixes) == SDL_LOG_PRIORITY_COUNT);
 
-void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
+static const char *categoryPrefixes[] = {
+	"",
+	"(error) ",
+	"(assert) ",
+	"(system) ",
+	"(audio) ",
+	"(video) ",
+	"(render) ",
+	"(input) ",
+	"(test) ",
+	"(gpu) ",
+	"(10) ",
+	"(11) ",
+	"(12) ",
+	"(13) ",
+	"(14) ",
+	"(15) ",
+	"(16) ",
+	"(17) ",
+	"(18) ",
+};
+static_assert(std::size(categoryPrefixes) == SDL_LOG_CATEGORY_CUSTOM);
+
+static void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
 {
 	(void)userdata;
 	original(originalUserdata, category, priority, message);
-	if (errorLog)
+
+	if ((size_t)category < std::size(categoryPrefixes))
 	{
-		SDL_WriteIO(errorLog, priorityPrefixes[priority], strlen(priorityPrefixes[priority]));
-		SDL_WriteIO(errorLog, message, strlen(message));
-		SDL_WriteIO(errorLog, "\n", 1);
-		SDL_FlushIO(errorLog);
-		AppdataSync();
+		buffer.append(categoryPrefixes[category]);
 	}
-	else
+	if (priority < std::size(priorityPrefixes))
 	{
 		buffer.append(priorityPrefixes[priority]);
-		buffer.append(message);
-		buffer.append("\n");
+	}
+	buffer.append(message);
+	buffer.append("\n");
+	if (errorLog)
+	{
+		buffer.erase(0, SDL_WriteIO(errorLog, buffer.data(), buffer.size()));
+		SDL_FlushIO(errorLog);
+		AppdataSync();
 	}
 }
 
@@ -65,7 +91,7 @@ void LogInit()
 		errorLog = AppdataOpen_Write("error.log");
 		if (errorLog && !buffer.empty())
 		{
-			SDL_WriteIO(errorLog, buffer.data(), buffer.size());
+			buffer.erase(0, SDL_WriteIO(errorLog, buffer.data(), buffer.size()));
 			SDL_FlushIO(errorLog);
 			AppdataSync();
 		}

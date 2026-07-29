@@ -75,7 +75,7 @@ struct executor {
 					}
 				}
 				if (!asleep) {
-					printf("a task yielded without going to sleep\n");
+					//printf("a task yielded without going to sleep\n");
 					awake.push(current);
 				}
 			}

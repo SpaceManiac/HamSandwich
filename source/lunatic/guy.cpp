@@ -646,11 +646,11 @@ void Guy::MonsterControl(Map *map, world_t *world)
 	if (!target) return;
 
 	monsterAi_t ai = MonsterAi(type);
-	if (ai == NULL) {
-		LogInfo("null AI on %s", MonsterName(type));
+	if (!ai)
+	{
+		LogError("null AI on %s", MonsterName(type));
 		return;
 	}
-
 	ai(this, map, world, target);
 }
 

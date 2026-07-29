@@ -709,7 +709,7 @@ bool CheckBeatable(std::vector<RandoLocation>& locs) {
 
 			return false;
 		}
-		//printf("%d locations\n", foundItems);
+		//LogDebug("%d locations", foundItems);
 		collectedItems.insert(tempItems.begin(), tempItems.end());
 		tempItems.clear();
 		sphere++;

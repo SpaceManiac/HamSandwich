@@ -14,6 +14,7 @@
 #include "steam.h"
 #include "leaderboard.h"
 #include "strnatcmp.h"
+#include "log.h"
 
 enum Done : byte
 {
@@ -961,7 +962,7 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 #ifdef WORLD_DEBUGGING
 		if (showFilenames && scan == SDL_SCANCODE_KP_PLUS)
 		{
-			printf("Verifying world: %s\n", tmpWorld.map[0]->name);
+			LogDebug("Verifying world: %s", tmpWorld.map[0]->name);
 
 			std::set<dword> seen;
 			std::vector<dword> ordered;
@@ -981,11 +982,11 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 				{
 					seen.insert(item);
 					ordered.push_back(item);
-					printf("Adding: %s\n", tmpWorld.map[i]->name);
+					LogDebug("Adding: %s", tmpWorld.map[i]->name);
 				}
 				else
 				{
-					printf("Already verified: %s\n", tmpWorld.map[i]->name);
+					LogDebug("Already verified: %s", tmpWorld.map[i]->name);
 				}
 			}
 

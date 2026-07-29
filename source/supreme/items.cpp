@@ -1797,11 +1797,9 @@ void CalculateItemRenderExtents()
 	extents.up = floor_div(everything.y + everything.h + TILE_HEIGHT/2, TILE_HEIGHT).quot;
 	extents.down = -floor_div(everything.y + TILE_HEIGHT/2, TILE_HEIGHT).quot;
 
-#ifndef NDEBUG
-	LogInfo("item bounds: (x: %d, y: %d, w: %d, h: %d) tile spread: (x: %+d to %+d, y: %+d to %+d), inclusive",
+	LogDebug("item bounds: (x: %d, y: %d, w: %d, h: %d) tile spread: (x: %+d to %+d, y: %+d to %+d), inclusive",
 		everything.x, everything.y, everything.w, everything.h,
 		-extents.left, extents.right, -extents.up, extents.down);
-#endif
 }
 
 ItemRenderExtents GetItemRenderExtents()

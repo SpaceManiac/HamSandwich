@@ -490,9 +490,10 @@ static VfsStack vfs_stack;
 
 void AppdataInit(const HamSandwichMetadata* metadata) {
 	globalMetadata = metadata;
-	LogInit();
+	LogInit(); // Set up our logging function.
 	EscapeBinDirectory();
 	vfs_stack = init_vfs_stack();
+	LogInit(); // Actually open `error.log`.
 	import_addons(&vfs_stack);
 }
 

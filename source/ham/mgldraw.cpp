@@ -118,17 +118,18 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 	}
 #endif
 
-#ifndef NDEBUG
 	LogInfo("renderer: %s", SDL_GetRendererName(renderer));
-	SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
-	LogInfo("  texture: %" SDL_PRIs64, SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0));
-	const SDL_PixelFormat* formats = (const SDL_PixelFormat*)SDL_GetPointerProperty(props, SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, nullptr);
-	LogInfo("  formats:");
-	while (formats && *formats != SDL_PIXELFORMAT_UNKNOWN) {
-		LogInfo("    %s", SDL_GetPixelFormatName(*formats));
-		++formats;
+	if (SDL_GetLogPriority(SDL_LOG_CATEGORY_APPLICATION) <= SDL_LOG_PRIORITY_DEBUG)
+	{
+		SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+		LogDebug("  texture: %" SDL_PRIs64, SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0));
+		const SDL_PixelFormat* formats = (const SDL_PixelFormat*)SDL_GetPointerProperty(props, SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, nullptr);
+		LogDebug("  formats:");
+		while (formats && *formats != SDL_PIXELFORMAT_UNKNOWN) {
+			LogDebug("    %s", SDL_GetPixelFormatName(*formats));
+			++formats;
+		}
 	}
-#endif
 
 	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, xRes, yRes);
 	if (!texture) {

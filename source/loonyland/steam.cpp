@@ -219,7 +219,7 @@ public:
 			{
 				if (SteamUGC()->DownloadItem(fileId, false))
 				{
-					LogDebug("workshop download %llu started", fileId);
+					LogInfo("workshop download %llu started", fileId);
 				}
 				else
 				{
@@ -231,7 +231,7 @@ public:
 				char dirname[1024];
 				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, std::size(dirname), nullptr))
 				{
-					LogDebug("workshop: %s", dirname);
+					LogInfo("workshop: %s", dirname);
 					vfs_stack->push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });
 				}
 				else
@@ -241,7 +241,7 @@ public:
 			}
 			else
 			{
-				LogDebug("workshop %llu: state is %" PRIu32, fileId, state);
+				LogInfo("workshop %llu: state is %" PRIu32, fileId, state);
 			}
 		}
 
