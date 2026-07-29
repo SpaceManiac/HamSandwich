@@ -220,8 +220,8 @@ void InitItems(void)
 	extents.down = -floor_div(everything.y + TILE_HEIGHT/2, TILE_HEIGHT).quot;
 
 #ifndef NDEBUG
-	LogDebug("Items bounding rect: x=%d y=%d w=%d h=%d", everything.x, everything.y, everything.w, everything.h);
-	LogDebug("Tile spread: x: %+d to %+d, y: %+d to %+d, inclusive", -extents.left, extents.right, -extents.up, extents.down);
+	LogInfo("Items bounding rect: x=%d y=%d w=%d h=%d", everything.x, everything.y, everything.w, everything.h);
+	LogInfo("Tile spread: x: %+d to %+d, y: %+d to %+d, inclusive", -extents.left, extents.right, -extents.up, extents.down);
 #endif
 }
 

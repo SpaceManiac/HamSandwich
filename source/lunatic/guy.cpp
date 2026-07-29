@@ -647,7 +647,7 @@ void Guy::MonsterControl(Map *map, world_t *world)
 
 	monsterAi_t ai = MonsterAi(type);
 	if (ai == NULL) {
-		LogDebug("null AI on %s", MonsterName(type));
+		LogInfo("null AI on %s", MonsterName(type));
 		return;
 	}
 

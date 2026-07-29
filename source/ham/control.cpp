@@ -167,7 +167,7 @@ void GetLeftStick(int16_t* x, int16_t* y, byte* dpad)
 		if (!SDL_JoystickConnected(joystick))
 		{
 			// Drop disconnected joysticks.
-			LogDebug("Gamepad removed: %s", SDL_GetGamepadName(gamepad));
+			LogInfo("Gamepad removed: %s", SDL_GetGamepadName(gamepad));
 			if (activeController == gamepad)
 				activeController = nullptr;
 			iter = joysticks.erase(iter);
@@ -359,7 +359,7 @@ void ControlHandleNewGamepad(int which)
 	owned::SDL_Gamepad gamepad = owned::SDL_OpenGamepad(which);
 	if (gamepad)
 	{
-		LogDebug("Gamepad added: %s", SDL_GetGamepadName(gamepad.get()));
+		LogInfo("Gamepad added: %s", SDL_GetGamepadName(gamepad.get()));
 		activeController = gamepad.get();
 		joysticks.push_back(std::move(gamepad));
 	}
@@ -404,7 +404,7 @@ static byte GetJoyState(void)
 		if (!SDL_JoystickConnected(joystick))
 		{
 			// Drop disconnected joysticks.
-			LogDebug("Gamepad removed: %s", SDL_GetGamepadName(gamepad));
+			LogInfo("Gamepad removed: %s", SDL_GetGamepadName(gamepad));
 			if (activeController == gamepad)
 				activeController = nullptr;
 			iter = joysticks.erase(iter);
@@ -590,7 +590,7 @@ void UpdateRawJoystick(void)
 		if (!SDL_JoystickConnected(joystick))
 		{
 			// Drop disconnected joysticks.
-			LogDebug("Gamepad removed: %s", SDL_GetGamepadName(gamepad));
+			LogInfo("Gamepad removed: %s", SDL_GetGamepadName(gamepad));
 			if (activeController == gamepad)
 				activeController = nullptr;
 			iter = joysticks.erase(iter);

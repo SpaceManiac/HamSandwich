@@ -1798,7 +1798,7 @@ void CalculateItemRenderExtents()
 	extents.down = -floor_div(everything.y + TILE_HEIGHT/2, TILE_HEIGHT).quot;
 
 #ifndef NDEBUG
-	LogDebug("item bounds: (x: %d, y: %d, w: %d, h: %d) tile spread: (x: %+d to %+d, y: %+d to %+d), inclusive",
+	LogInfo("item bounds: (x: %d, y: %d, w: %d, h: %d) tile spread: (x: %+d to %+d, y: %+d to %+d), inclusive",
 		everything.x, everything.y, everything.w, everything.h,
 		-extents.left, extents.right, -extents.up, extents.down);
 #endif

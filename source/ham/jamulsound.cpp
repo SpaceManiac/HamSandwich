@@ -58,7 +58,7 @@ bool JamulSoundInit(int numBuffers)
 
 	if (!soundEnabled)
 	{
-		LogDebug("sound disabled in config");
+		LogInfo("sound disabled in config");
 		return false;
 	}
 	if (!SDL_Init(SDL_INIT_AUDIO))
@@ -82,7 +82,7 @@ bool JamulSoundInit(int numBuffers)
 	SDL_AudioSpec spec;
 	if (MIX_GetMixerFormat(mixer.get(), &spec))
 	{
-		LogDebug("audio format: freq=%d, channels=%d, format=0x%x %s\n", spec.freq, spec.channels, spec.format, SDL_GetAudioFormatName(spec.format));
+		LogInfo("audio format: freq=%d, channels=%d, format=0x%x %s\n", spec.freq, spec.channels, spec.format, SDL_GetAudioFormatName(spec.format));
 	}
 	else
 	{

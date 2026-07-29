@@ -92,7 +92,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		return;
 	}
 	SDL_SetWindowMinimumSize(window, xRes, yRes);
-	LogDebug("window format: %s", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
+	LogInfo("window format: %s", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
 	SDL_GetWindowSize(window, &winWidth, &winHeight);
 
 	renderer = SDL_CreateRenderer(window, nullptr);
@@ -119,13 +119,13 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 #endif
 
 #ifndef NDEBUG
-	LogDebug("renderer: %s", SDL_GetRendererName(renderer));
+	LogInfo("renderer: %s", SDL_GetRendererName(renderer));
 	SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
-	LogDebug("  texture: %" SDL_PRIs64, SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0));
+	LogInfo("  texture: %" SDL_PRIs64, SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0));
 	const SDL_PixelFormat* formats = (const SDL_PixelFormat*)SDL_GetPointerProperty(props, SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, nullptr);
-	LogDebug("  formats:");
+	LogInfo("  formats:");
 	while (formats && *formats != SDL_PIXELFORMAT_UNKNOWN) {
-		LogDebug("    %s", SDL_GetPixelFormatName(*formats));
+		LogInfo("    %s", SDL_GetPixelFormatName(*formats));
 		++formats;
 	}
 #endif

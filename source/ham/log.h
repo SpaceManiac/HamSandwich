@@ -24,15 +24,15 @@
 
 // Debug and error logging functions
 HAM_API void LogInit();
-HAM_API void LogDebug(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
+HAM_API void LogInfo(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
 HAM_API void LogError(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
 
 #undef PRINTF_FUNC
 #undef PRINTF_FMT
 
 #ifdef LOG
-#	define DBG(X) LogDebug("%s", X)
-#	define PrintToLog(A, B) LogDebug("%s : %d", A, B)
+#	define DBG(X) LogInfo("%s", X)
+#	define PrintToLog(A, B) LogInfo("%s : %d", A, B)
 #else  // LOG
 #	define DBG(X)
 #	define PrintToLog(A, B)

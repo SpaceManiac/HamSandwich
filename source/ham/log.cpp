@@ -72,7 +72,7 @@ void LogInit()
 	}
 }
 
-void LogDebug(const char* fmt, ...)
+void LogInfo(const char* fmt, ...)
 {
 	LogInit();
 

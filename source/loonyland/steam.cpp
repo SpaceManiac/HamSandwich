@@ -165,7 +165,7 @@ public:
 		{
 			if (SteamUserStats()->SetAchievement(name))
 			{
-				LogDebug("SetAchievement(%s) OK", name);
+				LogInfo("SetAchievement(%s) OK", name);
 				stats_need_store = true;
 				// Store achievements immediately so the message is triggered.
 				stats_store_cooldown = 2;
@@ -177,7 +177,7 @@ public:
 	{
 		if (SteamUserStats()->StoreStats())
 		{
-			LogDebug("StoreStats() OK");
+			LogInfo("StoreStats() OK");
 		}
 		stats_need_store = false;
 		stats_store_cooldown = STATS_STORE_COOLDOWN;

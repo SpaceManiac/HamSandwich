@@ -84,7 +84,7 @@ void UnpickledMain()
 
 	int bmpTotal = 0, bmpBad = 0, musTotal = 0, musBad = 0, sndTotal = 0, sndBad = 0;
 
-	LogDebug("Checking images");
+	LogInfo("Checking images");
 	for (const auto &fname : ListDirectory("user", ".bmp"))
 	{
 		++bmpTotal;
@@ -99,7 +99,7 @@ void UnpickledMain()
 		if (!mgl->Process()) break;
 	}
 
-	LogDebug("Checking music");
+	LogInfo("Checking music");
 	for (const auto &fname : ListDirectory("music", ".ogg"))
 	{
 		++musTotal;
@@ -114,7 +114,7 @@ void UnpickledMain()
 		if (!mgl->Process()) break;
 	}
 
-	LogDebug("Checking worlds");
+	LogInfo("Checking worlds");
 	for (const auto &fname : ListDirectory("worlds", ".dlw"))
 	{
 		fullname = "worlds/";
@@ -222,9 +222,9 @@ void UnpickledMain()
 		if (!mgl->Process()) break;
 	}
 
-	LogDebug("Images: %d bad / %d total", bmpBad, bmpTotal);
-	LogDebug("Music: %d bad / %d total", musBad, musTotal);
-	LogDebug("Sound: %d bad / %d total", sndBad, sndTotal);
+	LogInfo("Images: %d bad / %d total", bmpBad, bmpTotal);
+	LogInfo("Music: %d bad / %d total", musBad, musTotal);
+	LogInfo("Sound: %d bad / %d total", sndBad, sndTotal);
 }
 
 #endif
