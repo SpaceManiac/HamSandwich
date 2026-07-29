@@ -72,6 +72,16 @@ void LogInit()
 	}
 }
 
+void LogDebug(const char* fmt, ...)
+{
+	LogInit();
+
+	va_list args;
+	va_start(args, fmt);
+	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG, fmt, args);
+	va_end(args);
+}
+
 void LogInfo(const char* fmt, ...)
 {
 	LogInit();
@@ -79,6 +89,16 @@ void LogInfo(const char* fmt, ...)
 	va_list args;
 	va_start(args, fmt);
 	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, args);
+	va_end(args);
+}
+
+void LogWarn(const char* fmt, ...)
+{
+	LogInit();
+
+	va_list args;
+	va_start(args, fmt);
+	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_WARN, fmt, args);
 	va_end(args);
 }
 

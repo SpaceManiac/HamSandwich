@@ -3434,7 +3434,7 @@ void SwampUpdate(Map* map)
 			}
 			ChallengeEvent(CE_COOK, swampScore);
 		}
-		//SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%d > TT:%d B:%d S:%d F:%d\n", (byte)swampHaveHitBoil, swampCookTime, swampBoilTime, swampSimmerTime, 10 * 30 - swampBoilTime - swampSimmerTime);
+		//LogError("%d > TT:%d B:%d S:%d F:%d\n", (byte)swampHaveHitBoil, swampCookTime, swampBoilTime, swampSimmerTime, 10 * 30 - swampBoilTime - swampSimmerTime);
 	}
 }
 

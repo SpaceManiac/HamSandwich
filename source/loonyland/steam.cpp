@@ -49,7 +49,7 @@ public:
 
 		if (!SteamUserStats()->RequestCurrentStats())
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SteamUserStats::RequestCurrentStats() failed");
+			LogError("SteamUserStats::RequestCurrentStats() failed");
 		}
 
 		g_HamExtern.AfterFlip = SteamAfterFlip;
@@ -109,7 +109,7 @@ public:
 	{
 		if (pParam->m_eResult != k_EResultOK)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UserStatsReceived: %d", (int)pParam->m_eResult);
+			LogError("UserStatsReceived: %d", (int)pParam->m_eResult);
 			return;
 		}
 		if (!steam_stats_ready)
@@ -219,11 +219,11 @@ public:
 			{
 				if (SteamUGC()->DownloadItem(fileId, false))
 				{
-					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu started", fileId);
+					LogDebug("workshop download %llu started", fileId);
 				}
 				else
 				{
-					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed to start", fileId);
+					LogError("workshop download %llu failed to start", fileId);
 				}
 			}
 			else if ((state & k_EItemStateInstalled) && (state & k_EItemStateSubscribed) && !(state & k_EItemStateDownloadPending))
@@ -231,17 +231,17 @@ public:
 				char dirname[1024];
 				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, std::size(dirname), nullptr))
 				{
-					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop: %s", dirname);
+					LogDebug("workshop: %s", dirname);
 					vfs_stack->push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });
 				}
 				else
 				{
-					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: GetItemInstallInfo failed", fileId);
+					LogError("workshop %llu: GetItemInstallInfo failed", fileId);
 				}
 			}
 			else
 			{
-				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: state is %" PRIu32, fileId, state);
+				LogDebug("workshop %llu: state is %" PRIu32, fileId, state);
 			}
 		}
 
@@ -256,12 +256,12 @@ public:
 			workshopStatus = status.str();
 		}
 
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop end");
+		LogDebug("workshop end");
 	}
 
 	STEAM_CALLBACK(SteamManagerImpl, on_subscriptions_change, UserSubscribedItemsListChanged_t)
 	{
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "subscriptions changed for %u", pParam->m_nAppID);
+		LogDebug("subscriptions changed for %u", pParam->m_nAppID);
 		if (pParam->m_nAppID == SteamUtils()->GetAppID())
 		{
 			MountWorkshopContent();
@@ -272,7 +272,7 @@ public:
 	{
 		if (pParam->m_eResult == k_EResultOK)
 		{
-			SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu succeeded", pParam->m_nPublishedFileId);
+			LogInfo("workshop download %llu succeeded", pParam->m_nPublishedFileId);
 			if (pParam->m_unAppID == SteamUtils()->GetAppID())
 			{
 				MountWorkshopContent();
@@ -280,7 +280,7 @@ public:
 		}
 		else
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed: %d", pParam->m_nPublishedFileId, pParam->m_eResult);
+			LogError("workshop download %llu failed: %d", pParam->m_nPublishedFileId, pParam->m_eResult);
 		}
 	}
 

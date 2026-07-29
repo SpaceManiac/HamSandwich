@@ -33,11 +33,11 @@ Map::Map(SDL_IOStream *f)
 #ifdef LOG
 	int i;
 
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "LOADMAP %s\n", name);
+	LogDebug("LOADMAP %s\n", name);
 	for (i = 0; i < MAX_MAPMONS; i++)
 	{
 		if (badguy[i].type)
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "M#%03d. %d. %s - (%d,%d)\n", i, badguy[i].type, MonsterName(badguy[i].type), badguy[i].x, badguy[i].y);
+			LogDebug("M#%03d. %d. %s - (%d,%d)\n", i, badguy[i].type, MonsterName(badguy[i].type), badguy[i].x, badguy[i].y);
 	}
 #endif
 }
@@ -1011,7 +1011,7 @@ void SpecialTakeEffect(byte num, Map *map, special_t *spcl, Guy *victim)
 	if (!(spcl->trigger & TRG_CHAIN))
 		SpecialNeighborCheck(map, spcl);
 #ifdef LOG
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Special #%d, effect %d\n", num, spcl->effect);
+	LogDebug("Special #%d, effect %d\n", num, spcl->effect);
 #endif
 	switch (spcl->effect) {
 		case SPC_GOTOMAP:

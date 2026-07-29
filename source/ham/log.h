@@ -24,7 +24,9 @@
 
 // Debug and error logging functions
 HAM_API void LogInit();
+HAM_API void LogDebug(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
 HAM_API void LogInfo(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
+HAM_API void LogWarn(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
 HAM_API void LogError(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
 
 #undef PRINTF_FUNC

@@ -2128,7 +2128,7 @@ void BulletTally(void)
 	{
 		if (bullet[i].type)
 		{
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "BUL %d: Type %d", i, bullet[i].type);
+			LogDebug("BUL %d: Type %d", i, bullet[i].type);
 		}
 	}
 #endif

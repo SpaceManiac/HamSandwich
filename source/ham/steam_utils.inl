@@ -50,7 +50,7 @@ private:
 	// Safety: `this` must be on the heap and this object is now responsible for `delete`ing itself.
 	void Send2(const char* leaderboardId)
 	{
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard(%s)", leaderboardId);
+		LogDebug("FindOrCreateLeaderboard(%s)", leaderboardId);
 		findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
 			leaderboardId,
 			sortMethod,
@@ -62,7 +62,7 @@ private:
 	{
 		if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
 		{
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore(%llu, %d, ...[%d])",
+			LogDebug("UploadLeaderboardScore(%llu, %d, ...[%d])",
 				result->m_hSteamLeaderboard, score, extraDataCount);
 			uploadScoreCall.Set(SteamUserStats()->UploadLeaderboardScore(
 				result->m_hSteamLeaderboard,
@@ -74,7 +74,7 @@ private:
 		}
 		else
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FindOrCreateLeaderboard failed");
+			LogError("FindOrCreateLeaderboard failed");
 			std::default_delete<LeaderboardUploadJob>()(this);
 		}
 	}
@@ -83,12 +83,12 @@ private:
 	{
 		if (!ioError && result->m_bSuccess)
 		{
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore OK: changed=%d, rank %d -> %d",
+			LogDebug("UploadLeaderboardScore OK: changed=%d, rank %d -> %d",
 				result->m_bScoreChanged, result->m_nGlobalRankPrevious, result->m_nGlobalRankNew);
 		}
 		else
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadLeaderboardScore failed");
+			LogError("UploadLeaderboardScore failed");
 		}
 		std::default_delete<LeaderboardUploadJob>()(this);
 	}

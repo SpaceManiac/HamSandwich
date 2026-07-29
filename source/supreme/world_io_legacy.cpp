@@ -5,6 +5,7 @@
 #include "monster.h"
 #include "sound.h"
 #include "appdata.h"
+#include "log.h"
 
 constexpr int OLD_MAX_MAPMONS = 128;
 constexpr int OLD_MAX_SPECIAL = 32;
@@ -648,7 +649,7 @@ Map *ConvertToNewMap(old_map_t *old)
 		// obstacles or pickups in the SWC item list.
 		if (!ValidLunaticItem(old->map[i].item))
 		{
-			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "legacyload: %s at (%d,%d): bad item %d", old->name, i % m->width, i / m->width, old->map[i].item);
+			LogWarn("legacyload: %s at (%d,%d): bad item %d", old->name, i % m->width, i / m->width, old->map[i].item);
 			m->map[i].item = 0;
 		}
 

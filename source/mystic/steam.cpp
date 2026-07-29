@@ -40,7 +40,7 @@ public:
 	{
 		if (!SteamUserStats()->RequestCurrentStats())
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SteamUserStats::RequestCurrentStats() failed");
+			LogError("SteamUserStats::RequestCurrentStats() failed");
 		}
 
 		g_HamExtern.AfterFlip = SteamAfterFlip;
@@ -90,7 +90,7 @@ public:
 	{
 		if (pParam->m_eResult != k_EResultOK)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UserStatsReceived: %d", (int)pParam->m_eResult);
+			LogError("UserStatsReceived: %d", (int)pParam->m_eResult);
 			return;
 		}
 		if (!steam_stats_ready)
@@ -220,7 +220,7 @@ public:
 				continue;
 			}
 
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%d = %s, score=%d, combo=%d, time=%d", i, definitions[i].name, data->topScore[i], data->topCombo[i], data->topTime[i]);
+			LogDebug("%d = %s, score=%d, combo=%d, time=%d", i, definitions[i].name, data->topScore[i], data->topCombo[i], data->topTime[i]);
 			scoreJob->score += data->topScore[i];
 			scoreJob->AddDetail(data->topScore[i]);
 			comboJob->score += data->topCombo[i];
@@ -247,7 +247,7 @@ public:
 			// score is now total time in frames - convert it to milliseconds for Steam's benefit
 			timeJob->score = timeJob->score * 1000 / 30;
 		}
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "total score=%d, combo=%d, time=%d, incomplete=%d", scoreJob->score, comboJob->score, timeJob->score, incomplete);
+		LogDebug("total score=%d, combo=%d, time=%d, incomplete=%d", scoreJob->score, comboJob->score, timeJob->score, incomplete);
 
 		char name[64];
 		ham_sprintf(name, "challenge/%s/score", difficultyName);

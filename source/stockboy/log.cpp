@@ -12,8 +12,8 @@ void Log_Begin(const char *fname)
 	time(&clock);
 	newtime=localtime(&clock);
 
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Stockboy download test log", asctime(newtime));
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Log opened %s.", asctime(newtime));
+	LogDebug("Stockboy download test log", asctime(newtime));
+	LogDebug("Log opened %s.", asctime(newtime));
 #endif
 }
 
@@ -26,20 +26,20 @@ void Log_End(void)
 	time(&clock);
 	newtime=localtime(&clock);
 
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Log closed %s.", asctime(newtime));
+	LogDebug("Log closed %s.", asctime(newtime));
 #endif
 }
 
 void Log_Print(const char *txt)
 {
 #ifdef BETA
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s", txt);
+	LogDebug("%s", txt);
 #endif
 }
 
 void Log_Printnum(const char *txt,int num)
 {
 #ifdef BETA
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s %d", txt, num);
+	LogDebug("%s %d", txt, num);
 #endif
 }

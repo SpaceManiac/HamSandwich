@@ -83,7 +83,7 @@ static Mount init_vfs_spec(const char* what, const char* mountpoint, const char*
 	stat(param, &sb);
 	if ((sb.st_mode & S_IFMT) == S_IFDIR && strcmp(kind, "stdio"))
 	{
-		SDL_Log("%s: ignoring '%s' and assuming '%s' is pre-extracted", what, kind, param);
+		LogInfo("%s: ignoring '%s' and assuming '%s' is pre-extracted", what, kind, param);
 		return { vanilla::open_stdio(param), mountpoint, { vanilla::VfsSourceKind::BaseGame } };
 	}
 
@@ -238,27 +238,27 @@ static VfsStack default_vfs_stack(bool* error) {
 			auto mount = init_vfs_spec("built-in", spec.mountpoint, spec.kind, spec.param);
 			mount.meta.kind = spec.optional ? vanilla::VfsSourceKind::Addon : vanilla::VfsSourceKind::BaseGame;
 			if (mount.vfs) {
-				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d %s: %s@%s@%s", i, spec.optional ? "enabled" : "required", spec.mountpoint, spec.kind, spec.param);
+				LogDebug("auto %d %s: %s@%s@%s", i, spec.optional ? "enabled" : "required", spec.mountpoint, spec.kind, spec.param);
 				result.push_back(std::move(mount));
 			} else {
 				LogError("detect_installers: failed to mount builtin[%d]: %s@%s@%s", i, spec.mountpoint, spec.kind, spec.param);
 				*error = true;
 			}
 		} else {
-			SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto %d disabled: %s@%s@%s", i, spec.mountpoint, spec.kind, spec.param);
+			LogDebug("auto %d disabled: %s@%s@%s", i, spec.mountpoint, spec.kind, spec.param);
 		}
 	}
 
 	// High priority: custom assets provided directly.
 	std::string assets = "assets/";
 	assets.append(meta->appdata_folder_name);
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto assets: %s", assets.c_str());
+	LogDebug("auto assets: %s", assets.c_str());
 	result.push_back(vanilla::open_stdio(assets), "", vanilla::VfsSourceKind::BaseGame);
 
 	// Use `appdata/$NAME` as our appdata folder.
 	std::string appdata = "appdata/";
 	appdata.append(meta->appdata_folder_name);
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "auto appdata: %s", appdata.c_str());
+	LogDebug("auto appdata: %s", appdata.c_str());
 	result.set_appdata(vanilla::open_stdio(appdata));
 
 	return result;
@@ -310,14 +310,14 @@ static void missing_assets_message() {
 static VfsStack vfs_stack_from_env(bool* error) {
 	VfsStack result;
 	if (const char *appdata_spec = SDL_getenv("HSW_APPDATA"); appdata_spec && *appdata_spec) {
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "HSW_APPDATA=%s", appdata_spec);
+		LogDebug("HSW_APPDATA=%s", appdata_spec);
 		result.set_appdata(vanilla::open_stdio(appdata_spec));
 
 		char buffer[32];
 		for (int i = 0; i < 1024; ++i) {
 			ham_sprintf(buffer, "HSW_ASSETS_%d", i);
 			if (const char* asset_spec = SDL_getenv(buffer); asset_spec && *asset_spec) {
-				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s=%s", buffer, asset_spec);
+				LogDebug("%s=%s", buffer, asset_spec);
 				auto mount = init_vfs_spec_str(buffer, asset_spec);
 				if (mount.vfs) {
 					result.push_back(std::move(mount));
@@ -466,12 +466,12 @@ static void import_addons(VfsStack* target)
 	{
 		if (spec.is_enabled())
 		{
-			SDL_Log("mounting addon: %s/%s", path.c_str(), spec.filename.c_str());
+			LogInfo("mounting addon: %s/%s", path.c_str(), spec.filename.c_str());
 			target->push_back(vanilla::open_zip(addons->open_sdl(spec.filename.c_str())), "", vanilla::VfsSourceKind::Addon);
 		}
 		else
 		{
-			SDL_Log("addon disabled: %s/%s", path.c_str(), spec.filename.c_str());
+			LogInfo("addon disabled: %s/%s", path.c_str(), spec.filename.c_str());
 		}
 	}
 

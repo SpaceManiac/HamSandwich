@@ -517,7 +517,7 @@ static std::string PrepareWorkshopPreview()
 	}
 
 	mgl->ClearScreen();
-	SDL_Log("Steam Workshop preview file: %s", pngFilename.c_str());
+	LogInfo("Steam Workshop preview file: %s", pngFilename.c_str());
 	return pngFilename;
 }
 

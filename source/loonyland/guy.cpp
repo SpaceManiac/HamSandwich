@@ -11,6 +11,7 @@
 #include "ch_witch.h"
 #include "bossbash.h"
 #include "ch_summon.h"
+#include "log.h"
 
 static std::unique_ptr<Guy[]> guys;
 static int maxGuys;
@@ -1668,7 +1669,7 @@ void LoadGuys(SDL_IOStream *f)
 			if (oldRectX != guys[i].rectx)
 			{
 				saveIs64Bit = true;
-				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Warning: assuming 64-bit save based on rectx %d != %d", oldRectX, guys[i].rectx);
+				LogWarn("Warning: assuming 64-bit save based on rectx %d != %d", oldRectX, guys[i].rectx);
 			}
 		}
 		if (saveIs64Bit)

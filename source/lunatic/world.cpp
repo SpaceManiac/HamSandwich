@@ -32,14 +32,14 @@ byte LoadWorld(world_t *world, const char *fname)
 		return 0;
 
 #ifdef LOG
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "LOADWORLD %s\n", fname);
+	LogDebug("LOADWORLD %s\n", fname);
 #endif
 
 	SDL_ReadIO(f, &world->numMaps, 1);
 	SDL_ReadIO(f, &world->totalPoints, 4);
 
 #ifdef LOG
-	SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "Maps: %d\n", world->numMaps);
+	LogDebug("Maps: %d\n", world->numMaps);
 #endif
 
 	LoadTiles(f.get());

@@ -152,7 +152,7 @@ public:
 
 		if (!SteamUserStats()->RequestCurrentStats())
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SteamUserStats::RequestCurrentStats() failed");
+			LogError("SteamUserStats::RequestCurrentStats() failed");
 		}
 	}
 
@@ -355,11 +355,11 @@ public:
 			{
 				if (SteamUGC()->DownloadItem(fileId, false))
 				{
-					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu started", fileId);
+					LogDebug("workshop download %llu started", fileId);
 				}
 				else
 				{
-					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed to start", fileId);
+					LogError("workshop download %llu failed to start", fileId);
 				}
 			}
 			else if ((state & k_EItemStateInstalled) && (state & k_EItemStateSubscribed) && !(state & k_EItemStateDownloadPending))
@@ -367,17 +367,17 @@ public:
 				char dirname[1024];
 				if (SteamUGC()->GetItemInstallInfo(fileId, nullptr, dirname, std::size(dirname), nullptr))
 				{
-					SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop: %s", dirname);
+					LogDebug("workshop: %s", dirname);
 					vfs_stack->push_back(vanilla::open_stdio(dirname), "", { vanilla::VfsSourceKind::Addon, fileId });
 				}
 				else
 				{
-					SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: GetItemInstallInfo failed", fileId);
+					LogError("workshop %llu: GetItemInstallInfo failed", fileId);
 				}
 			}
 			else
 			{
-				SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop %llu: state is %" PRIu32, fileId, state);
+				LogDebug("workshop %llu: state is %" PRIu32, fileId, state);
 			}
 		}
 
@@ -392,12 +392,12 @@ public:
 			workshopStatus = status.str();
 		}
 
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "workshop end");
+		LogDebug("workshop end");
 	}
 
 	STEAM_CALLBACK(SteamManagerImpl, on_subscriptions_change, UserSubscribedItemsListChanged_t)
 	{
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "subscriptions changed for %u", pParam->m_nAppID);
+		LogDebug("subscriptions changed for %u", pParam->m_nAppID);
 		if (pParam->m_nAppID == SteamUtils()->GetAppID())
 		{
 			MountWorkshopContent();
@@ -408,7 +408,7 @@ public:
 	{
 		if (pParam->m_eResult == k_EResultOK)
 		{
-			SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu succeeded", pParam->m_nPublishedFileId);
+			LogInfo("workshop download %llu succeeded", pParam->m_nPublishedFileId);
 			if (pParam->m_unAppID == SteamUtils()->GetAppID())
 			{
 				MountWorkshopContent();
@@ -416,7 +416,7 @@ public:
 		}
 		else
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "workshop download %llu failed: %d", pParam->m_nPublishedFileId, pParam->m_eResult);
+			LogError("workshop download %llu failed: %d", pParam->m_nPublishedFileId, pParam->m_eResult);
 		}
 	}
 
@@ -432,7 +432,7 @@ public:
 		{
 			playtimeTrackingId = meta.steamWorkshopId;
 		}
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "StartPlaytimeTracking(%s) = %llu", fullFilename ? fullFilename : "nullptr", playtimeTrackingId);
+		LogDebug("StartPlaytimeTracking(%s) = %llu", fullFilename ? fullFilename : "nullptr", playtimeTrackingId);
 		if (playtimeTrackingId)
 		{
 			SteamUGC()->StartPlaytimeTracking(&playtimeTrackingId, 1);
@@ -441,7 +441,7 @@ public:
 
 	void StopPlaytimeTracking() override
 	{
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "StopPlaytimeTracking");
+		LogDebug("StopPlaytimeTracking");
 		SteamUGC()->StopPlaytimeTrackingForAllItems();
 	}
 
@@ -581,7 +581,7 @@ public:
 		world_t world;
 		if (!LoadWorld(&world, fullFilename.c_str()))
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadWorldScore(%s): bad LoadWorld", worldFilename);
+			LogError("UploadWorldScore(%s): bad LoadWorld", worldFilename);
 			return;
 		}
 
@@ -589,7 +589,7 @@ public:
 		{
 			if (!VerifyLevel(world.map[i]))
 			{
-				SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadWorldScore(%s): map #%02d not verified", worldFilename, i);
+				LogError("UploadWorldScore(%s): map #%02d not verified", worldFilename, i);
 				return;
 			}
 		}
@@ -597,7 +597,7 @@ public:
 		worldData_t* progress = GetWorldProgressNoCreate(worldFilename);
 		if (!progress)
 		{
-			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "UploadWorldScore(%s): no progress", worldFilename);
+			LogError("UploadWorldScore(%s): no progress", worldFilename);
 			return;
 		}
 
@@ -620,7 +620,7 @@ public:
 	{
 		leaderboardIdScore = leaderboardIdTime = 0;
 
-		SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "PrepWorldLeaderboard(%s)", fullFilename);
+		LogDebug("PrepWorldLeaderboard(%s)", fullFilename);
 		findScoreCall.Set(SteamUserStats()->FindLeaderboard(fullFilename), this, &SteamManagerImpl::FindScoreCallback);
 		std::string buf = fullFilename;
 		buf.append("/time");
