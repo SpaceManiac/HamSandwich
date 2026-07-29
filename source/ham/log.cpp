@@ -14,6 +14,7 @@ static SDL_LogOutputFunction original = nullptr;
 static void* originalUserdata = nullptr;
 static bool errorLogAttempted = false;
 static owned::SDL_IOStream errorLog = nullptr;
+static std::string buffer;
 
 static const char *priorityPrefixes[] = {
     "",
@@ -39,6 +40,12 @@ void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const 
 		SDL_FlushIO(errorLog);
 		AppdataSync();
 	}
+	else
+	{
+		buffer.append(priorityPrefixes[priority]);
+		buffer.append(message);
+		buffer.append("\n");
+	}
 }
 
 void LogInit()
@@ -56,6 +63,12 @@ void LogInit()
 	{
 		errorLogAttempted = true;
 		errorLog = AppdataOpen_Write("error.log");
+		if (errorLog && !buffer.empty())
+		{
+			SDL_WriteIO(errorLog, buffer.data(), buffer.size());
+			SDL_FlushIO(errorLog);
+			AppdataSync();
+		}
 	}
 }
 
