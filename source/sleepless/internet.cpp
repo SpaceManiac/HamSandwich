@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "log.h"
 
 #ifdef _WIN32
 #include <conio.h>
@@ -55,48 +56,19 @@ typedef struct mySock_t
 mySock_t sock[NUM_SOCKETS];
 char errorDisp[128];
 
-#ifdef LOG
-static FILE *logF;
-#endif
-
-void Log_Init(void)
-{
-#ifdef LOG
-	logF=AppdataOpen("netlog.txt","wt");
-#endif
-}
-
-void Log_Exit(void)
-{
-#ifdef LOG
-	fclose(logF);
-	AppdataSync();
-#endif
-}
-
 void Log_Print(const char *txt)
 {
-#ifdef LOG
-	fprintf(logF,"%s\n",txt);
-#endif
+	LogVerbose("%s", txt);
 }
 
 void Log_Printnum(const char *txt,int num)
 {
-#ifdef LOG
-	fprintf(logF,"%s %d\n",txt,num);
-#endif
+	LogVerbose("%s %d", txt, num);
 }
 
 void Log_PrintRaw(const char *txt,int len)
 {
-#ifdef LOG
-	char outtxt[1024];
-
-	strncpy(outtxt,txt,len);
-
-	fprintf(logF,"%s\n",outtxt);
-#endif
+	LogTrace("%.*s", len, txt);
 }
 
 #ifdef _WIN32
@@ -110,8 +82,6 @@ void Log_PrintRaw(const char *txt,int len)
 byte Web_Init(void)
 {
 	int i;
-
-	Log_Init();
 
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -158,7 +128,6 @@ byte Web_Exit(void)
 	WSACleanup();
 #endif
 	Log_Print("web_exit ok!");
-	Log_Exit();
 	return IE_OK;
 }
 

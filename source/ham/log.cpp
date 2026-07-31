@@ -79,7 +79,8 @@ void LogInit()
 	if (!original)
 	{
 #ifndef NDEBUG
-		SDL_SetLogPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG);
+		// Set a hint rather than priority directly so that SDL_LOGGING environment variable takes priority.
+		SDL_SetHint(SDL_HINT_LOGGING, "app=debug");
 #endif
 		SDL_GetLogOutputFunction(&original, &originalUserdata);
 		SDL_SetLogOutputFunction(HamLogOutput, nullptr);
@@ -96,44 +97,4 @@ void LogInit()
 			AppdataSync();
 		}
 	}
-}
-
-void LogDebug(const char* fmt, ...)
-{
-	LogInit();
-
-	va_list args;
-	va_start(args, fmt);
-	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_DEBUG, fmt, args);
-	va_end(args);
-}
-
-void LogInfo(const char* fmt, ...)
-{
-	LogInit();
-
-	va_list args;
-	va_start(args, fmt);
-	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, fmt, args);
-	va_end(args);
-}
-
-void LogWarn(const char* fmt, ...)
-{
-	LogInit();
-
-	va_list args;
-	va_start(args, fmt);
-	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_WARN, fmt, args);
-	va_end(args);
-}
-
-void LogError(const char* fmt, ...)
-{
-	LogInit();
-
-	va_list args;
-	va_start(args, fmt);
-	SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, fmt, args);
-	va_end(args);
 }

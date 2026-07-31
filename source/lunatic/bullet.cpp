@@ -1,6 +1,7 @@
 #include "bullet.h"
 #include "guy.h"
 #include "player.h"
+#include "log.h"
 
 enum {
 	SPR_FLAME = 0,
@@ -2121,15 +2122,14 @@ void ReflectBullets(int x, int y, byte size, byte friendly)
 
 void BulletTally(void)
 {
-#ifdef LOG
-	int i;
+	if (!IsLogPriority(SDL_LOG_PRIORITY_VERBOSE))
+		return;
 
-	for (i = 0; i < MAX_BULLETS; i++)
+	for (int i = 0; i < MAX_BULLETS; i++)
 	{
 		if (bullet[i].type)
 		{
-			LogDebug("BUL %d: Type %d", i, bullet[i].type);
+			LogVerbose("BUL %d: Type %d", i, bullet[i].type);
 		}
 	}
-#endif
 }

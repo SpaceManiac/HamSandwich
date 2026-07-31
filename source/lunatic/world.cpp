@@ -1,6 +1,7 @@
 #include "world.h"
 #include "player.h"
 #include "appdata.h"
+#include "log.h"
 
 byte NewWorld(world_t *world, MGLDraw *mgl)
 {
@@ -31,16 +32,12 @@ byte LoadWorld(world_t *world, const char *fname)
 	if (!f)
 		return 0;
 
-#ifdef LOG
-	LogDebug("LOADWORLD %s\n", fname);
-#endif
+	LogVerbose("LOADWORLD %s\n", fname);
 
 	SDL_ReadIO(f, &world->numMaps, 1);
 	SDL_ReadIO(f, &world->totalPoints, 4);
 
-#ifdef LOG
-	LogDebug("Maps: %d\n", world->numMaps);
-#endif
+	LogVerbose("Maps: %d\n", world->numMaps);
 
 	LoadTiles(f.get());
 

@@ -165,14 +165,14 @@ void PoisonVictim(Guy *me,byte amt)
 
 void PlayerWinLevel(byte isSecret)
 {
-	PrintToLog("PlayerWinLevel",0);
+	LogVerbose("PlayerWinLevel");
 	player.levelProg->flags|=LF_PASSED;
 	if(curMap->numCandles==0)
 		player.levelProg->flags|=LF_CANDLES;	// get candle credit if there aren't any
 
-	PrintToLog("StoreWorldResults",0);
+	LogVerbose("StoreWorldResults");
 	StoreWorldResults(player.worldProg,&curWorld);
-	PrintToLog("TryHighScore",0);
+	LogVerbose("TryHighScore");
 	if(!player.cheated)
 	{
 		player.gotRecords = TryHighScore();
@@ -184,9 +184,9 @@ void PlayerWinLevel(byte isSecret)
 	}
 	else
 		player.gotRecords=0;
-	PrintToLog("GoalWinLevel",0);
+	LogVerbose("GoalWinLevel");
 	GoalWinLevel();
-	PrintToLog("SaveProfile",0);
+	LogVerbose("SaveProfile");
 	SaveProfile();
 }
 

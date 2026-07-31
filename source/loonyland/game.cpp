@@ -370,7 +370,7 @@ byte LunaticRun(int *lastTime)
 		}
 		else if(msgFromOtherModules==MSG_WINLEVEL)
 		{
-			DBG("GotWinLevel");
+			LogVerbose("GotWinLevel");
 			mapToGoTo=0;
 			if(msgContent==1)
 				windingDown=1;
@@ -685,7 +685,7 @@ TASK(byte) LunaticWorld(const char *worldName)
 			}
 			if(player.worldNum==WORLD_BOSSBASH)
 			{
-				DBG("ReadyToTally");
+				LogVerbose("ReadyToTally");
 				AWAIT EndGameTally(gamemgl);
 				FreeWorld(&curWorld);
 				CO_RETURN WORLD_QUITGAME;	// you win!

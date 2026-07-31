@@ -1933,15 +1933,14 @@ byte SwapMe(int x, int y, byte size, Map *map)
 
 void MonsterTally(void)
 {
-#ifdef LOG
-	int i;
+	if (!IsLogPriority(SDL_LOG_PRIORITY_VERBOSE))
+		return;
 
-	for (i = 0; i < maxGuys; i++)
+	for (int i = 0; i < maxGuys; i++)
 	{
 		if (guys[i]->type)
 		{
-			LogDebug("GUY %d: Type %d:%s", i, guys[i]->type, MonsterName(guys[i]->type));
+			LogVerbose("GUY %d: Type %d:%s", i, guys[i]->type, MonsterName(guys[i]->type));
 		}
 	}
-#endif
 }

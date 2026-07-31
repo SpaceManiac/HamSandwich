@@ -46,7 +46,7 @@ TASK(int) main(int argc, char *argv[])
 	bool running = true;
 	while (running)
 	{
-		DBG("Mainmenu");
+		LogVerbose("Mainmenu");
 		switch(AWAIT MainMenu(mainmgl))
 		{
 			default:

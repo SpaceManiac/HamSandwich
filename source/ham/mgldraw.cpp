@@ -119,7 +119,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 #endif
 
 	LogInfo("renderer: %s", SDL_GetRendererName(renderer));
-	if (SDL_GetLogPriority(SDL_LOG_CATEGORY_APPLICATION) <= SDL_LOG_PRIORITY_DEBUG)
+	if (IsLogPriority(SDL_LOG_PRIORITY_DEBUG))
 	{
 		SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
 		LogDebug("  texture: %" SDL_PRIs64, SDL_GetNumberProperty(props, SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0));

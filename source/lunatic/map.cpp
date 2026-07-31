@@ -4,6 +4,7 @@
 #include "game.h"
 #include "guy.h"
 #include "options.h"
+#include "log.h"
 
 const int NUM_STARS = 400;
 
@@ -30,16 +31,15 @@ Map::Map(SDL_IOStream *f)
 
 	SDL_ReadIO(f, map, width*height * sizeof (mapTile_t));
 
-#ifdef LOG
-	int i;
-
-	LogDebug("LOADMAP %s\n", name);
-	for (i = 0; i < MAX_MAPMONS; i++)
+	if (IsLogPriority(SDL_LOG_PRIORITY_VERBOSE))
 	{
-		if (badguy[i].type)
-			LogDebug("M#%03d. %d. %s - (%d,%d)\n", i, badguy[i].type, MonsterName(badguy[i].type), badguy[i].x, badguy[i].y);
+		LogVerbose("LOADMAP %s\n", name);
+		for (int i = 0; i < MAX_MAPMONS; i++)
+		{
+			if (badguy[i].type)
+				LogTrace("M#%03d. %d. %s - (%d,%d)\n", i, badguy[i].type, MonsterName(badguy[i].type), badguy[i].x, badguy[i].y);
+		}
 	}
-#endif
 }
 
 Map::Map(byte size, const char *name)
@@ -1010,19 +1010,15 @@ void SpecialTakeEffect(byte num, Map *map, special_t *spcl, Guy *victim)
 
 	if (!(spcl->trigger & TRG_CHAIN))
 		SpecialNeighborCheck(map, spcl);
-#ifdef LOG
-	LogDebug("Special #%d, effect %d\n", num, spcl->effect);
-#endif
+	LogVerbose("Special #%d, effect %d\n", num, spcl->effect);
 	switch (spcl->effect) {
 		case SPC_GOTOMAP:
 			MakeNormalSound(SND_GOTOMAP);
 			SendMessageToGame(MSG_GOTOMAP, spcl->value);
 			break;
 		case SPC_EXIT:
-#ifdef LOG
 			MonsterTally();
 			BulletTally();
-#endif
 			if (PlayerBrains() == totalBrains)
 			{
 				SendMessageToGame(MSG_WINLEVEL, 0);

@@ -113,7 +113,7 @@ bool VerifyLevel(Map *map)
 
 byte InitLevel(byte map)
 {
-	PrintToLog("InitLevel",map);
+	LogVerbose("InitLevel : %d", map);
 
 	JamulSoundPurge();	// each level, that should be good
 
@@ -125,7 +125,7 @@ byte InitLevel(byte map)
 
 	verified=VerifyLevel(curMap);
 
-	PrintToLog(curMap->name,0);
+	LogVerbose("%s", curMap->name);
 
 	gameStartTime=timeGetTime();
 	tickerTime=timeGetTime();
@@ -177,7 +177,7 @@ byte InitLevel(byte map)
 
 void ExitLevel(void)
 {
-	PrintToLog("ExitLevel",0);
+	LogVerbose("ExitLevel");
 
 	// exit everything
 	ExitPauseMenu();
@@ -312,7 +312,7 @@ TASK(byte) LunaticRun(int *lastTime)
 				windingDown--;
 				if(!windingDown)
 				{
-					PrintToLog("Wound Down",0);
+					LogVerbose("Wound Down");
 					CO_RETURN windDownReason;
 				}
 			}
@@ -431,9 +431,9 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else if(msgFromOtherModules==MSG_WINLEVEL)
 		{
-			PrintToLog("Level Win!",0);
+			LogVerbose("Level Win!");
 			GoalTimeDist();
-			PrintToLog("GoalTimeDist Done",0);
+			LogVerbose("GoalTimeDist Done");
 			mapToGoTo=msgContent;
 			windingDown=40;
 			windDownReason=LEVEL_WIN;
@@ -706,7 +706,7 @@ TASK(byte) PlayALevel(byte map)
 	if(exitcode==LEVEL_WIN)
 	{
 		PlayerWinLevel(0);
-		PrintToLog("Tally",0);
+		LogVerbose("Tally");
 		AWAIT Tally(gamemgl,lastLevelName,0);
 	}
 	ExitLevel();

@@ -83,7 +83,7 @@ void LunaticExit(void)
 
 byte InitLevel(byte map)
 {
-	PrintToLog("InitLevel",map);
+	LogVerbose("InitLevel : %d",map);
 
 	JamulSoundPurge();	// each level, that should be good
 
@@ -95,7 +95,7 @@ byte InitLevel(byte map)
 
 	verified=1;
 
-	PrintToLog(curMap->name,0);
+	LogVerbose("%s", curMap->name);
 
 	gameStartTime=timeGetTime();
 	tickerTime=timeGetTime();
@@ -190,7 +190,7 @@ byte InitLevel(byte map)
 
 void ExitLevel(void)
 {
-	PrintToLog("ExitLevel",0);
+	LogVerbose("ExitLevel");
 	// exit everything
 	ExitPauseMenu();
 	ExitGuys();
@@ -301,7 +301,7 @@ TASK(byte) LunaticRun(int *lastTime)
 				windingDown--;
 				if(!windingDown)
 				{
-					PrintToLog("Wound Down",0);
+					LogVerbose("Wound Down");
 					CO_RETURN windDownReason;
 				}
 			}
@@ -417,14 +417,14 @@ TASK(byte) LunaticRun(int *lastTime)
 			if(profile.progress.totalTime<30*60*240)
 				CompleteGoal(12);
 			RemoveGuy(GetGuyOfType(MONS_RADISH));
-			PrintToLog("Level Win!",0);
+			LogVerbose("Level Win!");
 			goodguy->dx=goodguy->dy=0;
 			if(goodguy->hp==0)
 				goodguy->hp=1;
 			player.journal[63]=1;
 			SaveState();
 			GoalTimeDist();
-			PrintToLog("GoalTimeDist Done",0);
+			LogVerbose("GoalTimeDist Done");
 			mapToGoTo=msgContent;
 			windingDown=40;
 			windDownReason=LEVEL_WIN;
