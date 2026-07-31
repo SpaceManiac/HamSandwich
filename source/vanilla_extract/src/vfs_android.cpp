@@ -175,7 +175,7 @@ bool AndroidBundleVfs::list_dir(const char* directory, std::set<std::string, van
 	mActivityClass = mEnv->GetObjectClass(activity);
 
     /* context = SDLActivity.getContext(); */
-    mid = mEnv->GetStaticMethodID(mActivityClass, "getContext","()Landroid/content/Context;");
+    mid = mEnv->GetStaticMethodID(mActivityClass, "getContext", "()Landroid/app/Activity;");
     context = mEnv->CallStaticObjectMethod(mActivityClass, mid);
 
     /* assetManager = context.getAssets(); */
