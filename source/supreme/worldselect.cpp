@@ -241,7 +241,7 @@ void InputWorld(const char *fname)
 	profile.progress.totalWorlds = list.size();
 }
 
-TASK(void) ScanWorlds(void)
+TASK(bool) ScanWorlds(void)
 {
 	std::vector<std::string> files = ListDirectory("worlds", ".dlw", 32);
 	std::erase_if(files, [](const std::string& name) {
@@ -265,8 +265,13 @@ TASK(void) ScanWorlds(void)
 			start = now;
 			GetDisplayMGL()->FillBox(20,440,20+(done*600)/count,450,32*1+16);
 			AWAIT GetDisplayMGL()->Flip();
+			if (!GetDisplayMGL()->Process() || GetDisplayMGL()->LastKeyPressed() == 27)
+			{
+				CO_RETURN false;
+			}
 		}
 	}
+	CO_RETURN true;
 }
 
 void CalcScrollBar(void)
@@ -402,7 +407,7 @@ void MoveToNewWorld(void)
 	PrepWorld();
 }
 
-TASK(void) InitWorldSelect(MGLDraw *mgl)
+TASK(bool) InitWorldSelect(MGLDraw *mgl)
 {
 	int i;
 
@@ -421,7 +426,8 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 
 	list.clear();
 	PlaySongForce("003worldpicker.ogg");
-	AWAIT ScanWorlds();
+	if (!AWAIT ScanWorlds())
+		CO_RETURN false;
 	SortWorlds(sortType,sortDir);
 	SelectLastWorld();
 	CalcScrollBar();
@@ -434,6 +440,7 @@ TASK(void) InitWorldSelect(MGLDraw *mgl)
 
 	curButton = ButtonId::WorldList;
 	oldGamepad = ~0;
+	CO_RETURN true;
 }
 
 void ExitWorldSelect(void)
@@ -1039,7 +1046,11 @@ TASK(Done) UpdateWorldSelect(int *lastTime,MGLDraw *mgl)
 					else
 						EraseHighScores(&tmpWorld);
 					ExitWorldSelect();
-					AWAIT InitWorldSelect(mgl);
+					if (!AWAIT InitWorldSelect(mgl))
+					{
+						oldc=255;
+						CO_RETURN WS_EXIT;
+					}
 					break;
 				case ButtonId::No:
 					MakeNormalSound(SND_MENUSELECT);
@@ -1290,7 +1301,8 @@ TASK(byte) WorldSelectMenu(MGLDraw *mgl)
 	int lastTime=1;
 	char fname[32];
 
-	AWAIT InitWorldSelect(mgl);
+	if (!AWAIT InitWorldSelect(mgl))
+		CO_RETURN 1;
 
 	if(list.empty())
 		CO_RETURN 1;	// just skip it if there are no worlds!
@@ -1314,7 +1326,10 @@ TASK(byte) WorldSelectMenu(MGLDraw *mgl)
 			{
 				CO_RETURN 1;
 			}
-			AWAIT InitWorldSelect(mgl);
+			if (!AWAIT InitWorldSelect(mgl))
+			{
+				CO_RETURN 1;
+			}
 			done=WS_CONTINUE;
 		}
 		EndClock();
