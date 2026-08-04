@@ -59,9 +59,6 @@ body {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-
-	--canvas-width: 640px;
-	--canvas-height: 480px;
 }
 
 .stacker {
@@ -77,14 +74,15 @@ body {
 /* Game canvas */
 .canvas-sized {
 	max-width: 100%;
-	width: var(--canvas-width);
-	height: var(--canvas-height);
+	width: 640px;
+	height: 480px;
 }
 .canvas-stacker {
-	position: relative;
 	background-color: black;
+	min-width: 640px;
+	min-height: 480px;
 }
-.canvas-stacker > * {
+.canvas-stacker > :not(.canvas) {
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -92,13 +90,10 @@ body {
 	height: 100%;
 }
 .canvas {
-	position: relative;
 	margin: auto;
 	display: block;
 	border: 0px none;
 	background-color: black;
-	min-width: var(--canvas-width);
-	min-height: var(--canvas-height);
 
 	pointer-events: none;
 	opacity: 0;

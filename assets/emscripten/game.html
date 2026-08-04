@@ -23,19 +23,17 @@
 					<button class="js-close" aria-label="Close"></button>
 				</div>
 			</div>
-			<div id="game" class="canvas-sized" style="background: black">
-				<div id="game" class="canvas-stacker">
-					<div class="canvas-notice">
-						<img src="__HAMSANDWICH_ID__.splash.jpg" onerror="this.remove()" />
-					</div>
-					<div class="canvas-notice">
-						<div id="runstatus-notice" hidden><span></span></div>
-					</div>
-					<noscript class="canvas-notice">
-						<div><span>JavaScript is required to play this game.</span></div>
-					</noscript>
-					<canvas class="canvas" id="canvas" style="width: 640px; height: 480px" oncontextmenu="event.preventDefault()"></canvas>
+			<div class="canvas-stacker">
+				<div class="canvas-notice">
+					<img src="__HAMSANDWICH_ID__.splash.jpg" onerror="this.remove()" />
 				</div>
+				<div class="canvas-notice">
+					<div id="runstatus-notice" hidden><span></span></div>
+				</div>
+				<noscript class="canvas-notice">
+					<div><span>JavaScript is required to play this game.</span></div>
+				</noscript>
+				<canvas class="canvas" id="canvas" width="640" height="480" oncontextmenu="event.preventDefault()"></canvas>
 			</div>
 		</div>
 		<div class="window" id="menu" hidden>

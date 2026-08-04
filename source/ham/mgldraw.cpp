@@ -367,6 +367,9 @@ void MGLDraw::ResizeBuffer(int w, int h, bool clamp)
 		SDL_SetWindowPosition(window, px, py);
 	}
 	SDL_SetWindowMinimumSize(window, xRes, yRes);
+#ifdef __EMSCRIPTEN__
+	SDL_SetWindowSize(window, xRes, yRes);
+#endif
 
 	// Update mouse_x and mouse_y.
 	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
