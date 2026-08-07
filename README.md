@@ -210,7 +210,7 @@ convert images.
 
 **However,** note that `.bmp` images shown with the "Show Pic/Movie" special
 effect can use *any* palette of up to 256 colors and are not limited to the
-palette used by LunaticPal. You should use an image editor such as [GIMP] to
+palette used by LunaticPal. You should use an image editor such as [GIMP] or [Aseprite] to
 convert such images to Indexed mode, which will give superior results compared
 to LunaticPal.
 
@@ -245,12 +245,14 @@ and could use one, please [get in touch](#getting-help).
 FLIC movies originated with Autodesk Animator. The movies included with Hamumu
 games were created with [3D Studio Max](https://en.wikipedia.org/wiki/Autodesk_3ds_Max).
 FLIC export is also provided by contemporary tools like Jasc Animation Shop, and
-the modern pixel art and animation editor [Aseprite](https://www.aseprite.org/).
+the modern pixel art and animation editor [Aseprite].
 Note that HamSandwich fixes a bug in the engine's FLIC decoder which may cause
 some exported animations to render incorrectly on the retail versions of the games.
 
 For programmers, libraries like [Aseprite FLIC Library](https://github.com/aseprite/flic) and
 [LibFLIC](https://github.com/wangds/libflic) may be of use.
+
+[Aseprite]: https://www.aseprite.org/
 
 ## Publishing
 
