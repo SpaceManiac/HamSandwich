@@ -12,11 +12,6 @@ namespace vanilla {
 // ----------------------------------------------------------------------------
 // Simple helpers
 
-bool ends_with(std::string_view lhs, std::string_view rhs)
-{
-	return lhs.size() >= rhs.size() && lhs.compare(lhs.size() - rhs.size(), std::string_view::npos, rhs) == 0;
-}
-
 bool vanilla::CaseInsensitive::operator() (const std::string& lhs, const std::string& rhs) const
 {
 	return strcasecmp(lhs.c_str(), rhs.c_str()) < 0;
@@ -153,7 +148,7 @@ static void list_dir_inner(std::string_view prefix, Vfs* vfs, const char* direct
 			continue;
 
 		each.insert(0, prefix);
-		if (ends_with(each, TOMBSTONE_SUFFIX))
+		if (each.ends_with(TOMBSTONE_SUFFIX))
 		{
 			each.erase(each.size() - TOMBSTONE_SUFFIX.size());
 			output->erase(each);

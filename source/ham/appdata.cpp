@@ -349,7 +349,7 @@ const char* EscapeBinDirectory() {
 			perror("EscapeBinDirectory: getcwd");
 			ham_strcpy(bin_dir_buf, ".");
 		}
-		if (vanilla::ends_with(bin_dir_buf, "/build/install") || vanilla::ends_with(bin_dir_buf, "\\build\\install")) {
+		if (std::string_view(bin_dir_buf).ends_with("/build/install") || std::string_view(bin_dir_buf).ends_with("\\build\\install")) {
 			if (chdir("../..") < 0) {
 				perror("EscapeBinDirectory: chdir");
 			}

@@ -14,8 +14,6 @@ struct SDL_IOStream;
 
 namespace vanilla
 {
-	bool ends_with(std::string_view haystack, std::string_view suffix);
-
 	struct CaseInsensitive
 	{
 		bool operator() (const std::string& lhs, const std::string& rhs) const;

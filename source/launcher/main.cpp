@@ -557,7 +557,7 @@ struct Launcher
 void CopyToAddonsFolder(std::string_view addonsFolder, std::string_view sourcePath)
 {
 	// .zip files only
-	if (!vanilla::ends_with(sourcePath, ".zip"))
+	if (!sourcePath.ends_with(".zip"))
 	{
 		return;
 	}
