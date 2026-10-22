@@ -2,7 +2,6 @@
 #define SKILL_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 // skill types
 #define ST_PASSIVE	(0)	// always affects things
@@ -131,6 +130,7 @@
 #define SC_ICE		(3)
 #define SC_DEATH	(4)
 
+#pragma pack(push, 1)
 typedef struct skill_t
 {
 	char name[16];
@@ -144,6 +144,7 @@ typedef struct skill_t
 	float valUp[2];	// how much they change per level (each extra point adds this much)
 	byte capLevel[2];	// the highest level possible for this stat of this skill
 } skill_t;
+#pragma pack(pop)
 
 void InitialSkills(void);
 byte SkillDamageBonus(void);

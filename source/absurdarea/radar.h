@@ -2,16 +2,17 @@
 #define RADAR_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define MAX_RADAR	(256)
 
+#pragma pack(push, 1)
 typedef struct radar_t
 {
 	int x,y;
 	byte size;
 	byte color;
 } radar_t;
+#pragma pack(pop)
 
 void Radar_Init(void);
 void Radar_Exit(void);

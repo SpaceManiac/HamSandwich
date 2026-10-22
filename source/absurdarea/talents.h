@@ -2,7 +2,6 @@
 #define TALENTS_H
 
 #include "winpch.h"
-#pragma pack(1)
 
 enum talentList {
 	// combat
@@ -48,6 +47,7 @@ enum talentList {
 #define TLTP_CRAFT	2
 #define TLTP_ANY	3
 
+#pragma pack(push, 1)
 typedef struct talent_t
 {
 	char name[16];
@@ -55,6 +55,7 @@ typedef struct talent_t
 	float powerPerLev;
 	word ptsNeeded[10];
 } talent_t;
+#pragma pack(pop)
 
 void InitialTalents(void);
 char *TalentName(byte n);

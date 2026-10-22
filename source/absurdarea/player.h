@@ -14,8 +14,6 @@
 #include "shop.h"
 #include "upgrade.h"
 
-#pragma pack(1)
-
 #define MAX_MONEY	99999
 #define COMBO_TIME	30*2
 
@@ -369,9 +367,7 @@
 #define KC_ONION	(22)
 #define KC_BUNNY	(24)
 
-
-#pragma pack(1)
-
+#pragma pack(push, 1)
 typedef struct player_t
 {
 	char profile[16];
@@ -488,6 +484,7 @@ typedef struct player_t
 	byte arenaWave;	// which wave you are on if multiple
 	word arenaSpawn;
 } player_t;
+#pragma pack(pop)
 
 extern player_t player;
 

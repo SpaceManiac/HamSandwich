@@ -17,7 +17,6 @@
 #include "intface.h"
 #include "pause.h"
 #include "cheat.h"
-#pragma pack(1)
 
 #define CONTINUE 0
 #define QUITGAME 1

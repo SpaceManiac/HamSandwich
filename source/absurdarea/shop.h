@@ -2,7 +2,6 @@
 #define SHOP_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define SHOP_WID		(4)
 #define SHOP_HEI		(6)

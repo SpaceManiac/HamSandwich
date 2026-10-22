@@ -3,7 +3,6 @@
 
 #include "winpch.h"
 #include "display.h"
-#pragma pack(1)
 
 #define PAUSE_RESUME	(0)
 #define PAUSE_ITEMS		(1)

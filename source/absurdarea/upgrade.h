@@ -3,8 +3,6 @@
 
 #include "winpch.h"
 
-#pragma pack(1)
-
 // ABSURD AREA NUMS
 // trial numbers
 #define TRIAL_DUEL	(0)

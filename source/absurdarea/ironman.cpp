@@ -9,6 +9,7 @@
 #include "quest.h"
 #include "achieve.h"
 
+#pragma pack(push, 1)
 typedef struct ironMan_t
 {
 	dword score;
@@ -19,6 +20,8 @@ typedef struct ironMan_t
 	word  crystals;
 	dword timeBonus;
 } ironMan_t;
+static_assert(sizeof(ironMan_t) == 23);
+#pragma pack(pop)
 
 static ironMan_t ironMan;
 

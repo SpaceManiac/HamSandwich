@@ -3,7 +3,6 @@
 
 #include "mgldraw.h"
 #include "map.h"
-#pragma pack(1)
 
 // types of battles
 #define AR_BRAWL	(0)	// just a bunch of monsters, kill them all
@@ -30,13 +29,14 @@
 #else
 #define MAX_MATCHES	 (55)
 #endif
-#pragma pack(1)
 
+#pragma pack(push, 1)
 typedef struct waveDef_t
 {
 	byte count;
 	byte type;
 } waveDef_t;
+static_assert(sizeof(waveDef_t) == 2);
 
 typedef struct arenaMatch_t
 {
@@ -54,6 +54,8 @@ typedef struct arenaMatch_t
 	byte waveCnt;	// just for display purposes
 	waveDef_t waves[MAX_WAVES][MAX_PER_WAVE];
 } arenaMatch_t;
+static_assert(sizeof(arenaMatch_t) == 276);
+#pragma pack(pop)
 
 extern arenaMatch_t arenaMatch[MAX_MATCHES];
 
