@@ -56,6 +56,7 @@ add_subdirectory("stockboy")  # 2002-06
 add_subdirectory("supreme")  # 2003-08
 add_subdirectory("loonyland2")  # 2007-02
 add_subdirectory("sleepless")  # 2007-10
+add_subdirectory("absurdarea")
 
 # -----------------------------------------------------------------------------
 # Developer Tools
