@@ -1,0 +1,48 @@
+In Absurd Area, you do not get specific Skills and Talents from specific places. Instead, completing certain quests or defeating certain enemies gives you an Upgrade Point, which you can use to buy an Upgrade from the Halls of Mastery. You can reach the Halls of Mastery from a Festivus pole.
+
+There are 30 upgrades in 6 different categories. Each upgrade gives you one or two Skills and possibly one or two Talents. Talents are marked with *.
+
+CIVILIAN - These upgrades give you no real combat or magic abilities, but boost you in other ways. Don't overlook them! With one exception, you can get any of these at any time. These tend to have many useful Talents, so if you don't have many Skill Points to spare for new Skills, you may especially want to keep these in mind.
+Explorer - *Mobility, Tracking, Survival
+Merchant - *Haggling, *Miser, *Packrat, Luck
+Craftsman - *Clockwork, *Junksmith, *Alchemy, Training
+Expert (Requires Craftsman) - *Mining, *Herbalism, *Mixology, Toughness
+Scholar - Energy, *Meditation, *Mental Focus
+
+WARRIOR - Three different combat classes. For each class, you must get the upgrades in order, but you are not restricted to one class - mix as much as you like.
+In general, the first and third levels of each path will be useful for most or all character builds.
+Duelist - Skills and Talents that focus on taking down powerful foes.
+1 - *Chopping, Stun, Critical
+2 - Bash, Strength
+3 - *Criticism, Defense
+4 - Poison, Parry
+5 - *Finesse, Persuasion
+Gladiator - Skills and Talents that focus on taking on hordes of enemies at a time.
+1 - *Sneak Attack, Axe Mastery, Vampirism
+2 - Whirl, Dodge
+3 - *Stoneskin, Endurance
+4 - Stomp, Flame
+5 - *Knockout, Air Strike
+Marksman - Skills and Talents for ranged combat.
+1 - *Scavenging, Throwing, Piercing
+2 - Static, Triple
+3 - *Vivacity, Shatter
+4 - Ricochet, Axe Trap
+5 - *Tossing, Homing
+
+MAGE - Two different categories, Enchantment (useful magic) and Sorcery (destructive magic). Each has 5 levels. Purchasing a Mage upgrade allows you access to BOTH the Enchantment and Sorcery upgrades of the next higher level.
+1
+Enchantment 	- Lifeberries, Ignite, *Green Thumb, *Combustion
+Sorcery 	- Cryozoid, Drain, *Freezing, *Spookiness
+2
+Enchantment 	- Restoration, Brambles, *Green Thumb, *Arsenic
+Sorcery 	- Bonehead, Toasties, *Spookiness, *Scorching
+3
+Enchantment 	- Cold Wave, Tornado, *Freezing, *Windbag
+Sorcery 	- Gale, Bone Bomb, *Windbag, *Spookiness
+4
+Enchantment 	- Berserk, Heat Shield, *Scorching
+Sorcery 	- Stone Spike, Shock Orb, *Electrocution
+5
+Enchantment 	- Plague, Shroom, *Arsenic, *Green Thumb
+Sorcery 	- Ice Cube, Burninate, *Freezing, *Combustion

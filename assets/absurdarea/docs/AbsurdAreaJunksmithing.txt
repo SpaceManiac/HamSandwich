@@ -1,0 +1,67 @@
+Junksmithing works exactly the same as in Loonyland 2, except you earn double the talent XP.
+However, for your convenience, I will explain some of the unexplained details of how it works.
+
+To Junksmith, you must add at least 4 items. If you are just trying to level up Junksmithing, you might want to stick with 4 items, since the XP for junksmithing is per item that you smith.
+
+The items you add are used to determine the smithed item in two ways.
+
+
+First, each item has a level stat. The levels of all your items are added together. The RNG will be used to roll a random item as if you killed a monster of that total level.
+This is the most important stat when Junksmithing.
+
+By item:
+
+1,	// log
+1,	// gear
+1,	// can
+1,	// stuffing
+1,	// sock
+2,	// ice cube
+2,  	// seed
+3,  	// rock
+2,  	// ecto
+3,  	// claw
+1,  	// silver
+2,  	// gold
+3,  	// ruby
+4,  	// emerald
+8,  	// diamond
+
+By level:
+
+1: log, gear, can, stuffing, sock, silver
+2: ice cube, seed, ectoplasm, gold
+3: rock, claw, ruby
+4: emerald
+8: diamond
+
+
+Second, the RNG is seeded with a value obtained from your items. Each item has a seed value, which is added together:
+
+1,	// log
+2,	// gear
+4,	// can
+8,	// stuffing
+16,	// sock
+32,	// ice cube
+64, 	// seed
+128, 	// junk2
+256, 	// junk3
+512, 	// junk4
+1024, 	// silver
+2048, 	// gold
+4096, 	// ruby
+8192, 	// emerald
+16384,	// diamond
+
+The purpose of the seed is to make sure each different recipe will seed the RNG with a different number. If you don't understand what that means, it's not important. It just means different recipes roll different items, even if they have the same level. But, it's the level that actually matters.
+
+
+There is a chance to fail ("You broke the junk"), which is 25% minus 2% per talent level. So at max level 10, there is still a 5% failure rate.
+Additionally, the smithing will fail but still give talent XP ("The junk exploded!") if you craft a magic item and your level is too low.
+So if you see the junk explode... write down the recipe for when you're higher level.
+Level 4 needed to smith Magic items.
+Level 7 needed to smith Golden items.
+Level 10 needed to smith Artifacts! Note that if you smith an Artifact, it will give a different item if you use the same recipe since Artifacts have to be unique.
+
+Lastly... if you unlock and start a game with the Greaser modifier, you can see what you will smith before pressing the button!

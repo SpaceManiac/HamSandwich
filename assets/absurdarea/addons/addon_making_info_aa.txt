@@ -1,0 +1,929 @@
+Absurd Area version.
+
+THIS FILE CONTAINS A MESS OF SPOILERS!  IF YOU HAVEN'T FINISHED THE GAME, THIS WILL RUIN IT FOR YOU!!  FINISH THE GAME BEFORE MAKING ANY ADD-ONS!
+
+Here's an assortment of vital pieces of information if you are making an add-on.  There's a lot more information you will also need which is not provided here.  If something you make acts a little wierd, consider what you are working on.  There's a good chance that there is some hard-coded effect involved (for example, if the quest Free Melly is assigned, and Klonk is not yet dead, then map #20 - normally Brisk Bog - will have no enemies on it).
+
+Note that some hardcoded stuff is different in Absurd Area! Especially, quest related things.
+PLEASE NOTE that a world file will end in .aaw, not .llw.
+Also, the text file should be named "aal_worldname.txt", not "lvl_worldname.txt".
+
+Here is some handy information:
+
+Monster names to use in your text file (ignore everything but the name.  The words after the "//" are an explanation of which monster it is.  If there is no "//" for a given monster it should be obvious):
+
+#define MONS_NONE      0
+#define MONS_LOONY     1
+#define MONS_TEDDY     2
+#define MONS_VILLAGER  3	// put a tag on the monster to choose which villager
+#define MONS_AXETRAP   4	// Axe Trap skill makes these
+#define MONS_BONEHEAD  5	// player only
+#define MONS_MOUSE	6	// squeaker
+#define MONS_PUPPET	   7	// punch
+#define MONS_CRYOZOID  8	// player only
+#define MONS_SHROOM	   9	// the shrooms that enemies can be turned into
+#define MONS_PUPPET2   10	// pulls squeakers out of his hat
+#define MONS_TINGUY	   11	// tinny tim
+#define MONS_MOUSE2	   12	// Rat-A-Tat
+#define MONS_TEDDY2	   13	// Cave Bear
+#define MONS_MOUSE3	   14	// Ratatouille miniboss
+#define MONS_MONKEY	   15	// sock monkey
+#define MONS_KLONK	   16
+#define MONS_TOASTY	   17	// Toasties!  for the Toasties spell
+#define MONS_KLUNK	   18	// Klonk's brother
+#define MONS_ICEMICE   19
+#define MONS_ROSE	   20	// Stone Rose
+#define MONS_HOUND	   21	// ice hound
+#define MONS_ROSE2	   22	// rosie o bomber
+#define MONS_MONKEY2   23	// Stinky Sock
+#define MONS_PUPPET3   24	// KO Punch
+#define MONS_TEDDY3	   25	// Berserker Bear, leader of the cave bears
+#define MONS_TOYMAKER  26	// toymotron
+#define MONS_TOYPOWER  27	// power generator
+#define MONS_TOYCRYSTAL 28	// crystals that orbit generator
+#define MONS_TINGUY2	29	// Tin Soldier
+#define MONS_LIFEBERRY		30	// lifeberry bush
+#define MONS_MOUSE4		31		// Plague Rat
+#define MONS_LION	   32	// Dandy Lion
+#define MONS_BRUISER   33	// Klonk-like guys, working for Onion
+#define MONS_BURNINGBUSH 34	
+#define MONS_THUG		35	// Onion Thug
+#define MONS_GHOST		36	// ghost for Spookybones
+#define MONS_TRIGUN		37	// Trigun, soldier with triple fire
+#define MONS_JUNKSMITH  38
+#define MONS_CARAVAN	39
+#define MONS_JUNKTRAP	40
+#define MONS_BUNNYTROOP 41	// order knight
+#define MONS_BUNNYMAJOR 42	// Major Fishbug
+#define MONS_BUNNYBOSS	43	// Captain Capitan
+#define MONS_EVILBOT	44	// clockwork robot as an enemy
+#define MONS_YOURBOT	45	// clockwork robot you built
+#define MONS_MONKEY3	46	// Shock Monkey
+#define MONS_GHOSTDOG	47
+#define MONS_GHOSTMONKEY 48
+#define MONS_CRAB		49	// rock crab
+#define MONS_BADGER		50	// bodzha
+#define MONS_TITAN		51
+#define MONS_BIGPLANT	52		// gourdzilla
+#define MONS_FURNACE	53
+#define MONS_ROSE3		54	// Yellow Rose
+#define MONS_BADGER2	55	// gophers for the forest
+#define MONS_LION2		56	// advanced dandy lions
+#define MONS_STONEWALL	57
+#define MONS_BOKBOK		58
+#define MONS_BOKBOK2	59	// nuclear bokbok
+#define MONS_BUNNYBOSS2 60	// Captain Capitan in the underworld - tougher and doesn't go away after 50% dead
+#define MONS_TITAN2		61	// titanic titan
+#define MONS_BADGER3	62	// stinkin' bodzha
+#define MONS_ARENACRYSTAL 63	// crystal you have to protect in arena fights
+#define MONS_TURRET		64	// turrets in frostburn
+#define MONS_PROTOTYPE	65	// prototype puppets, friendly
+#define MONS_FROSTGATE	66	// invisible enemy only prototypes can hurt, for the smashable frost gate
+#define MONS_MOUSE5		67	// Many Mouse
+#define MONS_TINPOT		68	// tinpot general
+#define MONS_TEDDY4		69	// grizzly bear
+#define MONS_MONKEY4	70	// sock gorilla
+#define MONS_MIMIC		71
+#define MONS_ARMYONE	72	// Army Of One
+#define MONS_BARON		73
+#define MONS_UBERTITAN	74	// melton
+#define MONS_TEDDY5		75	// Golden Bear
+#define MONS_ROSE4		76	// Power Plant
+#define MONS_ROSE5		77	// doom daisy
+#define MONS_BIGBADGER	78	// gorka
+#define MONS_BIRD		79	// happy stick
+#define MONS_KILLBOR	80
+#define MONS_GORKA2		81	// mutant gorka
+#define MONS_LILBADGER	82	// toy bodzha
+#define MONS_PLAYTHUG	83	// play as thug
+#define MONS_PLAYBUNNY  84	// play as bunny
+#define MONS_BADGHOST	85	// lvl 5 ghost
+#define MONS_BADGHOST2  86	// lvl 15 ghost
+#define MONS_BADGHOST3	87	// lvl 25 ghost
+#define MONS_BADGHOST4	88	// lvl 35 ghost
+#define MONS_BADGHOST5	89	// lvl 45 ghost
+#define MONS_SOCKCRAB	90
+#define MONS_HOTDOG		91
+#define MONS_ICEBOX		92
+#define MONS_DEATHBERRY	93
+#define MONS_FRUITPUNCH 94
+#define MONS_REDBARON	95
+#define MONS_JACK	96	// artifact jack
+#define MONS_FIREWALL	97	// AA added firewall
+#define MONS_NICETITAN	98	// AA added nicetitan
+#define MONS_SPICEMICE	99	// AA added spicemice
+#define MONS_ONEPUNCH	100	// AA added onepunch
+#define MONS_ROCKMONKEY	101	// AA added rockmonkey
+
+Here is the leveldef information for Absurd Area.  You can copy and paste this into a separate file to get started on your own world, copying absurdarea.aaw to be your starting point. Note that the song names are changed!
+
+MY ADVENTURE NAME
+{LF_TOWN,{0,0,0,0,0},0,{0,2,0,0,0,0,0},SONG_NATCAVES}, //0, Einsburg
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_TITLE}, //1, Select an Upgrade
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_TITLE}, //2, Halls of Mastery
+{0,{MONS_TEDDY2,MONS_MOUSE,MONS_TEDDY2,MONS_TEDDY2,MONS_MOUSE4},40,{0,0,2,4,0,0,7},SONG_LIGHTFACT}, //3, Vulgar Vault
+{0,{MONS_PUPPET,MONS_MOUSE2,MONS_PUPPET,MONS_MOUSE,MONS_MONKEY},60,{0,3,4,0,1,10,0},SONG_STORAGE}, //4 Frigid Forest
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_NATCAVES}, //5, Woody's Cabin
+{0,{MONS_HOUND,MONS_HOUND,MONS_HOUND,MONS_HOUND,MONS_TITAN},30,{25,0,5,0,2,2,0},SONG_CONTROL}, //6, Treacherous Taiga
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_STORY}, //7, Rooms of Research
+{0,{MONS_ICEMICE,0,0,0,0},20,{2,0,5,0,2,3,0},SONG_STORAGE}, //8, Polar Pond
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_NATCAVES}, //9, Inside
+{0,{MONS_ROSE2,MONS_ROSE2,MONS_ROSE2,MONS_LION,MONS_ROSE2},15,{1,0,1,0,10,0,0},SONG_STORAGE}, //10, Perilous Pass
+{0,{MONS_PUPPET3,MONS_TEDDY,MONS_TINGUY2,0,MONS_LION},25,{0,8,2,0,0,5,0},SONG_NEWCAVES}, //11, Rowdy River
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSFIGHT}, //12, Pirate Attack!
+{0,{MONS_MOUSE2,MONS_MONKEY,MONS_TINGUY,MONS_MOUSE,MONS_MOUSE4},60,{10,10,3,0,0,5,0},SONG_STORAGE}, //13, Brisk Bog
+{0,{MONS_ICEMICE,MONS_HOUND,MONS_ICEMICE,MONS_TITAN,MONS_HOUND},30,{0,0,1,0,0,7,0},SONG_WARFACT}, //14, Drafty Den
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_NATCAVES}, //15, The Arena
+{LF_ARENA,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSFIGHT}, //16, Arena Small
+{LF_ARENA,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSFIGHT}, //17, Arena Maze
+{0,{MONS_MOUSE4,MONS_LION,MONS_MONKEY2,MONS_BADGER3,MONS_MOUSE4},40,{0,0,0,0,0,0,0},SONG_GUARDIAN}, //18, Poisonous Pit
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_STORY}, //19, Claim Your Reward
+{0,{0,0,0,0,0},0,{2,0,0,0,0,0,0},SONG_NEWCAVES}, //20, Pitiless Peak
+{0,{MONS_BADGHOST2,MONS_BADGHOST3,MONS_GHOSTMONKEY,MONS_BADGHOST2,MONS_DEATHBERRY},40,{0,1,3,5,0,0,0},SONG_WARFACT}, //21, Creepy Copse
+{0,{MONS_CRAB,MONS_BADGER,MONS_CRAB,MONS_TITAN,MONS_STONEWALL},15,{3,2,0,0,0,0,0},SONG_CORE}, //22, Sankyo
+{0,{MONS_CRAB,0,0,0,0},10,{0,0,2,5,0,0,10},SONG_GUARDIAN}, //23, Homicidal Hillside
+{0,{MONS_BADGER2,MONS_TITAN,MONS_STONEWALL,MONS_GHOSTDOG,MONS_GORKA2},30,{7,3,5,0,10,0,0},SONG_CORE}, //24, Sinister Slopes
+{0,{MONS_MOUSE,MONS_MOUSE2,MONS_MOUSE,MONS_MOUSE4,MONS_MOUSE},60,{0,0,1,0,0,3,0},SONG_LIGHTFACT}, //25, Infested Woods
+{0,{MONS_BADGER,MONS_GHOSTDOG,MONS_TITAN,MONS_STONEWALL,MONS_GORKA2},25,{0,0,1,7,0,0,15},SONG_CORE}, //26, Caliginous Cavities
+{0,{MONS_PUPPET,MONS_PUPPET,MONS_PUPPET,MONS_PUPPET,MONS_PUPPET3},60,{0,4,1,0,0,2,0},SONG_LIGHTFACT}, //27, Island of the Marionettes
+{0,{MONS_PUPPET3,MONS_LION,MONS_MONKEY3,MONS_PUPPET2,MONS_FRUITPUNCH},30,{0,10,3,0,5,5,0},SONG_NEWCAVES}, //28, Gelid Grove
+{0,{0,0,0,0,0},0,{3,0,1,0,5,0,0},SONG_NEWCAVES}, //29, Rickety Ridge
+{0,{MONS_TEDDY2,MONS_TEDDY,MONS_TEDDY2,0,0},40,{0,0,1,4,0,0,10},SONG_CONTROL}, //30, Bear Lair
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_ANNIHILATOR}, //31, Toy Factory
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_STORY}, //32, Guru's Home
+{0,{MONS_MONKEY,MONS_MONKEY2,MONS_SOCKCRAB,MONS_MONKEY3,MONS_GHOSTMONKEY},30,{0,0,3,10,0,0,15},SONG_GUARDIAN}, //33, Monkey Grotto
+{0,{MONS_TINGUY,MONS_TINGUY2,MONS_TINGUY,0,0},60,{0,0,0,0,0,0,5},SONG_CONTROL}, //34, Army Camp
+{0,{MONS_CRAB,MONS_MONKEY3,MONS_LION,MONS_MOUSE5,MONS_BADGER2},60,{0,0,5,20,0,0,25},SONG_WARFACT}, //35, Hiemal Holes
+{0,{MONS_BADGER,MONS_BADGER2,MONS_BADGER3,MONS_GORKA2,0},40,{0,0,1,5,0,0,10},SONG_GUARDIAN}, //36, Bodzha Nest
+{0,{MONS_ROSE2,MONS_LION,MONS_LION,MONS_ROSE3,MONS_LION2},30,{0,50,50,0,50,0,0},SONG_WARFACT}, //37, Overgrown Farm
+{LF_ARENA,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSFIGHT}, //38, Arena Icy
+{LF_ARENA,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSFIGHT}, //39, Arena Wet
+{LF_ARENA,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSFIGHT}, //40, Arena Capital
+{0,{MONS_ROSE2,MONS_TEDDY,MONS_PUPPET3,MONS_MONKEY2,MONS_ROSE},30,{10,2,5,0,20,3,0},SONG_NEWCAVES}, //41, Precipitous Precipices
+{0,{MONS_THUG,MONS_THUG,0,0,MONS_BRUISER},30,{0,0,2,5,0,0,10},SONG_WARFACT}, //42, Onion Camp
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_LIGHTFACT}, //43, Tweestad
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_NATCAVES}, //44, Clockmaker's Workshop
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_CORE}, //45, Battlegrounds
+{0,{MONS_BUNNYTROOP,MONS_BUNNYTROOP,0,0,MONS_EVILBOT},30,{0,2,5,0,0,0,10},SONG_NEWCAVES}, //46, Bunny Camp
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_NEWCAVES}, //47, Capitan's Chamber
+{0,{MONS_CRAB,MONS_HOUND,MONS_STONEWALL,MONS_HOTDOG,MONS_TITAN},50,{0,0,0,0,0,0,18},SONG_OLDBASE}, //48, Cavernous Caldera
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,1},SONG_NATCAVES}, //49, underground town
+{0,{MONS_CRAB,MONS_STONEWALL,MONS_BADGER2,MONS_NICETITAN,MONS_TITAN},50,{0,0,0,0,0,0,25},SONG_OLDBASE}, //50, underground crystal
+{0,{MONS_LION2,MONS_ROSE3,MONS_BURNINGBUSH,MONS_ROSE4,MONS_TITAN},60,{0,0,0,0,0,0,25},SONG_OLDBASE}, //51, underground garden
+{0,{MONS_LION2,MONS_STONEWALL,MONS_HOTDOG,MONS_FIREWALL,MONS_TITAN},40,{0,0,0,0,0,0,36},SONG_OLDBASE}, //52, underground bodzhas
+{0,{MONS_HOTDOG,0,MONS_BURNINGBUSH,MONS_FIREWALL,0},40,{0,0,0,0,0,0,16},SONG_OLDBASE}, //53, underground pits
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,3},SONG_OLDBASE}, //54, underground furnace
+{0,{0,MONS_HOUND,MONS_ICEBOX,MONS_NICETITAN,MONS_TITAN},50,{0,0,0,0,0,0,28},SONG_OLDBASE}, //55, underground titan
+{0,{MONS_BADGER3,0,0,0,0},0,{10,5,0,0,0,0,0},SONG_CORE}, //56, Sankyo Castle
+{LF_TOWN,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_COREALT}, //57, Trial Entrance
+{0,{MONS_TEDDY4,MONS_MONKEY4,MONS_ONEPUNCH,MONS_MOUSE5,MONS_TINPOT},40,{0,0,0,0,0,0,0},SONG_ANNIHILATOR}, //58, castle 1
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSFIGHT}, //59, castle boss
+{0,{MONS_ROCKMONKEY,MONS_SPICEMICE,MONS_TURRET,MONS_TINPOT,MONS_TEDDY5},50,{0,0,0,0,0,0,0},SONG_ANNIHILATOR}, //50, castle 2
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_BOSSALT}, //61, The Trial
+{0,{MONS_BIGBADGER,0,0,MONS_GORKA2,0},40,{0,0,0,0,0,0,0},SONG_ANNIHILATOR}, //62, The Clouds
+{0,{0,0,0,0,0},0,{0,0,0,0,0,0,0},SONG_TETRON}, //63, Cloud Castle
+
+Song names:
+SONG_GUARDIAN
+SONG_STORAGE
+SONG_COREALT
+SONG_BOSSALT
+SONG_STORY
+SONG_TITLE
+SONG_BOSSFIGHT
+SONG_TETRON
+SONG_NATCAVES
+SONG_CORE
+SONG_CONTROL
+SONG_LIGHTFACT
+SONG_NEWCAVES
+SONG_WARFACT
+SONG_OLDBASE
+SONG_ANNIHILATOR
+
+When making your own adventures, you need to copy that format EXACTLY.  Note that the first line of the file is the name of the adventure.  On each line after that, the first number/word is the type of level it is:
+0 - a regular area, presumably with monsters
+LF_TOWN - town.  The player resurrects at the last one of these he visited when killed.  Also, magic and stamina regenerate twice as fast here.
+LF_ARENA - an arena match.  This affects some game rules.  Arena matches take place in the specific 5 levels that are marked LF_ARENA already, so you must leave them in those spots.  Things will be strangely messed up if you include the arena without doing that.  If you're not including the arena, don't worry about it, and don't use the LF_ARENA level type.  Just make sure Tina Tsarina isn't in your game!
+
+The block of 5 numbers/words after that are the 5 monster types that appear randomly in this level.  From left to right they are increasingly more rare/less likely to appear.  These monster names come from the list above, make sure you enter them exactly as written!
+
+After that comes a number indicating how many monsters to put in the level.  There can't be more than around 220 monsters, including ones that were placed in the level in the editor.
+
+The next block of numbers are the herb and mining counts.  The first 6 numbers are how many of each type of herb should appear (in alphabetical order), and the last number is how many mining cracks should appear.  What the game actually does is randomly pick from 0 to the number given, so a higher number just means it's more likely to be higher, rather than guaranteeing more.  Note that herbs have rules on where they grow, so for example, Bubbleweed won't be put in the level at all unless there is riverside terrain.
+
+The next thing is of course which song to play!  All 16 song slots are filled in Absurd Area, so you will have to replace the songs if you want custom songs. Custom songs have to be OGG files, put in the music folder, with the same naming convention as the existing songs - "aasongXXX.ogg", where XXX is a 3-digit number.  So instead of putting SONG_BOSSFIGHT, you might put 6, to play your own custom song that you saved as aasong006.ogg. (But, SONG_BOSSFIGHT will still link to song number 6. Keep track of whichever makes it less confusing for you.)
+
+And lastly, you can put anything you want on the end (or nothing), but it's wise to do what I have done.  Put in a comment, so you know which level it's referring to.  Even smarter to put in a level number in your comment to help you keep track.
+
+If you don't provide enough lines in your TXT file for all of your levels, it will automatically fill the missing spots with the original values.
+
+A trick: start a character in your new game (or if you have one already, play that character), and then exit immediately back to the title screen.  At the top of the title screen, it will print out the first error it found in your TXT file, and which line it's on.  If there's nothing there, then you have no errors!  Of course, your actual adventure might have all kinds of problems, but at least you didn't screw up the text file.
+------------------
+
+Here are all the editor keyboard commands! Some of these are kinda weird. Also! Make sure you don't accidentally press Esc one too many times when closing a menu, or it will close the editor without saving or confirming!
+
+f: file menu
+m: Shows the map (New to AA! Click on the map, or use the arrow keys, to move around the level. ESC to exit.
+spacebar: Cycles through the various plop modes
+b: Increase brush size
++/-: change floor tile selected
+o/p: change wall ceiling selected
+[/]: change wall wall selected
+,/.: change current item selected
+backspace: Delete everything on the moused over tile
+ADWX: Resize the level (D/X increase size right/down, A/W decrease size left/up)
+IJKM: Shift all the contents of the level up/left/right/down
+T: Toggle whether tags are drawn
+t: tag tile with selected tag
+Y: OK, this one I added for AA. It's kinda weird. First, select an item. Then, mouse over a tile with a tag. Then, press Y. All squares with that tag will be scanned; if they don't have an item or a wall, they will be plopped with the selected item.
+y: Another AA add. This will also scan over all tiles with the same tag as you are mousing over, but it will tag all those tiles with the selected tag.
+u: Super weird AA add. This will look at the tag you have selected, count the number of tiles with that tag, and change your selected tag to be equal to that count (maxed at 255). This is a really weird, but quick, way to count how many tiles you have tagged with a specific tag.
+;/': Change selected tag
+:/": Change selected tag by 10 (AA add)
+c: Copy the selected area
+v: Paste the selected area centered on the mouse position. Note that this will copy monsters! It is possible to stack multiple monsters in the same tile with this feature.
+r: Random plop mode
+g: "Get" the floor, wall, or item under the cursor
+C: Set the entire map to the same brightness as the moused over tile.
+s: If you are in Light mode, and the selected tag is 0-16, this sets the moused over area (including brushsize) to light equal to the selected tag. If you are in Dark mode, and the selected tag is 0-32, this will set the area's light to negative the selected tag. AA addition!
+Q: "Cavernize," which randomly scrambles certain wall tiles, and the floors and holes in the floor in the Underworld.
+q: Cavernize, but specifically for the dark floors and pits from the Glacial Gorge. AA add (it was in the original program but disabled, I put it back in)
+!: Scans the entire world for presents and chests. The location with the .exe will have a text file, "blah.txt", detailing if any presents/chests are missing or occur multiple times.
+?: AA add. Scans the entire world for GoToMap specials. The file "lmao.txt" will detail, for each level, all of the specials leading in or out.
+F: AA add. Scans the entire world to see if the selected floor tile is ever used for any purpose, and tells you exactly where. The file "rofl.txt" will detail which level and the exact location the tiles was used as a floor, any part of a wall, or even created as part of specials. Use it if you suspect that you may have an "extra" tile that you never used anywhere. If the output file is blank, then you never used it (unless you had another tile change to the tile in question, which the code doesn't check for)
+G: AA add. Scans the current map for all tiles that are tagged with the selected tag. The file "ooloo.txt" will detail exactly where they all are, and give a count. If it is empty, you know you haven't used the tag in this level. Useful if you want to summon monsters or change tiles on a tag, and don't want to accidentally break your specials by using the same tag for 2 things!
+n: AA add. Scans the current level for mushroom items, and generates a soft glow of light around them all. I used this because I like how the mushroom glow now looks kinda circular.
+N: AA add. Complicated green crystal specials I put in just for the Crystal Caves. Don't use unless you want basically exactly the same effect I used in the Crystal Caves, which will require a bit of research. Scans the map for green crystals, changes the floor under them, adds specials, a bunch of other stuff. I designed this effect to be used exactly once ever.
+h: AA add. Another thing designed to be used once. You know the hidden walls maze in Frostburn's castle? This code scans the map for any tiles tagged exactly 250, then places a special there that, when the tile is stepped on or shot, copies from the specific location 59,70 to this tile. Very esoteric. You will probably not want to use this.
+
+------------------
+Here are the variables and what they're used for.  Ignore their names.  The number is what you use in specials, and the comment explains what that variable is for.
+
+#define VAR_QUESTASSIGN 0	// 0-49 = quest (N) has been assigned
+#define VAR_QUESTDONE	50	// 50-99 = quest (N) is complete
+#define VAR_PROVEKILLS	100	// # of kills you've gotten while on a Prove Yourself quest
+#define VAR_PRESENT	101	// 387-485 = have you collected present (N-387)?
+#define VAR_MAGICHAT	200	// 200=killed magic hat
+#define VAR_STONEROSE	201	// 201=killed stone rose
+#define VAR_VISITED	202	// 202-216=have been to different places
+#define VAR_WIFEUNLOCK	217	// have unlocked Bob's wife
+#define VAR_FACTORY	218	// factory destroyed
+#define VAR_STINKYSOCK	219	// killed stinky sock boss (also exists as a normal guy, later on, either one works)
+#define VAR_TREECHOP	220	// 220-221 = the two choppable trees have been chopped
+#define VAR_RATS	222	 // how many rats remain in Mickey's cellar.  If 0, you can cash in the quest
+#define VAR_TEMP	240	// 240-255 = temporary variables - cleared when leaving a level
+#define VAR_CHEST	256	// 256-305 = treasure chests opened
+#define VAR_KLONKDEAD	306	// 306 = klonk has been killed
+#define VAR_TOYSDEAD	307	// 307 = toys killed for mickey's quest
+#define VAR_BEARSDEAD	308	// 308 = bears killed for hank's quest
+#define VAR_SNUGGLY	309	// 309 = 0 for Onion side, 1 for Snuggly side
+#define VAR_CHAMPION	310	// 310 = beat the champion of the arena
+#define VAR_GLASSES	311	// 311 = have gotten the fancy glasses
+#define VAR_SWORDS	312	// 312 = swords collected in arena collection level
+#define VAR_ROPED	313	// 313-320 = rope bridges have been built (313+tag number)
+#define VAR_RATBOSS	321	// 321 = ratatouille dead
+#define VAR_ONIONCHAT	322	// 322=have had the chat with onion to decide
+#define VAR_FACTORY1	323	// 323=have cleared first floor of factory
+#define VAR_BUSHDEAD	324	// 324=killed burning bush
+#define VAR_TRIGUNDEAD	325	// 325=trigun is dead
+#define VAR_SHAKEDOWN	326	// 326-329=merchants have been shaken down (the 0th one is also used by the Snugglies for their quest)
+#define VAR_SUPPLIES	330	// 330=supply base destroyed
+#define VAR_RUMBLE	331	// 331=have won the rumble
+#define VAR_PRISONBREAK 332	// 332=have broken out of prison
+#define VAR_JUNKDEAD	333	// 333=have killed the junksmith
+#define VAR_HIGHWAY	334	// 334=have successfully done the highway mission (snuggly side)
+#define VAR_CLOCKBOT	335	// 335-349=how many of each item are used in your clockwork bot
+#define VAR_CLOCKLIFE	350	// 350=clockwork bot's current health for traipsing between areas
+#define VAR_GURUTALENT	351	// 351=which talent you are currently talking to the guru about
+#define VAR_BOOKGIVEN	352	// 352=have given the library book to historian
+#define VAR_BARRIER	353	// 353-357=have opened the barriers of the same tag
+#define VAR_GOURDDEAD	358	// 358=killed gourdzilla
+#define VAR_DEFILE	359	// 359-360=bodzhas left alive on the two sides of shroom forest
+#define VAR_YOUTH	361	// 361=Shrumford has youngified
+#define VAR_BOKFOUND	362	// 362-371=bokbok picked up
+#define VAR_BOKGIVEN	372	// 372=number of found bokboks you've delivered
+#define VAR_FURNACE	373	// 373=furnace lit
+#define VAR_JUSTHEF	374	// 374=used by the justhef axe as a timer
+#define VAR_TITANIC	375	// 375-384=titanic titans have been slain
+#define VAR_CAPTAIN2	385	// 385=1, captain has arrived at furnace, 2=is active, 3=is dead
+#define VAR_TIP		386	// 386-410= tips have been shown
+#define VAR_FROSTGATE	411	// 411= has frostburn front door been smashed
+#define VAR_PUPPETLIFE  412	// 412-416=current life of helper puppets
+#define VAR_BARONDEAD	417	// the baron has been beaten
+#define VAR_SUPERTITAN	418	// melty titan has been beaten
+#define VAR_SWITCH	419	// 419-422=have flipped the switches in Frostburn
+#define VAR_TAMED	423	// 423=have tamed a mimic for magicsmith (bit 1 and 2 for hers and yours respectively)
+#define VAR_SWITCH2	424	// 424-427=castle floor 2 switches
+#define VAR_SPELLSET	428	// 428-432=which spell is currently in place in each of the 5 spots of spell menu
+#define VAR_BIRDCHAT	433	// the bird has spoken to you
+#define VAR_MADCAP	434	// in madcap mode
+#define VAR_MADGEM	435	// 435-445=how many of each type of madcap gem you have
+#define VAR_MODIFIER	446	// 446-449=the three modifiers you are using
+#define VAR_CPOINTS	450	// 450=crystal points on hand
+#define VAR_PARRYCLOCK	451	// 451=how long until you can parry again
+#define VAR_CLOCKLIFE2	452	// 452=other half of clocklife var, since a byte won't do it
+#define VAR_CONTROLS	453	// 453-472=control settings for this profile
+#define VAR_SOUND	483	// 483=player sound volume
+#define VAR_MUSIC	484	// 484=player music volume
+#define VAR_COMMENTARY	485	// 485=commentary is on... only in collector's edition!
+#define VAR_KILLCOUNTS	486	// 486-511=kill counters (two bytes each)
+#define VAR_ARENAWINS	512	// 512=arena wins
+#define VAR_DEATHS	513	// 513=deaths
+#define VAR_FLAMEPAID	514	// 514=have paid for the flame skill this attack
+#define VAR_KLONKSMASH	515	// 515=how many trees klonk has smashed
+
+AA adds a number of other variables!
+//ABSURD AREA VARIABLES
+#define VAA_CROWDED		520 // 520=is one of the variables Crowded?
+#define VAA_HALLSEXIT	521 // 521=which exit from the Halls of Mastery?
+#define VAA_TRIALTYPE	522 // 522=active trial type
+#define VAA_TOWNLOC		523 // 523=which location in a town or trial?
+//524-539: unused
+#define VAA_REWARD		540 // 540=which reward did you pick?
+#define VAA_REWARDTYPE	541 // 541=which type of reward? (1 parka, 2 axe, 3 amulet)
+#define VAA_REWARDGET	542 // 542=have you obtained the reward?
+#define VAA_FACTORY1	543 // 543=destroyed first part of the factory?
+#define VAA_FACTORY2	544 // 544=destroyed second part of the factory?
+#define VAA_TRIALSTAT	545 // 545-549: status of trial N-545 (0 nothing, 1 found, 2 partial, 3 passed) //, 4 claimed)
+#define VAA_INFESTED	550 // 550=discovered the Infested Woods?
+#define VAA_MARIONETTES	551	// 551=discovered the Island?
+#define VAA_STORAGE		552 // 552=unblocked the Storage Cabin in Einsburg?
+#define VAA_BEARLAIR	553 // 553=opened the Bear Lair?
+#define VAA_VAULTWALL	554 // 554=broken the Vault wall?
+#define VAA_NEARFORT	555 // 555=near the fort entrance?
+#define VAA_ARENASIDE	556 // 556=found the Tweestad arena side entrance?
+#define VAA_TRAPDOOR	557 // 557=opened the Tweestad Curaga trapdoor?
+#define VAA_KINYOVA		558 // 558=opened the Kinyova cave?
+#define VAA_MONKEYS		559	// 559=opened the Monkey Grotto?
+#define VAA_FACTORYGATE	560 // 560=opened the Toy Factory gate?
+#define VAA_PEAKDEBRIS	561 // 561=dug out the debris blocking the peak?
+#define VAA_ICEFLOOD	562 // 562=flooded the ice hole?
+#define VAA_ICEBALL		563 // 563=pushed the iceball into the ice hole?
+#define VAA_ICEROCK		564 // 564=pushed the rock onto the ice hole?
+#define VAA_POISONPIT	565 // 565=opened the Poisonous Pit entrance?
+#define VAA_CAVITYROCK	566 // 566=pushed down the Caliginous Cavities rock?
+#define VAA_BODZHANEST	567 // 567=found the Bodzha Nest entrance?
+#define VAA_CASTLEROCK	568 // 568=pushed down the Sankyo Castle rocks?
+#define VAA_WHAPUNI		569 // 569=entered Whapuni with friends
+#define VAA_CASTLEWALK	570 // 570=opened the chest walkway in sankyo castle
+#define VAA_AAPRESENT	571 // 571-591=has any present tagged N-571 been collected? Which?
+#define VAA_PUPPETLIFE2 592 // 592-596=upperhalf of puppet life
+#define VAA_BARONCACHE	597 // 597=opened the secret hiding spot in baron room
+#define VAA_BUNNYDRESS	598 // 598=got the potion from Bunny chamber
+#define VAA_CLOUDLADDER	599 // 599=dropped the cloud ladder
+
+#define VAA_UPGRADENUM	600 // 600=how many upgrades chosen?
+#define VAA_UPGRADESTAT	601 // 601-630=has each specific upgrade been chosen?
+#define VAA_OBJECTIVES	631 // 631-659=has each objective been completed?
+#define VAA_WOODYAXE	660 // 660=get woody's axe 3/3 beef critical
+#define VAA_CELLARSNOW	661 // 661=cellar snowman door cache (1/1 safety lifeberry) (cache moved)
+#define VAA_POLARPARKA	662 // 662=polar pond parka 4/2 toasty survival
+#define VAA_GRIZCACHE	663 // 663=grizzly bear cache H (rest moved)
+#define VAA_LUCKYPARK	664	// 664=Vault 5/5 lucky parka of luck
+#define VAA_VAULTCACHE1	665 // 665=vault $20 cache
+#define VAA_VAULTCACHE2	666 // 666=vault $100 cache
+#define VAA_VAULTCACHE3	667 // 667=vault $50 plus ruby money only (ruby moved)
+#define VAA_VAULTCACHE4	668 // 668=vault diamond
+#define VAA_VAULTROPE	669 // 669=rope in vault
+#define VAA_ARMYCACHE	670 // 670=potion storage in army camp - heal level 4 (rest moved)
+#define VAA_FARMAMULET	671 // 671=feral farm 8/2 druidic brambles
+#define VAA_ARENACACHE	672	// 672=arena cache, 5/9 thorny axe of vampirism (rest moved)
+#define VAA_ARENAROPE	673 // 673=arena rope
+#define VAA_CIVIECACHE	674 // 674=arena civie cache, 8/20 energetic parka of luck, toughness, energy (rest moved)
+#define VAA_MIMICAMULET 675 // 675=got mimic amulet 2/8 boney bonehead
+#define VAA_CREEPAMULET	676 // 676=got spooky amulet boney amulet drain, bonehead, bone bomb
+#define VAA_SHROOMULET	677 // 677=got sharona amulet 6/2 holy amulet lifeberry, brambles, shroom
+#define VAA_CUREPOTIONS 678 // 678=got curaga's potions (rest moved)
+#define VAA_CUREBIT		679 // 679=got curaga's artifact bit
+#define VAA_CUREAMUET	680 // 680=got curaga's amulet 16/12 nothing
+#define VAA_HATCHET		681 // 681=got kinyova hatchet (1/1 sharpened nothing)
+#define VAA_KINYOVAXE	682 // 682=got kinyova's axe (12/12 nothing)
+#define VAA_SHOCKCACHE	683 // 683=got shock cache and parka 7/9 electric energy, static, shock orb (potions moved)
+#define VAA_SOUPCACHE	684 // 684=got soup (milk moved)
+#define VAA_ROSEPARKA	685 // 685=got rosetta parka + soup (11/15 nothing) (bonus soup moved)
+#define VAA_STORMULET	686 // 686=got storm amulet 10/2 shocking gale, tornado, berserk
+#define VAA_TOYCACHE	687 // 687=got toy factory super secret inc boom parka (10/10 nuclear strength, burninate, airstrike)  (all items moved)
+#define VAA_ICECACHE	688 // 688=got ice cache inc freeze amulet 7/5 mirrored cryozoid, cold wave, ice cube (potions moved)
+#define VAA_POISONAM	689 // 689=got poison amulet 9/1 cursed plague
+#define VAA_POISONAXE	690 // 690=got poison axe 8/2 ebola poison
+#define VAA_POISONPARK	691 // 691=got poison parka 9/1 sickening energy
+#define VAA_PITBLOODNW	692 // 692=poison pit NW alien bloods, second moved
+#define VAA_PITBLOODNE	693 // 693=poison pit NE alien blood
+#define VAA_DRAFTYADENW	694	// 694=drafty den NW coolade, second moved
+#define VAA_DRAFTYFLAKE 695 // 695=drafty den flake door cache coolade, rest moved
+#define VAA_ULTIMATE	696 // 696=ultimate reward, artbit, K L M (lenses moved)
+#define VAA_PEAKLIONS	697 // 697=beaten thornpaw lions on peak
+#define VAA_MAGICJUNKED	698 // 698=junksmithed a magic or better item
+#define VAA_CLOCKGRADE	699	// 699=upgraded a bot for the clockmaker
+
+#define VAA_RUMBLING	700 // 700=are we rumbling? 0=no, 1=onion, 2=bunny)
+#define VAA_OUTPOST		700 // 701-706=state of outpost N-700
+#define VAA_CLOCKGOT	707 // 707: unlocked clockmaker?
+#define VAA_FIREAXE		708 // 708: got fire axe
+#define VAA_FIREAMULET	709 // 709: got fire amulet
+//AA cache redo variables!
+#define VAA_CELLARDIAM	710 // 710: cellar snowman door diamond
+#define VAA_CELLARSTONE	711 // 711: cellar stone soup
+#define VAA_CELLARLIFE	712 // 712: cellar lifeade
+#define VAA_CELLARASB1	713 // 713: cellar asbestos 1
+#define VAA_CELLARASB2	714 // 714: cellar asbestos 2
+#define VAA_GRIZWATER	715 // 715: water in grizzly cache
+#define VAA_GRIZEMERALD	716 // 716: emerald in griz cache
+#define VAA_GRIZRUBY1	717 // 717: grizzly ruby 1
+#define VAA_GRIZRUBY2	718 // 718: grizzly ruby 2
+#define VAA_GRIZGOLD1	719 // 719: grizzly gold 1
+#define VAA_GRIZGOLD2	720 // 720: grizzly gold 2
+#define VAA_GRIZGOLD3	721 // 721: grizzly gold 3
+#define VAA_VAULTRUBY	722 // 722: vault ruby in ne cache
+#define VAA_ARMYPOT2	723 // 723: army potions 2
+#define VAA_ARMYPOT3	724 // 723: army potions 3
+#define VAA_ARMYPOT4	725 // 723: army potions 4
+#define VAA_ARMYPOT5	726 // 723: army potions 5
+#define VAA_ARMYPOT6	727 // 723: army potions 6
+#define VAA_ARMYPOT7	728 // 723: army potions 7
+#define VAA_ARMYPOT8	729 // 723: army potions 8
+#define VAA_ARMYPOT9	730 // 723: army potions 9
+#define VAA_ARMYPOT10	731 // 723: army potions 10
+#define VAA_ARMYPOT11	732 // 723: army potions 11
+#define VAA_ARMYPOT12	733 // 723: army potions 12
+#define VAA_ARMYPOT13	734 // 723: army potions 13
+#define VAA_ARMYPOT14	735 // 723: army potions 14
+#define VAA_ARMYPOT15	736 // 723: army potions 15
+#define VAA_ARMYPOT16	737 // 723: army potions 16
+#define VAA_ARMYPOT17	738 // 723: army potions 17
+#define VAA_ARMYPOT18	739 // 723: army potions 18
+#define VAA_ARENADIAM	740 // 740: diamond in arena cache
+#define VAA_CIVVIEDIAM	741 // 741: diamond in civvie arena cache
+#define VAA_CIVVIEART	742 // 742: artbit in civvie arena cache
+#define VAA_CURAGAJUICE 743 // 743: second curaga brainjuice
+#define VAA_CURAGACOLA1 744 // 744: first curaga cola
+#define VAA_CURAGACOLA2 745 // 745: second curaga cola
+#define VAA_SHOCKSODA1	746 // 746: first hiemal shock
+#define VAA_SHOCKSODA2	747 // 747: second hiemal shock
+#define VAA_ROSEMILK	748 // 748: rosetta milk
+#define VAA_MORESOUP	749 // 749: rosetta bonus soup
+#define VAA_TOYPARKA	750 // 750: boom parka
+#define VAA_TOYARTBIT	751 // 751: artbit in toy cache
+#define VAA_TOYPOTION	752 // 752: explosivo in toy cache
+#define VAA_TOYLENS		753 // 753: lens in toy cache
+#define VAA_COOLADE1	754 // 754: drafty coolade 1
+#define VAA_COOLADE2	755 // 755: drafty coolade 2
+#define VAA_COOLDIAMOND	756 // 756: flake door diamond
+#define VAA_COOLLENSL	757 // 756: flake door L
+#define VAA_DENNWCOOL	758 // 758: draft den NW coolade 2
+#define VAA_POISONBLOOD 759 // 759: poison pit NW alien blood 2
+#define VAA_ULTIMATEK	760 // 760: ultimate reward K
+#define VAA_ULTIMATEL	761 // 761: ultimate reward L
+#define VAA_ULTIMATEM	762 // 762: ultimate reward M
+#define VAA_RIMEAXE		763 // 763: rime axe in draftyden
+#define VAA_FRIDGEPARKA	764 // 764: parka of refrig in drafty
+#define VAA_ONIONSANKYO 765 // 765: beaten onion hideout in sankyo
+#define VAA_BUNNYSANKYO 766 // 766: beaten bunny stronghold in sankyo
+#define VAA_FROSTSANKYO 767 // 767: beaten frost keep in sankyo
+#define VAA_BEARSANKYO	768 // 768: beaten bear mansion in sankyo
+#define VAA_VOLCANEXPLO	769 // 769: volcano explosivo
+#define VAA_VOLROCKET1	770 // 770: first volcano rocket sauce
+#define VAA_VOLROCKET2	771 // 771: second volcano rocket sauce
+#define VAA_TREASURYK	772 // 772: treasury lens
+#define VAA_TREASCOW1	773 // 773: treasury mad cow 1
+#define VAA_TREASCOW2	774 // 774: treasury mad cow 2
+#define VAA_TREASLUCK	775 // 775: treasury luckenbrau
+#define VAA_TREASSMRT	776 // 776: treasury smart sauce
+#define VAA_TREASLIFE	777 // 777: treasury lifeade
+#define VAA_TREASDIAM1	778 // 778: treasury diamond 1
+#define VAA_TREASDIAM2	779 // 779: treasury diamond 2
+#define VAA_TREASDIAM3	780 // 780: treasury diamond 3
+#define VAA_TREASEMER1	781 // 781: treasury emerald 1
+#define VAA_TREASEMER2	782 // 782: treasury emerald 2
+#define VAA_TREASEMER3	783 // 783: treasury emerald 3
+#define VAA_TREASEMER4	784 // 784: treasury emerald 4
+#define VAA_TREASEMER5	785 // 785: treasury emerald 5
+#define VAA_TREASRUBY1	786 // 786: treasury ruby 1
+#define VAA_TREASRUBY2	787 // 787: treasury ruby 2
+#define VAA_TREASRUBY3	788 // 788: treasury ruby 3
+#define VAA_TREASRUBY4	789 // 789: treasury ruby 4
+#define VAA_TREASRUBY5	790 // 790: treasury ruby 5
+#define VAA_CASTLEGOLD	791 // 791: castle cash cache
+#define VAA_CASTLEDEF1	792 // 792: castle deflector 1
+#define VAA_CASTLEDEF2	793 // 793: castle deflector 2
+#define VAA_CASTLEDEF3	794 // 794: castle deflector 3
+#define VAA_CASTLECOL1	795 // 795: castle cola 1
+#define VAA_CASTLECOL2	796 // 796: castle cola 2
+#define VAA_CASTLECOL3	797 // 797: castle cola 3
+// 798-799: unused
+
+#define VAA_TRIAL1BIT	800 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT1	801 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT2	802 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT3	803 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT4	804 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT5	805 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT6	806 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1EQUIP	807 // 800-807: trial rewards for trial 1
+//808-809: unused
+#define VAA_TRIAL2BIT	810 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT1	811 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT2	812 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT3	813 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT4	814 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT5	815 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT6	816 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2EQUIP	817 // 810-817: trial rewards for trial 2
+//818-819: unused
+#define VAA_TRIAL3BIT	820 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT1	821 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT2	822 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT3	823 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT4	824 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT5	825 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT6	826 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3EQUIP	827 // 820-827: trial rewards for trial 3
+//828-829: unused
+#define VAA_TRIAL4BIT	830 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT1	831 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT2	832 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT3	833 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT4	834 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT5	835 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT6	836 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4EQUIP	837 // 830-837: trial rewards for trial 4
+//838-839: unused
+#define VAA_TRIAL5BIT	840 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT1	841 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT2	842 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT3	843 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT4	844 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT5	845 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT6	846 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5EQUIP	847 // 840-847: trial rewards for trial 5
+//848: unused
+#define VAA_TRIALREFILL 849 // 849: need to refill health and magic at trial entrance
+// special achievement nonsense
+#define VAA_ARENA		850 // 850-909: how many times winning each arena match?
+#define VAA_BRUTAL		910 // 910: stored bonus damage for the Brutal modifier
+#define VAA_COMBOOM		911 // 911: combo for explosivo. wow... did not plan the variable number like that
+#define VAA_SKILLBONUS	912 // 912: overflow for skill points!
+
+
+Some of those should obviously never be messed with (do NOT touch the VAR_CONTROLS stuff!).  There are also tons more variables you may use for your own purposes.  They're saved and kept throughout the adventure.  These are variables numbered from 516 to 900.  A variable can hold values from 0 to 255, though almost always they are just either 0 or 1.  Setting some variables has a side effect.  For example, if you set a QUESTASSIGN variable, it makes the "NEW QUEST" box pop down and the sound play.  If you set a QUESTDONE variable, it not only pops up the "QUEST COMPLETE" box and makes the sound, but also automatically marks the quest assigned and gives you 100xp (1000xp in madcap).
+
+You are welcome to mark quests assigned or completed any time you want by setting the appropriate variables.  As an example, variable 55 is the one to set to 1 if you want to mark the sixth quest done (it's the 6th quest since quests start at #0, not #1).  The quests are:
+
+#define QUEST_WOOD	0	// redone: purchase a second Upgrade
+#define QUEST_PRESENTS	1	// collect 99 presents
+#define QUEST_PROVE	2	// redone: get to level 25
+#define QUEST_PROVE2	3	// redone: get combat talent to Level 10
+#define QUEST_HERBS	4	// collect 3 frostbane herbs for the healer
+#define QUEST_SHARPEN	5	// find the sharpening stone and return it to the woodsman
+#define QUEST_MIMIC	6	// tame mimic
+#define QUEST_CRYSTAL	7	// get the crystal of binding
+#define QUEST_AXES	8	// collect axes for axes r us
+#define QUEST_BOBSWIFE	9	// find Black Market Bob's wife
+
+#define QUEST_BOBSWIFE2 10	// unlock bob's wife
+#define QUEST_GURU	11	// redone: get any talent to Level 10
+#define QUEST_RATS	12	// Rat Problem, kill all rats in cabin basement
+#define QUEST_UNDIES	13	// Asbestos Underwear
+#define QUEST_GLADIATOR 14	// reach Gladiator rank 5
+#define QUEST_TOYS	15	// keep toys away from Mickey
+#define QUEST_BOOK	16	// return the library book
+#define QUEST_LETTER	17	// deliver a letter for Healiana
+#define QUEST_ROPES	18	// save ropemaker
+#define QUEST_BALLOON	19	// redone: kill thornpaw lions on the peak
+
+#define QUEST_HANDY	20	// bring tools to handyman
+#define QUEST_SOUP	21	// redone: get any craft talent to Level 10
+#define QUEST_BEARS	22	// slay cave bears
+#define QUEST_BIGBEAR	23	// slay cave bear boss
+#define QUEST_DEVILGRASS 24	// purchase a level 5 Mage upgrade
+#define QUEST_DELIVERY	25	// get a magic talent to Level 10
+#define QUEST_TITANS	26	// kill ice hounds for cubes
+#define QUEST_SKILLS	27	// purchase every upgrade
+#define QUEST_FACTORY	28	// destroy toy factory
+#define QUEST_FACTORY2	29	// destroy factory power core
+// here are the 'split quests'
+#define QUEST_ALLIES	30	// obtain some allies (join Onion or Bunny)
+#define QUEST_QUESTS	31	// do 3 quests for your side
+#define QUEST_CLOCKJUNK 32	// clockwork or junksmith
+#define QUEST_EASYMINER 33	// candy from a baby or redone: upgrade a clockbot
+#define QUEST_HIGHWAY	34	// highway robbery or patrol
+#define QUEST_SHAKEDOWN 35	// shutdown or shakedown
+#define QUEST_SUPPLIES	36	// destroy enemy supply base
+#define QUEST_RUMBLE	37	// rumble with enemies
+#define QUEST_LEADER	38	// slay the enemy leader
+#define QUEST_FURNACE	39  	// fix the furnace
+
+#define QUEST_FRAGILE	40	// sounding crystal needed to get one furnace part
+#define QUEST_PLANTS	41	// second furnace part by killing gourdzilla
+#define QUEST_FOREST	42	// third furnace part by cleansing forest
+#define QUEST_BOKBOK	43	// get bokboks for sharonda, earn binding crystal
+#define QUEST_HIPPY	44	// collect 20 Seeds
+#define QUEST_TITANS2	45	// redone: find the Wing Boots
+#define QUEST_BARON	46	// kill baron
+#define QUEST_TOYS2	47	// collect toy repair items
+#define QUEST_CHAMPION  48	// redone: beat all five Hidden Trials
+#define QUEST_HAPPYSTICK 49	// kill happy stick bird
+
+
+Here are the villager numbers.  Place this number as a tag on a Villager monster to set it to be that villager (leaving the map and returning will show you the change).  Some can't be used, others aren't used on Villager monsters.  For instance, you need to put the 27 tag on a Bruiser, since that's what Crush is.  If he is your enemy, he's just a normal bruiser.  If he's a friend, he does the chat.
+
+	// 0
+	"Talking to Yourself",
+	// 1
+	"",
+	// 2
+	"Kinyova Sr.",
+	// 3
+	"Bobby Joe",
+	// 4
+	"Healiana",
+	// 5
+	"Woody Woodsman",
+	// 6
+	"Mrs. Smith",
+	// 7
+	"Geoffrey",
+	// 8
+	"Black Market Bob",
+	// 9
+	"Melody",	// in chains
+	// 10
+	"Melody",	// not in chains
+	// 11
+	"Mickey",
+	// 12
+	"Great Guru",
+	// 13
+	"Tina",
+	// 14
+	"Taylor",
+	// 15
+	"Phileas",
+	// 16
+	"Handyman Hank",
+	// 17
+	"The Historian",
+	// 18
+	"Guy Magic",
+	// 19
+	"Buried Rupert",
+	// 20
+	"Rupert",
+	// 21
+	"Rosetta",
+	// 22
+	"J.P. Toymonger III",
+	// 23
+	"Curaga",
+	// 24
+	"The Diabolical Onion",
+	// 25
+	"The Junksmith",
+	// 26
+	"Frankie Beans",
+	// 27
+	"Crush",
+	// 28
+	"Jimmy Two-Fingers",
+	// 29
+	"Smash",
+	// 30
+	"Captain Capitan",
+	// 31
+	"Major Fishbug",
+	// 32
+	"The Clockmaker",
+	// 33
+	"Lt. Hornswaggle",
+	// 34
+	"Pvt. Public",
+	// 35
+	"Betty",
+	// 36
+	"Schrodinger",
+	// 37
+	"Sharona",
+	// 38
+	"Shrumford",
+	// 39
+	"Shrumford",
+	// 40
+	"Shroud",
+	// 41
+	"Baron Von Frostburn",
+	// 42
+	"Titan King Melton",
+	// 43
+	"Happy Stick Bird",
+
+Tags are an important concept.  Press ; and ' to cycle the tag number in the editor, and press T to tag the tile the cursor is on.  As it says above, tagging a villager specifies which villager it is (if you leave that map and return, you can see the villager in its new form, so you can make sure you got the right one).  Other uses for tags:
+
+- A special can check to see if all monsters with a certain tag have been killed (monsters take on the tag of the space they were placed on)
+- You can use it as a location for some things in specials
+- a tag of 255 is impassible to monsters (not Loony)
+- a tag of 254 is impassible to evil monsters
+- tag potential rope bridge spots to indicate which bridge it is (there can be 8 of them, tagged 0-7).  Note that rope bridges only work if they are the right width apart, and both stumps are tagged the same.
+- same for choppable trees and sound crystal barriers (check the var list to see how many there can be)
+- for the Great Guru, tag him 12 (that's his villager number), then tag the space below him with which talent he should carry
+- tag skill scrolls with which skill to give
+- tag presents 0-98 to indicate which one they are
+- tag chests to indicate their number (0-49).  It doesn't matter which type they are, though I made 10 of each type in increasing order of quality.
+- a monster tagged 255 (happens automatically) is worth no XP or items.  Ones made by other monsters get this tag
+- a monster tagged 254 gives XP but no money or items. Happens automatically to ghosts created with the Haunted modifier
+- tag Titanic Titans to indicate which one they are
+- other subtle things I am not remembering.  Look at winter.llw to see tags in use in every possible way, or madness.llw for simpler examples (the Choose Your Class level uses tags to specify where items should appear in a special, and several other uses)
+- AA add: most collectible items tagged 200 or higher will not trigger Tracking. You can use this to mark items that are just for display, in unobtainable areas.
+- AA add: a notable exception is the two Supplies items, which will not trigger Tracking if they have a tag 50 or higher. The Supplies items will disappear on map load if you have the quest completed; therefore, if you want to use them as cosmetics you will have to summon them with specials, and will probably want to use tags. But, then you don't want Tracking to trigger. Have fun.
+
+Here's a list of the sounds in the game.  Not something of much use, but it's easy to provide!
+
+#define SND_MENUCLICK	(0)
+#define SND_MENUSELECT	(1)
+#define SND_MENUCANCEL	(2)
+#define SND_PAUSE		(3)
+#define SND_ENTERMAP	(4)	// entering one of those swooshy things to change map
+#define SND_MESSAGE		(5)	// new message in the list, little boop
+#define SND_NEWQUEST	(6)
+#define SND_QUESTDONE	(7)
+// general action sounds
+#define SND_BOOM		(8)
+#define SND_JUNKGET		(9)
+// loony sounds
+#define SND_LOONYJUMP		(10)
+#define SND_LOONYLAND		(11)	// land from a jump
+#define SND_LOONYSWING		(12)
+#define SND_GETCOIN			(13)
+#define SND_SELLITEM		(14)
+#define SND_BEATENUP		(15)
+#define SND_CANTBUY			(16)
+#define SND_EQUIP			(17)
+#define SND_BONEBOMB		(18)
+#define SND_SHROOMIFY		(19)
+#define SND_LOONYOUCH		(20)
+#define SND_LOONYDIE		(21)
+#define SND_BERSERK			(22)
+#define SND_DRINKPOTION		(23)
+#define SND_SPELLMENU		(24)
+#define SND_SPELLTURN		(25)	// turning the spell menu
+// mouse
+#define SND_MOUSEOUCH		(26)
+#define SND_MOUSEDIE		(27)
+#define SND_CRYOZOID		(28)
+#define SND_MOUSESHOOT		(29)
+// puppet
+#define SND_PUPPETOUCH		(30)
+#define SND_PUPPETDIE		(31)
+#define SND_PUPPETPUNCH		(32)
+#define SND_PUPPETHAT		(33)	// magic hat summoning a mouse
+// tin guy
+#define SND_TINOUCH			(34)
+#define SND_TINDIE			(35)
+#define SND_STONERUMBLE		(36)
+#define SND_TINSHOOT		(37)
+// bear
+#define SND_BEAROUCH		(38)
+#define SND_BEARDIE			(39)
+#define SND_BEARFLOP		(40)
+#define SND_BEARSHOOT		(41)
+// bonehead
+#define SND_SKELOUCH		(42)
+#define SND_SKELDIE			(43)
+#define SND_SKELSWING		(44)
+#define SND_SKELSUMMON		(45)
+
+#define SND_NEWSKILL		(46)
+#define SND_LEVELUP			(47)
+
+#define SND_DOOROPEN		(48)	// chests too
+#define SND_FIRESHOOT		(49)	// launch fireball
+#define SND_PARRY			(50)
+#define SND_DODGE			(51)
+
+// sock monkey
+#define SND_MONKEYOUCH		(52)
+#define SND_MONKEYDIE		(53)
+#define SND_MONKEYDASH		(54)
+#define SND_MONKEYLOAD		(55)	// loading up to shoot
+#define SND_MONKEYSHOOT		(56)	// and shooting
+
+#define SND_TALENTUP		(57)
+
+// klonk
+#define SND_KLONKOUCH		(58)
+#define SND_KLONKDIE		(59)
+#define SND_KLONKSMASH		(60)
+#define SND_IGNITE			(61)	
+
+#define SND_SPLASH			(62)
+#define SND_MAGICFAIL		(63)
+#define SND_FALL			(64)	// fall into a bottomless pit
+#define SND_ARENAWIN		(65)
+#define SND_ARENALOSE		(66)
+#define SND_ICECRACK		(67)	// ice cracking sound for when you jump onto ice, combines with splash
+
+// plant monsters
+#define SND_PLANTOUCH		(68)
+#define SND_PLANTDIE		(69)
+#define SND_PLANTSHOOT		(70)
+#define SND_PLANTBURY		(71)
+#define SND_PLANTSURFACE	(72)
+// hound
+#define SND_HOUNDOUCH		(73)
+#define SND_HOUNDDIE		(74)
+#define SND_HOUNDSPIT		(75)
+#define SND_HOUNDCHARGE		(76)
+
+#define SND_POISON			(77)	// get hit by a poisoning projectile - splurt!
+#define SND_CHOPTREE		(78)
+#define SND_GALE			(79)	// gale spell, wind whoosh
+#define SND_CRYOSHOOT		(80)	// cryozoid shoot
+
+// the toy machines
+#define SND_CRYSTALZAP		(81)	// crystal firing it's lightning
+#define SND_POWERLOB		(82)	// power firing a grenade
+#define SND_CRYSTALBREAK	(83)	// crystal shattering
+#define SND_POWERDIE		(84)	// the power machine dying
+#define SND_CRYSTALOUCH		(85)	// ting!
+
+#define SND_SPECIALGET		(86)	// got a quest item
+#define SND_BERRYSPIT		(87)	// lifeberry bush spit out a lifeberry
+#define SND_BERRYEAT		(88)	// eat a lifeberry
+#define SND_POTIONGET		(89)
+#define SND_LENSGET			(90)
+#define SND_SHARPEN			(91)
+#define SND_ROPESTUMP		(92)
+#define SND_BIGHEAL			(93)	// cast Restoration or get healed by Healiana or Curaga
+#define SND_DIG				(94)
+#define SND_CRITICAL		(95)
+#define SND_GHOSTDIE		(96)
+// thug
+#define SND_THUGOUCH		(97)
+#define SND_THUGDIE			(98)
+#define SND_THUGSMACK		(99)
+
+// villagers
+#define SND_GURUFLOAT		(100)	// since villager 0 and 1 don't exist, I can reuse their hello/bored slots
+#define SND_VILLAGERHELLO	(100)	// continues on for each villager, just add tag to 100
+#define SND_VILLAGERBORED	(150)	// same as above
+
+#define SND_BURNINATE		(200)
+#define SND_JUNKCOCK		(201)	// junksmith cocking his gun before firing
+#define SND_SHOCK			(202)	// electrocute noise, when anything makes a lightning bolt, quiet
+#define SND_TORNADO			(203)	// for tornado spell and Capitan's whirling strike
+#define SND_SMITH			(204)	// junksmith or make a clockbot or repair it
+#define SND_DRAIN			(205)	// drain spell sucking life
+#define SND_RICOCHET		(206)
+
+// crab
+#define SND_CRABOUCH		(207)
+#define SND_CRABDIE			(208)
+#define SND_CRABCLACK		(209)
+
+// badger
+#define SND_BADGEROUCH		(210)
+#define SND_BADGERDIE		(211)
+#define SND_BADGERSLASH		(212)
+#define SND_BADGERSPIN		(213)
+#define SND_BADGERDIG		(214)
+
+// stonewall
+#define SND_STONEOUCH		(215)
+#define SND_STONEDIE		(216)
+#define SND_STONESTOMP		(217)	// ***
+#define SND_STONESPLAT		(218)	// ***
+
+// titan
+#define SND_TITANOUCH		(219)
+#define SND_TITANDIE		(220)
+#define SND_TITANROAR		(221)
+#define SND_TITANSMASH		(222)
+
+// gourdzilla
+#define SND_ZILLAOUCH		(223)	// ***
+#define SND_ZILLADIE		(224)	// ***
+
+#define SND_BOKBOK			(225)	// bokbok cheeping hello
+#define SND_CUBEHIT			(226)	// ice cube hitting guy/ground
+#define SND_PERSUADE		(227)
+
+// baron
+#define SND_BARONOUCH		(228)
+#define SND_DRAWSTONE		(229)	// pull a stone from the ground to throw
+#define SND_STONEHIT		(230)	// stone shattering on impact
+
+// ubertitan
+#define SND_KILLBOROUCH		(231)
+#define SND_KILLBORDIE		(232)
+#define SND_BARONDIE		(233)
+#define SND_KILLBORSLASH	(234)
+
+// happy stick
+#define SND_STICKDIE		(235)
+#define SND_STICKOUCH		(236)
+
+// gorka
+#define SND_GORKASLASH		(237)
+#define SND_GORKATOSS		(238)
+
+#define SND_KILLBORSPELL	(239)

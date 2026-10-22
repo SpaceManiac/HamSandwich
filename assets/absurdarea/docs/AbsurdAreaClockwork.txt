@@ -1,0 +1,159 @@
+I always thought Clockbots were cool, but WAY underpowered in Loonyland 2.
+It's basically impossible to build one that's useful in the mid to late game.
+They either die too quickly or do no damage.
+
+And it would be even worse in Absurd Area, since more powerful monsters are around earlier.
+
+So, I improved Clockbots. :)
+
+When you join a team, you will be able to meet up with the Clockmaker, and he can upgrade your bot.
+If you join the Order of the Snuggly Bunny, you unlock him when you complete his first quest.
+If you join the Onion Ring, then when you defeat Captain Capitan, your friends will capture the Clockmaker.
+You can find him in the Onion Ring camp, where you can make him upgrade your bot.
+
+Additional Clockmaker workshops can be found later on.
+
+In order for the Clockmaker to upgrade a bot, the bot must have 1 of each of the 10 Junk items.
+(Logs, Gears, Cans, Stuffing, Socks, Ice Cubes, Seeds, Rocks, Ectoplasms, Claws.)
+The upgrade will increase the number of some of these items, making a much better bot!
+You must get Clockwork to Level 4 first, so you can put in 10 items.
+After making your bot, walk up to the Clockmaker and he will perform the upgrade.
+
+If you put in more junk items than the required 1 of each, the bot will be upgraded further.
+For the items that the upgrade changes, NEVER put in more than 5 extras.
+(No more than 6 for a junk item, no more than 5 for a mining item.)
+The specials will not count that high, and you will waste the items.
+
+I will explain what the upgrade does.
+
+Logs:	(Remember, a bot's HP is 20 + 5 per log)
+1->6	(meaning, if your bot has 1 log, it will be upgraded to 6 logs)
+2->10
+3->14
+4->18
+5->22
+6->26
+
+Gears:	(Gears increase a bot's attack speed. Maxes out at 10 gears, but each ruby is -1 gear.)
+1->3
+2->5
+3->7
+4->8
+5->9
+6->13	(This means, if you upgraded a bot with 6 Gears, you can also add 3 rubies and still have max attack speed)
+
+Cans:	(Cans heal 1 HP every time a bot kills an enemy.)
+Unchanged. Put in as many as you like, since the specials don't affect them.
+
+Stuffing:	(Stuffing adds knockback to every hit.)
+1->0*	(See below!)
+2->6
+3->9
+4->12
+5->16
+6->20
+
+Socks:	(Attack damage is 2 + 1 per sock)
+1->8
+2->10
+3->12
+4->14
+5->16
+6->18
+
+Cubes:	(Freezes for 1/2 second per ice cube)
+1->2
+2->4
+3->6
+4->9
+5->12
+6->15
+
+Seeds:	(Every 8 seconds, recover 1 HP per seed)
+Unchanged.
+
+Rocks:	(Bot's defense is 2 + 2 per Rock.)
+1->4
+2->5
+3->6
+4->7
+5->8
+6->9
+
+Ectoplasms:	(Poisons 1 second per ectoplasm)
+1->2
+2->3
+3->4
+4->6
+5->8
+6->10
+
+Claws:	(Bot attacks spray 1 shard per claw)
+1->2
+2->4
+3->6
+4->9
+5->12
+6->15
+
+Silver:	(Bot attacks stun for 1/4 second per Silver)
+1->2
+2->4
+3->6
+4->8
+5->10
+
+Gold: (When bot is attacked, it explodes for 2 damage per gold)
+Unchanged.
+
+Rubies:	(When bot it attacks, it instead sprays 1 fireball per ruby. Counts as -1 Gear)
+Unchanged.
+
+Emeralds:	(Bot zaps nearby enemies. I changed the shock rate in the code.)
+(Previously, the shock rate was very strange; adding more than 1 barely changed
+the shock rate, until you get up to 11 emeralds and it suddenly goes mega zap.
+Now, there's a much smoother curve, where each emerald actually increases the zap rate.)
+1->2
+2->4
+3->6
+4->8
+5->10
+
+Diamonds:	(Bot attacks explode, more diamonds means larger area)
+Unchanged.
+
+After the upgrade, one of your Junk items will be set to 0, so you can't keep upgrading a bot multiple times.
+If you only put 1 Stuffing, it will set the Stuffing to 0. Otherwise, it will scan down the following list,
+look for a junk item that you only put in 1, and zero it out.
+
+Stuffing
+Cans
+Claws
+Ice Cubes
+Seeds
+Ectoplasms
+
+If you have 2+ of all these items, it will zero out Stuffing.
+
+
+Lastly! If you get Clockwork to Level 10, and can therefore put in 20 items, you have an extra fun option.
+If you put in 1 of every junk items as normal, and then fill the remaining 10 slots all with the same item,
+you will upgrade your bot to one of 15 Superbots!
+(So, you could put in 11 Logs and 1 of ther other Junk items, or you could put in 10 Silver and 1 of each Junk.)
+The superbots have powerful and unique stat blocks, which are based around the item you maxed out.
+
+Logs: Very high HP, mild regen, slow but powerful attack
+Gears: Fragile, but max attack speed and 1 Ruby. Mild stun.
+Cans: Very low HP, but high defense, high attack power, and very high vampiric regen.
+Stuffing: Not very sturdy, but a very high attack speed and extremely high knockback. Inflicts poison and stun as it blasts enemies across the map.
+Socks: Slow attack, not very sturdy, but very high damage.
+Ice Cubes: High defense, high power but very slow attack, sprays 5 fireballs with a very long freeze. Watch it freeze a whole room.
+Seeds: High HP and low defense, but very high regen. Fast, medium power attack and mild stun.
+Rocks: Low HP, but very high defense. Vampiric healing and regen. Gold-explosions when hit. Very slow, very low power attack, with high poison, freeze, and shards.
+Ectoplasms: Poor defense and moderate HP, slow attack of 5 fireballs with very low damage but logn poison and stun.
+Claws: Tough, very fast attack that does very little direct damage but sprays a LOT of shards.
+Silver: Tough, fast moderately powerful attack with very long stun.
+Gold: Not very sturdy, and very little direct damage, but explodes for massive damage when struck. Decent regen.
+Rubies: Low defense, decent HP, and a very slow attack that sprays 30 fireballs all over the room. Does very little damage, but influces a lot of poison, stun, and freeze.
+Emeralds: Sturdy and decent defense, max shock rate, attack does very little damage but has a very long stun to hold them in place for the shock damage.
+Diamonds: High HP, tough, very slow attack that does decent damage over a huge area, also explodes when struck, moderate shock damage.
