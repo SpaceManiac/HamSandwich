@@ -2,7 +2,6 @@
 #define SKILL_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 // skill types
 #define ST_PASSIVE	(0)	// always affects things

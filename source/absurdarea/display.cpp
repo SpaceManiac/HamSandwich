@@ -1,4 +1,5 @@
 #include "display.h"
+#include <algorithm>
 #include "particle.h"
 #include "jamulfmv.h"
 #include "game.h"
@@ -406,91 +407,23 @@ void LightningDraw(int x,int y,int x2,int y2,byte bright,char range)
 //---------------------------------------------------------------------------------------
 // from here on out it's class DISPLAYLIST
 
-DisplayList::DisplayList(void)
+DisplayList::DisplayList()
+	: nextfree(0)
 {
-	ClearList();
-}
-
-DisplayList::~DisplayList(void)
-{
-	// nothin
-}
-
-int DisplayList::GetOpenSlot(void)
-{
-	int i;
-
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
-	{
-		if(dispObj[i].flags==0)
-			return i;
-	}
-
-	return -1;
-}
-
-void DisplayList::HookIn(int me)
-{
-	int i;
-
-	if(head==-1)
-	{
-		head=me;
-		dispObj[me].prev=-1;
-		dispObj[me].next=-1;
-		return;
-	}
-	else
-	{
-		// shadows go on the head of the list always, drawn before anything else
-		// (and the order of shadows doesn't matter, of course)
-		if(dispObj[me].flags&(DISPLAY_SHADOW|DISPLAY_BOTTOM))
-		{
-			dispObj[me].next=head;
-			dispObj[head].prev=me;
-			dispObj[me].prev=-1;
-			head=me;
-			return;
-		}
-
-		i=head;
-		while(i!=-1)
-		{
-			if((!(dispObj[i].flags&(DISPLAY_SHADOW|DISPLAY_BOTTOM))) &&
-				(dispObj[i].y>dispObj[me].y || (dispObj[i].y==dispObj[me].y && dispObj[i].z>dispObj[me].z)))
-			{
-				dispObj[me].prev=dispObj[i].prev;
-				dispObj[me].next=i;
-				if(dispObj[me].prev!=-1)
-					dispObj[dispObj[me].prev].next=me;
-				dispObj[i].prev=me;
-				if(head==i)
-					head=me;
-				return;
-			}
-			if(dispObj[i].next==-1)
-			{
-				dispObj[i].next=me;
-				dispObj[me].prev=i;
-				dispObj[me].next=-1;
-				return;
-			}
-			i=dispObj[i].next;
-		}
-		return; // this would be bad, but hopefully can't occur
-	}
 }
 
 bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite_t *spr,word flags)
 {
-	int i;
+	if (nextfree >= MAX_DISPLAY_OBJS)
+	{
+		return false;
+	}
 
 	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
 	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
 		return true;
-	i=GetOpenSlot();
-	if(i==-1)
-		return false;
+
+	int i = nextfree++;
 	dispObj[i].hue=hue;
 	dispObj[i].bright=bright;
 	dispObj[i].flags=flags;
@@ -500,37 +433,42 @@ bool DisplayList::DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite
 	dispObj[i].z=z;
 	dispObj[i].z2=z2;
 	if(dispObj[i].flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE))
-		memcpy(dispObj[i].light,dispObj[i].spr,9);
-	HookIn(i);
-	if(dispObj[i].flags&DISPLAY_LIGHTNING)
-	{
-		dispObj[i].y-=32;
-		dispObj[i].z2-=32;
-	}
+		memcpy(dispObj[i].light,(const char*)dispObj[i].spr,9);
 	return true;
 }
 
-void DisplayList::ClearList(void)
+void DisplayList::ClearList()
 {
-	int i;
-
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
-	{
-		dispObj[i].prev=-1;
-		dispObj[i].next=-1;
-		dispObj[i].flags=0;
-	}
-	head=-1;
-	nextfree=0;
+	nextfree = 0;
 }
 
-void DisplayList::Render(void)
+bool operator<(const DisplayObj& lhs, const DisplayObj& rhs)
 {
-	int i;
+	if ((lhs.flags & DISPLAY_SHADOW) != (rhs.flags & DISPLAY_SHADOW))
+	{
+		// shadows go on the head of the list always, drawn before anything else
+		// (and the order of shadows doesn't matter, of course)
+		return (rhs.flags & DISPLAY_SHADOW) < (lhs.flags & DISPLAY_SHADOW);
+	}
+	else if (lhs.y != rhs.y)
+	{
+		return lhs.y < rhs.y;
+	}
+	else if (lhs.z != rhs.z)
+	{
+		return lhs.z < rhs.z;
+	}
+	else
+	{
+		return false;
+	}
+}
 
-	i=head;
+void DisplayList::Render()
+{
+	std::stable_sort(&dispObj[0], &dispObj[nextfree]);
 
-	while(i!=-1)
+	for (int i = 0; i < nextfree; ++i)
 	{
 		if((dispObj[i].flags&DISPLAY_DRAWME) && (dispObj[i].spr))
 		{
@@ -580,12 +518,16 @@ void DisplayList::Render(void)
 			}
 			else if(dispObj[i].flags&DISPLAY_LIGHTNING)
 			{
-				RenderLightningParticle(dispObj[i].x-scrx,dispObj[i].y-scry,dispObj[i].z-scrx,
-								dispObj[i].z2-scry,dispObj[i].bright,(byte)dispObj[i].hue,mgl->GetScreen());
-				RenderCircleParticle(dispObj[i].x-scrx,dispObj[i].y-scry,5,
-									(byte)31,mgl->GetScreen());
-				RenderCircleParticle(dispObj[i].z-scrx,dispObj[i].z2-scry,5,
-									(byte)31,mgl->GetScreen());
+				RenderLightningParticle(
+					dispObj[i].x-scrx,dispObj[i].y-scry-32,
+					dispObj[i].z-scrx,dispObj[i].z2-scry-32,
+					dispObj[i].bright,(byte)dispObj[i].hue,mgl->GetScreen());
+				RenderCircleParticle(
+					dispObj[i].x-scrx,dispObj[i].y-scry-32,
+					5,(byte)31,mgl->GetScreen());
+				RenderCircleParticle(
+					dispObj[i].z-scrx,dispObj[i].z2-scry-32,
+					5,(byte)31,mgl->GetScreen());
 			}
 			else if(dispObj[i].flags&DISPLAY_OFFCOLOR)
 			{
@@ -611,7 +553,7 @@ void DisplayList::Render(void)
 			{
 				if(dispObj[i].flags&DISPLAY_GHOST)
 				{
-					dispObj[i].spr->DrawGhost(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
+					dispObj[i].spr->DrawGhostBright(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl,
 							dispObj[i].bright);
 				}
 				else if(dispObj[i].flags&DISPLAY_GLOW)
@@ -638,7 +580,6 @@ void DisplayList::Render(void)
 				RenderClock(dispObj[i].x-scrx,dispObj[i].y-scry-dispObj[i].z,mgl);
 			}
 		}
-		i=dispObj[i].next;
 	}
 }
 

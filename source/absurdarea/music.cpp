@@ -2,7 +2,7 @@
 #include "mgldraw.h"
 #include "config.h"
 #include "editor.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 
 byte lastSong=255;
 
@@ -37,9 +37,4 @@ void ChooseNextSong()
 	if(player.var[VAR_COMMENTARY])
 		StopSong();
 #endif
-}
-
-bool ConfigMusicEnabled()
-{
-	return config.music;
 }

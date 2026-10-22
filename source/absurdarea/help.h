@@ -2,7 +2,6 @@
 #define HELP_H
 
 #include "game.h"
-#pragma pack(1)
 
 #define TIP_BEGIN	1	// the game started
 #define TIP_QUEST	2	// first quest obtained

@@ -3,7 +3,6 @@
 
 #include "jamulsound.h"
 #include "jamultypes.h"
-#pragma pack(1)
 
 // interface sounds
 #define SND_MENUCLICK	(0)
@@ -209,6 +208,5 @@ void MakeNormalSound(int snd);
 void MakeNormalSound2(int snd);
 void MakeSpaceSound(int snd,int priority);
 void LoopingSound(int snd);
-void SoundSystemExists(void);
 
 #endif

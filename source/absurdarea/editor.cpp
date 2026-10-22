@@ -3,6 +3,7 @@
 #include "water.h"
 #include "music.h"
 #include "appdata.h"
+#include "string_extras.h"
 
 #define PLOPRATE	5
 
@@ -1375,8 +1376,6 @@ void ShowSpecials(void)
 	if(!(editopt.displayFlags&MAP_SHOWSPECIALS))
 		return;
 
-	char spclNum[32];
-
 	GetCamera(&sx,&sy);
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(curMap->special[i].trigger)
@@ -1385,18 +1384,21 @@ void ShowSpecials(void)
 				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
 				curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
 				"Spcl", 0, 1);
-			sprintf(spclNum, "%03d", i);
-			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
-				spclNum, 0, 1);
 		}
+}
+
+static void ShowTags()
+{
+	if(showTags)
+	{
+		int x,y;
+		GetCamera(&x,&y);
+		curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
+	}
 }
 
 void EditorDraw(void)
 {
-	int x,y;
-
 	switch(editMode)
 	{
 		case EDITMODE_EDIT:
@@ -1405,11 +1407,7 @@ void EditorDraw(void)
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
 			ShowTarget();
-			if(showTags)
-			{
-				GetCamera(&x,&y);
-				curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
-			}
+			ShowTags();
 			RenderEditMenu();
 			break;
 		case EDITMODE_TERRAIN:
@@ -1441,6 +1439,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1449,6 +1448,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderTileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1457,6 +1457,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1465,6 +1466,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderSpclDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1841,9 +1843,8 @@ void ScanChests(void)
 {
 	byte pres[99],chest[50];
 	int i,j;
-	FILE *f;
 
-	f=AppdataOpen("blah.txt","wt");
+	auto f = AppdataOpen_Write("blah.txt");
 
 	for(i=0;i<99;i++)
 		pres[i]=0;
@@ -1857,13 +1858,13 @@ void ScanChests(void)
 			if(world.map[i]->map[j].item==IT_PRESENT)
 			{
 				if(pres[world.map[i]->map[j].tag]!=0)
-					fprintf(f,"Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
+					SDL_IOprintf(f.get(), "Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
 				pres[world.map[i]->map[j].tag]=i+1;
 			}
 			if(world.map[i]->map[j].item>=IT_CHEST1 && world.map[i]->map[j].item<=IT_CHEST5)
 			{
 				if(chest[world.map[i]->map[j].tag]!=0)
-					fprintf(f,"Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
+					SDL_IOprintf(f.get(), "Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
 				chest[world.map[i]->map[j].tag]=i+1;
 			}
 		}
@@ -1871,11 +1872,11 @@ void ScanChests(void)
 	for(i=0;i<99;i++)
 	{
 		if(pres[i]==0)
-			fprintf(f,"Present #%d missing!\n",i);
+			SDL_IOprintf(f.get(), "Present #%d missing!\n",i);
 		if(i<50 && chest[i]==0)
-			fprintf(f,"Chest #%d missing!\n",i);
+			SDL_IOprintf(f.get(), "Chest #%d missing!\n",i);
 	}
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 

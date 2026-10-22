@@ -2,7 +2,6 @@
 #define RADAR_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define MAX_RADAR	(256)
 

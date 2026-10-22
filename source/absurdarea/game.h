@@ -17,7 +17,6 @@
 #include "intface.h"
 #include "pause.h"
 #include "cheat.h"
-#pragma pack(1)
 
 #define CONTINUE 0
 #define QUITGAME 1
@@ -94,9 +93,6 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode);
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);
 
-void SetGameIdle(bool b);
-byte GetGameIdle(void);
-void GameIdle(void);
 byte WindingDown(void);
 
 void UndoWindDown(void);

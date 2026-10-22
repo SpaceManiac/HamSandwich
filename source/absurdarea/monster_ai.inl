@@ -740,7 +740,7 @@ void AI_Cryozoid(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	int x,y;
 	byte ang;
 
-	if(SpecificSkillLevel(SKILL_CRYOZOID)==0)
+	if(SpecificSkillLevel(SKILL_CRYOZOID)==0 && me->hp > 0)
 	{
 		me->hp=0;
 		DoMove(me,ANIM_DIE,128,1,0,0);	// die!
@@ -1052,7 +1052,7 @@ void AI_SockMonkey(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 			x=me->x+Cosine(me->facing*32)*16;
 			y=me->y+Sine(me->facing*32)*16;
-			i=FindVictim(x,y,me->mapx,me->mapy,20,me->ID+1,1,0,map,world);
+			i=FindVictim(x,y,me->mapx,me->mapy,20,me->ID+1,(GOOD+EVIL)-me->team,0,map,world);
 			if(i)
 			{
 				byte ang;
@@ -1150,7 +1150,7 @@ void AI_Klonk(Guy *me,Map *map,world_t *world,Guy *goodguy)
 			while(1)
 			{
 				// smash everyone in range
-				i=FindVictim(x,y,me->mapx,me->mapy,60,0,1,i,map,world);
+				i=FindVictim(x,y,me->mapx,me->mapy,60,0,(GOOD+EVIL)-me->team,i,map,world);
 				if(i)
 				{
 					byte ang;
@@ -1384,7 +1384,7 @@ void AI_Hound(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 			x=me->x+Cosine(me->facing*32)*40;
 			y=me->y+Sine(me->facing*32)*40;
-			i=FindVictim(x,y,me->mapx,me->mapy,20,me->ID+1,1,0,map,world);
+			i=FindVictim(x,y,me->mapx,me->mapy,20,me->ID+1,(GOOD+EVIL)-me->team,0,map,world);
 			if(i)
 			{
 				byte ang;
@@ -4171,7 +4171,7 @@ void AI_BigBadger(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->mind2=1;
 	if(me->mind2==0)	// tossing things down at player
 	{
-		if(goodguy->y<(me->y+FIXAMT*50))
+		if (goodguy && goodguy->y < (me->y + FIXAMT * 50))
 		{
 			// goodguy got close, get mighty
 			me->mind2=1;
@@ -4217,6 +4217,13 @@ void AI_BigBadger(Guy *me,Map *map,world_t *world,Guy *goodguy)
 	}
 	else	// normal fighting mode
 	{
+		if (goodguy == NULL)
+		{
+			me->dx = 0;
+			me->dy = 0;
+			return;
+		}
+
 		if(me->type==MONS_GORKA2 && Random(32)==0 && me->reload==0)
 		{
 			// slash

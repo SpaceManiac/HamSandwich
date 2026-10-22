@@ -521,8 +521,8 @@ void CastSpell(Guy *me)
 	switch(sp)
 	{
 		case SKILL_RESTORE:
-			HealGoodguy((byte)(SpecificSkillVal(0,SKILL_RESTORE)*SpellDamageBoost(SC_ICE)/100.0f));
-			player.invinc=(byte)SpecificSkillVal(1,SKILL_RESTORE);
+			HealGoodguy((word)(SpecificSkillVal(0,SKILL_RESTORE)*SpellDamageBoost(SC_ICE)/100.0f));
+			player.invinc=(word)SpecificSkillVal(1,SKILL_RESTORE);
 			me->poison=0;
 			me->frozen=0;
 			MakeColdRingParticle(me->x,me->y,0,64);
@@ -586,14 +586,14 @@ void CastSpell(Guy *me)
 			}
 			if(TalentBonus(TLT_GREENTHUMB)>0)
 				HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_GREENTHUMB,1);
 			break;
 		case SKILL_SHOCK:
 			x=me->x+Cosine(me->facing*32)*24;
 			y=me->y+Sine(me->facing*32)*24;
 			FireBullet(goodguy->ID,x,y,FIXAMT*20,me->facing*32,BLT_SHOCKORB,(word)(SpecificSkillVal(0,SKILL_SHOCK)*(SpellDamageBoost(SC_WIND))/100.0f));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_GALE:
@@ -608,20 +608,20 @@ void CastSpell(Guy *me)
 				y=me->y+Sine(me->facing*32+64+128)*i*24;
 				FireBullet(goodguy->ID,x,y,0,me->facing*32,BLT_GALE1,0);
 			}
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_BERSERK:
 			MakeNormalSound(SND_BERSERK);
 			player.berserkClock=(word)SpecificSkillVal(0,SKILL_BERSERK);
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_TORNADO:
 			// launch off a wall of Gale shots
 			MakeNormalSound(SND_TORNADO);
 			FireBullet(me->ID,me->x,me->y,0,me->facing*32,BLT_TORNADO,0);
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_SPIKE:
@@ -634,7 +634,7 @@ void CastSpell(Guy *me)
 			MakeNormalSound(SND_STONERUMBLE);
 			if(TalentBonus(TLT_GREENTHUMB)>0)
 				HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_GREENTHUMB,1);
 			break;
 		case SKILL_BRAMBLES:
@@ -642,7 +642,7 @@ void CastSpell(Guy *me)
 			MakeNormalSound(SND_PLANTSURFACE);
 			if(TalentBonus(TLT_GREENTHUMB)>0)
 				HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_GREENTHUMB,1);
 			break;
 		case SKILL_CRYOZOID:
@@ -736,7 +736,7 @@ void CastSpell(Guy *me)
 				g->mind1=30;
 				if(TalentBonus(TLT_GREENTHUMB)>0)
 					HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-				if(!levelDef[player.levelNum].flags&LF_TOWN)
+				if(!(levelDef[player.levelNum].flags&LF_TOWN))
 					TalentPoint(TLT_GREENTHUMB,1);
 			}
 			break;
@@ -773,7 +773,7 @@ void CastSpell(Guy *me)
 			}
 		}
 	}
-	if(!levelDef[player.levelNum].flags&LF_TOWN)
+	if(!(levelDef[player.levelNum].flags&LF_TOWN))
 		TalentPoint(TLT_MEDITATION,(byte)SpecificSkillCost(1,sp));
 }
 
@@ -831,6 +831,10 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 		monsType[player.monsType].offc[2]=-4+(rand()%9);
 		if((player.timeToFinish%30)==0)
 			NovaGuys(GOOD,goodguy->x,goodguy->y,FIXAMT*50,0,20,0);
+	}
+	else
+	{
+		monsType[player.monsType].offc[0] = 255;
 	}
 	if(ModifierOn(MOD_GANGSTA) && ModifierOn(MOD_KNIGHT))
 	{
@@ -1200,7 +1204,8 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 					me->frmTimer=0;
 					return;
 				}
-				if(((player.whirlClock+5)%((byte)SpecificSkillVal(0,SKILL_WHIRL)))==0)
+				byte whirlLevel = SpecificSkillVal(0, SKILL_WHIRL);
+				if(whirlLevel && (player.whirlClock+5) % whirlLevel == 0)
 				{
 					LoonyWhirlHit(me,world);
 				}

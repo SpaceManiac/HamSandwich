@@ -3,7 +3,6 @@
 
 #include "winpch.h"
 #include "jamulspr.h"
-#pragma pack(1)
 
 enum itemList {
 	IT_NONE,

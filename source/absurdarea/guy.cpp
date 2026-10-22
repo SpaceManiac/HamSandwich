@@ -2797,7 +2797,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	return NULL;
 }
 
-void SaveGuys(FILE *f)
+void SaveGuys(SDL_IOStream *f)
 {
 	int i,num;
 	Guy *tgt,*parent;
@@ -2812,7 +2812,7 @@ void SaveGuys(FILE *f)
 		}
 	}
 
-	fwrite(&num,sizeof(int),1,f);
+	SDL_WriteIO(f,&num,sizeof(int));
 	for(i=0;i<maxGuys;i++)
 	{
 		if(guys[i]->type!=MONS_NONE)
@@ -2821,16 +2821,16 @@ void SaveGuys(FILE *f)
 			dword parent = guys[i]->parent ? guys[i]->parent->ID : 65535;
 
 			// sizes should total to 124
-			fwrite(guys[i],offsetof(Guy, target),1,f);
-			fwrite(&target,4,1,f);
-			fwrite(&parent,4,1,f);
-			fwrite(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124);
+			SDL_WriteIO(f,guys[i],offsetof(Guy, target));
+			SDL_WriteIO(f,&target,4);
+			SDL_WriteIO(f,&parent,4);
+			SDL_WriteIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp));
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
 }
 
-void LoadGuys(FILE *f)
+void LoadGuys(SDL_IOStream *f)
 {
 	int i,num;
 	Guy g;
@@ -2838,17 +2838,17 @@ void LoadGuys(FILE *f)
 	ExitGuys();
 	InitGuys(MAX_MAPMONS);
 
-	fread(&num,sizeof(int),1,f);
+	SDL_ReadIO(f,&num,sizeof(int));
 
 	for(i=0;i<num;i++)
 	{
 		dword target, parent;
 		// sizes should total to 124
-		fread(&g,offsetof(Guy, target),1,f);
-		fread(&target,4,1,f);
-		fread(&parent,4,1,f);
-		fread(&g.hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-		static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124);
+		SDL_ReadIO(f,&g,offsetof(Guy, target));
+		SDL_ReadIO(f,&target,4);
+		SDL_ReadIO(f,&parent,4);
+		SDL_ReadIO(f,&g.hp,sizeof(Guy) - offsetof(Guy, hp));
+		static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 124, "save compatibility broken; adjust this assertion if you are sure");
 
 		(*guys[g.ID])=g;
 		if(target==65535)

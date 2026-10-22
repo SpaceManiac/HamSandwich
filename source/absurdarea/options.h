@@ -4,7 +4,6 @@
 #include "jamultypes.h"
 #include "mgldraw.h"
 #include "gallery.h"
-#pragma pack(1)
 
 typedef struct options_t
 {

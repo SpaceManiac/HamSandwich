@@ -3,7 +3,6 @@
 
 #include "mgldraw.h"
 #include "map.h"
-#pragma pack(1)
 
 // types of battles
 #define AR_BRAWL	(0)	// just a bunch of monsters, kill them all
@@ -30,7 +29,6 @@
 #else
 #define MAX_MATCHES	 (55)
 #endif
-#pragma pack(1)
 
 typedef struct waveDef_t
 {
