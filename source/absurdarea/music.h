@@ -1,7 +1,7 @@
 #ifndef MUSIC_H
 #define MUSIC_H
 
-#include "hammusic.h"
+#include "jamulsound.h"
 
 // songs
 #define SONG_GUARDIAN		(240)
@@ -28,5 +28,6 @@
 //#define SONG_FACTORY	(245)
 
 void Song(byte w);
+void ChooseNextSong();
 
 #endif

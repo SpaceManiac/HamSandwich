@@ -90,7 +90,7 @@ typedef struct bulletDef_t
 	byte spawnMethod;	// how to spawn, above
 	byte spawnCount;	// number of them to spawn
 	byte spawnRate;		// delay before spawning again (0=just do it once)
-	byte spawnDmg;		// damage of spawned projectiles
+	short spawnDmg;		// damage of spawned projectiles
 	// particles
 	byte partDelay;
 	byte partType;
@@ -237,7 +237,7 @@ void RenderBullet(bullet_t *me);
 byte EatItem(int x,int y);
 byte NumBulletItem(byte item);
 
-void LoadBullets(FILE *f);
-void SaveBullets(FILE *f);
+void LoadBullets(SDL_IOStream *f);
+void SaveBullets(SDL_IOStream *f);
 
 #endif

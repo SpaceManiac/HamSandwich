@@ -14,6 +14,7 @@ static byte subMode;
 static byte darkness;
 static int offX;
 static byte oldc;
+static dword lastBtn = 0;
 
 options_t opt;
 
@@ -156,13 +157,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 					{
 						subMode=SUBMODE_SETBTN;
 						mgl->ClearKeys();
-						i=0;
-						while(i<10000 && GetJoyButtons())
-						{
-							i++;
-							//SDL_Delay(1);
-							mgl->Flip();	// AA fix
-						}
+						lastBtn = GetJoyButtons();
 						MakeNormalSound(SND_MENUSELECT);
 					}
 					else
@@ -210,9 +205,7 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SETBTN)
 	{
-		dword btn;
-
-		if (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_START))	// AA gamepad add
+		if (GetGamepadButtons() & (1 << SDL_GAMEPAD_BUTTON_START))	// AA gamepad add
 		{
 			FreezeGamepadStart();
 			subMode=SUBMODE_OPTIONS;
@@ -221,10 +214,11 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 		}
 		else
 		{
-			btn = GetJoyButtons();
+			dword btn = GetJoyButtons() & ~lastBtn;
+			lastBtn = GetJoyButtons();
 
 			j = 1;
-			for (i = 0; i < 32; i++)
+			for(i=0;i<32;i++)
 			{
 				if ((btn & j))
 				{
@@ -266,9 +260,10 @@ static void OptionButton(int x,int y,int wid,const char *txt,byte spot)
 
 static void RenderSetKey(int x,int y,byte t)
 {
-	x-=106;	// AA fix
-	y-=158;	// for title options
-	char actName[7][16]={
+	x -= 106;	// AA fix
+	y -= 158;	// for title options
+
+	static const char actName[7][16]={
 		"Up",
 		"Down",
 		"Left",
@@ -355,7 +350,6 @@ void RenderOptionsMenu(int x,int y,byte *backScr)
 		RenderSetKey(x,y,0);
 	else if(subMode==SUBMODE_SETBTN)
 		RenderSetKey(x,y,1);
-
 }
 
 //----------------
@@ -376,10 +370,9 @@ void ApplyControlSettingsMem(byte *data)
 
 void LoadOptions(void)
 {
-	FILE *f;
 	int i;
 
-	f=AppdataOpen("absurd.cfg","rb");	// Absurd Area uses different config file
+	auto f = AppdataOpen("absurd.cfg");	// Absurd Area uses different config file
 	if(!f)
 	{
 		opt.sound=127;
@@ -431,25 +424,23 @@ void LoadOptions(void)
 	else
 	{
 		static_assert(sizeof(options_t) == 165);
-		if(fread(&opt,1,sizeof(options_t),f)<sizeof(options_t))
+		if (SDL_ReadIO(f, &opt, sizeof(options_t)) < sizeof(options_t))
 		{
 #ifdef DIRECTORS
-		for(i=0;i<GALLERY_PIX;i++)
-			opt.galPix[i]=0;
+			for(i=0;i<GALLERY_PIX;i++)
+				opt.galPix[i]=0;
 #endif
 		}
-		fclose(f);
+		f.reset();
 	}
 	ApplyControlSettings();
 }
 
 void SaveOptions(void)
 {
-	FILE *f;
-
-	f=AppdataOpen("absurd.cfg","wb");		// changed config file name
-	fwrite(&opt,sizeof(options_t),1,f);
-	fclose(f);
+	auto f = AppdataOpen_Write("absurd.cfg");		// changed config file name
+	SDL_WriteIO(f, &opt, sizeof(options_t));
+	f.reset();
 	AppdataSync();
 }
 

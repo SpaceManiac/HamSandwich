@@ -31,8 +31,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.logTime=0;
 		player.logBright=0;
 		NewMessage("Welcome to Absurd Area!",0);
-		for(i=0;i<1024;i++)
-			player.var[i]=0;
+		memset(&player.var[0], 0, 1024);
 		player.var[VAR_MODIFIER+0]=GetSavedMod(0);
 		player.var[VAR_MODIFIER+1]=GetSavedMod(1);
 		player.var[VAR_MODIFIER+2]=GetSavedMod(2);
@@ -457,7 +456,7 @@ byte PlayerGetItem(byte itm,int val1,int val2)
 		case IT_PICTURE:
 #ifdef DIRECTORS
 		{
-			char s[32];
+			char s[64];
 	//if(opt.galPix[val1-1]==0)//AA fix
 		//{
 		//	opt.galPix[val1-1]=1;

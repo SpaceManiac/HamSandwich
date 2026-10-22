@@ -946,14 +946,7 @@ void InitMonsters(void)
 
 void ExitMonsters(void)
 {
-	int i;
-
-	for(i=1;i<NUM_MONSTERS;i++)
-	{
-		if(monsType[i].spr)
-			delete monsType[i].spr;
-		monsType[i].spr=NULL;
-	}
+	PurgeMonsterSprites();
 }
 
 void PurgeMonsterSprites(void)
@@ -4605,7 +4598,7 @@ void AI_Stonewall(Guy* me, Map* map, world_t* world, Guy* goodguy)
 
 	BasicAI(me, SND_STONEOUCH, SND_STONEDIE, map, world, goodguy);
 
-	// firewall heatshield	
+	// firewall heatshield
 	if (me->type == MONS_FIREWALL)
 	{
 		if (me->mind3 == 0)

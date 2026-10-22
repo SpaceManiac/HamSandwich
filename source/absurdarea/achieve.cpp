@@ -206,7 +206,7 @@ void AdjustModifier(byte *me,byte w,char dir,byte *list)
 	while(1)
 	{
 		newMod+=dir;
-		if(newMod>=MAX_MODS)	// AA fix lol
+		if(newMod>=MAX_MODS)
 		{
 			if(dir==1)
 				newMod=255;
@@ -351,7 +351,7 @@ void CheckForNewMods(byte newAch,byte *m)
 
 	int i;
 	byte vcnt,hcnt;
-	
+
 	vcnt=0;
 	hcnt=0;
 	for(i=0;i<10;i++)

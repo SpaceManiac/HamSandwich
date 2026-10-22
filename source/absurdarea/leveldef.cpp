@@ -3,6 +3,7 @@
 #include "sound.h"
 #include "music.h"
 #include "appdata.h"
+#include "ioext.h"
 
 levelDef_t levelDef[NUM_LEVELS];
 
@@ -436,7 +437,6 @@ int ParseBadguyCount(char *line,int start,byte lv)
 
 void LoadLevelDefs(char *name)
 {
-	FILE *f;
 	int lv;
 	int spot;
 	char line[256];
@@ -444,11 +444,13 @@ void LoadLevelDefs(char *name)
 	err[0]='\0';
 	ResetLevelDefs();
 	sprintf(line,"addons/aal_%s.txt",name);
-	f=AssetOpen(line,"rt");
+	auto f = AppdataOpen(line);
 	if(!f)
 		return;
 
-	if(fscanf(f,"%[^\n]\n",line)==EOF)
+	SdlRwStream stream(f.get());
+
+	if(!stream.getline(line, std::size(line)))
 	{
 		LDError("Lacking any content!",-2);
 		return;
@@ -460,7 +462,7 @@ void LoadLevelDefs(char *name)
 
 	for(lv=0;lv<NUM_LEVELS;lv++)
 	{
-		if(fscanf(f,"%[^\n]\n",line)==EOF)
+		if(!stream.getline(line, std::size(line)))
 		{
 			break;
 		}

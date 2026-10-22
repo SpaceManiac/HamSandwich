@@ -16,24 +16,6 @@
 #define MENU_OPTIONS	3	// go to options menu
 #define MENU_EXIT		4	// quit the game
 
-#ifdef DIRECTORS
-#define MM_PLAY			0
-#define MM_ERASE		1
-#define MM_ACHIEVE		2
-#define MM_GALLERY		3
-#define MM_EDITOR		4
-#define MM_OPTIONS		5
-#define MM_QUIT			6
-#define MENU_CHOICES	7
-#else
-#define MM_PLAY			0
-#define MM_ERASE		1
-#define MM_ACHIEVE		2
-#define MM_OPTIONS		3
-#define MM_QUIT			4
-#define MENU_CHOICES	5
-#endif
-
 #define MENU_EDITOR	   254	// special since you can't normally do it
 
 extern byte gameToLoad;

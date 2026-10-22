@@ -844,6 +844,10 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 		if((player.timeToFinish%30)==0)
 			NovaGuys(GOOD,0,goodguy->x,goodguy->y,FIXAMT*50,0,20,0);
 	}
+	else
+	{
+		monsType[player.monsType].offc[0] = 255;
+	}
 	if(ModifierOn(MOD_GANGSTA) && ModifierOn(MOD_KNIGHT))
 	{
 		// randomly swap if you have both
@@ -1215,12 +1219,12 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 					me->frmTimer=0;
 					return;
 				}
-				if (SpecificSkillLevel(SKILL_WHIRL) > 0)		// AA fix
-					if(((player.whirlClock+5)%((byte)SpecificSkillVal(0,SKILL_WHIRL)))==0)
-					{
-						LoonyWhirlHit(me,world);
-					}
-				me->facing=(me->facing-1)&7;
+				byte whirlLevel = SpecificSkillVal(0, SKILL_WHIRL);
+				if(whirlLevel && (player.whirlClock+5) % whirlLevel == 0)
+				{
+					LoonyWhirlHit(me,world);
+				}
+				me->facing=(me->facing+1)&7;
 				me->frm=3;
 				me->frmTimer=0;
 				c=GetControls();

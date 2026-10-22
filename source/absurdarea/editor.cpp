@@ -3,6 +3,7 @@
 #include "water.h"
 #include "music.h"
 #include "appdata.h"
+#include "string_extras.h"
 
 #define PLOPRATE	5
 
@@ -1417,8 +1418,6 @@ void ShowSpecials(void)
 	if(!(editopt.displayFlags&MAP_SHOWSPECIALS))
 		return;
 
-	char spclNum[32];
-
 	GetCamera(&sx,&sy);
 	for(i=0;i<MAX_SPECIAL;i++)
 		if(curMap->special[i].trigger)
@@ -1427,18 +1426,21 @@ void ShowSpecials(void)
 				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
 				curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
 				"Spcl", 0, 1);
-			sprintf(spclNum, "%03d", i);
-			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
-				spclNum, 0, 1);
 		}
+}
+
+static void ShowTags()
+{
+	if(showTags)
+	{
+		int x,y;
+		GetCamera(&x,&y);
+		curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
+	}
 }
 
 void EditorDraw(void)
 {
-	int x,y;
-
 	switch(editMode)
 	{
 		case EDITMODE_EDIT:
@@ -1447,11 +1449,7 @@ void EditorDraw(void)
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
 			ShowTarget();
-			if(showTags)
-			{
-				GetCamera(&x,&y);
-				curMap->ShowTags(x,y,editopt.copyX,editopt.copyY,editopt.copyWidth,editopt.copyHeight);
-			}
+			ShowTags();
 			RenderEditMenu();
 			break;
 		case EDITMODE_TERRAIN:
@@ -1483,6 +1481,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1491,6 +1490,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderTileDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1499,6 +1499,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
@@ -1507,6 +1508,7 @@ void EditorDraw(void)
 				RenderGuys(editopt.displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,curMap,editopt.displayFlags);
 			ShowSpecials();
+			ShowTags();
 			RenderEditMenu();
 			RenderSpclDialog(mouseX,mouseY,editmgl);
 			break;
@@ -2079,9 +2081,8 @@ void ScanChests(void)
 {
 	byte pres[99],chest[50];
 	int i,j;
-	FILE *f;
 
-	f=AppdataOpen("blah.txt","wt");
+	auto f = AppdataOpen_Write("blah.txt");
 
 	for(i=0;i<99;i++)
 		pres[i]=0;
@@ -2095,13 +2096,13 @@ void ScanChests(void)
 			if(world.map[i]->map[j].item==IT_PRESENT)
 			{
 				if(pres[world.map[i]->map[j].tag]!=0)
-					fprintf(f,"Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
+					SDL_IOprintf(f.get(), "Present #%d in %d and %d!\n",world.map[i]->map[j].tag,pres[world.map[i]->map[j].tag]-1,i);
 				pres[world.map[i]->map[j].tag]=i+1;
 			}
 			if(world.map[i]->map[j].item>=IT_CHEST1 && world.map[i]->map[j].item<=IT_CHEST5)
 			{
 				if(chest[world.map[i]->map[j].tag]!=0)
-					fprintf(f,"Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
+					SDL_IOprintf(f.get(), "Chest #%d in %d and %d!\n",world.map[i]->map[j].tag,chest[world.map[i]->map[j].tag]-1,i);
 				chest[world.map[i]->map[j].tag]=i+1;
 			}
 		}
@@ -2109,11 +2110,11 @@ void ScanChests(void)
 	for(i=0;i<99;i++)
 	{
 		if(pres[i]==0)
-			fprintf(f,"Present #%d missing!\n",i);
+			SDL_IOprintf(f.get(), "Present #%d missing!\n",i);
 		if(i<50 && chest[i]==0)
-			fprintf(f,"Chest #%d missing!\n",i);
+			SDL_IOprintf(f.get(), "Chest #%d missing!\n",i);
 	}
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 
@@ -2136,27 +2137,26 @@ void PrintLoc(char* s, int x, int y)
 void ScanExits(void)
 {
 	int i,j,k;
-	FILE* f;
 	char loc1[16];
 	char loc2[16];
 
-	f = AppdataOpen("lmao.txt", "wt");
+	auto f = AppdataOpen("lmao.txt");
 
 	for (i = 0; i < world.numMaps; i++)
 	{
-		fprintf(f, "Level %d: %s\nSpecials Out:\n", i, world.map[i]->name);
+		SDL_IOprintf(f.get(), "Level %d: %s\nSpecials Out:\n", i, world.map[i]->name);
 		for (k = 0; k < MAX_SPECIAL; ++k)
 		{
 			if (world.map[i]->special[k].trigger && world.map[i]->special[k].effect == SPC_GOTOMAP)
 			{
 				PrintLoc(loc1, world.map[i]->special[k].x, world.map[i]->special[k].y);
 				PrintLoc(loc2, world.map[i]->special[k].effectX, world.map[i]->special[k].effectY);
-				fprintf(f, "SPC #%d at %s TO Map %d at %s\n",
+				SDL_IOprintf(f.get(), "SPC #%d at %s TO Map %d at %s\n",
 					k, loc1,
 					world.map[i]->special[k].value, loc2);
 			}
 		}
-		fprintf(f, "Specials In:\n");
+		SDL_IOprintf(f.get(), "Specials In:\n");
 		for (j = 0; j < world.numMaps; ++j)
 		{
 			for (k = 0; k < MAX_SPECIAL; ++k)
@@ -2165,25 +2165,24 @@ void ScanExits(void)
 				{
 					PrintLoc(loc1, world.map[j]->special[k].x, world.map[j]->special[k].y);
 					PrintLoc(loc2, world.map[j]->special[k].effectX, world.map[j]->special[k].effectY);
-					fprintf(f, "MAP %d SPC #%d at %s TO here at %s\n", j, k, loc1, loc2);
+					SDL_IOprintf(f.get(), "MAP %d SPC #%d at %s TO here at %s\n", j, k, loc1, loc2);
 				}
 			}
 		}
-		fprintf(f, "\n");
+		SDL_IOprintf(f.get(), "\n");
 	}
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 
 void ScanTile(int mytile)
 {
 	int i, j, x, y;
-	FILE* f;
 	char loc[32];
 
-	f = AppdataOpen("rofl.txt", "wt");
-	fprintf(f, "Scanning For Tile #%d\n\n", mytile);
+	auto f = AppdataOpen("rofl.txt");
+	SDL_IOprintf(f.get(), "Scanning For Tile #%d\n\n", mytile);
 
 	for (i = 0; i < world.numMaps; i++)
 	{
@@ -2196,13 +2195,13 @@ void ScanTile(int mytile)
 				y = j / world.map[i]->width;
 				PrintLoc(loc, x, y);
 				if (!bFound)
-					fprintf(f, "MAP %d: %s\n", i, world.map[i]->name);
+					SDL_IOprintf(f.get(), "MAP %d: %s\n", i, world.map[i]->name);
 				bFound = true;
 
 				if (world.map[i]->map[j].floor == mytile)
-					fprintf(f, "%s FLOOR\n", loc);
+					SDL_IOprintf(f.get(), "%s FLOOR\n", loc);
 				if (world.map[i]->map[j].wall == mytile)
-					fprintf(f, "%s WALL\n", loc);
+					SDL_IOprintf(f.get(), "%s WALL\n", loc);
 			}
 		}
 		for (j = 0; j < MAX_SPECIAL; ++j)
@@ -2215,35 +2214,34 @@ void ScanTile(int mytile)
 				x = world.map[i]->special[j].y;
 				PrintLoc(loc, x, y);
 				if (!bFound)
-					fprintf(f, "MAP %d: %s\n", i, world.map[i]->name);
+					SDL_IOprintf(f.get(), "MAP %d: %s\n", i, world.map[i]->name);
 				bFound = true;
 
 				if (world.map[i]->special[j].effect == SPC_ZAPWALL)
-					fprintf(f, "%s SPECIAL ZAPWALL", loc);
+					SDL_IOprintf(f.get(), "%s SPECIAL ZAPWALL", loc);
 				if (world.map[i]->special[j].effect == SPC_RAISEWALL)
-					fprintf(f, "%s SPECIAL RAISEWALL", loc);
+					SDL_IOprintf(f.get(), "%s SPECIAL RAISEWALL", loc);
 				if (world.map[i]->special[j].effect == SPC_TOGGLEWALL)
-					fprintf(f, "%s SPECIAL TOGGLEWALL", loc);
+					SDL_IOprintf(f.get(), "%s SPECIAL TOGGLEWALL", loc);
 				if (world.map[i]->special[j].effect == SPC_CHGTILE)
-					fprintf(f, "%s SPECIAL CHGTILE", loc);
+					SDL_IOprintf(f.get(), "%s SPECIAL CHGTILE", loc);
 			}
 		}
 		if (bFound)
-			fprintf(f, "\n");
+			SDL_IOprintf(f.get(), "\n");
 	}
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 
 void CountTag(byte mytag)
 {
 	int i, j, x, y;
-	FILE* f;
 	char loc[32];
 
-	f = AppdataOpen("ooloo.txt", "wt");
-	fprintf(f, "Scanning For Tag #%d\n\n", mytag);
+	auto f = AppdataOpen("ooloo.txt");
+	SDL_IOprintf(f.get(), "Scanning For Tag #%d\n\n", mytag);
 
 	i = 0;
 	for (j = 0; j < curMap->width * curMap->height; j++)
@@ -2254,12 +2252,12 @@ void CountTag(byte mytag)
 			x = j % curMap->width;
 			y = j / curMap->width;
 			PrintLoc(loc, x, y);
-			fprintf(f, "%s\n", loc);
+			SDL_IOprintf(f.get(), "%s\n", loc);
 		}
 	}
-	fprintf(f, "\n%d\n",i);
+	SDL_IOprintf(f.get(), "\n%d\n",i);
 
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 
