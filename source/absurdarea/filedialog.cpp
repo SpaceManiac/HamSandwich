@@ -18,7 +18,7 @@ void InitFileDialog(void)
 		fnames[i][0]='\0';
 
 	numFiles=0;
-	files_all = ListDirectory("addons", ".llw", 32);
+	files_all = ListDirectory("addons", ".aaw", 32);
 	for (files_current = files_all.begin(); files_current != files_all.end(); ++files_current)
 	{
 		const char* name = files_current->c_str();

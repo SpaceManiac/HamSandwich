@@ -7,10 +7,12 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	int i;
 
 	world->numMaps=1;
-	mgl->LoadBMP("addons/tiles1.bmp");
+	mgl->LoadBMP("addons/aatiles1.bmp");
 	SetTiles(mgl->GetScreen(),0);
-	mgl->LoadBMP("addons/tiles2.bmp");
+	mgl->LoadBMP("addons/aatiles2.bmp");
 	SetTiles(mgl->GetScreen(),1);
+	mgl->LoadBMP("addons/aatiles3.bmp");
+	SetTiles(mgl->GetScreen(), 2);
 
 	// reset all the terrain
 	memset(world->terrain,0,sizeof(terrain_t)*NUMTILES);

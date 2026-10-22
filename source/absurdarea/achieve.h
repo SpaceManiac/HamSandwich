@@ -32,9 +32,14 @@
 #define MOD_TICKING	(21)
 #define MOD_MERCHANT (22)
 #define MOD_EVEN	(23)
-#define MAX_MODS	(24)
+#define MOD_BRUTAL	(24)
+#define MOD_GLAUCOMA (25)
+#define MOD_GREASER	(26)
+#define MOD_NERD	(27)
+#define MAX_MODS	(28)
 
 byte ModifierOn(byte mod);
+void StripModifier(byte mod); // AA remove a mod
 const char *ModifierDesc(byte m);
 const char *ModifierName(byte m);
 void AdjustModifier(byte *me,byte w,char dir,byte *list);

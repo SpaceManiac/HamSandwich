@@ -31,6 +31,7 @@
 #define SUBMODE_SETKEY	(9)
 #define SUBMODE_SETBTN	(10)
 #define SUBMODE_TIPS	(11)
+#define SUBMODE_AAUPGRADE (12)
 
 struct player_t;
 

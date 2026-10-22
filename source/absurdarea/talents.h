@@ -42,6 +42,12 @@ enum talentList {
 
 #define MAX_TALENTS	(30)
 
+// AA defines
+#define TLTP_COMBAT	0
+#define TLTP_MAGIC	1
+#define TLTP_CRAFT	2
+#define TLTP_ANY	3
+
 typedef struct talent_t
 {
 	char name[16];
@@ -58,5 +64,8 @@ void LearnTalent(byte s);
 void TalentPoint(byte which,word amt);
 float TalentBonus(byte which);
 void TalentDecrease(void);
+// AA functions
+byte CurrentTalentLevel(byte which);
+byte MaxTalentLevel(byte talenttype);
 
 #endif

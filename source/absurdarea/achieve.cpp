@@ -30,7 +30,7 @@ achieve_t achievement[100]={
 	{"Ra Tneqr","Yriry 15 Cneel Fxvyy.",ACH_SKILL,SKILL_PARRY},
 	{"Fghaavat","Yriry 15 Fgha Fxvyy.",ACH_SKILL,SKILL_STUN},
 	{"X.B.","Yriry 10 Xabpxbhg Gnyrag.",ACH_TALENT,TLT_KNOCKOUT},
-	{"Gvgyr Ubyqre","Jba 100 Neran Onggyrf.",ACH_SPECIAL,0},
+	{"Gur Terng Tbamnyrf","Jba Rnpu Aba-Znqpnc Neran Zngpu",ACH_SPECIAL,0},	// AA change
 	// row 2
 	{"Ubg Fghss","Yriry 10 Fpbepuvat Gnyrag.",ACH_TALENT,TLT_SCORCHING},
 	{"Pbzcyrgvfg","Lbh tbg 100% pbzcyrgr!",ACH_SPECIAL,0},
@@ -40,7 +40,7 @@ achieve_t achievement[100]={
 	{"Fgebat Yvxr Uhyx","Yriry 15 Fgeratgu Fxvyy.",ACH_SKILL,SKILL_STRENGTH},
 	{"Fyhecl","Yriry 15 Inzcvevfz Fxvyy.",ACH_SKILL,SKILL_VAMPIRE},
 	{"Zvfrel","Yriry 10 Zvfre Gnyrag.",ACH_TALENT,TLT_MISER},
-	{"Jrrqxvyyre","Fyrj 5,000 Cynagf.",ACH_SPECIAL,0},
+	{"Frperg Gb Rirelobql","Sbhaq Xvalbin.",ACH_SPECIAL,0},						// AA change
 	{"Negshy Qbqtvat","Yriry 10 Svarffr Gnyrag.",ACH_TALENT,TLT_FINESSE},
 		// row 3
 	{"Vtavgvba","Yriry 15 Vtavgr Fxvyy.",ACH_SKILL,SKILL_IGNITE},
@@ -57,10 +57,10 @@ achieve_t achievement[100]={
 	{"Crnfnagf Orjner","Yriry 15 Oheavangr Fxvyy.",ACH_SKILL,SKILL_BURNINATE},
 	{"Fubpx Inyhr","Yriry 15 Fubpx Fxvyy.",ACH_SKILL,SKILL_SHOCK},
 	{"Obbtnybb","Yriry 10 Ryrpgebphgvba Gnyrag.",ACH_TALENT,TLT_ELECTROCUTION},
-	{"Fcrrq Qrzba","Lbh svavfurq va haqre 4 ubhef.",ACH_SPECIAL,0},
+	{"Zvavznyvfg","Jba jvgu ng zbfg 15 Hctenqrf!",ACH_SPECIAL,0},	// AA change
 	{"Tbvat Ahgf","Yriry 15 Orefrex Fxvyy.",ACH_SKILL,SKILL_BERSERK},
 	{"Jbbqfzna","Yriry 15 Genpxvat Fxvyy.",ACH_SKILL,SKILL_TRACKING},
-	{"Zbaxrl Fbpxvat","Fznfurq 5,000 Fbpx Zbaxrlf.",ACH_SPECIAL,0},
+	{"Fvzcyl Onananf","Sbhaq gur Zbaxrl Tebggb.",ACH_SPECIAL,0},	// AA change
 	{"Ihygher","Yriry 10 Fpniratvat Gnyrag.",ACH_TALENT,TLT_SCAVENGING},
 	{"Ebnfg Ornfg","Yriry 15 Synzr Fxvyy.",ACH_SKILL,SKILL_FLAME},
 	{"Enoovg'f Sbbg","Yriry 15 Yhpx Fxvyy.",ACH_SKILL,SKILL_LUCK},
@@ -69,8 +69,8 @@ achieve_t achievement[100]={
 	{"N Zvtugl Jvaq","Yriry 15 Tnyr Fxvyy.",ACH_SKILL,SKILL_GALE},
 	{"Juvgr Abvfr","Yriry 15 Fgngvp Fxvyy.",ACH_SKILL,SKILL_STATIC},
 	{"Cbyvgvpny Nfcvengvbaf","Yriry 10 Jvaqont Gnyrag.",ACH_TALENT,TLT_WINDBAG},
-	{"Byqre & Jvfre","Lbh tbg 1 zvyyvba KC!",ACH_SPECIAL,0},
-	{"Chccrg Chapure","Fznfurq 5,000 Chccrgf.",ACH_SPECIAL,0},
+	{"Gur Fhcre Frperg","Sbhaq gur Obbz Cnexn!",ACH_SPECIAL,0},	// AA change
+	{"Cvabppuvb","Sbhaq gur Chccrg Vfynaq.",ACH_SPECIAL,0},			// AA change
 	{"Fcel Thl","Yriry 10 Ivinpvgl Gnyrag.",ACH_TALENT,TLT_VIVACITY},
 	{"Unat Va Gurer","Yriry 15 Raqhenapr Fxvyy.",ACH_SKILL,SKILL_ENDURANCE},
 	{"Obzoneqvre","Yriry 15 Nvefgevxr Fxvyy.",ACH_SKILL,SKILL_AIRSTRIKE},
@@ -80,8 +80,8 @@ achieve_t achievement[100]={
 	{"Qreivfu","Yriry 15 Juvey Fxvyy.",ACH_SKILL,SKILL_WHIRL},
 	{"Abg Va Xnafnf","Yriry 15 Gbeanqb Fxvyy.",ACH_SKILL,SKILL_TORNADO},
 	{"Fhpxre Chapu","Yriry 10 Farnx Nggnpx Gnyrag.",ACH_TALENT,TLT_SNEAKATTACK},
-	{"Obqmun Oynfgre","Fznfurq 5,000 Obqmunf.",ACH_SPECIAL,0},
-	{"Fglyvfu","Jrne nyy Negvsnpgf.",ACH_SPECIAL,0},
+	{"Onqtre Onqtre Onqtre","Sbhaq gur Obqmun Arfg.",ACH_SPECIAL,0},			// AA change
+	{"Wnpx Bs Nyy Genqrf","Chepunfrq nyy 30 Hctenqrf!",ACH_SPECIAL,0},	// AA change
 	{"Ebqragvn","Yriry 10 Cnpxeng Gnyrag.",ACH_TALENT,TLT_PACKRAT},
 	{"Fgbby Cvtrba","Yriry 15 Ubzvat Fxvyy.",ACH_SKILL,SKILL_HOMING},
 	{"Guerr Gvzrf N Ybbal","Yriry 15 Gevcyr Fxvyy.",ACH_SKILL,SKILL_TRIPLE},
@@ -90,37 +90,37 @@ achieve_t achievement[100]={
 	{"Qe. Mbvqoret","Yriry 15 Pelbmbvq Fxvyy.",ACH_SKILL,SKILL_CRYOZOID},
 	{"Wnpx Sebfg","Yriry 15 Pbyq Jnir Fxvyy.",ACH_SKILL,SKILL_COLDWAVE},
 	{"Qvt Qbja Qrrc","Yriry 10 Zvavat Gnyrag.",ACH_TALENT,TLT_MINING},
-	{"Tubfgohfgre","Ohfgrq 2,000 Tubfgf.",ACH_SPECIAL},
+	{"Qba'g Ovgr Gurz","Sbhaq gur Cbvfbabhf Cvg.",ACH_SPECIAL},			// AA change
 	{"Obb!","Yriry 10 Fcbbxvarff Gnyrag.",ACH_TALENT,TLT_SPOOKYBONES},
 	{"Gerruhttre","Yriry 10 Terra Guhzo Gnyrag.",ACH_TALENT,TLT_GREENTHUMB},
-	{"Pbyyrpgbe","Ubyqvat 255 bs na vgrz.",ACH_SPECIAL,0},
+	{"Cvyr Bs Frpergf","Sbhaq bar bs gur Uvqqra Gevnyf.",ACH_SPECIAL,0},	// AA change
 	{"Ntrag Fzvgu","Yriry 10 Whaxfzvgu Gnyrag.",ACH_TALENT,TLT_JUNKSMITH},
 	{"Vg'f N Genc!","Yriry 15 Nkr Genc Fxvyy.",ACH_SKILL,SKILL_TURRET},
 	{"Ohggresvatref","Yriry 15 Funggre Fxvyy.",ACH_SKILL,SKILL_SHATTER},
 	// row 8
 	{"Ba Gur Ebpxf","Yriry 15 Vpr Phor Fxvyy.",ACH_SKILL,SKILL_ICECUBE},
 	{"Pbyq Urnegrq","Yriry 10 Serrmvat Gnyrag.",ACH_TALENT,TLT_FREEZING},
-	{"Orne Vf Qevivat","Fznfurq 5,000 Ornef.",ACH_SPECIAL,0},
+	{"Ornezntrqqba","Sbhaq gur Orne Ynve.",ACH_SPECIAL,0},			// AA change
 	{"Nggragvir","Yriry 10 Zragny Sbphf Gnyrag.",ACH_TALENT,TLT_FOCUS},
 	{"Qrnqurnqf","Yriry 15 Obarurnq Fxvyy.",ACH_SKILL,SKILL_BONEHEAD},
 	{"Oreel Tbbq","Yriry 15 Yvsroreel Fxvyy.",ACH_SKILL,SKILL_LIFEBERRY},
 	{"Jrrq Cvpxre","Yriry 10 Ureonyvfz Gnyrag.",ACH_TALENT,TLT_HERBALISM},
-	{"Ovt Sna","Jber 'Unj Zhzh' Yrafrf.",ACH_SPECIAL,0},
+	{"Qhzo","Qvq Fbzrguvat Ernyyl Fghcvq.",ACH_SPECIAL,0},			// AA change
 	{"Pybooreva' Gvzr","Yriry 10 Pybpxjbex Gnyrag.",ACH_TALENT,TLT_CLOCKWORK},
 	{"Nkr Njnl","Yriry 15 Guebjvat Fxvyy.",ACH_SKILL,SKILL_THROWING},
 	// row 9
 	{"Vaivapvoyr","Yriry 10 Fgbarfxva Gnyrag.",ACH_TALENT,TLT_STONESKIN},
-	{"Qrsebfg","Gunjrq 1,000 vpr rarzvrf.",ACH_SPECIAL,0},
+	{"Jurer'f Gur Veba Obbgf?","Sbhaq gur Qensgl Qra.",ACH_SPECIAL,0},	// AA change
 	{"Puvyqcebbs Pnc","Yriry 10 Nefravp Gnyrag.",ACH_TALENT,TLT_ARSENIC},
 	{"Fxhyy & Obarf","Yriry 15 Cbvfba Fxvyy.",ACH_SKILL,SKILL_POISON},
 	{"Dhnenagvar","Yriry 15 Cynthr Fxvyy.",ACH_SKILL,SKILL_PLAGUE},
 	{"Znq Obzore","Yriry 15 Obar Obzo Fxvyy.",ACH_SKILL,SKILL_BONEBOMB},
 	{"Oevne Cngpu","Yriry 15 Oenzoyrf Fxvyy.",ACH_SKILL,SKILL_BRAMBLES},
 	{"Co -> Nh","Yriry 10 Nypurzl Gnyrag.",ACH_TALENT,TLT_ALCHEMY},
-	{"Fpebbtr","Uryq $99999 va unaq.",ACH_SPECIAL,0},
+	{"Funatev-Yn","Erfrg Fxvyyf jvgu 100 Cbvagf.",ACH_SPECIAL,0},		// AA change
 	{"Fgebatnez","Yriry 10 Gbffvat Gnyrag.",ACH_TALENT,TLT_TOSSING},
 	// row 10
-	{"Crfg Pbageby","Fznfurq 5,000 Zvpr.",ACH_SPECIAL,0},
+	{"RkGrezvangbe","Sbhaq gur Vasrfgrq Jbbqf.",ACH_SPECIAL,0},		// AA change
 	{"Buzzzz","Yriry 10 Zrqvgngvba Gnyrag.",ACH_TALENT,TLT_MEDITATION},
 	{"Xnezvp Onynapr","Yriry 15 Erfgbengvba Fxvyy.",ACH_SKILL,SKILL_RESTORE},
 	{"Bhgjvg & Bhgynfg","Yriry 15 Fheiviny Fxvyy.",ACH_SKILL,SKILL_SURVIVAL},
@@ -129,7 +129,7 @@ achieve_t achievement[100]={
 	{"Sha Thl","Yriry 15 Fuebbz Fxvyy.",ACH_SKILL,SKILL_SHROOM},
 	{"Zntvp Gevpx","Yriry 15 Raretl Fxvyy.",ACH_SKILL,SKILL_ENERGY},
 	{"Gjvfg Bs Yrzba","Yriry 10 Zvkbybtl Gnyrag.",ACH_TALENT,TLT_MIXOLOGY},
-	{"Bofrffvir","100 bs rirel Znqpnc Pelfgny.",ACH_SPECIAL,0},
+	{"Pbzchyfvir","100 gbgny Znqpnc Pelfgnyf.",ACH_SPECIAL,0},	// AA change
 };
 
 mod_t mod[MAX_MODS]={
@@ -137,34 +137,45 @@ mod_t mod[MAX_MODS]={
 	{"Easy","You do double damage, and enemies do half damage."},
 	{"Hard","You do half damage, enemies do double damage.  Combining with Easy is the same as neither!"},
 	{"Onslaught","Enemies constantly respawn - it's more dangerous, but you'll end up with more items and XP."},
-	{"Expert","You begin the game with all Skills and Talents.  Choose your own progression!"},
-	{"Literacy","You may read the Allusionary in the Halls Of History."},
+	{"Expert","You begin the game with every Upgrade.  I GUESS you can ignore the class system I worked so hard on!"},
+	{"Literacy","You may read the Allusionary in the Rooms Of Research."},
 	{"Crowded","Face four times as many enemies as normal.  Twice as many in the Arena."},
-	{"Toy","A Toy Bodzha follows you around, looking cute and providing very little help."},
+	{"Toy","No Tiny Bodzha; instead, your starting equipment is terrible!  Erases Nerd, Knight, Gangsta."},
 	{"Rush","The game runs twice as fast."},
 	{"Ironman","Dying or finishing Madcap mode ends your game, and gives you a score to show off your skillz."},
 	{"Disco","You wear a stunning Disco Parka.  So stunning that nearby enemies get stunned regularly."},
 	{"Vampire","Your life drains over time, but you gain health with every enemy you beat."},
 	{"Liquid","Enemies are much more likely to drop potions and less likely to drop anything else."},
-	{"Gangsta","Look like an OG (Onion Gangster)."},
+	{"Gangsta","Your starting parka gives 3 defense;  your starting axe gives 0 speed.  Your appearance will be normal."},
 	{"Arena","Arena battles pay 5x as much and give 5x XP, but you earn no XP or money outside the Arena."},
-	{"Knight","You've joined up with the Order Of The Snuggly Bunny for good!"},
+	{"Knight","Your starting axe gives 4 damage;  your starting amulet gives 0 magic.  Your appearance will be normal."},
 	{"Skillbor","You gain no Skill Points from levels.  Instead, gain one for each Quest or Present."},
 	{"Trample","Bumping enemies does damage to them equal to your Level.  Enemies have double Armor."},
 	{"Tireless","Attacks cost no Stamina, but always cost 1 Magic."},
-	{"Heir","Begin the game with a set of Golden items."},
+	{"Heir","Begin with a set of Golden items (but not artifacts). Works with Toy, but not other equipment modifiers."},
 	{"Haunted","Slain enemies create Ghosts you also have to beat."},
-	{"Ticking","Enemies have double life, but Clockwork Robot does triple damage and takes half damage."},
+	{"Ticking","Start with Craftsman. Enemies have 2x life, but Clockwork Robot does 3x and takes 1/2 damage."},
 	{"Merchant","Enemies drop no equipment, but 5x money.  All shops may carry Golden items."},
 	{"Even","Gain 3 Skill Points per level instead of an increasing amount."},
+	{"Brutal","Jump attacks spend all your stamina for bonus damage."},		// AA added
+	{"Glaucoma","Rare lenses are found more often, but enemies drop half as much money."},
+	{"Greaser","When Junksmithing, you will know in advance what item you will make."},
+	{"Nerd","Your starting amulet gives +35% spell damage; your starting parka gives 0 stamina."},
 };
 
-byte modHoriz[10]={MOD_LITERACY,MOD_KNIGHT,MOD_SKILLBOR,MOD_TRAMPLE,MOD_TIRELESS,MOD_HEIR,MOD_HAUNTED,MOD_TICKING,MOD_MERCHANT,MOD_EVEN};
-byte modVert[10]={MOD_EXPERT,MOD_CROWDED,MOD_TOY,MOD_RUSH,MOD_IRONMAN,MOD_DISCO,MOD_VAMPIRE,MOD_LIQUID,MOD_GANGSTA,MOD_ARENA};
+byte modHoriz[10]={MOD_GLAUCOMA,MOD_BRUTAL,MOD_SKILLBOR,MOD_TRAMPLE,MOD_TIRELESS,MOD_HEIR,MOD_HAUNTED,MOD_TICKING,MOD_MERCHANT,MOD_EVEN};	// AA changed row: 1, 2
+byte modVert[10]={MOD_EXPERT,MOD_CROWDED,MOD_IRONMAN,MOD_RUSH,MOD_LITERACY,MOD_DISCO,MOD_VAMPIRE,MOD_GREASER,MOD_LIQUID,MOD_ARENA};			//AA changed col: 3, 5, 8, 9
 
 byte ModifierOn(byte mod)
 {
 	return (byte)(player.var[VAR_MODIFIER+0]==mod || player.var[VAR_MODIFIER+1]==mod || player.var[VAR_MODIFIER+2]==mod);
+}
+
+void StripModifier(byte mod) // AA remove a mod
+{
+	for (int i=0; i < 3; ++i)
+		if (player.var[VAR_MODIFIER+i] == mod)
+			player.var[VAR_MODIFIER+i] = 0;
 }
 
 const char *ModifierName(byte m)
@@ -192,7 +203,7 @@ void AdjustModifier(byte *me,byte w,char dir,byte *list)
 	while(1)
 	{
 		newMod+=dir;
-		if(newMod>MAX_MODS)
+		if(newMod>=MAX_MODS)	// AA fix lol
 		{
 			if(dir==1)
 				newMod=255;
@@ -284,7 +295,7 @@ void RenderAchieve(MGLDraw *mgl)
 
 		CenterPrintGlow(320,304,mod[newMod[0]].name,0,0);
 
-		PrintRectBlack2(107,334,533,360,mod[newMod[0]].desc,14,0);
+		PrintRectBlack2(107,328,533,360,mod[newMod[0]].desc,14,1);
 
 		if(newMod[1]!=0)
 		{
@@ -292,7 +303,7 @@ void RenderAchieve(MGLDraw *mgl)
 
 			CenterPrintGlow(320,374,mod[newMod[1]].name,0,0);
 
-			PrintRectBlack2(107,404,533,430,mod[newMod[1]].desc,14,0);
+			PrintRectBlack2(107,398,533,430,mod[newMod[1]].desc,14,1);
 		}
 	}
 }
@@ -332,9 +343,12 @@ byte UpdateAchieve(MGLDraw *mgl)
 
 void CheckForNewMods(byte newAch,byte *m)
 {
+	m[0]=0;
+	m[1]=0;
+
 	int i;
 	byte vcnt,hcnt;
-
+	
 	vcnt=0;
 	hcnt=0;
 	for(i=0;i<10;i++)
@@ -415,11 +429,11 @@ void AchieveCheck(void)
 	for(i=0;i<30;i++)
 		if(player.talentLevel[i]==10)
 			Achieved(ACH_TALENT,i);
-	for(i=0;i<MAX_EQUIP;i++)
-		if(player.items[i].count==255)
-			Achieved(ACH_SPECIAL,66);
-	if(player.money==MAX_MONEY)
-		Achieved(ACH_SPECIAL,88);
+	//for(i=0;i<MAX_EQUIP;i++)
+	//	if(player.items[i].count==255)
+	//		Achieved(ACH_SPECIAL,66);
+	//if(player.money==MAX_MONEY)
+	//	Achieved(ACH_SPECIAL,88);
 }
 
 void AchieveNow(byte n)
@@ -549,11 +563,11 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	oldc=c;
 
 	HandleAchieveKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit
+	if (lastKey == 27 || GetGamepadStart())	// hit ESC to exit	// AA or gamepad start
 	{
+		FreezeGamepadStart();
+		lastKey = 0;
 		return 1;
-
-		lastKey=0;
 	}
 	return 0;
 }
@@ -651,8 +665,10 @@ void RenderAchieveMenu(byte *backScr)
 	}
 	else
 	{
-		PrintGlow(5,440,"Unknown",0,1);
-		RightPrintGlow(635,440,"You haven't earned this one yet!",0,1);
+		PrintGlow(5,440, achievement[subcursor].name,0,1);
+		RightPrintGlow(635,440, achievement[subcursor].desc,0,1);
+		//PrintGlow(5,440,"Unknown",0,1);
+		//RightPrintGlow(635,440,"You haven't earned this one yet!",0,1);
 	}
 
 	PrintGlow(5,464,"Left, Right, Up and Down move around the chart.  Fire, Jump, or ESC will exit.",0,1);

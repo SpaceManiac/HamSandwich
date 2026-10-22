@@ -140,8 +140,9 @@ byte UpdateIronman(MGLDraw *mgl)
 	oldc=c;
 
 	HandleIronmanKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit
+	if (lastKey == 27 || GetGamepadStart())	// hit ESC to exit
 	{
+		FreezeGamepadStart();
 		if(submode==1)
 			submode=0;
 		else

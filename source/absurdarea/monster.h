@@ -108,7 +108,12 @@
 #define MONS_FRUITPUNCH 94
 #define MONS_REDBARON	95
 #define MONS_JACK		96
-#define NUM_MONSTERS   97
+#define MONS_FIREWALL	97	// AA added firewall
+#define MONS_NICETITAN	98	// AA added nicetitan
+#define MONS_SPICEMICE	99	// AA added spicemice
+#define MONS_ONEPUNCH	100	// AA added onepunch
+#define MONS_ROCKMONKEY	101	// AA added rockmonkey
+#define NUM_MONSTERS	102	//	changed
 
 // the animations
 #define ANIM_IDLE	0

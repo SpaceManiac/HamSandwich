@@ -2017,11 +2017,13 @@ void SpawnFromMe(bullet_t *me)
 			}
 			MakeSound(SND_STONERUMBLE,me->x,me->y,SND_CUTOFF|SND_RANDOM,1);
 			bulDef[me->type].spawnDmg=me->damage;
+			if (bulDef[me->type].spawnDmg < me->damage)
+				bulDef[me->type].spawnDmg = 255;
 		}
 		if(me->type==BLT_FLAMETRAIL)
 			bulDef[me->type].spawnDmg=me->damage;
 
-		FireBullet(me->owner,me->x,me->y,me->z,f,bulDef[me->type].spawnType,bulDef[me->type].spawnDmg);
+		FireBullet(me->owner,me->x,me->y,me->z,f,bulDef[me->type].spawnType, bulDef[me->type].spawnDmg);
 	}
 }
 

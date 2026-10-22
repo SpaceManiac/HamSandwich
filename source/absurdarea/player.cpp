@@ -30,7 +30,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		memset(player.log,0,sizeof(char)*MAX_LOG*LOG_LEN);
 		player.logTime=0;
 		player.logBright=0;
-		NewMessage("Welcome to Loonyland!",0);
+		NewMessage("Welcome to Absurd Area!",0);
 		for(i=0;i<1024;i++)
 			player.var[i]=0;
 		player.var[VAR_MODIFIER+0]=GetSavedMod(0);
@@ -42,6 +42,10 @@ void InitPlayer(byte initWhat,byte world,byte level)
 			for(i=VAR_TIP;i<VAR_FROSTGATE;i++)
 				player.var[i]=1;	// mark off all tips
 			player.var[VAR_TIP+TIP_ENDING-1]=0;	// let the ending message come up to warn you again
+			// AA expert
+			player.var[VAA_UPGRADENUM] = 30;
+			for (i = 0; i < 30; ++i)
+				player.var[VAA_UPGRADESTAT + i] = 1;
 		}
 		if(ModifierOn(MOD_IRONMAN))
 			player.var[VAR_TIP+TIP_DIE-1]=1;	// ironmen don't want to see that tip
@@ -56,7 +60,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 		player.startHearts=10;
 		player.startMagic=10;
-		player.level=1;
+		player.level=0; // AA
 		player.playClock=0;
 
 		PlayerCalcStats();
@@ -68,7 +72,7 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.magicClock=0;
 
 		player.xp=0;
-		player.xpNeed=100;
+		player.xpNeed=20; // AA
 		player.axeMode=0;
 		player.skillPts=0;
 
@@ -117,6 +121,9 @@ void InitPlayer(byte initWhat,byte world,byte level)
 
 		if(ModifierOn(MOD_HEIR))
 		{
+			StripModifier(MOD_NERD);
+			StripModifier(MOD_GANGSTA);
+			StripModifier(MOD_KNIGHT);
 			while(player.axe.type!=IT_GOLDENAXE || player.parka.type!=IT_GOLDENPARKA || player.amulet.type!=IT_GOLDENAMULET)
 			{
 				byte type;
@@ -135,17 +142,53 @@ void InitPlayer(byte initWhat,byte world,byte level)
 				eq.skill[0]=(val2)%256;
 				eq.skill[1]=((val2)/256)%256;
 				eq.skill[2]=((val2)/65536)%256;
-				if(type==IT_GOLDENAXE)
-					player.axe=eq;
-				else if(type==IT_GOLDENPARKA)
-					player.parka=eq;
-				else if(type==IT_GOLDENAMULET)
-					player.amulet=eq;
+				if (eq.magic < EM_ARTSTART) // heir no longer makes artifacts
+				{
+					if (type == IT_GOLDENAXE)
+						player.axe = eq;
+					else if (type == IT_GOLDENPARKA)
+						player.parka = eq;
+					else if (type == IT_GOLDENAMULET)
+						player.amulet = eq;
+				}
 			}
 		}
-		if(ModifierOn(MOD_TICKING))
+		if (ModifierOn(MOD_TOY)) // AA versions of equipment mods
 		{
+			StripModifier(MOD_TOY);
+			StripModifier(MOD_NERD);
+			StripModifier(MOD_GANGSTA);
+			StripModifier(MOD_KNIGHT);
 
+			player.axe.value = 1;
+			player.axe.speed = 1;
+			player.parka.value = 1;
+			player.parka.speed = 1;
+			player.amulet.value = 1;
+			player.amulet.speed = 1;
+		}
+		if (ModifierOn(MOD_NERD))
+		{
+			StripModifier(MOD_NERD);
+			player.amulet.speed = 7;
+			player.parka.speed = 0;
+		}
+		if (ModifierOn(MOD_GANGSTA))
+		{
+			StripModifier(MOD_GANGSTA);
+			player.parka.value = 3;
+			player.axe.speed = 0;
+		}
+		if (ModifierOn(MOD_KNIGHT))
+		{
+			StripModifier(MOD_KNIGHT);
+			player.axe.value = 4;
+			player.amulet.value = 0;
+		}
+		if(ModifierOn(MOD_TICKING) && !ModifierOn(MOD_EXPERT))
+		{
+			player.var[VAA_UPGRADENUM] = 1;
+			player.var[VAA_UPGRADESTAT + UPG_CRAFTSMAN] = 1;
 		}
 		strcpy(player.addonName,FetchAddOnName());
 	}
@@ -174,6 +217,8 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		player.monsType=MONS_PLAYTHUG;
 	else if(ModifierOn(MOD_KNIGHT))
 		player.monsType=MONS_PLAYBUNNY;
+	else
+		player.monsType=MONS_LOONY; // AA ensure reset (but we still have redundant specials I guess)
 
 	if(player.var[VAR_SUPPLIES]<20 && player.var[VAR_SNUGGLY]==0)
 		player.var[VAR_SUPPLIES]=0;
@@ -188,9 +233,9 @@ void MadcapPlayer(void)
 	int i;
 
 	MadcapArena();
-	for(i=0;i<1024;i++)
+	for(i=0;i<982;i++)	// AA fixing
 		if((i<VAR_TIP || i>=VAR_FROSTGATE) && (i<VAR_MADGEM || i>VAR_CPOINTS) && i!=VAR_TAMED && i!=VAR_GLASSES && i!=VAR_CLOCKLIFE && i!=VAR_CLOCKLIFE2 &&
-			(i<VAR_CONTROLS))
+				(i<VAR_CONTROLS || i>=VAA_CROWDED) && (i<VAA_UPGRADENUM||i>=VAA_OBJECTIVES) && (i<VAA_ARENA||i>=VAA_BRUTAL) && (i<VAA_SKILLBONUS))	// added AA variables
 			player.var[i]=0;	// keep tips gone
 
 	player.var[VAR_TAMED]&=2;	// undo the magicsmith's mimic, but not yours
@@ -205,7 +250,7 @@ void MadcapPlayer(void)
 	// strip out all quest items, from stash too
 	for(i=0;i<MAX_EQUIP;i++)
 	{
-		if(player.items[i].count>0 && (ItemCost(&player.items[i],1)==0 || player.items[i].type==IT_ROPE || player.items[i].type==IT_TOYCRYSTAL))	// unsellable item, must be important!
+		if(player.items[i].count>0 && (ItemCost(&player.items[i],1)==0 || player.items[i].type==IT_ROPE || player.items[i].type==IT_TOYCRYSTAL || player.items[i].type==IT_STOLEN))	// unsellable item, must be important!	// AA fix include stolengoods
 		{
 			player.items[i].count=0;
 			player.items[i].type=IT_NONE;
@@ -214,7 +259,7 @@ void MadcapPlayer(void)
 	SortEquipment();
 	for(i=0;i<SHOP_SIZE;i++)
 	{
-		if(player.shopInv[SHOP_STASH][i].count>0 && (ItemCost(&player.shopInv[SHOP_STASH][i],1)==0 || player.shopInv[SHOP_STASH][i].type==IT_ROPE || player.shopInv[SHOP_STASH][i].type==IT_TOYCRYSTAL))	// unsellable item, must be important!
+		if(player.shopInv[SHOP_STASH][i].count>0 && (ItemCost(&player.shopInv[SHOP_STASH][i],1)==0 || player.shopInv[SHOP_STASH][i].type==IT_ROPE || player.shopInv[SHOP_STASH][i].type==IT_TOYCRYSTAL || player.shopInv[SHOP_STASH][i].type==IT_STOLEN))	// unsellable item, must be important!	// AA fix include stolengoods
 		{
 			player.shopInv[SHOP_STASH][i].count=0;
 			player.shopInv[SHOP_STASH][i].type=IT_NONE;
@@ -222,6 +267,12 @@ void MadcapPlayer(void)
 	}
 	SortEquipment();
 	SortShop(SHOP_STASH);
+	// AA changes
+	StripModifier(MOD_NERD);
+	StripModifier(MOD_GANGSTA);
+	StripModifier(MOD_KNIGHT);
+	StripModifier(MOD_TOY);
+	player.monsType=MONS_LOONY;
 }
 
 void ExitPlayer(void)
@@ -246,9 +297,9 @@ float CalcPercent(player_t *p)
 
 	for(i=VAR_QUESTDONE;i<VAR_QUESTDONE+NUM_QUESTS;i++)
 	{
-		totalpoints+=5;
+		totalpoints+=6;
 		if(p->var[i])
-			gotpoints+=5;
+			gotpoints+=6;
 	}
 	for(i=VAR_PRESENT;i<VAR_PRESENT+99;i++)
 	{
@@ -256,19 +307,32 @@ float CalcPercent(player_t *p)
 		if(p->var[i])
 			gotpoints++;
 	}
+	for (i=VAA_AAPRESENT;i<VAA_AAPRESENT+21;i++)
+	{
+		totalpoints++;
+		if (p->var[i])
+			gotpoints++;
+	} // AA addition
 
-	for(i=0;i<MAX_SKILLS;i++)
+	//for(i=0;i<MAX_SKILLS;i++)
+	//{
+	//	totalpoints++;
+	//	if(p->skillHave[i])
+	//		gotpoints++;
+	//}
+	//for(i=0;i<MAX_TALENTS;i++)
+	//{
+	//	totalpoints++;
+	//	if(p->talentLevel[i]!=255)
+	//		gotpoints++;
+	//} // AA removal
+
+	for(i=VAA_OBJECTIVES;i<VAA_OBJECTIVES+MAX_OBJECTIVES;++i)
 	{
-		totalpoints++;
-		if(p->skillHave[i])
-			gotpoints++;
-	}
-	for(i=0;i<MAX_TALENTS;i++)
-	{
-		totalpoints++;
-		if(p->talentLevel[i]!=255)
-			gotpoints++;
-	}
+		totalpoints+=3;
+		if (p->var[i])
+			gotpoints+=3;
+	} // AA replacement
 
 	if(gotpoints==totalpoints)
 		return (float)100.0f;
@@ -317,12 +381,11 @@ void PlayerSetVar(int v,int val)
 			{
 				char s[32];
 
-				if(player.skillPts<255)
-					player.skillPts++;
-				if(player.skillPts==1)
-					sprintf(s,"You have %d Skill Point.",player.skillPts);
+				PlayerGetSkillPoints(1);
+				if((word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS])==1)
+					sprintf(s,"You have %d Skill Point.",(word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]));
 				else
-					sprintf(s,"You have %d Skill Points.",player.skillPts);
+					sprintf(s,"You have %d Skill Points.",(word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]));
 				NewMessage(s,0);
 			}
 		}
@@ -393,13 +456,18 @@ byte PlayerGetItem(byte itm,int val1,int val2)
 	{
 		case IT_PICTURE:
 #ifdef DIRECTORS
-			if(opt.galPix[val1-1]==0)
-			{
-				opt.galPix[val1-1]=1;
-				NewMessage("You unlocked a Gallery picture!",0);
-				SaveOptions();
-				picToDrop=0;
-			}
+		{
+			char s[32];
+	//if(opt.galPix[val1-1]==0)//AA fix
+		//{
+		//	opt.galPix[val1-1]=1;
+			MakeNormalSound(SND_SPECIALGET);
+			sprintf(s, "You unlocked Gallery Picture #%02d!", val1);
+			NewMessage(s,0);
+			//SaveOptions();
+			picToDrop=0;
+		//}
+		}
 #endif
 			return 0;
 			break;
@@ -467,12 +535,11 @@ byte PlayerGetItem(byte itm,int val1,int val2)
 			{
 				if(ModifierOn(MOD_SKILLBOR))
 				{
-					if(player.skillPts<255)
-						player.skillPts++;
-					if(player.skillPts==1)
-						sprintf(s,"You have %d Skill Point.",player.skillPts);
+					PlayerGetSkillPoints(1);
+					if((word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS])==1)
+						sprintf(s,"You have %d Skill Point.",(word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]));
 					else
-						sprintf(s,"You have %d Skill Points.",player.skillPts);
+						sprintf(s,"You have %d Skill Points.",(word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]));
 					NewMessage(s,0);
 				}
 				PlayerSetVar(val1+VAR_PRESENT,1);
@@ -481,6 +548,40 @@ byte PlayerGetItem(byte itm,int val1,int val2)
 				else
 					PlayerGetExactXP(50);
 				MakeNormalSound(SND_SPECIALGET);
+#ifdef DIRECTORS
+				{
+					picToDrop = 5;
+					byte p = 0;
+					int i;
+					for (i=0;i<99; ++i)
+						if (player.var[VAR_PRESENT+i]>0)
+							++p;
+					for (i=0; i<21;++i)
+						if (player.var[VAA_AAPRESENT+i]>0)
+							++p;
+					if (p==120 && opt.galPix[picToDrop - 1] == 0) // && player.var[VAR_TEMP+15]==0)
+					{
+						opt.galPix[picToDrop - 1] = 1;
+						SaveOptions();
+						bullet_t* b;
+						b = FireBullet(goodguy->ID, goodguy->x, goodguy->y, FIXAMT * 15, 64, BLT_ITEM, 0);
+						if (b)
+						{
+							//player.var[VAR_TEMP+15]=1;
+							b->anim = IT_PICTURE;
+							b->target = picToDrop;
+						}
+						NewMessage("You collected every Present!", 0);
+						MakeNormalSound(SND_TALENTUP);
+						if (goodguy)
+						{
+							FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 1);
+							FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 2);
+						}
+					}
+					picToDrop = 0;
+				}
+#endif
 				return 0;
 			}
 			break;
@@ -518,6 +619,7 @@ byte PlayerGetItem(byte itm,int val1,int val2)
 		case IT_ECTO:
 		case IT_STONE:
 		case IT_CLAW:
+		case IT_ROPE: // can pick up rope
 			if(EquipAdd(itm,0,0))
 			{
 				if(itm>=IT_LOG && itm<=IT_CLAW)
@@ -579,6 +681,14 @@ byte PlayerGetItem(byte itm,int val1,int val2)
 			else
 				return 1;
 			break;
+		case IT_WINGBOOT:	// AA wingboots quest item
+			if (EquipAdd(itm,0,0))
+			{
+				PlayerSetVar(VAR_QUESTDONE+QUEST_TITANS2,1);
+				MakeNormalSound(SND_SPECIALGET);
+				return 0;
+			}
+			break;
 		case IT_GLASSES:
 			player.var[VAR_GLASSES]=1;
 			TipEvent(TIP_GLASSES);
@@ -593,6 +703,22 @@ byte PlayerGetItem(byte itm,int val1,int val2)
 			break;
 	}
 	return 1;
+}
+
+void TryToGetItem(byte item, int val1, int val2)
+{
+	if (PlayerGetItem(item, val1, val2))
+	{
+		bullet_t* b;
+		b = FireBullet(goodguy->ID, goodguy->x, goodguy->y, FIXAMT * 15, rand() % 256, BLT_ITEM, 0);
+		if (b)
+		{
+			b->anim = item;
+			b->target = val1;
+			b->owner = val2;
+		}
+	}
+
 }
 
 void PlayerLevelUp(void)
@@ -611,12 +737,21 @@ void PlayerLevelUp(void)
 	}
 	else if(ModifierOn(MOD_EVEN))
 	{
-		player.skillPts+=3;
+		PlayerGetSkillPoints(3);
 	}
 	else
 	{
 		sp=(player.level/10)+1;
-		player.skillPts+=sp;
+		// AA changes (maybe):
+		//if (player.level < 10 && player.level % 2 == 0)
+		//	++sp;
+		//if (player.level == 14 || player.level == 16 || player.level == 18)
+		//	++sp;
+		//if (player.level == 32 || player.level == 34 || player.level == 36)
+		//	--sp;
+		//if (player.level > 40 && player.level < 50 && player.level % 2 == 0)
+		//	--sp;
+		PlayerGetSkillPoints(sp);
 	}
 	PlayerCalcStats();
 	sprintf(s,"LEVEL UP! You are level %d.",player.level);
@@ -624,9 +759,9 @@ void PlayerLevelUp(void)
 	if(!ModifierOn(MOD_SKILLBOR))
 	{
 		if(player.skillPts==1)
-			sprintf(s,"You have %d Skill Point.",player.skillPts);
+			sprintf(s,"You have %d Skill Point.",(word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]));
 		else
-			sprintf(s,"You have %d Skill Points.",player.skillPts);
+			sprintf(s,"You have %d Skill Points.",(word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]));
 		NewMessage(s,0);
 	}
 	MakeNormalSound(SND_LEVELUP);
@@ -642,6 +777,7 @@ void PlayerLevelUp(void)
 		FXRing(5,goodguy->x,goodguy->y,goodguy->z,20,2);
 	}
 	TipEvent(TIP_LEVELUP);
+	QuestReportEvent(QE_LEVELXP, player.level); // added for AA
 }
 
 void PlayerGetExactXP(int amt)
@@ -657,7 +793,7 @@ void PlayerGetExactXP(int amt)
 	player.xp+=(int)amt;
 	if(oldXP/MADCAP_XP<player.xp/MADCAP_XP && player.var[VAR_MADCAP])
 	{
-		char s[32];
+		char s[64];
 		byte amt;
 
 		amt=(player.xp/MADCAP_XP)-(oldXP/MADCAP_XP);
@@ -678,11 +814,27 @@ void PlayerGetExactXP(int amt)
 			FXRing(7,goodguy->x,goodguy->y,goodguy->z,10,2);
 		}
 	}
-	if(player.xp>=1000000)
-		AchieveNow(44);
+	// AA removed
+	//if(player.xp>=1000000)
+	//	AchieveNow(44);
 	NumberParticle2((short)amt,goodguy->x,goodguy->y+1,7,PART_XP);
 	while(player.xp>=player.xpNeed && player.level<50)
 		PlayerLevelUp();
+}
+
+void PlayerGetSkillPoints(byte num)
+{
+	if (player.skillPts <= 255 - num)
+		player.skillPts += num;
+	else
+	{
+		num -= (255 - player.skillPts);
+		player.skillPts = 255;
+		if (player.var[VAA_SKILLBONUS] < 245 - num)
+			player.var[VAA_SKILLBONUS] += num;
+		else
+			player.var[VAA_SKILLBONUS] = 245;
+	}
 }
 
 void PlayerGetMonsterPoints(int level)
@@ -845,6 +997,13 @@ void PlayerCalcStats(void)
 	if(GlassEffect()==GE_LIFE)
 		player.maxHearts+=GlassAmount();
 
+	if (player.parka.magic == EM_SICKENING)		// moved from after madcap correction
+	{
+		player.maxHearts -= 10;
+		if (player.maxHearts < 5 || player.maxHearts>65520)
+			player.maxHearts = 5;
+	}
+
 	player.maxHearts=(player.maxHearts*(100+player.var[VAR_MADGEM+MC_LIFE]*10)/100);
 
 	player.maxStamina=player.startHearts+player.parka.speed+player.level;
@@ -852,6 +1011,15 @@ void PlayerCalcStats(void)
 		player.maxStamina+=5;
 	if(GlassEffect()==GE_STAMINA)
 		player.maxStamina+=GlassAmount();
+	if(SpecificSkillLevel(SKILL_ENDURANCE) > GetSkill(SKILL_ENDURANCE)->capLevel[0]
+			|| SpecificSkillLevel(SKILL_ENDURANCE) > GetSkill(SKILL_ENDURANCE)->capLevel[1])
+	{
+		player.maxStamina += (SpecificSkillLevel(SKILL_ENDURANCE)
+								- (GetSkill(SKILL_ENDURANCE)->capLevel[0] > GetSkill(SKILL_ENDURANCE)->capLevel[1]
+									? GetSkill(SKILL_ENDURANCE)->capLevel[0]
+									: GetSkill(SKILL_ENDURANCE)->capLevel[1]));
+	}
+
 
 	player.maxMagic=player.amulet.value+player.startMagic+SkillMagicBonus()+player.level;
 	if(player.amulet.magic==EM_POWERFUL)
@@ -881,12 +1049,12 @@ void PlayerCalcStats(void)
 			player.armor=0;
 		player.damage+=3;
 	}
-	if(player.parka.magic==EM_SICKENING)
-	{
-		player.maxHearts-=10;
-		if(player.maxHearts<5 || player.maxHearts>65520)
-			player.maxHearts=5;
-	}
+	//if(player.parka.magic==EM_SICKENING)	// moved to before madcap correction
+	//{
+	//	player.maxHearts-=10;
+	//	if(player.maxHearts<5 || player.maxHearts>65520)
+	//		player.maxHearts=5;
+	//}
 	if(player.parka.magic==EM_ITCHY)
 	{
 		player.armor-=3;
@@ -1082,80 +1250,98 @@ void PlayerAddKill(byte type)
 	if(w<65535)
 		w++;
 
-	// check here for achievements
-	if(type==KC_PLANT && w>=5000)
-		AchieveNow(18);
-	if(type==KC_MONKEY && w>=5000)
-		AchieveNow(36);
-	if(type==KC_PUPPET && w>=5000)
-		AchieveNow(45);
-	if(type==KC_BODZHA && w>=5000)
-		AchieveNow(54);
-	if(type==KC_GHOST && w>=2000)
-		AchieveNow(63);
-	if(type==KC_BEAR && w>=5000)
-		AchieveNow(72);
-	if(type==KC_ICE && w>=1000)
-		AchieveNow(81);
-	if(type==KC_MICE && w>=5000)
-		AchieveNow(90);
+	// check here for achievements // AA removed
+	//if(type==KC_PLANT && w>=5000)
+	//	AchieveNow(18);
+	//if(type==KC_MONKEY && w>=5000)
+	//	AchieveNow(36);
+	//if(type==KC_PUPPET && w>=5000)
+	//	AchieveNow(45);
+	//if(type==KC_BODZHA && w>=5000)
+	//	AchieveNow(54);
+	//if(type==KC_GHOST && w>=2000)
+	//	AchieveNow(63);
+	//if(type==KC_BEAR && w>=5000)
+	//	AchieveNow(72);
+	//if(type==KC_ICE && w>=1000)
+	//	AchieveNow(81);
+	//if(type==KC_MICE && w>=5000)
+	//	AchieveNow(90);
 	player.kills++;
-#ifdef DIRECTORS
-	if(type==KC_ONION && w>=500)
-	{
-		picToDrop=1;
-		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
-		{
-			bullet_t *b;
-
-			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
-			if(b)
-			{
-				player.var[VAR_TEMP+15]=1;
-				b->anim=IT_PICTURE;
-				b->target=picToDrop;
-				NewMessage("500 Gangsters beaten!",0);
-			}
-		}
-		picToDrop=0;
-	}
-	if(type==KC_BUNNY && w>=500)
-	{
-		picToDrop=3;
-		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
-		{
-			bullet_t *b;
-
-			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
-			if(b)
-			{
-				player.var[VAR_TEMP+15]=1;
-				b->anim=IT_PICTURE;
-				b->target=picToDrop;
-				NewMessage("500 Knights beaten!",0);
-			}
-		}
-		picToDrop=0;
-	}
-	if(player.kills>=10000)
-	{
-		picToDrop=4;
-		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
-		{
-			bullet_t *b;
-
-			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
-			if(b)
-			{
-				player.var[VAR_TEMP+15]=1;
-				b->anim=IT_PICTURE;
-				b->target=picToDrop;
-				NewMessage("10,000 monsters slain!",0);
-			}
-		}
-		picToDrop=0;
-	}
-#endif
+//#ifdef DIRECTORS
+//	if(type==KC_ONION && w>=500)
+//	{
+//		picToDrop=1;
+//		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
+//		{
+//			bullet_t *b;
+//
+//			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
+//			if(b)
+//			{
+//				player.var[VAR_TEMP+15]=1;
+//				b->anim=IT_PICTURE;
+//				b->target=picToDrop;
+//				NewMessage("500 Gangsters beaten!",0);
+//			}
+//		}
+//		picToDrop=0;
+//	}
+//	if(type==KC_BUNNY && w>=500)
+//	{
+//		picToDrop=3;
+//		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
+//		{
+//			bullet_t *b;
+//
+//			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
+//			if(b)
+//			{
+//				player.var[VAR_TEMP+15]=1;
+//				b->anim=IT_PICTURE;
+//				b->target=picToDrop;
+//				NewMessage("500 Knights beaten!",0);
+//			}
+//		}
+//		picToDrop=0;
+//	}
+//	if(player.kills>=10000)
+//	{
+//		picToDrop=4;
+//		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
+//		{
+//			bullet_t *b;
+//
+//			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
+//			if(b)
+//			{
+//				player.var[VAR_TEMP+15]=1;
+//				b->anim=IT_PICTURE;
+//				b->target=picToDrop;
+//				NewMessage("10,000 monsters slain!",0);
+//			}
+//		}
+//		picToDrop=0;
+//	}
+//#endif
 	player.var[VAR_KILLCOUNTS+type]=(byte)(w%256);
 	player.var[VAR_KILLCOUNTS+type+1]=(byte)(w/256);
+}
+
+// 0: unavailable, 1: available, 2: claimed
+byte PlayerUpgradeStatus(byte n)
+{
+	upgrade_t* u;
+	if (n >= MAX_UPGRADES)
+		return 0;
+
+	if (player.var[VAA_UPGRADESTAT + n])
+		return 2;
+
+	u = GetUpgrade(n);
+	if ((u->req[0] == 255 || player.var[VAA_UPGRADESTAT + u->req[0]])
+			|| (u->req[1] != 255 && player.var[VAA_UPGRADESTAT + u->req[1]]))
+		return 1;
+
+	return 0;
 }

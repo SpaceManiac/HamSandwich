@@ -11,6 +11,8 @@
 #include "leveldef.h"
 #include "madcap.h"
 #include "config.h"
+#include "equip.h"
+#include "achieve.h"
 
 #define NUM_STARS 400
 
@@ -142,9 +144,13 @@ void Map::Init(world_t *wrld)
 			map[i].item=IT_NONE;
 		if(map[i].item==IT_WATCH && (GotItem(IT_WATCH) || player.var[VAR_FURNACE]))
 			map[i].item=IT_NONE;
+		if (map[i].item==IT_WINGBOOT && GotItem(IT_WINGBOOT))	// AA quest item boots fix
+			map[i].item=IT_NONE;
 
-		if((map[i].item==IT_ROCK2 || map[i].item==IT_CAVEROCK || map[i].item==IT_CAVEROCK2)&& (i%width)<width-1 && i<width*height-1 && map[i+1].item==IT_NONE)
+		if((map[i].item==IT_ROCK2 || map[i].item==IT_CAVEROCK || map[i].item==IT_CAVEROCK2 || map[i].item == IT_CAVEROCK3 || map[i].item == IT_CRYSTAL) && (i % width)<width - 1 && i<width * height - 1 && map[i + 1].item == IT_NONE) // AA add caverock3, crystal
 			map[i+1].item=IT_INVISO;
+		if((map[i].item == IT_CRYSTAL) && (i % width) > 1 && map[i - 1].item == IT_NONE) // AA add wide crystals
+			map[i-1].item=IT_INVISO;
 
 		if((map[i].item==IT_SUPPLIES || map[i].item==IT_SUPPLIES2) && player.var[VAR_SNUGGLY]==0 && player.var[VAR_SUPPLIES]==20)
 			map[i].item=IT_NONE;	// remove the supplies if you've destroyed them
@@ -188,14 +194,14 @@ void Map::Init(world_t *wrld)
 		}
 		if(map[i].item>=IT_KEY1 && map[i].item<=IT_KEY5 && GotItem(map[i].item))
 			map[i].item=IT_NONE;
-		if(player.var[VAR_GOURDDEAD] && map[i].item>=IT_VINEWALL && map[i].item<=IT_VINEWALL3)
-			map[i].item=IT_DEADVINE+(rand()%2);
+		if(player.var[VAR_GOURDDEAD] && map[i].item>=IT_VINEWALL && map[i].item<=IT_VINEWALL3 && player.levelNum >= LVL_GEYSER && player.levelNum <= LVL_TITANS) // AA level
+			map[i].item+=(IT_DEADVINE-IT_VINEWALL);	// AA keep same vine id, was DEADVINE + rand() % 2
 		if(map[i].item==IT_ENERGYBARRIER && player.var[VAR_BARRIER+map[i].tag])
 			map[i].item=IT_NONE;
 		if(map[i].item==IT_STUMP && player.var[VAR_ROPED+map[i].tag])
 			RopeStump(this,i%width,i/width,0);
 		if(player.levelNum==LVL_FOREST && map[i].tag==93 && player.var[VAR_YOUTH])
-			map[i].item=IT_NONE;	// remove the shroom that became shrumford
+			map[i].item=IT_INVISOWALK;	// remove the shroom that became shrumford // AA replace with block so nothing spawns there
 		if(player.var[VAR_CAPTAIN2]!=3)
 			player.var[VAR_CAPTAIN2]=0;
 		if(player.levelNum==LVL_THRONE && player.var[VAR_SUPERTITAN] && map[i].tag==3)
@@ -359,8 +365,8 @@ void Map::Update(byte mode,world_t *world)
 			// make the lights approach what they are supposed to be
 			if(map[i].templight>map[i].light)
 				map[i].templight--;
-			else if(map[i].templight<map[i].light-1)
-				map[i].templight+=2;
+			else if(map[i].templight<map[i].light-(char)1)
+				map[i].templight+=(char)2;
 		}
 		else if(mode==UPDATE_GAME)
 		{
@@ -422,7 +428,7 @@ void Map::Update(byte mode,world_t *world)
 					}
 				}
 			}
-			if(player.var[VAR_GOURDDEAD] && map[i].item>=IT_VINEWALL && map[i].item<=IT_VINEWALL3 && (rand()%1000)==0)
+			if(player.var[VAR_GOURDDEAD] && map[i].item>=IT_VINEWALL && map[i].item<=IT_VINEWALL3 && (rand()%1000)==0 && player.levelNum >= LVL_GEYSER && player.levelNum <= LVL_TITANS) // AA levelnum in underworld only
 				map[i].item=IT_DEADVINE+map[i].item-IT_VINEWALL;	// randomly kill the vines over time
 			if(mode!=UPDATE_FADE)
 			{
@@ -666,7 +672,13 @@ byte TempNormalLightCallback(int x,int y,int cx,int cy,int value,Map *map)
 			return 1;
 	}
 
-	b=map->map[x+y*map->width].light;
+	// AA add for correction!
+	if (map->map[x+y*map->width].light>0)
+		brt+=map->map[x+y*map->width].light;
+	if (brt>MAX_LIGHT)
+		brt=MAX_LIGHT;
+
+	b=map->map[x+y*map->width].templight;	// AA fix!
 	if(b>brt)
 		return 1;	// already bright enough here
 	else b=brt;
@@ -1010,7 +1022,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 							(world->terrain[map[i+(j+1)*width].floor].flags&TF_TRANS))
 						{
 							if(world->terrain[map[i+j*width].floor].flags&TF_WATERFX)
-								RenderFloorTileFancyWater(scrX,scrY,m->floor,1,shdw,lites);
+								RenderFloorTileFancyWater(scrX,scrY,m->floor,(world->terrain[m->floor].flags&TF_SKYFX ? 2 : 1),shdw,lites);	// AA kludge for lava
 							else
 								RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
 						}
@@ -1019,7 +1031,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 					{
 						// if there's a wall to the right, draw a shadow on this tile
 						if(world->terrain[map[i+j*width].floor].flags&TF_WATERFX)
-							RenderFloorTileFancyWater(scrX,scrY,m->floor,1,shdw,lites);
+							RenderFloorTileFancyWater(scrX,scrY,m->floor,(world->terrain[m->floor].flags&TF_SKYFX ? 2 : 1),shdw,lites);	// AA kludge for lava
 						else
 							RenderFloorTileFancy(scrX,scrY,m->floor,shdw,lites);
 					}
@@ -1415,8 +1427,8 @@ void SpecialShootCheck(Map *map,int x,int y)
 
 	for(i=0;i<MAX_SPECIAL;i++)
 		if((map->special[i].trigger&TRG_SHOOT) &&
-			map->special[i].x>=x-1 && map->special[i].y>=y-1 &&
-			map->special[i].x<=x+1 && map->special[i].y<=y+1)
+			map->special[i].trigX>=x-1 && map->special[i].trigY>=y-1 &&
+			map->special[i].trigX<=x+1 && map->special[i].trigY<=y+1) // AA fix use trigX and trigY not special x and y
 		{
 			SpecialTakeEffect(i,map,&map->special[i],NULL);
 		}
@@ -1465,7 +1477,7 @@ void SpecialNeighborCheck(Map *map,special_t *spcl)
 	for(i=spcl->x-1;i<=spcl->x+1;i++)
 		for(j=spcl->y-1;j<=spcl->y+1;j++)
 		{
-			if(i!=spcl->x || j!=spcl->x)
+			if(i!=spcl->x || j!=spcl->y)	// fixed the neighbor bug!
 				for(k=0;k<MAX_SPECIAL;k++)
 				{
 					if(map->special[k].x==i && map->special[k].y==j && (map->special[k].trigger&TRG_CHAIN))
@@ -1540,6 +1552,31 @@ void SpecialTakeEffect(byte num,Map *map,special_t *spcl,Guy *victim)
 		if(specialClock[num]!=spcl->trigValue+1)
 			return;
 		specialClock[num]=0;	// repeat
+	}
+	if (spcl->trigger & TRG_HASITEMYM)
+	{
+		byte t2 = byte(spcl->trigValue2);
+		if (!t2)
+			++t2;
+		if (GotItem(byte(spcl->trigValue)) < t2)
+			return;
+		specialClock[num] = 0;	// repeat
+	}
+	if (spcl->trigger & TRG_HASITEMNM)
+	{
+		byte t2 = byte(spcl->trigValue2);
+		if (!t2)
+			++t2;
+		if (EquipCount(byte(spcl->trigValue)) < t2)
+			return;
+		specialClock[num] = 0;	// repeat
+	}
+	if (spcl->trigger & TRG_SKILLGREQ)
+	{
+		byte sk = spcl->trigValue;
+		if (sk == 0 || SpecificSkillLevel(sk) < spcl->trigValue2)
+			return;
+		specialClock[num] = 0;	// repeat
 	}
 
 	if(!(spcl->trigger&(TRG_CHAIN|TRG_DELAYCHAIN)))
@@ -1736,7 +1773,9 @@ void SpecialTakeEffect(byte num,Map *map,special_t *spcl,Guy *victim)
 		case SPC_CHAT:
 			BeginChatting(spcl->value);
 			break;
-		case SPC_LIGHTBALL:
+		case SPC_LIGHTBALL:	// in AA this is achievement
+			if (spcl->value>=0 && spcl->value<100)
+				AchieveNow(spcl->value);
 			break;
 	}
 	if(spcl->trigger&TRG_MESSAGE)

@@ -84,6 +84,7 @@ MGLDraw::MGLDraw(const char *name, int xRes, int yRes, bool windowed)
 		FatalError("Failed to create window");
 		return;
 	}
+	SDL_SetWindowMinimumSize(window, xRes, yRes);	// AA add
 	LogDebug("window format: %s", SDL_GetPixelFormatName(SDL_GetWindowPixelFormat(window)));
 	SDL_GetWindowSize(window, &winWidth, &winHeight);
 
@@ -222,6 +223,48 @@ void MGLDraw::Quit()
 	readyToQuit = true;
 }
 
+bool MGLDraw::IsWindowed()
+{
+	return windowed;
+}
+
+void MGLDraw::SetWindowed(bool newWindowed)
+{
+	if (windowed == newWindowed)
+		return;
+
+	windowed = newWindowed;
+#ifndef __EMSCRIPTEN__
+	if (windowed)
+	{
+		int px, py;
+		SDL_GetWindowPosition(window, &px, &py);
+
+		SDL_SetWindowFullscreen(window, 0);
+		SDL_SetWindowResizable(window, SDL_TRUE);  // Set now in case we started fullscreen.
+
+		px -= (xRes - winWidth) / 2;
+		py -= (yRes - winHeight) / 2;
+		px = std::max(0, px);
+		py = std::max(0, py);
+		SDL_SetWindowPosition(window, px, py);
+
+		SDL_SetWindowSize(window, xRes, yRes);
+	}
+	else
+	{
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+	}
+#else  // __EMSCRIPTEN__
+	if (!windowed)
+	{
+		EM_ASM(
+			Module.requestFullscreen();
+		);
+	}
+#endif  // __EMSCRIPTEN__
+}
+
 inline void MGLDraw::putpixel(int x, int y, RGB value)
 {
 	buffer[y * pitch + x] = value;
@@ -245,6 +288,9 @@ inline void MGLDraw::StartFlip(void)
 
 void MGLDraw::ResizeBuffer(int w, int h)
 {
+	if (xRes == w && yRes == h)
+		return;
+
 	SDL_DestroyTexture(texture);
 	delete[] buffer;
 	delete[] scrn;
@@ -260,6 +306,28 @@ void MGLDraw::ResizeBuffer(int w, int h)
 	}
 	scrn = new byte[xRes * yRes];
 	buffer = new RGB[xRes * yRes];
+	// AA adds:
+		// Resize the window, but only on increases.
+	if (windowed && (xRes > winWidth || yRes > winHeight))
+	{
+		int px, py;
+		SDL_GetWindowPosition(window, &px, &py);
+		px -= std::max(0, xRes - winWidth) / 2;
+		py -= std::max(0, yRes - winHeight) / 2;
+		px = std::max(0, px);
+		py = std::max(0, py);
+		SDL_SetWindowPosition(window, px, py);
+	}
+	SDL_SetWindowMinimumSize(window, xRes, yRes);
+
+	// Update mouse_x and mouse_y.
+	float scale = std::max(1.0f, std::min((float)winWidth / xRes, (float)winHeight / yRes));
+	int destX = (int)((winWidth - xRes * scale) / 2);
+	int destY = (int)((winHeight - yRes * scale) / 2);
+	int mx, my;
+	SDL_GetMouseState(&mx, &my);
+	mouse_x = (mx - destX) / scale;
+	mouse_y = (my - destY) / scale;
 }
 
 static void TranslateKey(SDL_Keysym* sym)
@@ -314,11 +382,54 @@ TASK(void) MGLDraw::FinishFlip(void)
 			if (e.key.keysym.scancode == SDL_SCANCODE_F11)
 			{
 #ifndef __EMSCRIPTEN__
-				windowed = !windowed;
-				if (windowed) {
-					SDL_SetWindowFullscreen(window, 0);
-				} else {
-					SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+				//windowed = !windowed;
+				//if (windowed) {
+				//	SDL_SetWindowFullscreen(window, 0);
+				//} else {
+				//	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+				//}
+				// AA:
+				if (windowed)
+				{
+					// increase scale by 1
+					int scale = std::min(winWidth / xRes, winHeight / yRes) + 1;
+					int newWidth = xRes * scale, newHeight = yRes * scale;
+					// compare to desktop size
+					SDL_DisplayMode mode;
+					int index = SDL_GetWindowDisplayIndex(window);
+					if (index < 0)
+					{
+						LogError("SDL_GetWindowDisplayIndex: %s", SDL_GetError());
+						SetWindowed(false);
+					}
+					else if (SDL_GetDesktopDisplayMode(index, &mode) < 0)
+					{
+						LogError("SDL_GetDesktopDisplayMode: %s", SDL_GetError());
+						SetWindowed(false);
+					}
+					else if (newWidth >= mode.w || newHeight >= mode.h)
+					{
+						// too big, go to fullscreen
+						SetWindowed(false);
+					}
+					else
+					{
+						// bump up window size
+						int px, py;
+						SDL_GetWindowPosition(window, &px, &py);
+						px -= (newWidth - winWidth) / 2;
+						py -= (newHeight - winHeight) / 2;
+						px = std::max(0, px);
+						py = std::max(0, py);
+						SDL_SetWindowPosition(window, px, py);
+
+						SDL_SetWindowSize(window, newWidth, newHeight);
+					}
+				}
+				else
+				{
+					// just go to exact window size
+					SetWindowed(true);
 				}
 #else  // __EMSCRIPTEN__
 				EM_ASM(

@@ -124,8 +124,8 @@ char magicDesc[MAX_EQMAGIC][48]={
 	"Shoots off thorns on hit.",
 	"+5 maximum Stamina.",
 	// parka
-	"Recover 1 Life every 20 seconds.",
-	"Recover 1 Stamina every 5 seconds.",
+	"Recover 1 Life every 10 seconds.",		// changed
+	"Recover 1 Stamina every 2 seconds.",	// changed
 	"5% chance to be unharmed when hit.",
 	"Shoot off thorns when you are hit.",
 	"Attackers are frozen for 1 second.",
@@ -136,7 +136,7 @@ char magicDesc[MAX_EQMAGIC][48]={
 	"Find slightly more items and money.",
 	// amulet
 	"+5 maximum Magic.",
-	"Recover 1 Magic every 20 seconds.",
+	"Recover 1 Magic every 10 seconds.",	// changed
 	"Attack spells do 20% more damage.",
 	"Gain 1 Magic when hit.",
 	"Boneheads shoot fire and regenerate.",
@@ -152,7 +152,7 @@ char magicDesc[MAX_EQMAGIC][48]={
 	"Slows enemies for 2 seconds on hit.",
 	"10% chance to gain 1 Life per hit.",
 	// elite parka
-	"Recover 1 Life every 15 seconds.",
+	"Recover 1 Life every 5 seconds.",		// changed
 	"10% chance to be unharmed when hit.",
 	"Explodes when hit, hurting all nearby.",
 	"Grants immunity to freezing.",
@@ -162,7 +162,7 @@ char magicDesc[MAX_EQMAGIC][48]={
 	"Earth spells cost 2 less Magic to cast.",
 	"Healing of any kind is 25% more effective.",
 	"Ice spells freeze all enemies for 1 second.",
-	"Recover 1 Magic every 15 seconds.",
+	"Recover 1 Magic every 5 seconds.",		// changed
 	// cursed axe
 	"-3 Damage, but +3 Armor.",
 	"-3 Speed, but +10 Magic.",
@@ -243,8 +243,8 @@ itemDesc_t itemDesc[]={
 		},
 	},
 	{IT_ICECUBE,
-		{"Good thing it's so cold, or this would have melted",
-		 "by now.  It doesn't appear to be ordinary ice.",
+		{"Strangely, this ice cube doesn't seem to be",
+		 "melting.  It doesn't appear to be ordinary ice.",
 		},
 	},
 	{IT_SEED,
@@ -269,7 +269,7 @@ itemDesc_t itemDesc[]={
 	},
 	{IT_SILVER,
 		{"A big old block of solid silver!  If only precious",
-		 "metals were considered valuable in Winter Woods!",
+		 "metals were considered valuable in Absurd Area!",
 		},
 	},
 	{IT_GOLD,
@@ -423,8 +423,8 @@ itemDesc_t itemDesc[]={
 		},
 	},
 	{IT_PRESENT,
-		{"Festivus gifts for the children of Eisburg.  They appear",
-		 "to be festive.",
+		{"Gifts for the children of Absurd Area.  They appear",
+		 "to be mass-produced.",
 		},
 	},
 	{IT_UNDIES,
@@ -458,13 +458,13 @@ itemDesc_t itemDesc[]={
 		},
 	},
 	{IT_TOOLBOX,
-		{"A box full of handy tools, each individually etched",
-		 "with the name \"Hank\".",
+		{"A box full of tools. Pretty basic stuff. Got your hammer",
+		 "and chisel, shovel, screwdriver... wait, is that a lockpick?",
 		},
 	},
 	{IT_SHOVEL,
-		{"Compact enough to fit in a toolbox, yet sturdy enough",
-		 "for digging people out of avalanches.",
+		{"This handy shovel can dig through snow and dirt,",
+		 "and even move small piles of rocks.",
 		},
 	},
 	{IT_SHARPSTONE,
@@ -473,8 +473,8 @@ itemDesc_t itemDesc[]={
 		},
 	},
 	{IT_LETTER,
-		{"A letter addressed to Curaga in the Frosty Cliffs.  You",
-		 "are much too polite to open it.",
+		{"A letter addressed to Curaga in Tweestad. You",
+		 "are much too afraid of curses to open it.",
 		},
 	},
 	{IT_SOUNDING,
@@ -498,8 +498,8 @@ itemDesc_t itemDesc[]={
 		},
 	},
 	{IT_PACKAGE,
-		{"A box full of macguffins for Curaga.  Apparently, she",
-		 "needs them urgently.",
+		{"A box full of Glazed MacGuffins for Curaga.",
+		 "The smell alone is making your arteries hurt.",
 		},
 	},
 	{IT_CANDY,
@@ -518,23 +518,23 @@ itemDesc_t itemDesc[]={
 		},
 	},
 	{IT_BOOK,
-		{"The ocean-going thriller \"Das Book.\"",
-		 "",
+		{"The complete \"Meditations\" by Marcus Aurelius.",
+		 "How very sophisticated!",
 		},
 	},
 	{IT_THING,
-		{"It's sort of a, uh, you know... thing.",
-		 "",
+		{"The first part of Schrodinger's bomb.",
+		 "Battered in yellow cake, and deep-fried.",
 		},
 	},
 	{IT_THING2,
-		{"It's like a kind of, uh, other ... thing.",
-		 "",
+		{"The backup power feed cables for the bomb.",
+		 "They're very stiff.",
 		},
 	},
 	{IT_WATCH,
-		{"Vaguely watch-like, but it doesn't appear "
-		 "to tell time.",
+		{"Counts down the time to fiery devastation.",
+		 "Then, the timed detonator makes it happen!",
 		},
 	},
 	{IT_TOYCRYSTAL,
@@ -1039,7 +1039,7 @@ byte EquipCount(byte item)
 	for(i=0;i<MAX_EQUIP;i++)
 		if(player.items[i].type==item)
 		{
-			if(c+player.items[i].count<=255)
+			if(player.items[i].count<=255-c) // AA fix
 				c+=player.items[i].count;
 			else
 				return 255;
@@ -1058,7 +1058,7 @@ byte GotItem(byte item)
 	for(i=0;i<MAX_EQUIP;i++)
 		if(player.items[i].type==item)
 		{
-			if(c+player.items[i].count<=255)
+			if(player.items[i].count<=255-c) // AA fix
 				c+=player.items[i].count;
 			else
 				c=255;
@@ -1068,7 +1068,7 @@ byte GotItem(byte item)
 	{
 		if(player.shopInv[SHOP_STASH][i].type==item)
 		{
-			if(c+player.shopInv[SHOP_STASH][i].count<=255)
+			if(player.shopInv[SHOP_STASH][i].count<=255-c) // AA fix
 				c+=player.shopInv[SHOP_STASH][i].count;
 			else
 				c=255;
@@ -1084,33 +1084,41 @@ byte EquipAdd(byte item,int val1,int val2)
 	equip_t eq;
 	char s[64];
 
-	eq.type=item;
-	eq.value=(val1)%256;
-	eq.speed=((val1)/256)%256;
-	eq.magic=(val1)/65536;
-	eq.sharpened=0;
-	eq.count=1;
-	switch(eq.type)
+	// Absurd Area equipment addition
+	if ((item == IT_MAGICAXE || item == IT_MAGICAMULET || item == IT_MAGICPARKA || item == IT_GOLDENAXE || item == IT_GOLDENAMULET || item == IT_GOLDENPARKA)
+			&& val1 < 256 && val2 == 0
+			&& EquipAbsurd(item, val1, &eq))
+		; // handled above. if EquipAbsurd is irrelevant, OR it fails, fall through to the below case
+	else
 	{
+		eq.type = item;
+		eq.value = (val1) % 256;
+		eq.speed = ((val1) / 256) % 256;
+		eq.magic = (val1) / 65536;
+		eq.sharpened = 0;
+		eq.count = 1;
+		switch (eq.type)
+		{
 		case IT_MAGICAXE:
 		case IT_MAGICAMULET:
 		case IT_MAGICPARKA:
-			eq.skill[0]=(val2)%256;
-			eq.skill[1]=0;
-			eq.skill[2]=0;
+			eq.skill[0] = (val2) % 256;
+			eq.skill[1] = 0;
+			eq.skill[2] = 0;
 			break;
 		case IT_GOLDENAXE:
 		case IT_GOLDENAMULET:
 		case IT_GOLDENPARKA:
-			eq.skill[0]=(val2)%256;
-			eq.skill[1]=((val2)/256)%256;
-			eq.skill[2]=((val2)/65536)%256;
+			eq.skill[0] = (val2) % 256;
+			eq.skill[1] = ((val2) / 256) % 256;
+			eq.skill[2] = ((val2) / 65536) % 256;
 			break;
 		default:
-			eq.skill[0]=0;
-			eq.skill[1]=0;
-			eq.skill[2]=0;
+			eq.skill[0] = 0;
+			eq.skill[1] = 0;
+			eq.skill[2] = 0;
 			break;
+		}
 	}
 
 	sprintf(s,"Got %s.",EquipName(&eq));
@@ -1146,6 +1154,427 @@ byte EquipAdd(byte item,int val1,int val2)
 	sprintf(s,"No room for %s!",EquipName(&eq));
 	NoRepeatNewMessage(s,90);
 	return 0;
+}
+
+// return 1 is success, 0 is fail
+byte EquipAbsurd(byte item, int val1, equip_t* eqp)
+{
+	if (eqp == NULL)
+		return 0;
+
+	if (val1 == 0) // claiming reward
+	{
+		byte rewardtypes[MAX_SKILLS + 1] =
+		{
+			EM_NONE,
+			
+			EM_CURING,		//SKILL_DEFENSE
+			EM_ITCHY,		//SKILL_ENERGY
+			EM_VIBRANT,		//SKILL_TOUGHNESS
+			EM_WARM2,		//SKILL_SURVIVAL
+			EM_STONE2,		//SKILL_DODGE
+			EM_SWIFT,		//SKILL_TRAINING
+			EM_VIOLENT,		//SKILL_STRENGTH
+			EM_HEALTHY2,	//SKILL_ENDURANCE
+			EM_ELECTRIC,	//SKILL_TRACKING
+			EM_LUCKY,		//SKILL_LUCK
+							//
+			EM_HANDY,		//SKILL_AXEMASTERY
+			EM_FROSTY,		//SKILL_STUN
+			EM_SMASHING,	//SKILL_BASH
+			EM_PIERCING,	//SKILL_CRITICAL
+			EM_MAGICAL,		//SKILL_PERSUADE
+			EM_FLAMING,		//SKILL_FLAME
+			EM_VAMPIRIC2,	//SKILL_VAMPIRE
+			EM_DEFEND,		//SKILL_PARRY
+			EM_SMASHING,	//SKILL_STOMP
+			EM_BEEFY,		//SKILL_WHIRL
+							//
+			EM_HANDY,		//SKILL_THROWING
+			EM_VAMPIRIC,	//SKILL_PIERCE
+			EM_WHISTLING,	//SKILL_HOMING
+			EM_SCORCHING,	//SKILL_TRIPLE
+			EM_FLAMING,		//SKILL_RICOCHET
+			EM_BEEFY,		//SKILL_AIRSTRIKE
+			EM_THORNY,		//SKILL_STATIC
+			EM_POISON2,		//SKILL_POISON
+			EM_THORNY,		//SKILL_SHATTER
+			EM_MYSTIC,		//SKILL_TURRET
+							//
+			EM_NATURE,		//SKILL_SHROOM
+			EM_SAFETY,		//SKILL_SPIKE
+			EM_SAFETY,		//SKILL_BRAMBLES
+			EM_HEALING,		//SKILL_LIFEBERRY
+			EM_MIGHTY,		//SKILL_BURNINATE
+			EM_ABSORBING,	//SKILL_IGNITE
+			EM_POWERFUL,	//SKILL_TOASTIES
+			EM_SOLID,		//SKILL_HEATSHIELD
+			EM_SHOCKING,	//SKILL_SHOCK
+			EM_HOTFOOT,		//SKILL_BERSERK
+							//
+			EM_ANGRY,		//SKILL_GALE
+			EM_ABSORB2,		//SKILL_TORNADO
+			EM_GUARDIAN,	//SKILL_RESTORE
+			EM_FRIGID,		//SKILL_CRYOZOID
+			EM_POWERFUL,	//SKILL_COLDWAVE
+			EM_MIGHTY,		//SKILL_ICECUBE
+			EM_CURSED,		//SKILL_DRAIN
+			EM_BONEY,		//SKILL_BONEHEAD
+			EM_BONEY,		//SKILL_BONEBOMB
+			EM_CURSED,		//SKILL_PLAGUE
+		};
+
+		if (player.var[VAA_REWARD] > MAX_SKILLS)
+			player.var[VAA_REWARD] =  0;
+		eqp->sharpened = 0;
+		eqp->count = 1;
+		eqp->value = 10;
+		eqp->speed = 10;
+		if (player.var[VAA_REWARD] == 0)
+		{
+			eqp->type = item;
+			eqp->value = 1;
+			eqp->speed = 1;
+		}
+		if (player.var[VAA_REWARD] >= 1 && player.var[VAA_REWARD <= 10])
+			eqp->type = IT_GOLDENPARKA;
+		if (player.var[VAA_REWARD] >= 11 && player.var[VAA_REWARD <= 30])
+		{
+			eqp->type = IT_GOLDENAXE;
+			//eqp->value = 11; // no more since the exploit is patched
+		}
+		if (player.var[VAA_REWARD] >= 31 && player.var[VAA_REWARD] <= 50)
+			eqp->type = IT_GOLDENAMULET;
+		eqp->magic = rewardtypes[player.var[VAA_REWARD]];
+		eqp->skill[0] = player.var[VAA_REWARD];
+		eqp->skill[1] = player.var[VAA_REWARD];
+		eqp->skill[2] = player.var[VAA_REWARD];
+		return 1;
+	}
+
+	if (item == IT_MAGICAXE || item == IT_GOLDENAXE)
+		switch (val1)
+		{
+		default:
+			return 0;
+		case 1: // Hatchet - tiny, but very sharp!
+			eqp->type = IT_GOLDENAXE;
+			eqp->value = 1;
+			eqp->speed = 1;
+			eqp->magic = EM_NONE;
+			eqp->sharpened = 1;
+			eqp->skill[0] = SKILL_NONE;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 3: // Brawny Axe
+			eqp->type = IT_MAGICAXE;
+			eqp->value = 3;
+			eqp->speed = 3;
+			eqp->magic = EM_BEEFY;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_CRITICAL;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 5: // Axe of Mayhem
+			eqp->type = IT_MAGICAXE;
+			eqp->value = 5;
+			eqp->speed = 9;
+			eqp->magic = EM_THORNY;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_VAMPIRE;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 6: // Axe of the True Marksman
+			eqp->type = IT_GOLDENAXE;
+			eqp->value = 6;
+			eqp->speed = 16;
+			eqp->magic = EM_WHISTLING;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_THROWING;
+			eqp->skill[1] = SKILL_PIERCE;
+			eqp->skill[2] = SKILL_RICOCHET;
+			break;
+		case 7: // Axe of Rime
+			eqp->type = IT_MAGICAXE;
+			eqp->value = 7;
+			eqp->speed = 3;
+			eqp->magic = EM_FREEZING;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_STOMP;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 8: // Axe of Venom
+			eqp->type = IT_MAGICAXE;
+			eqp->value = 8;
+			eqp->speed = 2;
+			eqp->magic = EM_POISON2;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_POISON;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 9: // Axe of Napalm
+			eqp->type = IT_GOLDENAXE;
+			eqp->value = 9;
+			eqp->speed = 5;
+			eqp->magic = EM_SCORCHING;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_FLAME;
+			eqp->skill[1] = SKILL_AIRSTRIKE;
+			eqp->skill[2] = SKILL_IGNITE;
+			break;
+		case 12: // Astounding Axe
+			eqp->type = IT_GOLDENAXE;
+			eqp->value = 12;
+			eqp->speed = 12;
+			eqp->magic = EM_NONE;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_NONE;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 13: // Axe of the True Duelist
+			eqp->type = IT_GOLDENAXE;
+			eqp->value = 13;
+			eqp->speed = 5;
+			eqp->magic = EM_PIERCE2;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_CRITICAL;
+			eqp->skill[1] = SKILL_PARRY;
+			eqp->skill[2] = SKILL_PERSUADE;
+			break;
+		}
+
+	if (item == IT_MAGICAMULET || item == IT_GOLDENAMULET)
+		switch (val1)
+		{
+		default:
+			return 0;
+		case 1: // Benign Amulet
+			eqp->type = IT_MAGICAMULET;
+			eqp->value = 1;
+			eqp->speed = 1;
+			eqp->magic = EM_SAFETY;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_LIFEBERRY;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 2: // Amulet of Summoning
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 2;
+			eqp->speed = 8;
+			eqp->magic = EM_THINKING;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_BONEHEAD;
+			eqp->skill[1] = SKILL_CRYOZOID;
+			eqp->skill[2] = SKILL_TOASTIES;
+			break;
+		case 3: // Amulet of the True Sorceror
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 3;
+			eqp->speed = 17;
+			eqp->magic = EM_ANGRY;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_BURNINATE;
+			eqp->skill[1] = SKILL_ICECUBE;
+			eqp->skill[2] = SKILL_SHOCK;
+			break;
+		case 4: // Amulet of Corruption
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 4;
+			eqp->speed = 6;
+			eqp->magic = EM_BONEY;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_DRAIN;
+			eqp->skill[1] = SKILL_BONEHEAD;
+			eqp->skill[2] = SKILL_BONEBOMB;
+			break;
+		case 5: // Amulet of Immolation
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 5;
+			eqp->speed = 9;
+			eqp->magic = EM_HOTFOOT;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_HEATSHIELD;
+			eqp->skill[1] = SKILL_TOASTIES;
+			eqp->skill[2] = SKILL_BURNINATE;
+			break;
+		case 6: // Amulet of Growth
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 6;
+			eqp->speed = 2;
+			eqp->magic = EM_HEALING;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_LIFEBERRY;
+			eqp->skill[1] = SKILL_BRAMBLES;
+			eqp->skill[2] = SKILL_SHROOM;
+			break;
+		case 7: // Amulet of Frost
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 7;
+			eqp->speed = 5;
+			eqp->magic = EM_MIRRORED;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_CRYOZOID;
+			eqp->skill[1] = SKILL_COLDWAVE;
+			eqp->skill[2] = SKILL_ICECUBE;
+			break;
+		case 8: // Amulet of Vines
+			eqp->type = IT_MAGICAMULET;
+			eqp->value = 8;
+			eqp->speed = 2;
+			eqp->magic = EM_NATURE;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_BRAMBLES;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 9: // Amulet of Contagion
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 9;
+			eqp->speed = 1;
+			eqp->magic = EM_CURSED;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_PLAGUE;
+			eqp->skill[1] = SKILL_BRAMBLES;
+			eqp->skill[2] = SKILL_POISON;
+			break;
+		case 10: // Amulet of Storms
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 10;
+			eqp->speed = 4;
+			eqp->magic = EM_SHOCKING;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_GALE;
+			eqp->skill[1] = SKILL_TORNADO;
+			eqp->skill[2] = SKILL_SHOCK;
+			break;
+		case 16: // Amazing Amulet
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 16;
+			eqp->speed = 12;
+			eqp->magic = EM_NONE;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_NONE;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 25: // Amulet of the True Enchanter
+			eqp->type = IT_GOLDENAMULET;
+			eqp->value = 25;
+			eqp->speed = 1;
+			eqp->magic = EM_ABSORB2;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_PLAGUE;
+			eqp->skill[1] = SKILL_SHROOM;
+			eqp->skill[2] = SKILL_HEATSHIELD;
+			break;
+		}
+
+	if (item == IT_MAGICPARKA || item == IT_GOLDENPARKA)
+		switch (val1)
+		{
+		default:
+			return 0;
+		case 4: // Parka of Arctic Exploration
+			eqp->type = IT_MAGICPARKA;
+			eqp->value = 4;
+			eqp->speed = 2;
+			eqp->magic = EM_WARM2;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_SURVIVAL;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 5: // Parka of Greed
+			eqp->type = IT_MAGICPARKA;
+			eqp->value = 5;
+			eqp->speed = 5;
+			eqp->magic = EM_LUCKY;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_LUCK;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 6: // Parka of Refrigeration
+			eqp->type = IT_MAGICPARKA;
+			eqp->value = 6;
+			eqp->speed = 10;
+			eqp->magic = EM_FROSTY2;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_ENDURANCE;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 7: // Parka of Power
+			eqp->type = IT_GOLDENPARKA;
+			eqp->value = 7;
+			eqp->speed = 9;
+			eqp->magic = EM_ELECTRIC;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_ENERGY;
+			eqp->skill[1] = SKILL_STATIC;
+			eqp->skill[2] = SKILL_SHOCK;
+			break;
+		case 8: // Parka of the True Civilian
+			eqp->type = IT_GOLDENPARKA;
+			eqp->value = 8;
+			eqp->speed = 20;
+			eqp->magic = EM_ENERGETIC;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_LUCK;
+			eqp->skill[1] = SKILL_TRAINING;
+			eqp->skill[2] = SKILL_TOUGHNESS;
+			break;
+		case 9: // Parka of Disease
+			eqp->type = IT_MAGICPARKA;
+			eqp->value = 9;
+			eqp->speed = 1;
+			eqp->magic = EM_SICKENING;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_ENERGY;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 10: // The Boom Parka!
+			eqp->type = IT_GOLDENPARKA;
+			eqp->value = 10;
+			eqp->speed = 10;
+			eqp->magic = EM_EXPLOSIVE;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_STRENGTH;
+			eqp->skill[1] = SKILL_BURNINATE;
+			eqp->skill[2] = SKILL_AIRSTRIKE;
+			break;
+		case 11: // Preposterous Parka
+			eqp->type = IT_GOLDENPARKA;
+			eqp->value = 11;
+			eqp->speed = 15;
+			eqp->magic = EM_NONE;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_NONE;
+			eqp->skill[1] = SKILL_NONE;
+			eqp->skill[2] = SKILL_NONE;
+			break;
+		case 12: // Parka of the True Gladiator
+			eqp->type = IT_GOLDENPARKA;
+			eqp->value = 12;
+			eqp->speed = 4;
+			eqp->magic = EM_THORNY2;
+			eqp->sharpened = 0;
+			eqp->skill[0] = SKILL_DODGE;
+			eqp->skill[1] = SKILL_WHIRL;
+			eqp->skill[2] = SKILL_STOMP;
+			break;
+		}
+
+	eqp->count = 1;
+	return 1;
 }
 
 byte StashTake(equip_t *e)
@@ -1592,24 +2021,24 @@ void EquipCreateItem(byte level,byte *type,int *val1,int *val2)
 #ifdef DIRECTORS
 						case EM_DIRECTORS:
 							(*type)=IT_GOLDENAXE;
-							spd=20;
-							val=20;
+							spd=10;
+							val=10;
 							sk[0]=0;
 							sk[1]=0;
 							sk[2]=0;
 							break;
 						case EM_DOOM:
 							(*type)=IT_GOLDENPARKA;
-							spd=20;
-							val=20;
+							spd=10;
+							val=10;
 							sk[0]=0;
 							sk[1]=0;
 							sk[2]=0;
 							break;
 						case EM_OMELET:
 							(*type)=IT_GOLDENAMULET;
-							spd=20;
-							val=20;
+							spd=10;
+							val=10;
 							sk[0]=0;
 							sk[1]=0;
 							sk[2]=0;
@@ -1897,15 +2326,22 @@ void SmithItems(equip_t *e1,equip_t *e2)
 	else
 		newitem.magic=e2->magic;
 
-	if(e1->value<e2->value)
+	// AA sharpen fix
+	val1 = e1->value;
+	val2 = e2->value;
+	if (e1->sharpened && val1 > 1)
+		val1--;
+	if (e2->sharpened && val2 > 1)
+		val2--;
+	if(val1<val2)
 	{
-		min=e1->value;
-		max=e2->value;
+		min=val1;
+		max=val2;
 	}
 	else
 	{
-		min=e2->value;
-		max=e1->value;
+		min=val2;
+		max=val1;
 	}
 	newitem.value=min+(rand()%(max-min+1));
 	if(e1->speed<e2->speed)
@@ -1924,7 +2360,7 @@ void SmithItems(equip_t *e1,equip_t *e2)
 	newitem.skill[1]=e2->skill[0];
 	newitem.skill[2]=PickSkillToBoost(0);
 	newitem.count=1;
-	newitem.sharpened=(byte)(e1->sharpened>0 || e2->sharpened>0);	// can't resharpen if it was already
+	newitem.sharpened = 0; // (byte)(e1->sharpened > 0 || e2->sharpened > 0);	// can't resharpen if it was already // AA different fix
 
 	val1=(newitem.magic)*65536+(newitem.speed)*256+(newitem.value);
 	val2=newitem.skill[2]*65536+newitem.skill[1]*256+newitem.skill[0];
@@ -1963,6 +2399,8 @@ word ItemCost(equip_t *e,byte sell)
 			cost=cost*3/2;
 		if(e->type!=IT_AXE && e->magic>=EM_DEFEND && e->magic<=EM_CURSED)	// cursed, 125% cost
 			cost=cost*5/4;
+		if (cost < 1) // AA fix
+			cost = 1;
 	}
 	else if(e->type>=IT_PARKA && e->type<=IT_GOLDENPARKA)
 	{
@@ -1981,6 +2419,8 @@ word ItemCost(equip_t *e,byte sell)
 			cost=cost*3/2;
 		if(e->type!=IT_PARKA && e->magic>=EM_DEFEND && e->magic<=EM_CURSED)	// cursed, 125% cost
 			cost=cost*5/4;
+		if (cost < 1 && e->magic != EM_IMAGINARY) // AA fix but imaginary is still imaginary
+			cost = 1;
 	}
 	else if(e->type>=IT_AMULET && e->type<=IT_GOLDENAMULET)
 	{
@@ -2000,6 +2440,8 @@ word ItemCost(equip_t *e,byte sell)
 			cost=cost*3/2;
 		if(e->type!=IT_AMULET && e->magic>=EM_DEFEND && e->magic<=EM_CURSED)	// cursed, 125% cost
 			cost=cost*5/4;
+		if (cost < 1) // AA fix
+			cost = 1;
 	}
 	else if(e->type>=IT_LENSA && e->type<=IT_LENSM)
 	{
@@ -2081,7 +2523,12 @@ word ItemCost(equip_t *e,byte sell)
 	else
 	{
 		// haggling talent here
-		cost=(word)((int)cost*(100-(int)TalentBonus(TLT_HAGGLING)-10*(player.axe.magic==EM_QUESTION))/100);
+		if (cost > 0)
+		{
+			cost=(word)((int)cost*(100-(int)TalentBonus(TLT_HAGGLING)-10*(player.axe.magic==EM_QUESTION))/100);
+			if (cost < 1)
+				cost = 1;
+		}
 	}
 	return cost;
 }
@@ -2177,7 +2624,7 @@ byte AllPotionCheck(void)
 
 	for(i=0;i<MAX_EQUIP;i++)
 	{
-		if(player.items[i].type>=IT_POT1 && player.items[i].type<=IT_POT20)
+		if(player.items[i].type>=IT_POT1 && player.items[i].type<=IT_POT20 && player.items[i].value >= 9)	// AA have to be supreme
 		{
 			have[player.items[i].type-IT_POT1]=1;
 		}
@@ -2186,21 +2633,28 @@ byte AllPotionCheck(void)
 	for(i=0;i<20;i++)
 		if(have[i])
 			b++;
-	picToDrop=7;
-	if(b==20 && opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
+	picToDrop = 7;
+	if(b==20 && opt.galPix[picToDrop-1]==0) // && player.var[VAR_TEMP+15]==0)
 	{
+		opt.galPix[picToDrop-1]=1;
+		SaveOptions();
 		bullet_t *b;
-
 		b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
 		if(b)
 		{
-			player.var[VAR_TEMP+15]=1;
+			//player.var[VAR_TEMP+15]=1;
 			b->anim=IT_PICTURE;
 			b->target=picToDrop;
-			NewMessage("You have one of every potion!",0);
+		}
+		NewMessage("You have one of every Supreme potion!", 0);
+		MakeNormalSound(SND_TALENTUP);
+		if (goodguy)
+		{
+			FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 1);
+			FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 2);
 		}
 	}
-	picToDrop=0;
+	picToDrop = 0;
 #endif
 	return 1;
 }

@@ -8,7 +8,7 @@
 #define MAX_CHARS	(32)
 
 #ifdef DIRECTORS
-#define TITLEBMP	"graphics/title_coll.bmp"
+#define TITLEBMP	"graphics/title_aa.bmp"
 #else
 #define TITLEBMP	"graphics/title.bmp"
 #endif

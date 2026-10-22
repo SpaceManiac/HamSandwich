@@ -172,7 +172,16 @@ byte InitLevel(byte map)
 			if(!player.var[VAR_MADCAP])
 				TipEvent(TIP_BEGIN);
 			else
-				player.var[VAR_TIP+0]=1;
+			{
+				player.var[VAR_TIP + 0] = 1;
+#ifdef DIRECTORS
+				if (opt.modifier[29] == 0)
+				{
+					opt.modifier[29] = 1;	// secret modifier slot used to house whether you can hear commentary or not
+					player.var[VAR_COMMENTARY]=1;
+				}
+#endif
+			}
 		}
 		SetupArena(curMap);
 		if(ModifierOn(MOD_IRONMAN))
@@ -203,7 +212,7 @@ byte InitLevel(byte map)
 		else
 		{
 			levelDef[player.levelNum].flags&=(~LF_TOWN);
-			levelDef[player.levelNum].badguyCount=20;
+			levelDef[player.levelNum].badguyCount=30;
 		}
 	}
 	if(player.levelNum==LVL_SNUGGLYHQ)
@@ -216,7 +225,7 @@ byte InitLevel(byte map)
 		else
 		{
 			levelDef[player.levelNum].flags&=(~LF_TOWN);
-			levelDef[player.levelNum].badguyCount=20;
+			levelDef[player.levelNum].badguyCount=30;
 		}
 	}
 	if(levelDef[player.levelNum].flags&LF_TOWN)
@@ -231,8 +240,9 @@ byte InitLevel(byte map)
 	{
 		if(opt.galPix[picToDrop-1]==0)
 		{
+			opt.galPix[picToDrop-1]=1;
+			SaveOptions();
 			bullet_t *b;
-
 			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
 			if(b)
 			{
@@ -243,6 +253,7 @@ byte InitLevel(byte map)
 	}
 	picToDrop=0;
 #endif
+	player.var[VAA_COMBOOM]=0;	// AA explosivo goal
 	return 1;
 }
 
@@ -376,6 +387,8 @@ byte LunaticRun(int *lastTime)
 
 	if(ModifierOn(MOD_RUSH))
 		*lastTime=(*lastTime)*2;
+
+	AdvanceGamepadStart();	// AA gamepad fix
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
@@ -690,8 +703,9 @@ TASK(byte) PlayALevel(byte map)
 		LunaticDraw();
 		AWAIT gamemgl->Flip();
 
-		if(lastKey==27 && gameMode==GAMEMODE_PLAY && !windingDown && !windingUp)
+		if((lastKey == 27 || GetGamepadStart()) && gameMode == GAMEMODE_PLAY && !windingDown && !windingUp)	// AA gamepad start to pause
 		{
+			FreezeGamepadStart();		// AA gamepad add
 			InitPauseMenu();
 			gameMode=GAMEMODE_MENU;
 		}
@@ -718,11 +732,11 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 	if(player.addonName[0]=='\0')
 	{
 		ResetLevelDefs();
-		strcpy(wName,"winter.llw");
+		strcpy(wName,"absurdarea.aaw");
 	}
 	else
 	{
-		sprintf(wName,"addons/%s.llw",player.addonName);
+		sprintf(wName,"addons/%s.aaw",player.addonName);
 		LoadLevelDefs(player.addonName);
 	}
 
@@ -776,15 +790,9 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 			// won the game!  Go back to Woody's cabin
 			// movie goes here
 			player.var[VAR_COMMENTARY]=0;
-#ifdef DIRECTORS
-			if(opt.modifier[29]==0)
-			{
-				opt.modifier[29]=1;	// secret modifier slot used to house whether you can hear commentary or not
-				player.var[VAR_COMMENTARY]=1;
-			}
-#endif
-			Song(SONG_WINTER);
-			AWAIT FLI_play("graphics/ending.flc",0,10,gamemgl);
+			// turning on commentary goes when woody's loads
+			Song(SONG_NEWCAVES);	// AA play new caves music
+			AWAIT FLI_play("graphics/aaend.flc",0,10,gamemgl);		// AA ending
 			if(ModifierOn(MOD_IRONMAN) && player.var[VAR_MADCAP])	// just won Madcap mode!
 			{
 				AWAIT IronmanScreen(gamemgl);
@@ -813,7 +821,7 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 	while(1)
 	{
 		loadGame=load;
-		worldResult=AWAIT LunaticWorld(0,"winter.llw");
+		worldResult=AWAIT LunaticWorld(0,"absurdarea.aaw");
 		if(worldResult==WORLD_QUITGAME)
 		{
 			mgl->LastKeyPressed();	// just to clear key buffer
@@ -823,4 +831,14 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode)
 			break;
 	}
 	ExitPlayer();
+}
+
+byte ItemExists(byte item)
+{
+	byte c = GotItem(item);
+	byte b = NumBulletItem(item);
+
+	if (b <= 255 - c)
+		return b + c;
+	return 255;
 }

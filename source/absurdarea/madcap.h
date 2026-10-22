@@ -27,9 +27,11 @@
 void PrintMadcapInfo(int x,int y,byte w);
 char *MadcapName(byte w);
 word DamageAmt(word dmg,byte team);
+word FlameDmg(word dmg, byte team);
 word CurseDmg(word dmg,byte team);
 word ShockDmg(word dmg,byte team);
 word RecoverAmt(word dmg);
+word HealAmtTeams(word dmg, byte team); // AA add inc nice titan
 byte CrystalCost(byte w);
 
 #endif

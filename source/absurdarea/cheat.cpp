@@ -58,8 +58,9 @@ void DoCheat(byte w)
 			ApplyControlSettingsMem(&player.var[VAR_CONTROLS]);
 			break;
 		case 1:	// suicide
+			goodguy->hp = 1;
 			meleeAttacker=NULL;
-			goodguy->GetShotReal(0,0,9999,curMap,&curWorld);
+			goodguy->GetShotReal(0,0,1,curMap,&curWorld);	// AA fix for no talent XP
 			break;
 		case 2:	// temporary invulnerability
 			break;

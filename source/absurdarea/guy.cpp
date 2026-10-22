@@ -231,7 +231,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 		}
 		else
 		{
-			me->GetShot(0,0,CurseDmg(1,EVIL),map,world);
+			me->GetShot(0,0, FlameDmg(1,EVIL),map,world);
 		}
 	}
 	if(me->type==player.monsType && m->item==IT_STUMP)	// presumably half of a rope-able pair
@@ -341,13 +341,13 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 		result=0;	// ice-only monsters can only move on ice!
 	}
 
-	if((world->terrain[m->floor].flags&(TF_SKY|TF_CLIFF)) && (!(MonsterFlags(me->type)&(MF_FLYING))))
+	if((world->terrain[m->floor].flags&(TF_SKY|TF_CLIFF)) && (!(MonsterFlags(me->type)&(MF_FLYING|MF_WALLWALK))))	// AA let ghosts cross cliffs
 	{
 		if(me->type!=player.monsType)
 			result=0;
 	}
 
-	if((world->terrain[m->floor].flags&(TF_WATER|TF_LAVA)) && (!(MonsterFlags(me->type)&(MF_WATERWALK|MF_FLYING))))
+	if((world->terrain[m->floor].flags&(TF_WATER|TF_LAVA)) && (!(MonsterFlags(me->type)&(MF_WATERWALK|MF_FLYING|MF_WALLWALK))))		// AA let ghosts cross water
 	{
 		result=0;
 	}
@@ -390,7 +390,7 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 		{
 			NoRepeatNewMessage("That's some hot steam!",0);
 			result=rand()%256;
-			me->GetShotReal(Cosine(result)*20,Sine(result)*20,CurseDmg(8,EVIL),map,world);
+			me->GetShotReal(Cosine(result)*20,Sine(result)*20, FlameDmg(8,EVIL),map,world);
 			result=0;
 		}
 		else
@@ -485,10 +485,12 @@ void Guy::Shoved(int xx,int yy,Map *map,world_t *world)
 
 	if(MonsterFlags(type)&MF_NOMOVE)
 		return;
+	if(type==MONS_BIRD && player.var[VAR_BIRDCHAT]==0 && (levelDef[player.levelNum].flags&LF_ARENA)==0)
+		return;
 
 	if(type==MONS_BUNNYTROOP || type==MONS_BUNNYBOSS || type==MONS_BUNNYBOSS2 || type==MONS_THUG || type==MONS_BRUISER || type==MONS_JUNKSMITH)
 	{
-		if(team==GOOD && player.levelNum!=LVL_CLEARING)
+		if(team==GOOD && player.levelNum!=LVL_CLEARING && player.levelNum!=LVL_GEYSER)
 			return;
 	}
 	if(type==MONS_BUNNYMAJOR && team==GOOD && player.levelNum!=LVL_CLEARING && player.var[VAR_SNUGGLY]==1)
@@ -517,7 +519,7 @@ void Guy::Shoved(int xx,int yy,Map *map,world_t *world)
 	}
 	if(!CanWalkNoMons(newx,y,map,world))
 		newx=x;
-	if(!CanWalkNoMons(x,newy,map,world))
+	if(!CanWalkNoMons(newx,newy,map,world))	// AA fix
 		newy=y;
 
 	if(type==player.monsType)
@@ -604,18 +606,7 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 							player.chatClock=0;
 							BeginChatting(31);
 
-							if(!SkillHave(SKILL_HEATSHIELD))
-							{
-								bullet_t *b;
-
-								b=FireBullet(goodguy->ID,guys[i]->x,guys[i]->y+FIXAMT*48,FIXAMT*30,32,BLT_ITEM,0);
-								if(b)
-								{
-									b->anim=IT_SCROLL;
-									b->target=SKILL_HEATSHIELD;
-									b->owner=0;
-								}
-							}
+							// AA doesn't give heatshield
 						}
 					}
 					if(type==player.monsType && player.chatClock==0 && (dx!=0 || dy!=0) &&
@@ -802,6 +793,21 @@ byte Guy::IsActive(Map *map)
 	return active;
 }
 
+byte Guy::ValidTarget(Guy* him)			//AA addition for nice titan
+{
+	if (!him)
+		return 0;
+
+	byte same = (him->team & team) ? 1 : 0;
+	if (type == MONS_NICETITAN)
+	{
+		if (him->type == MONS_NICETITAN)
+			return 0;
+		return same;
+	}
+	return 1 - same;
+}
+
 void Guy::FindTarget(Map *map,world_t *world)
 {
 	int i;
@@ -810,7 +816,7 @@ void Guy::FindTarget(Map *map,world_t *world)
 	target=NULL;
 	bestRange=320+240;
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (guys[i]->team&team)==0 &&
+		if(guys[i]->type && guys[i]->hp && ValidTarget(guys[i]) && //(guys[i]->team&team)==0 &&
 			!(MonsterFlags(guys[i]->type)&(MF_NOHIT|MF_INVINCIBLE)))
 		{
 			range=abs(x/FIXAMT-(guys[i]->x/FIXAMT))+abs(y/FIXAMT-(guys[i]->y/FIXAMT));
@@ -823,6 +829,13 @@ void Guy::FindTarget(Map *map,world_t *world)
 				}
 			}
 		}
+}
+
+byte Guy::RealTeam()			// AA addition for HP checking
+{
+	if (mindControl)
+		return EVIL;	// good guys can never be mind controlled
+	return team;
 }
 
 // stuff to do when frozen
@@ -857,7 +870,7 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 			team=EVIL;
 	}
 
-	if(!target || target->team==team || target->type==MONS_NONE || target->hp==0 || Random(50)==0)
+	if(!target || !ValidTarget(target) || target->type == MONS_NONE || target->hp == 0 || Random(50) == 0) // target->team==team || 
 	{
 		// lost your target one way or another
 		FindTarget(map,world);
@@ -910,7 +923,14 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 		if((ignited%30)==0)
 		{
 			bullet_t *b;
-			b=FireBullet(goodguy->ID,x-FIXAMT*40+Random(FIXAMT*80+1),y-FIXAMT*40+Random(FIXAMT*80+1),0,0,BLT_FLAMEB,(word)(1.0f*SpellDamageBoost(SC_FIRE)/100.0f));
+			if (ignited >= 3000)
+			{
+				b=FireBullet(ID,x-FIXAMT*40+Random(FIXAMT*80+1),y-FIXAMT*40+Random(FIXAMT*80+1),0,0,BLT_FLAMEB,FlameDmg(1, GOOD+EVIL-team));
+				if (b)
+					b->team = (GOOD + EVIL - team);
+			}
+			else
+				b=FireBullet(goodguy->ID,x-FIXAMT*40+Random(FIXAMT*80+1),y-FIXAMT*40+Random(FIXAMT*80+1),0,0,BLT_FLAMEB, FlameDmg(1, GOOD));
 			if(b)
 			{
 				b->canthit=ID;	// can't be hit by your own flames
@@ -919,11 +939,15 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 		if((ignited%60)==0)
 		{
 			meleeAttacker=NULL;	// get burned slowly
-			bulletHittingType=BLT_IGNITER;
-			GetShotReal(0,0,CurseDmg(1,GOOD),map,world);
+			bulletHittingType = (ignited >= 3000) ? BLT_BADIGNITE : BLT_IGNITER;
+			bulletHittingOwner = goodguy->ID;	// AA bear fix
+			word firedamage = (ignited >= 3000) ? FlameDmg(1, GOOD+EVIL-team) : FlameDmg(1, GOOD);
+			GetShotReal(0,0,firedamage,map,world);
 			if(hp==0)
 				ouch=5;
 		}
+		if (ignited > 2900 && ignited <= 3000)	// AA addition, evil ignite expiring
+			ignited = 0;
 	}
 	if(ouch>0)
 	{
@@ -939,6 +963,8 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 	Clamp(&ddx,FIXAMT*TILE_WIDTH);
 	Clamp(&ddy,FIXAMT*TILE_HEIGHT);
 
+	bool danger=false;	// AA obscure fix
+
 	x+=ddx;
 
 	if(!CanWalk(x,y,map,world))
@@ -952,6 +978,7 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger=true;	// AA obscure fix
 			// bump if you would enter a danger square
 			x-=ddx;
 			if(WallBumpMons(type))
@@ -972,12 +999,20 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger = true;	// AA obscure fix
 			// bump if you would enter a danger square
 			y-=ddy;
 			if(WallBumpMons(type))
 				wallBump|=2;	// tell it that it hit a wall
 		}
 	}
+
+	if (danger)	// AA obscure fix
+		if (!CanWalkNoMons(x, y, map, world))	// give up
+		{
+			x=oldx;
+			y=oldy;
+		}
 
 	if(MonsterFlags(type)&MF_FLYING)
 	{
@@ -1017,7 +1052,7 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 
 						meleeAttacker=NULL;
 						if(player.parka.magic!=EM_PARACHUTE)
-							GetShotReal(0,0,CurseDmg(2,EVIL),map,world);
+							GetShotReal(0,0, FlameDmg(2,EVIL),map,world);
 					}
 				}
 				else
@@ -1129,7 +1164,7 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 
 			meleeAttacker=NULL;
 			if(player.parka.magic!=EM_PARACHUTE)
-				GetShotReal(0,0,CurseDmg(2,EVIL),map,world);
+				GetShotReal(0,0, FlameDmg(2,EVIL),map,world);
 		}
 		if((hp>0) && z==0 && (world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_LAVA) && !(itemInfo[map->map[mapx+mapy*map->width].item].flags&IF_WALK))
 		{
@@ -1146,7 +1181,7 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 
 			meleeAttacker=NULL;
 			if(player.parka.magic!=EM_PARACHUTE)
-				GetShotReal(0,0,CurseDmg(5,EVIL),map,world);
+				GetShotReal(0,0, FlameDmg(5,EVIL),map,world);
 		}
 		if((oldmapx!=mapx || oldmapy!=mapy))
 		{
@@ -1246,7 +1281,7 @@ void Guy::Update(Map *map,world_t *world)
 			team=2;
 	}
 
-	if(!target || target->team==team || target->type==MONS_NONE || target->hp==0 || Random(50)==0)
+	if(!target || !ValidTarget(target) || target->type == MONS_NONE || target->hp == 0 || Random(50) == 0) // target->team==team || 
 	{
 		// lost your target one way or another
 		FindTarget(map,world);
@@ -1303,7 +1338,14 @@ void Guy::Update(Map *map,world_t *world)
 		if((ignited%30)==0)
 		{
 			bullet_t *b;
-			b=FireBullet(goodguy->ID,x-FIXAMT*40+Random(FIXAMT*80+1),y-FIXAMT*40+Random(FIXAMT*80+1),0,0,BLT_FLAMEB,(word)(1.0f*SpellDamageBoost(SC_FIRE)/100.0f));
+			if (ignited >= 3000)
+			{
+				b=FireBullet(ID,x-FIXAMT*40+Random(FIXAMT*80+1),y-FIXAMT*40+Random(FIXAMT*80+1),0,0,BLT_FLAMEB,FlameDmg(1, GOOD+EVIL-team));
+				if (b)
+					b->team = (GOOD + EVIL - team);
+			}
+			else
+				b=FireBullet(goodguy->ID,x-FIXAMT*40+Random(FIXAMT*80+1),y-FIXAMT*40+Random(FIXAMT*80+1),0,0,BLT_FLAMEB, FlameDmg(1, GOOD));
 			if(b)
 			{
 				b->canthit=ID;	// can't be hit by your own flames
@@ -1312,11 +1354,15 @@ void Guy::Update(Map *map,world_t *world)
 		if((ignited%60)==0)
 		{
 			meleeAttacker=NULL;	// get burned slowly
-			bulletHittingType=BLT_IGNITER;
-			GetShotReal(0,0,CurseDmg(1,GOOD),map,world);
+			bulletHittingType = (ignited >= 3000) ? BLT_BADIGNITE : BLT_IGNITER;
+			bulletHittingOwner = goodguy->ID;	// AA bear fix
+			word firedamage = (ignited >= 3000) ? FlameDmg(1, GOOD+EVIL-team) : FlameDmg(1, GOOD);
+			GetShotReal(0,0,firedamage,map,world);
 			if(hp==0)
 				ouch=5;
 		}
+		if (ignited > 2900 && ignited <= 3000)	// AA addition, evil ignite expiring
+			ignited = 0;
 	}
 	if(ouch>0)
 	{
@@ -1338,6 +1384,8 @@ void Guy::Update(Map *map,world_t *world)
 		ddy/=2;
 	}
 
+	bool danger=false;	// AA obscure fix
+
 	x+=ddx;
 
 	if(!CanWalk(x,y,map,world))
@@ -1351,6 +1399,7 @@ void Guy::Update(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger = true;	// AA obscure fix
 			// bump if you would enter a danger square
 			x-=ddx;
 			if(WallBumpMons(type))
@@ -1371,12 +1420,20 @@ void Guy::Update(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger = true;	// AA obscure fix
 			// bump if you would enter a danger square
 			y-=ddy;
 			if(WallBumpMons(type))
 				wallBump|=2;	// tell it that it hit a wall
 		}
 	}
+
+	if (danger)	// AA obscure fix
+		if (!CanWalkNoMons(x, y, map, world))	// give up
+		{
+			x = oldx;
+			y = oldy;
+		}
 
 	if(MonsterFlags(type)&MF_FLYING)
 	{
@@ -1416,7 +1473,7 @@ void Guy::Update(Map *map,world_t *world)
 
 						meleeAttacker=NULL;
 						if(player.parka.magic!=EM_PARACHUTE)
-							GetShotReal(0,0,CurseDmg(2,EVIL),map,world);
+							GetShotReal(0,0, FlameDmg(2,EVIL),map,world);
 					}
 				}
 				else
@@ -1537,7 +1594,7 @@ void Guy::Update(Map *map,world_t *world)
 
 			meleeAttacker=NULL;
 			if(player.parka.magic!=EM_PARACHUTE)
-				GetShotReal(0,0,CurseDmg(2,EVIL),map,world);
+				GetShotReal(0,0, FlameDmg(2,EVIL),map,world);
 		}
 		if((hp>0) && z==0 && ((world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_LAVA) ||
 			((world->terrain[map->map[mapx+mapy*map->width].floor].flags&(TF_CLIFF|TF_SKY)) && mapy==map->height-1))
@@ -1556,7 +1613,7 @@ void Guy::Update(Map *map,world_t *world)
 
 			meleeAttacker=NULL;
 			if(player.parka.magic!=EM_PARACHUTE)
-				GetShotReal(0,0,CurseDmg(5,EVIL),map,world);
+				GetShotReal(0,0, FlameDmg(5,EVIL),map,world);
 		}
 		if((oldmapx!=mapx || oldmapy!=mapy))
 		{
@@ -1818,7 +1875,7 @@ void GuyFact(Guy *g)
 			sprintf(s2,"has %d Armor.",monsType[g->type].armor);
 			break;
 		case 2:
-			sprintf(s2,"has %d/%d Life.",g->hp,MonsterHP(g->type,g->team));
+			sprintf(s2,"has %d/%d Life.",g->hp,MonsterHP(g->type,g->RealTeam()));	// AA HP fix
 			break;
 		case 3:
 			sprintf(s2,"does %d damage.",monsType[g->type].damage);
@@ -1834,7 +1891,10 @@ byte Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world)
 	int armor;
 
 	if(meleeAttacker!=NULL)
+	{
 		bulletHittingType=0;
+		bulletHittingOwner = 65535;	// AA bear fix
+	}
 
 	if(type==MONS_BIRD && player.var[VAR_BIRDCHAT]==0 && (levelDef[player.levelNum].flags&LF_ARENA)==0)
 		return 0;
@@ -1867,8 +1927,20 @@ byte Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world)
 
 	if(type==MONS_TEDDY5)	// retaliate for any damage incurred
 	{
-		LightningBolt(x,y-FIXAMT*20,goodguy->x,goodguy->y-FIXAMT*20);
-		goodguy->GetShot(0,0,damage,map,world);
+		Guy* target = goodguy;	// AA big fix
+		if (meleeAttacker != NULL)
+			target = meleeAttacker;
+		else if (bulletHittingOwner != 65535)
+		{
+			target = GetGuy(bulletHittingOwner);
+		}
+		if (target->type == 0)
+			target = goodguy;
+		if (target->type != MONS_TEDDY5)
+		{
+			LightningBolt(x, y - FIXAMT * 20, target->x, target->y - FIXAMT * 20);
+			target->GetShot(0, 0, damage, map, world);
+		}
 	}
 	if(type==player.monsType)
 	{
@@ -1952,8 +2024,9 @@ byte Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world)
 				Guy *m=meleeAttacker;
 				meleeAttacker=NULL;
 				bulletHittingType=0;
+				bulletHittingOwner = 65535;	// AA bear fix
 				m->GetShotReal(0,0,ShockDmg(5,GOOD),curMap,world);
-				TalentPoint(TLT_ELECTROCUTION,5);
+				TalentPoint(TLT_ELECTROCUTION,ShockDmg(5,GOOD));	// AA fix
 				LightningBolt(x,y-z,m->x,m->y-FIXAMT*20);
 				meleeAttacker=m;
 			}
@@ -1974,7 +2047,7 @@ byte Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world)
 				meleeAttacker->GetStunned(30);
 				meleeAttacker->GetPoisoned(30);
 			}
-			FireBullet(ID,x,y,0,0,BLT_KABOOM,DamageAmt(20,GOOD));
+			FireBullet(ID,x,y,0,0,BLT_KABOOM,DamageAmt(10,GOOD));	// AA nerf
 			MakeSound(SND_BOOM,x,y,SND_CUTOFF,300);
 		}
 #endif
@@ -1989,8 +2062,13 @@ byte Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world)
 	if(team==GOOD)
 		armor=(armor*(100+10*player.var[VAR_MADGEM+MC_SHIELD])/100);
 
-	if(ignited)	// ignited enemies have reduced armor
-		armor=armor*(int)((100.0f-SpecificSkillVal(1,SKILL_IGNITE))/100.0f);
+	if (ignited)	// ignited enemies have reduced armor
+	{
+		if (ignited >= 3000)	// AA addition
+			armor /= 2;
+		else
+			armor = armor * (int)((100.0f - SpecificSkillVal(1, SKILL_IGNITE)) / 100.0f);
+	}
 
 	if(type==player.monsType && player.parka.magic==EM_OLDLACE && poison)
 		armor+=5;
@@ -2020,9 +2098,9 @@ byte Guy::GetShot(int dx,int dy,word damage,Map *map,world_t *world)
 		meleeAttacker==goodguy))
 	{
 		if(meleeAttacker==NULL)	// throwing gets half the bonus
-			damage+=(int)((TalentBonus(TLT_SNEAKATTACK)+0.5f)/2.0f);
+			damage+=DamageAmt((word)((TalentBonus(TLT_SNEAKATTACK)+0.5f)/2.0f), GOOD);	// AA fix
 		else
-			damage+=(int)TalentBonus(TLT_SNEAKATTACK);
+			damage+=DamageAmt((word)TalentBonus(TLT_SNEAKATTACK), GOOD);				// AA fix
 	}
 
 	if(damage>armor)
@@ -2105,7 +2183,10 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 	int formerHP;
 
 	if(meleeAttacker!=NULL)
+	{
 		bulletHittingType=0;
+		bulletHittingOwner = 65535;	// AA bear fix
+	}
 
 
 	if(team==EVIL && (monsType[type].location&ML_BOSS)==0 && player.axe.magic==EM_BANHAMMER && (rand()%100)<5 &&
@@ -2167,8 +2248,59 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 	ouch=4;
 	hp-=damage;
 
-	if(team==EVIL)
+	if(team==EVIL && type!=MONS_JUNKTRAP)	// junktrap exception so you don't autoget the galpic
+	{
 		player.damageDone+=damage;
+#ifdef DIRECTORS
+		picToDrop = 1;
+		if (damage >= 100 && opt.galPix[picToDrop - 1] == 0) // && player.var[VAR_TEMP+15]==0)
+		{
+			opt.galPix[picToDrop - 1] = 1;
+			SaveOptions();
+			bullet_t* b;
+			b = FireBullet(goodguy->ID, goodguy->x, goodguy->y, FIXAMT * 15, 64, BLT_ITEM, 0);
+			if (b)
+			{
+				//player.var[VAR_TEMP+15]=1;
+				b->anim = IT_PICTURE;
+				b->target = picToDrop;
+			}
+			NewMessage("100 damage dealt!", 0);
+			MakeNormalSound(SND_TALENTUP);
+			if (goodguy)
+			{
+				FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 1);
+				FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 2);
+			}
+		}
+		picToDrop = 2;
+		if (meleeAttacker != NULL || bulletHittingType != BLT_KABOOM)
+			player.var[VAA_COMBOOM] = 0;
+		else if (player.var[VAA_COMBOOM] < 255)
+			player.var[VAA_COMBOOM]++;
+		if (player.var[VAA_COMBOOM]>=50 && opt.galPix[picToDrop - 1] == 0) // && player.var[VAR_TEMP+15]==0)
+		{
+			opt.galPix[picToDrop - 1] = 1;
+			SaveOptions();
+			bullet_t* b;
+			b = FireBullet(goodguy->ID, goodguy->x, goodguy->y, FIXAMT * 15, 64, BLT_ITEM, 0);
+			if (b)
+			{
+				//player.var[VAR_TEMP+15]=1;
+				b->anim = IT_PICTURE;
+				b->target = picToDrop;
+			}
+			NewMessage("Explosivo 50 Combo!", 0);
+			MakeNormalSound(SND_TALENTUP);
+			if (goodguy)
+			{
+				FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 1);
+				FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 2);
+			}
+		}
+		picToDrop = 0;
+#endif
+	}
 
 	// fire or explosion damage done to an enemy boost Combustion talent
 	if(team==EVIL && meleeAttacker==NULL && (bulletHittingType==BLT_FLAME2 || bulletHittingType==BLT_AXEBOOM || bulletHittingType==BLT_BONEBOOM ||
@@ -2235,7 +2367,9 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 			if(g>MONS_BADGHOST5)
 				g=MONS_BADGHOST5;
 
-			AddGuy(x,y,0,g);
+			Guy* added = AddGuy(x,y,0,g);
+			if (added)
+				added->tag = 254; // AA fix
 		}
 
 		this->dx=0;
@@ -2284,12 +2418,14 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 				case MONS_ICEMICE:
 				case MONS_MOUSE4:
 				case MONS_MOUSE5:
+				case MONS_SPICEMICE:
 					PlayerAddKill(KC_MICE);
 					break;
 				case MONS_PUPPET:
 				case MONS_PUPPET2:
 				case MONS_PUPPET3:
 				case MONS_FRUITPUNCH:
+				case MONS_ONEPUNCH:
 					PlayerAddKill(KC_PUPPET);
 					break;
 				case MONS_SHROOM:
@@ -2306,6 +2442,7 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 				case MONS_MONKEY2:
 				case MONS_MONKEY3:
 				case MONS_MONKEY4:
+				case MONS_ROCKMONKEY:
 					PlayerAddKill(KC_MONKEY);
 					break;
 				case MONS_ROSE:
@@ -2325,6 +2462,7 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 				case MONS_TITAN2:
 				case MONS_UBERTITAN:
 				case MONS_ICEBOX:
+				case MONS_NICETITAN:
 					PlayerAddKill(KC_ICE);
 					break;
 				case MONS_BRUISER:
@@ -2351,12 +2489,13 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 				case MONS_CRAB:
 				case MONS_STONEWALL:
 				case MONS_SOCKCRAB:
+				case MONS_FIREWALL:		// added firewall
 					PlayerAddKill(KC_STONE);
 					break;
 			}
 			if(tag!=255)	// no XP for resurrected guys
 			{
-				if(!(levelDef[player.levelNum].flags&LF_ARENA) && (monsType[type].location&ML_BOSS))
+				if(!(levelDef[player.levelNum].flags&LF_ARENA) && (monsType[type].location&ML_BOSS) && tag != 254) // AA summoned ghosts tag 254 don't give extra XP
 					PlayerGetBossPoints(MonsterLevel(type));
 				else
 				{
@@ -2366,7 +2505,7 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 						PlayerGetMonsterPoints(MonsterLevel(type));
 				}
 				// drop items!
-				if(!(levelDef[player.levelNum].flags&LF_ARENA) && (type<MONS_BADGHOST || type>MONS_BADGHOST5))
+				if(!(levelDef[player.levelNum].flags&LF_ARENA) && tag != 254) // AA badghosts drop junk, summoned ghosts drop no items && (type<MONS_BADGHOST || type>MONS_BADGHOST5))
 				{
 					deathTag=tag;
 					BadguyDrop(type,MonsterLevel(type),x,y);
@@ -2381,7 +2520,7 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 					PlayerSetVar(VAR_PROVEKILLS,player.var[VAR_PROVEKILLS]+1);
 				QuestReportEvent(QE_KILL,type);
 			}
-			if(player.levelNum==LVL_MICKEYCELLAR && player.var[VAR_RATS])	// mickey's cellar, count down rat kills
+			if(player.levelNum==LVL_MICKEYCELLAR && player.var[VAR_RATS] && tag == 2)	// mickey's cellar, count down rat kills. AA all rats are tagged 2
 				PlayerSetVar(VAR_RATS,player.var[VAR_RATS]-1);
 			if(player.axeMode==0 && meleeAttacker==goodguy)	// killed them with the axe
 				TalentPoint(TLT_CHOPPING,1);
@@ -2402,49 +2541,49 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 					TalentPoint(TLT_FOCUS,1);
 				if(bulletHittingType==BLT_DRAINMASTER || bulletHittingType==BLT_SKELSHOT || bulletHittingType==BLT_POISON || bulletHittingType==BLT_BONEBOOM)
 				{
-					TalentPoint(TLT_SPOOKYBONES,monsType[type].level);
+					TalentPoint(TLT_SPOOKYBONES,MonsterLevel(type));
 					if(TalentBonus(TLT_SPOOKYBONES))
 						AddGuy(x,y,0,MONS_GHOST);
 				}
 				if(bulletHittingType==BLT_CLOCKBULLET || bulletHittingType==BLT_CLOCKBOOM || bulletHittingType==BLT_CLOCKBOOM2)
 				{
 					TalentPoint(TLT_CLOCKWORK,1);
-					RepairClockbot(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]);
+					RepairClockbot(RecoverAmt(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]));
 				}
 			}
 			else if(meleeAttacker->type==MONS_GHOST || meleeAttacker->type==MONS_BONEHEAD || (meleeAttacker->type==MONS_MOUSE4 && meleeAttacker->mindControl==0))
 			{
-				TalentPoint(TLT_SPOOKYBONES,monsType[type].level);
+				TalentPoint(TLT_SPOOKYBONES,MonsterLevel(type));
 				if(TalentBonus(TLT_SPOOKYBONES))
 					AddGuy(x,y,0,MONS_GHOST);
 			}
 			else if(meleeAttacker->type==MONS_YOURBOT)
 			{
 				TalentPoint(TLT_CLOCKWORK,1);
-				RepairClockbot(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]);
+				RepairClockbot(RecoverAmt(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]));
 			}
-#ifdef DIRECTORS
-			if(meleeAttacker!=NULL && meleeAttacker->type==MONS_LILBADGER)
-			{
-				picToDrop=2;
-				if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
-				{
-					bullet_t *b;
-
-					b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
-					if(b)
-					{
-						player.var[VAR_TEMP+15]=1;
-						b->anim=IT_PICTURE;
-						b->target=picToDrop;
-						NewMessage("Way to go, tiny Bodzha!",0);
-					}
-				}
-				picToDrop=0;
-			}
-#endif
+//#ifdef DIRECTORS
+//			if(meleeAttacker!=NULL && meleeAttacker->type==MONS_LILBADGER)
+//			{
+//				picToDrop=2;
+//				if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
+//				{
+//					bullet_t *b;
+//
+//					b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
+//					if(b)
+//					{
+//						player.var[VAR_TEMP+15]=1;
+//						b->anim=IT_PICTURE;
+//						b->target=picToDrop;
+//						NewMessage("Way to go, tiny Bodzha!",0);
+//					}
+//				}
+//				picToDrop=0;
+//			}
+//#endif
 			if(ModifierOn(MOD_VAMPIRE))
-				HealGoodguy(3);
+				HealGoodguy(RecoverAmt(3));
 			if((rand()%100)<(int)TalentBonus(TLT_SCAVENGING))
 				HealGoodguy(RecoverAmt(1));
 		}
@@ -2453,9 +2592,9 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 	{
 		lifeGuy=this;
 		if(type==MONS_SHROOM)
-			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(originalType,team),hp*128/MonsterHP(originalType,team),(byte)(hp>0));
+			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(originalType,RealTeam()),hp*128/MonsterHP(originalType, RealTeam()),(byte)(hp>0));	// AA madcap HP fix
 		else
-			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(type,team),hp*128/MonsterHP(type,team),(byte)(hp>0));
+			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(type,RealTeam()),hp*128/MonsterHP(type,RealTeam()),(byte)(hp>0));					// AA madcap HP fix
 	}
 	else if(type==player.monsType)
 	{
@@ -2593,8 +2732,9 @@ void UpdateGuys(Map *map,world_t *world)
 
 				meleeAttacker=NULL;
 				bulletHittingType=0;
+				bulletHittingOwner = 65535;	// AA bear fix
 				if(freezeTick==0 && TalentBonus(TLT_FREEZING)!=0 && guys[i]->team==EVIL)
-					guys[i]->GetShotReal(0,0,CurseDmg(1,GOOD),map,world);
+					guys[i]->GetShotReal(0,0, FlameDmg(1,GOOD),map,world);
 				if(guys[i]->type==player.monsType && player.parka.magic==EM_COOLGUY && (player.timeToFinish%30)==0)
 				{
 					if(player.magic<player.maxMagic)
@@ -2613,6 +2753,7 @@ void UpdateGuys(Map *map,world_t *world)
 				{
 					meleeAttacker=NULL;
 					bulletHittingType=0;
+					bulletHittingOwner = 65535;	// AA bear fix
 					j=1;
 					if(player.parka.magic==EM_SICKENING && guys[i]->team==EVIL)
 						j++;
@@ -2787,7 +2928,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 				guys[i]->team=GOOD;
 			if(guys[i]->type==MONS_FRUITPUNCH)
 			{
-				guys[i]->tag=255;
+				//guys[i]->tag=255;		// moved to bullet ai
 				DoMove(guys[i],ANIM_A3,128,1,0,0);
 			}
 			guys[i]->hp=MonsterHP(type,guys[i]->team);
@@ -2933,26 +3074,27 @@ void CameraOnPlayer(byte sum)
 		}
 
 	}
-	if(player.var[VAR_CLOCKLIFE]+player.var[VAR_CLOCKLIFE2]*256>0)	// you have a clock pal!
+	if(goodguy && (int(player.var[VAR_CLOCKLIFE])+int(player.var[VAR_CLOCKLIFE2])*256>0))	// you have a clock pal!	// AA fix null warning
 	{
 		DeleteMonsterByType(MONS_YOURBOT);
 		g=AddGuy(goodguy->x,goodguy->y,0,MONS_YOURBOT);
-		g->hp=player.var[VAR_CLOCKLIFE]+player.var[VAR_CLOCKLIFE2]*256;
+		g->hp=int(player.var[VAR_CLOCKLIFE])+int(player.var[VAR_CLOCKLIFE2])*256;
 	}
 
-	if((curWorld.terrain[curMap->map[goodguy->mapx+goodguy->mapy*curMap->width].floor].flags&TF_ICE) && EquipCount(IT_ICESKATE)==0)
-	{
-		if(player.levelNum==LVL_BASKERVILLE)
-		{
-			goodguy->dx=FIXAMT*4;
-			goodguy->dy=0;
-		}
-		else
-		{
-			goodguy->dx=-FIXAMT*4;
-			goodguy->dy=0;
-		}
-	}
+	// map specific, not needed in AA
+	//if((curWorld.terrain[curMap->map[goodguy->mapx+goodguy->mapy*curMap->width].floor].flags&TF_ICE) && EquipCount(IT_ICESKATE)==0)
+	//{
+	//	if(player.levelNum==LVL_BASKERVILLE)
+	//	{
+	//		goodguy->dx=FIXAMT*4;
+	//		goodguy->dy=0;
+	//	}
+	//	else
+	//	{
+	//		goodguy->dx=-FIXAMT*4;
+	//		goodguy->dy=0;
+	//	}
+	//}
 }
 
 void DeleteGuy2(Guy *g)
@@ -3057,6 +3199,12 @@ void TitanizeMap(Map *map,byte bad)
 	else // a few titans and put a few goodguys with the player if this is geyser grotto
 	{
 		amt=levelDef[player.levelNum].badguyCount/2;
+		// added bonus monsters; was probably an oversight
+		if (GlassEffect() == GE_MONSTER)
+			amt *= 2;
+		if (ModifierOn(MOD_CROWDED))
+			amt *= 4;
+
 		tries=100;
 		while(amt>0)
 		{
@@ -3082,12 +3230,17 @@ void TitanizeMap(Map *map,byte bad)
 		}
 		if(player.levelNum==LVL_GEYSER && player.destx==0 && player.desty==0)	// you are coming in the geyser side of geyser grotto
 		{
-			amt=20;
 			tries=100;
-			if(player.var[VAR_SNUGGLY])
-				type=MONS_BUNNYTROOP;
+			if (player.var[VAR_SNUGGLY])
+			{
+				amt = 18; // AA amt redo
+				type = MONS_BUNNYTROOP;
+			}
 			else
-				type=MONS_THUG;
+			{
+				amt = 24; // AA amt redo
+				type = MONS_THUG;
+			}
 			while(amt>0)
 			{
 				tries--;
@@ -3116,9 +3269,10 @@ void TitanizeMap(Map *map,byte bad)
 
 void ForestBadgers(Map *map,byte right)
 {
-	int amt,tries,x,y;
+	int amt,tries,x,y,w;
 	Guy *g;
 
+	w=map->width/2;
 	amt=50-player.var[VAR_DEFILE+right];
 	tries=100;
 	while(amt>0)
@@ -3131,9 +3285,9 @@ void ForestBadgers(Map *map,byte right)
 		}
 
 		if(right)
-			x=93+(rand()%(map->width-93));
+			x=w+(rand()%(map->width-w));
 		else
-			x=rand()%93;
+			x=rand()%w;
 		y=rand()%map->height;
 		if(map->map[x+y*map->width].wall || map->map[x+y*map->width].item)
 			continue;
@@ -3338,7 +3492,7 @@ void RandomRespawnMap(Map *map)
 		}
 		if(map->map[x+y*map->width].wall || map->map[x+y*map->width].item)
 			continue;
-		if(abs(goodguy->mapx-x)<20 && abs(goodguy->mapy-y)<20)
+		if(goodguy && abs(goodguy->mapx-x)<20 && abs(goodguy->mapy-y)<20)	// AA fix null warning
 			continue;	// can't be onscreen
 
 		if(RandomAdd(x,y,map))
@@ -3377,50 +3531,52 @@ void AddMapGuys(Map *map)
 				// right here, remove any bosses that are already dead, etc.
 				if(!editing)
 				{
-					if(map->badguy[i].type==MONS_PUPPET2 && player.var[VAR_MAGICHAT])
-					{
-						if(!SkillHave(SKILL_DEFENSE))
-						{
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_DEFENSE;
-						}
-						continue;
-					}
-					else if(map->badguy[i].type==MONS_MOUSE3 && player.var[VAR_RATBOSS])
-					{
-						if(!SkillHave(SKILL_RESTORE))
-						{
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_RESTORE;
-						}
-						continue;
-					}
-					else if(map->badguy[i].type==MONS_MONKEY2 && player.var[VAR_STINKYSOCK])
-					{
-						if(!SkillHave(SKILL_POISON))
-						{
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_POISON;
-						}
-						continue;
-					}
-					else if(map->badguy[i].type==MONS_TEDDY3)
+					//if(map->badguy[i].type==MONS_PUPPET2 && player.var[VAR_MAGICHAT])
+					//{
+					//	if(!SkillHave(SKILL_DEFENSE))
+					//	{
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_DEFENSE;
+					//	}
+					//	continue;
+					//}
+					//else if(map->badguy[i].type==MONS_MOUSE3 && player.var[VAR_RATBOSS])
+					//{
+					//	if(!SkillHave(SKILL_RESTORE))
+					//	{
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_RESTORE;
+					//	}
+					//	continue;
+					//}
+					//else if(map->badguy[i].type==MONS_MONKEY2 && player.var[VAR_STINKYSOCK])
+					//{
+					//	if(!SkillHave(SKILL_POISON))
+					//	{
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_POISON;
+					//	}
+					//	continue;
+					//}
+					// AA don't get skills from bosses
+					if(map->badguy[i].type==MONS_TEDDY3)
 					{
 						if(!player.var[VAR_QUESTASSIGN+QUEST_BIGBEAR])
 							continue;	// don't add him at all
 						else if(player.var[VAR_QUESTDONE+QUEST_BIGBEAR])
 						{
-							if(!SkillHave(SKILL_BERSERK))
-							{
-								map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-								map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_BERSERK;
-							}
+							//if(!SkillHave(SKILL_BERSERK))
+							//{
+							//	map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+							//	map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_BERSERK;
+							//}
 							continue;
 						}
 					}
 					else if(map->badguy[i].type==MONS_VILLAGER && tag==12 && player.talentLevel[map->map[map->badguy[i].x+(map->badguy[i].y+1)*map->width].tag]!=255)
 					{
-						if(player.levelNum!=LVL_GURUCABIN)
+						//if(player.levelNum!=LVL_GURUCABIN) // AA level is irrelevant now
+						if (map->map[map->badguy[i].x + (map->badguy[i].y + 1) * map->width].tag != 9) // AA: gladiator stays
 							continue;	// remove gurus that you have the talent for already
 					}
 					else if(map->badguy[i].type==MONS_VILLAGER && tag==9 && player.var[VAR_WIFEUNLOCK])
@@ -3435,33 +3591,33 @@ void AddMapGuys(Map *map)
 						continue;
 					else if(map->badguy[i].type==MONS_VILLAGER && tag==15 && !player.var[VAR_QUESTDONE+QUEST_BALLOON] && player.levelNum!=LVL_BASKERVILLE)
 						continue;	// balloonist only appears in Baskerville prior to quest completion
-					else if(map->badguy[i].type==MONS_ROSE && player.var[VAR_STONEROSE])
-					{
-						if(!SkillHave(SKILL_BRAMBLES))
-						{
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_BRAMBLES;
-						}
-						continue;
-					}
-					else if(map->badguy[i].type==MONS_BURNINGBUSH && player.var[VAR_BUSHDEAD])
-					{
-						if(!SkillHave(SKILL_BURNINATE))
-						{
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_BURNINATE;
-						}
-						continue;
-					}
-					else if(map->badguy[i].type==MONS_TRIGUN && player.var[VAR_TRIGUNDEAD])
-					{
-						if(!SkillHave(SKILL_TRIPLE))
-						{
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-							map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_TRIPLE;
-						}
-						continue;
-					}
+					//else if(map->badguy[i].type==MONS_ROSE && player.var[VAR_STONEROSE])
+					//{
+					//	if(!SkillHave(SKILL_BRAMBLES))
+					//	{
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_BRAMBLES;
+					//	}
+					//	continue;
+					//}
+					//else if(map->badguy[i].type==MONS_BURNINGBUSH && player.var[VAR_BUSHDEAD])
+					//{
+					//	if(!SkillHave(SKILL_BURNINATE))
+					//	{
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_BURNINATE;
+					//	}
+					//	continue;
+					//}
+					//else if(map->badguy[i].type==MONS_TRIGUN && player.var[VAR_TRIGUNDEAD])
+					//{
+					//	if(!SkillHave(SKILL_TRIPLE))
+					//	{
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+					//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_TRIPLE;
+					//	}
+					//	continue;
+					//}
 					else if(map->badguy[i].type==MONS_KLONK && (player.var[VAR_KLONKDEAD] || !player.var[VAR_QUESTASSIGN+QUEST_BOBSWIFE2]))
 					{
 						if(player.var[VAR_KLONKDEAD] && GotItem(IT_KEY1)==0)	// you killed him but didn't pick up the key!
@@ -3493,11 +3649,11 @@ void AddMapGuys(Map *map)
 					{
 						if(player.var[VAR_QUESTDONE+QUEST_LEADER] && map->badguy[i].type==MONS_BUNNYBOSS)
 						{
-							if(!SkillHave(SKILL_TORNADO))
-							{
-								map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-								map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_TORNADO;
-							}
+							//if(!SkillHave(SKILL_TORNADO))
+							//{
+							//	map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+							//	map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_TORNADO;
+							//} // AA no skill
 							continue;
 						}
 						if(map->badguy[i].type==MONS_BUNNYMAJOR)
@@ -3512,11 +3668,11 @@ void AddMapGuys(Map *map)
 						continue;
 					else if(map->badguy[i].type==MONS_BOKBOK && player.var[VAR_BOKFOUND+map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag-1])
 						continue;	// remove bokboks found
-					else if(map->badguy[i].type==MONS_FURNACE && player.var[VAR_FURNACE] && !SkillHave(SKILL_HEATSHIELD))
-					{
-						map->map[map->badguy[i].x+(map->badguy[i].y+4)*map->width].item=IT_SCROLL;
-						map->map[map->badguy[i].x+(map->badguy[i].y+4)*map->width].tag=SKILL_HEATSHIELD;
-					}
+					//else if(map->badguy[i].type==MONS_FURNACE && player.var[VAR_FURNACE] && !SkillHave(SKILL_HEATSHIELD))
+					//{
+					//	map->map[map->badguy[i].x+(map->badguy[i].y+4)*map->width].item=IT_SCROLL;
+					//	map->map[map->badguy[i].x+(map->badguy[i].y+4)*map->width].tag=SKILL_HEATSHIELD;
+					//} // AA no skill
 					else if(map->badguy[i].type==MONS_TITAN2 && player.var[VAR_TITANIC+map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag-1])
 					{
 						switch(map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag)
@@ -3532,41 +3688,41 @@ void AddMapGuys(Map *map)
 									map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=77+(map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag-1)/2;
 								}
 								break;
-							case 2:
-								if(!SkillHave(SKILL_LUCK))
-								{
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_LUCK;
-								}
-								break;
-							case 4:
-								if(!SkillHave(SKILL_PERSUADE))
-								{
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_PERSUADE;
-								}
-								break;
-							case 6:
-								if(!SkillHave(SKILL_TURRET))
-								{
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_TURRET;
-								}
-								break;
-							case 8:
-								if(!SkillHave(SKILL_ICECUBE))
-								{
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_ICECUBE;
-								}
-								break;
-							case 10:
-								if(!SkillHave(SKILL_PLAGUE))
-								{
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
-									map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_PLAGUE;
-								}
-								break;
+							//case 2:
+							//	if(!SkillHave(SKILL_LUCK))
+							//	{
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_LUCK;
+							//	}
+							//	break;
+							//case 4:
+							//	if(!SkillHave(SKILL_PERSUADE))
+							//	{
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_PERSUADE;
+							//	}
+							//	break;
+							//case 6:
+							//	if(!SkillHave(SKILL_TURRET))
+							//	{
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_TURRET;
+							//	}
+							//	break;
+							//case 8:
+							//	if(!SkillHave(SKILL_ICECUBE))
+							//	{
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_ICECUBE;
+							//	}
+							//	break;
+							//case 10:
+							//	if(!SkillHave(SKILL_PLAGUE))
+							//	{
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].item=IT_SCROLL;
+							//		map->map[map->badguy[i].x+map->badguy[i].y*map->width].tag=SKILL_PLAGUE;
+							//	}
+							//	break; // AA no skills
 						}
 						continue;
 					}
@@ -3643,17 +3799,17 @@ void AddMapGuys(Map *map)
 
 	if(!editing)
 	{
+		if (player.levelNum == LVL_FOREST)	// moved to before in case of Crowded
+		{
+			//if (player.destx < 93)	// on the lefthand side	// AA does both
+				ForestBadgers(map, 0);
+			//else
+				ForestBadgers(map, 1);
+		}
 		if(player.var[VAR_QUESTASSIGN+QUEST_RUMBLE] && !player.var[VAR_RUMBLE] && player.levelNum==LVL_CLEARING)
 			AddRumbleGuys(map);
 		else
 			RandomFillMap(map);
-		if(player.levelNum==LVL_FOREST)
-		{
-			if(player.destx<93)	// on the lefthand side
-				ForestBadgers(map,0);
-			else
-				ForestBadgers(map,1);
-		}
 	}
 }
 
@@ -3882,10 +4038,10 @@ void HealGuy(Guy *g,word amt)
 
 	show=amt;
 
-	if(g->hp+amt>MonsterHP(g->type,g->team))
+	if(g->hp+amt>MonsterHP(g->type,g->RealTeam()))		// AA hp madcap fix
 	{
-		show=MonsterHP(g->type,g->team)-g->hp;
-		g->hp=MonsterHP(g->type,g->team);
+		show=MonsterHP(g->type,g->RealTeam())-g->hp;	// AA hp madcap fix
+		g->hp=MonsterHP(g->type,g->RealTeam());			// AA hp madcap fix
 	}
 	else
 		g->hp+=amt;
@@ -4062,6 +4218,10 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 		odds=0;
 		money*=5;
 	}
+	if(ModifierOn(MOD_GLAUCOMA))	// AA glaucoma gold reduction
+	{
+		money /= 2;
+	}
 
 	if(itemdrop<odds)
 	{
@@ -4093,6 +4253,8 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 			break;
 		case MONS_PUPPET:
 		case MONS_PUPPET3:
+		case MONS_FRUITPUNCH:
+		case MONS_ONEPUNCH:
 			DropJunkItem(IT_LOG,x,y);
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);
@@ -4111,20 +4273,25 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 			break;
 		case MONS_CRAB:
 		case MONS_STONEWALL:
+		case MONS_FIREWALL:		// added firewall
 			DropJunkItem(IT_STONE,x,y);
 			break;
 		case MONS_BADGER:
-		case MONS_BADGER2:
 		case MONS_BIGBADGER:
+		case MONS_HOTDOG:
+		case MONS_GORKA2: // added for AA
+			DropJunkItem(IT_CLAW, x, y);
+			break;
+		case MONS_BADGER2:
 			DropJunkItem(IT_CLAW,x,y);
-			if(player.levelNum==LVL_FOREST && goodguy->mapx<93 && player.var[VAR_DEFILE]<50)
+			if(player.levelNum==LVL_FOREST && goodguy->mapx<curMap->width/2 && player.var[VAR_DEFILE]<50)	// AA change to width/2. Oops!
 				PlayerSetVar(VAR_DEFILE,player.var[VAR_DEFILE]+1);
-			if(player.levelNum==LVL_FOREST && goodguy->mapx>=93 && player.var[VAR_DEFILE+1]<50)
+			if(player.levelNum==LVL_FOREST && goodguy->mapx>=curMap->width/2 && player.var[VAR_DEFILE+1]<50) // AA change to width/2. Oops!
 				PlayerSetVar(VAR_DEFILE+1,player.var[VAR_DEFILE+1]+1);
 			break;
 		case MONS_BADGER3:
 			DropJunkItem(IT_CLAW,x,y);
-			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS2] && !player.var[VAR_QUESTDONE+QUEST_TOYS2] && GotItem(IT_TOYCRYSTAL)<20 && (rand()%100)<40)
+			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS2] && !player.var[VAR_QUESTDONE+QUEST_TOYS2] && player.levelNum==LVL_GORGE && GotItem(IT_TOYCRYSTAL)<20 && (rand()%100)<40)	// AA only on castle
 			{
 				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
 				if(b)
@@ -4143,6 +4310,7 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 		case MONS_MOUSE4:
 		case MONS_MOUSE5:
 		case MONS_TURRET:
+		case MONS_SPICEMICE:
 			DropJunkItem(IT_GEAR,x,y);
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);;
@@ -4150,8 +4318,9 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 		case MONS_TEDDY:
 		case MONS_TEDDY2:
 		case MONS_TEDDY4:
+		case MONS_TEDDY5:
 			DropJunkItem(IT_STUFFING,x,y);
-			if(player.var[VAR_QUESTASSIGN+QUEST_BEARS] && !player.var[VAR_QUESTDONE+QUEST_BEARS] && guytype==MONS_TEDDY2 && player.var[VAR_BEARSDEAD]<30)
+			if(player.var[VAR_QUESTASSIGN+QUEST_BEARS] && !player.var[VAR_QUESTDONE+QUEST_BEARS] && (guytype == MONS_TEDDY || guytype==MONS_TEDDY2) && player.var[VAR_BEARSDEAD]<30 && (player.levelNum == LVL_ROPECABIN || player.levelNum == LVL_TUNDRACAVE)) // AA: trigger on teddies too, and only in bear lair
 				PlayerSetVar(VAR_BEARSDEAD,player.var[VAR_BEARSDEAD]+1);
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);;
@@ -4159,6 +4328,7 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 		case MONS_TINGUY:
 		case MONS_TINGUY2:
 		case MONS_TINPOT:
+		case MONS_ARMYONE:
 			DropJunkItem(IT_CAN,x,y);
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);;
@@ -4166,22 +4336,34 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 		case MONS_MONKEY:
 		case MONS_MONKEY3:
 		case MONS_MONKEY4:
+		case MONS_ROCKMONKEY:
+		case MONS_SOCKCRAB:
 			DropJunkItem(IT_SOCK,x,y);
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);;
 			break;
 		case MONS_HOUND:
 		case MONS_TITAN:
+		case MONS_ICEBOX:
+		case MONS_NICETITAN:
 			DropJunkItem(IT_ICECUBE,x,y);
 			break;
 		case MONS_GHOSTDOG:
 		case MONS_GHOSTMONKEY:
+		case MONS_BADGHOST:	// AA ghosts drop ecto
+		case MONS_BADGHOST2:
+		case MONS_BADGHOST3:
+		case MONS_BADGHOST4:
+		case MONS_BADGHOST5:
 			DropJunkItem(IT_ECTO,x,y);
 			break;
 		case MONS_ROSE2:
 		case MONS_LION:
 		case MONS_ROSE3:
 		case MONS_LION2:
+		case MONS_DEATHBERRY:
+		case MONS_ROSE4:
+		case MONS_ROSE5:
 			DropJunkItem(IT_SEED,x,y);
 			break;
 			// BOSSES WITH SPECIAL DROPS ----------------------------------
@@ -4195,59 +4377,68 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 			break;
 		case MONS_MOUSE3:	// ratatouille
 			player.var[VAR_RATBOSS]=1;
-			if(!SkillHave(SKILL_RESTORE))
-			{
-				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-				if(b)
-				{
-					b->anim=IT_SCROLL;
-					b->target=SKILL_RESTORE;
-				}
-			}
+			DropJunkItem(IT_GEAR, x, y); // AA add
+			//AA no skilldrop
+			//if(!SkillHave(SKILL_RESTORE))
+			//{
+			//	b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+			//	if(b)
+			//	{
+			//		b->anim=IT_SCROLL;
+			//		b->target=SKILL_RESTORE;
+			//	}
+			//}
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);;
 			break;
 		case MONS_PUPPET2:	// Magic Hat boss
-			if(!SkillHave(SKILL_DEFENSE))
-			{
-				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-				if(b)
-				{
-					b->anim=IT_SCROLL;
-					b->target=SKILL_DEFENSE;
-				}
-			}
+			DropJunkItem(IT_LOG, x, y);
+			//AA no skilldrop
+			//if(!SkillHave(SKILL_DEFENSE))
+			//{
+			//	b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+			//	if(b)
+			//	{
+			//		b->anim=IT_SCROLL;
+			//		b->target=SKILL_DEFENSE;
+			//	}
+			//}
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);
 			player.var[VAR_MAGICHAT]=1;
 			break;
 		case MONS_MONKEY2:	// stinky sock boss
-			if(!SkillHave(SKILL_POISON))
-			{
-				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-				if(b)
-				{
-					b->anim=IT_SCROLL;
-					b->target=SKILL_POISON;
-				}
-			}
+			DropJunkItem(IT_SOCK, x, y);
+			//AA no skilldrop
+			//if(!SkillHave(SKILL_POISON))
+			//{
+			//	b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+			//	if(b)
+			//	{
+			//		b->anim=IT_SCROLL;
+			//		b->target=SKILL_POISON;
+			//	}
+			//}
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);
 			player.var[VAR_STINKYSOCK]=1;
 			break;
 		case MONS_ROSE:	// Stone Rose boss
-			if(!SkillHave(SKILL_BRAMBLES))
-			{
-				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-				if(b)
-				{
-					b->anim=IT_SCROLL;
-					b->target=SKILL_BRAMBLES;
-				}
-			}
+			DropJunkItem(IT_SEED, x, y);
+			//AA no skilldrop
+			//if(!SkillHave(SKILL_BRAMBLES))
+			//{
+			//	b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+			//	if(b)
+			//	{
+			//		b->anim=IT_SCROLL;
+			//		b->target=SKILL_BRAMBLES;
+			//	}
+			//}
 			player.var[VAR_STONEROSE]=1;
 			break;
 		case MONS_KLONK:
+			DropJunkItem(IT_LOG, x, y);
 			if(GotItem(IT_KEY1)==0)
 			{
 				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
@@ -4260,15 +4451,17 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 			player.var[VAR_KLONKDEAD]=1;
 			break;
 		case MONS_TEDDY3:	// berserker bear boss
-			if(!SkillHave(SKILL_BERSERK))
-			{
-				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-				if(b)
-				{
-					b->anim=IT_SCROLL;
-					b->target=SKILL_BERSERK;
-				}
-			}
+			DropJunkItem(IT_STUFFING, x, y);
+			//AA no skilldrop
+			//if(!SkillHave(SKILL_BERSERK))
+			//{
+			//	b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+			//	if(b)
+			//	{
+			//		b->anim=IT_SCROLL;
+			//		b->target=SKILL_BERSERK;
+			//	}
+			//}
 			PlayerSetVar(VAR_QUESTDONE+QUEST_BIGBEAR,1);
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);
@@ -4277,27 +4470,31 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 			PlayerSetVar(VAR_QUESTDONE+QUEST_FACTORY2,1);
 			break;
 		case MONS_BURNINGBUSH:
-			if(!SkillHave(SKILL_BURNINATE))
-			{
-				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-				if(b)
-				{
-					b->anim=IT_SCROLL;
-					b->target=SKILL_BURNINATE;
-				}
-			}
+			DropJunkItem(IT_SEED, x, y);
+			//AA no skilldrop
+			//if(!SkillHave(SKILL_BURNINATE))
+			//{
+			//	b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+			//	if(b)
+			//	{
+			//		b->anim=IT_SCROLL;
+			//		b->target=SKILL_BURNINATE;
+			//	}
+			//}
 			player.var[VAR_BUSHDEAD]=1;
 			break;
 		case MONS_TRIGUN:
-			if(!SkillHave(SKILL_TRIPLE))
-			{
-				b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-				if(b)
-				{
-					b->anim=IT_SCROLL;
-					b->target=SKILL_TRIPLE;
-				}
-			}
+			DropJunkItem(IT_CAN, x, y);
+			//AA no skilldrop
+			//if(!SkillHave(SKILL_TRIPLE))
+			//{
+			//	b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+			//	if(b)
+			//	{
+			//		b->anim=IT_SCROLL;
+			//		b->target=SKILL_TRIPLE;
+			//	}
+			//}
 			player.var[VAR_TRIGUNDEAD]=1;
 			if(player.var[VAR_QUESTASSIGN+QUEST_TOYS] && !player.var[VAR_QUESTDONE+QUEST_TOYS] && player.var[VAR_TOYSDEAD]<200)
 				PlayerSetVar(VAR_TOYSDEAD,player.var[VAR_TOYSDEAD]+1);
@@ -4325,69 +4522,73 @@ void BadguyDrop(byte guytype,byte level,int x,int y)
 						b->target=77+(deathTag-1)/2;
 					}
 					break;
-				case 2:
-					if(!SkillHave(SKILL_LUCK))
-					{
-						b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-						if(b)
-						{
-							b->anim=IT_SCROLL;
-							b->target=SKILL_LUCK;
-						}
-					}
-					break;
-				case 4:
-					if(!SkillHave(SKILL_PERSUADE))
-					{
-						b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-						if(b)
-						{
-							b->anim=IT_SCROLL;
-							b->target=SKILL_PERSUADE;
-						}
-					}
-					break;
-				case 6:
-					if(!SkillHave(SKILL_TURRET))
-					{
-						b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-						if(b)
-						{
-							b->anim=IT_SCROLL;
-							b->target=SKILL_TURRET;
-						}
-					}
-					break;
-				case 8:
-					if(!SkillHave(SKILL_ICECUBE))
-					{
-						b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-						if(b)
-						{
-							b->anim=IT_SCROLL;
-							b->target=SKILL_ICECUBE;
-						}
-					}
-					break;
-				case 10:
-					if(!SkillHave(SKILL_PLAGUE))
-					{
-						b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
-						if(b)
-						{
-							b->anim=IT_SCROLL;
-							b->target=SKILL_PLAGUE;
-						}
-					}
-					break;
+				//AA no skilldrop
+				//case 2:
+				//	if(!SkillHave(SKILL_LUCK))
+				//	{
+				//		b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+				//		if(b)
+				//		{
+				//			b->anim=IT_SCROLL;
+				//			b->target=SKILL_LUCK;
+				//		}
+				//	}
+				//	break;
+				//case 4:
+				//	if(!SkillHave(SKILL_PERSUADE))
+				//	{
+				//		b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+				//		if(b)
+				//		{
+				//			b->anim=IT_SCROLL;
+				//			b->target=SKILL_PERSUADE;
+				//		}
+				//	}
+				//	break;
+				//case 6:
+				//	if(!SkillHave(SKILL_TURRET))
+				//	{
+				//		b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+				//		if(b)
+				//		{
+				//			b->anim=IT_SCROLL;
+				//			b->target=SKILL_TURRET;
+				//		}
+				//	}
+				//	break;
+				//case 8:
+				//	if(!SkillHave(SKILL_ICECUBE))
+				//	{
+				//		b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+				//		if(b)
+				//		{
+				//			b->anim=IT_SCROLL;
+				//			b->target=SKILL_ICECUBE;
+				//		}
+				//	}
+				//	break;
+				//case 10:
+				//	if(!SkillHave(SKILL_PLAGUE))
+				//	{
+				//		b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
+				//		if(b)
+				//		{
+				//			b->anim=IT_SCROLL;
+				//			b->target=SKILL_PLAGUE;
+				//		}
+				//	}
+				//	break;
 			}
 			break;
 		case MONS_BIRD:
 			AchieveNow(0);
 			if(player.var[VAR_MADCAP])
 				AchieveNow(22);
-			if(player.playClock<30*60*60*4)
+			// AA change
+			if (player.var[VAA_UPGRADENUM] <= 15)
 				AchieveNow(33);
+			//if(player.playClock<30*60*60*4)
+			//	AchieveNow(33);
 			PlayerSetVar(VAR_QUESTDONE+QUEST_HAPPYSTICK,1);
 			if(CalcPercent(&player)>=100.0f)
 				AchieveNow(11);
@@ -4429,15 +4630,16 @@ void DropMoney(int money,int x,int y)
 	}
 }
 
-void NovaGuys(byte team,int x,int y,int radius,word dmg,byte stun,word knock)
+void NovaGuys(byte team,byte effect,int x,int y,int radius,word dmg,byte stun,word knock)
 {
 	int i;
 	int dx,dy;
 	byte ang;
+	byte checkteam = (effect == 2) ? (team) : (GOOD + EVIL - team);
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type && guys[i]->hp && guys[i]->team!=team && guys[i]->z==0)
+		if(guys[i]->type && guys[i]->hp && guys[i]->team==checkteam && (guys[i]->z==0 || effect == 2)) // AA change for heal
 		{
 			if(Distance(x,y,guys[i]->x,guys[i]->y)<radius)
 			{
@@ -4445,12 +4647,29 @@ void NovaGuys(byte team,int x,int y,int radius,word dmg,byte stun,word knock)
 				dx=Cosine(ang)*knock/FIXAMT;
 				dy=Sine(ang)*knock/FIXAMT;
 				meleeAttacker=NULL;
-				if(guys[i]->GetShot(dx,dy,DamageAmt(dmg,team),curMap,&curWorld))
+				if (effect == 2)
 				{
-					if(team==EVIL)
-						guys[i]->GetFrozen(stun);
+					if (guys[i]->type == player.monsType)
+						HealGoodguy(RecoverAmt(dmg));
 					else
+					{
+						guys[i]->hp += HealAmtTeams(dmg, team);
+						if (guys[i]->hp > MonsterHP(guys[i]->type, guys[i]->RealTeam()))	// AA hp madcap fix
+							guys[i]->hp = MonsterHP(guys[i]->type, guys[i]->RealTeam());	// AA hp madcap fix
+						NumberParticle(HealAmtTeams(dmg, team), guys[i]->x, guys[i]->y + 1, 1);
+					}
+					guys[i]->stun = 0;
+					guys[i]->poison = 0;
+					guys[i]->frozen = 0;
+					guys[i]->ignited = 0;
+					guys[i]->shroomTime = 0;
+				}
+				else if(guys[i]->GetShot(dx,dy,DamageAmt(dmg,team),curMap,&curWorld));
+				{
+					if(effect==0)
 						guys[i]->GetStunned(stun);
+					else
+						guys[i]->GetFrozen(stun);
 				}
 			}
 		}
@@ -4616,7 +4835,7 @@ void GuruVanish(void)
 			guys[i]->dz=0;
 			guys[i]->mind1=0;
 			guys[i]->facing=76;
-			return;
+//			return; // in Absurd Area, may be more than one
 		}
 }
 
@@ -4703,7 +4922,7 @@ void AddHighwayPatrolFoes(Map *map)
 				g->type=MONS_NONE;
 				continue;
 			}
-			else
+			else if(g)	// AA fix null warning
 			{
 				g->tag=2;
 				tries=0;
@@ -4721,8 +4940,8 @@ void AddRumbleGuys2(Map *map,byte row,byte team)
 
 	for(i=0;i<40+(20*(row==1));i++)
 	{
-		if(team==0 && i<(40+(20*(row==1)))/3)
-			continue;	// 10 less guys for bunny team might help
+		//if(team==0 && i<(40+(20*(row==1)))/4) // AA abundance change
+		//	continue;	// 10 less guys for bunny team might help	// now, AA removed
 
 		tries=200;
 		if(team==0)
@@ -4732,7 +4951,10 @@ void AddRumbleGuys2(Map *map,byte row,byte team)
 		if(i%7)
 		{
 			if(team==0)
-				type=MONS_BUNNYTROOP;
+			{
+				if(i%7 != 1)
+					type=MONS_BUNNYTROOP;
+			}
 			else
 				type=MONS_THUG;
 		}
@@ -4753,7 +4975,7 @@ void AddRumbleGuys2(Map *map,byte row,byte team)
 				g->type=MONS_NONE;
 				continue;
 			}
-			else
+			else if (g)	// AA fix null warning
 			{
 				if(row==0)
 				{
@@ -4808,7 +5030,7 @@ void ExplodePlagueRats(void)
 {
 	int i;
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==MONS_MOUSE4 && guys[i]->hp && (guys[i]->team==GOOD))
+		if(guys[i]->type==MONS_MOUSE4 && guys[i]->hp && (guys[i]->team==GOOD) && guys[i]->mindControl == 0) // AA check for not mind controlled
 		{
 			guys[i]->hp=1;
 			guys[i]->reload=0;
@@ -4968,7 +5190,7 @@ void EvilEye(byte mx,byte my,byte facing)
 	if(best!=-1)	// found someone to glare at
 	{
 		MakeSound(SND_IGNITE,guys[best]->x,guys[best]->y,SND_CUTOFF|SND_RANDOM,100);
-		FireBullet(goodguy->ID,guys[best]->x-FIXAMT*24+(rand()%(FIXAMT*48+1)),guys[best]->y-FIXAMT*24+(rand()%(FIXAMT*48+1)),0,0,BLT_FLAMEB,CurseDmg(1,GOOD));
+		FireBullet(goodguy->ID,guys[best]->x-FIXAMT*24+(rand()%(FIXAMT*48+1)),guys[best]->y-FIXAMT*24+(rand()%(FIXAMT*48+1)),0,0,BLT_FLAMEB, FlameDmg(1,GOOD));
 	}
 }
 
@@ -4979,12 +5201,12 @@ void AddPuppetPals(void)
 
 	for(i=0;i<5;i++)
 	{
-		if(player.var[VAR_PUPPETLIFE+i])
+		if(GetPuppetLife(i))
 		{
 			g=AddGuy(goodguy->x,goodguy->y,goodguy->z,MONS_PROTOTYPE);
 			if(g)
 			{
-				g->hp=player.var[VAR_PUPPETLIFE+i];
+				g->hp=GetPuppetLife(i);
 				g->tag=(byte)i;
 			}
 		}
@@ -4998,13 +5220,15 @@ void RepairPuppets(void)
 
 	for(j=0;j<5;j++)
 	{
-		if(player.var[VAR_PUPPETLIFE+j]==0)
+		if(GetPuppetLife(j) == 0) // AA fix
 		{
-			player.var[VAR_PUPPETLIFE+j]=PUPPETPAL_HEALTH;
+			//player.var[VAR_PUPPETLIFE+j]=PUPPETPAL_HEALTH;
+			SetPuppetLife(j, MonsterHP(MONS_PROTOTYPE, GOOD)); // AA fix
 			g=AddGuy(goodguy->x,goodguy->y,goodguy->z,MONS_PROTOTYPE);
 			if(g)
 			{
-				g->hp=player.var[VAR_PUPPETLIFE+j];
+				//g->hp=player.var[VAR_PUPPETLIFE+j];
+				g->hp=GetPuppetLife(j); // AA fix
 				g->tag=(byte)j;
 			}
 		}
@@ -5013,11 +5237,26 @@ void RepairPuppets(void)
 			for(i=0;i<maxGuys;i++)
 				if(guys[i]->type==MONS_PROTOTYPE && guys[i]->tag==j)
 				{
-					guys[i]->hp=PUPPETPAL_HEALTH;
-					player.var[VAR_PUPPETLIFE+j]=PUPPETPAL_HEALTH;
+					guys[i]->hp=MonsterHP(MONS_PROTOTYPE, GOOD);
+					SetPuppetLife(j, MonsterHP(MONS_PROTOTYPE, GOOD)); // AA fix
+					//player.var[VAR_PUPPETLIFE+j]=PUPPETPAL_HEALTH;
+					break; // AA add for niceness
 				}
 		}
 	}
+}
+
+void SetPuppetLife(byte i, word life)
+{
+	player.var[VAR_PUPPETLIFE+i]=life%256;
+	player.var[VAA_PUPPETLIFE2+i]=life/256;
+}
+
+word GetPuppetLife(byte i)
+{
+	word amt;
+	amt = ((word)player.var[VAA_PUPPETLIFE2+i])*256 + player.var[VAR_PUPPETLIFE+i];
+	return amt;
 }
 
 void GroundStomp(word damage,Map *map,world_t *world)

@@ -20,8 +20,8 @@
 #define EM_THORNY	 (9)	// fire out a couple thorns (same as Shatter skill) on hit
 #define EM_BEEFY	 (10)	// +5 max stamina
 // parka
-#define EM_HEALTHY	 (11)	// recover 1 health per 20 seconds
-#define EM_ENERGETIC (12)	// recover 1 stamina per 5 seconds
+#define EM_HEALTHY	 (11)	// recover 1 health per 10 seconds		CHANGED
+#define EM_ENERGETIC (12)	// recover 1 stamina per 2 seconds		CHANGED
 #define EM_STONE	 (13)	// 5% chance to take no damage when hit
 #define EM_THORNY2	 (14)	// shoot thorns when you get hit
 #define EM_FROSTY2	 (15)	// enemies that hit you in melee are frozen for 1 second
@@ -32,12 +32,12 @@
 #define EM_LUCKY	 (20)	// equivalent to 1 level in Luck (but stacks with Luck even if Luck is maxed)
 // amulet
 #define EM_POWERFUL	 (21)	// +5 max magic
-#define EM_CHARGED	 (22)	// recover 1 magic per 20 seconds
+#define EM_CHARGED	 (22)	// recover 1 magic per 10 seconds	CHANGED
 #define EM_MIGHTY	 (23)	// offensive spells do +20% damage
 #define EM_ABSORBING (24)	// gain 1 magic when hit
 #define EM_BONEY	 (25)	// boneheads shoot fireballs instead of stabbing, and regenerate health 1 per 10 seconds
 #define EM_GUARDIAN	 (26)	// become invincible for 1 second when hit
-#define EM_SHOCKING  (27)	// zap very close enemies for 2 damage every 5 seconds, like low-grade shock shield
+#define EM_SHOCKING  (27)	// zap very close enemies for 2 damage every 5 seconds, like low-grade shock shield // CHANGED 2/sec // REVERTED 1/sec
 #define EM_SAFETY	 (28)	// if you have more than 1hp, and a hit would kill you, it leaves you with 1hp
 #define EM_MIRRORED	 (29)	// Restoration spell reflects bullets instead of vaporizing them
 #define EM_HOTFOOT	 (30)	// Berserk spell leaves flames behind once per second that last 2 seconds
@@ -48,7 +48,7 @@
 #define EM_FREEZING	 (34)	// freezes for 2 seconds on hit
 #define EM_VAMPIRIC2 (35)	// 10% chance to suck 1 health per hit
 // elite parka
-#define EM_HEALTHY2	 (36)	// recover 1 health per 15 seconds
+#define EM_HEALTHY2	 (36)	// recover 1 health per 5 seconds		CHANGED
 #define EM_STONE2	 (37)	// 10% chance of no damage when hit
 #define EM_EXPLOSIVE (38)	// explode when hit, 4 damage
 #define EM_WARM2	 (39)	// immune to freezing
@@ -58,7 +58,7 @@
 #define EM_NATURE	 (42)	// Earth magic costs 2 less magic to cast (min 1)
 #define EM_HEALING	 (43)	// healing spells and potions give 25% more benefit
 #define EM_FRIGID	 (44)	// casting ice spells freezes all enemies on screen for 1 second
-#define EM_THINKING  (45)	// recover 1 magic per 15 seconds
+#define EM_THINKING  (45)	// recover 1 magic per 5 seconds	CHANGED
 // cursed axe
 #define EM_DEFEND	 (46)	// does -3 damage, adds 3 armor
 #define EM_MAGICAL	 (47)	// swings -3 speed, +10 Magic
@@ -99,9 +99,9 @@
 #define EM_OLDLACE	(77)	// Old Lace Parka - sta10, def10, +5 armor when poisoned
 #define EM_SUNANGEL	(78)	// Sun Angel Amulet - mag9,pwr9, fire does 2 damage per tick to enemies
 #ifdef DIRECTORS
-#define EM_DIRECTORS (79)	// Director's Cutter Axe - dam20,spd20, half stamina cost
-#define EM_OMELET	(80)	// Omelet Amulet - mag20,pwr20, spell costs halved
-#define EM_DOOM		(81)	// Doom Parka - sta20,def20, enemies that hit you suffer horribly
+#define EM_DIRECTORS (79)	// Director's Cutter Axe - dam10,spd10, half stamina cost			CHANGED
+#define EM_OMELET	(80)	// Omelet Amulet - mag10,pwr10, spell costs halved					CHANGED
+#define EM_DOOM		(81)	// Doom Parka - sta10,def10, enemies that hit you suffer horribly	CHANGED
 #define EM_BANHAMMER (82)	// Banhammer Axe - dam15,spd1, 5% chance of banning enemies other than bosses
 #define EM_SP		(83)	// Sp Amulet - mag10,pwr10, spams scorching fireballs nonstop
 #define EM_IMAGINARY (84)	// Imaginary Parka - sta0, def0, 50% chance to dodge
@@ -128,6 +128,7 @@ void InitialEquip(void);
 void DescribeItem(int x,int y,equip_t *eq);
 char *EquipName(equip_t *eq);
 byte EquipAdd(byte item,int val1,int val2);
+byte EquipAbsurd(byte item, int val1, equip_t* eqp);
 void SortEquipment(void);
 void SmithItems(equip_t *e1,equip_t *e2);
 
@@ -136,6 +137,7 @@ void EquipCreateItem(byte level,byte *type,int *val1,int *val2);
 void EquipTest(void);
 byte EquipCount(byte item);
 byte GotItem(byte item);
+// use ItemExists() to also include bullets
 byte EquipSkillBoost(byte skill);
 byte DropItemOfType(byte type,byte count);
 byte AddItemOfType(byte type,byte count);

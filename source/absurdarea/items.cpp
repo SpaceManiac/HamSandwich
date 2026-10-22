@@ -3,6 +3,9 @@
 #include "editor.h"
 #include "gallery.h"
 #include "options.h"
+#include "skill.h"
+#include "glasses.h"
+#include "alchemy.h"
 
 item_t itemInfo[MAX_ITMS]={
 	{"None",0,0,0,0,0},
@@ -214,9 +217,9 @@ item_t itemInfo[MAX_ITMS]={
 	{"Candy",1,0,223,223,IF_SHADOW|IF_GET},
 	{"Stolen Goods",1,0,218,218,IF_SHADOW|IF_GET},
 	{"Book",1,0,225,225,IF_SHADOW|IF_GET},
-	{"Thing Of Majig",1,0,252,252,IF_SHADOW|IF_GET},
-	{"Thing Of Mabob",1,0,253,253,IF_SHADOW|IF_GET},
-	{"Watch Of Makalit",1,0,254,254,IF_SHADOW|IF_GET},
+	{"Fission Chip",1,0,252,252,IF_SHADOW|IF_GET},
+	{"B Feeder",1,0,253,253,IF_SHADOW|IF_GET},
+	{"Doomsday Clock",1,0,254,254,IF_SHADOW|IF_GET},
 	{"Energy Barrier",1,128,244,251,IF_OBSTACLE|IF_GLOW},
 	{"Ice Block",1,0,258,258,IF_SHADOW|IF_GLOW|IF_OBSTACLE|IF_TALL|IF_LIGHTOK},
 	{"Ice Melt",1,0,259,259,IF_SHADOW|IF_GLOW},
@@ -232,6 +235,9 @@ item_t itemInfo[MAX_ITMS]={
 	{"Artparka",1,0,270,270,IF_SHADOW},
 	{"Gallery Image",1,0,32,32,IF_SHADOW|IF_GET},
 	{"Artifact Bit",1,128,244,251,IF_GLOW|IF_GET},
+	{"AltCrystal2",1,0,239,239,IF_SHADOW|IF_OBSTACLE|IF_TALL},
+	{"AltCrystal3",1,0,240,240,IF_SHADOW|IF_OBSTACLE|IF_TALL},
+	{"AltCrystal4",1,0,241,241,IF_SHADOW|IF_OBSTACLE|IF_TALL},
 };
 // 268=artaxe, 269=artamulet, 270=artparka
 
@@ -297,6 +303,15 @@ void RenderItem(int x,int y,int z,byte type,byte info,char bright)
 
 	if(type==IT_PICTURE)
 		OffSprDraw(x,y,z,1,2,bright-8+(rand()%8),itmSpr[itemInfo[type].sprset]->GetSprite(frm),flags);
+	else if (type==IT_INVISO)	// changed these to show in editor
+		OffSprDraw(x,y,z,4,2,bright,itmSpr[itemInfo[type].sprset]->GetSprite(frm),flags);
+	else if (type == IT_INVISOWALK)
+		OffSprDraw(x, y, z, 1,2, bright, itmSpr[itemInfo[type].sprset]->GetSprite(frm), flags);
+	else if ((type >= IT_GEYSER && type <= IT_PURPLEROCKSML2) || type == IT_PURPLEDARK
+					|| type == IT_PURPLEDARK2 || type == IT_CRACKUNDER)	// purple to red
+		OffSprDraw(x, y, z, 4, 6, bright, itmSpr[itemInfo[type].sprset]->GetSprite(frm), flags);
+	else if ((type >= IT_GREENCRY2 && type <= IT_GREENCRY4))
+		OffSprDraw(x, y, z, 1, 7, bright, itmSpr[itemInfo[type].sprset]->GetSprite(frm), flags);
 	else
 		SprDraw(x,y,z,255,bright,itmSpr[itemInfo[type].sprset]->GetSprite(frm),flags);
 	if(itemInfo[type].flags&IF_SHADOW)
@@ -367,43 +382,86 @@ void ChestPop(byte type,int mapx,int mapy)
 	int i;
 	byte level;
 	bullet_t *b;
-	byte money;
+	byte itemdrop;	// AA added for itemdrop random
+	word money;	// AA changed to word
+	int odds;	// AA added for extra item
+	int luck;	// AA added for luck bonus
 	int drops;
 	int x,y;
+	char s[32];
 
-#ifdef DIRECTORS
-	x=0;
-	for(i=0;i<50;i++)
-		if(player.var[VAR_CHEST+i])
-			x++;
-	if(x==50)
-	{
-		picToDrop=5;
-		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
-		{
-			bullet_t *b;
-
-			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
-			if(b)
-			{
-				player.var[VAR_TEMP+15]=1;
-				b->anim=IT_PICTURE;
-				b->target=picToDrop;
-				NewMessage("All chests opened!",0);
-			}
-		}
-		picToDrop=0;
-	}
-#endif
+//#ifdef DIRECTORS
+//	x=0;
+//	for(i=0;i<50;i++)
+//		if(player.var[VAR_CHEST+i])
+//			x++;
+//	if(x==50)
+//	{
+//		picToDrop=5;
+//		if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
+//		{
+//			bullet_t *b;
+//
+//			b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
+//			if(b)
+//			{
+//				player.var[VAR_TEMP+15]=1;
+//				b->anim=IT_PICTURE;
+//				b->target=picToDrop;
+//				NewMessage("All chests opened!",0);
+//			}
+//		}
+//		picToDrop=0;
+//	}
+//#endif
 	x=(mapx*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT;
 	y=(mapy*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
-	level=(type-IT_CHEST1+1)*10;	// 10 levels per chest quality
+	level=(type-IT_CHEST1+1+(type < IT_CHEST3))*10;	// 10 levels per chest quality	// extra 10 levels for first 2 chests
 	if(player.var[VAR_MADCAP])
 		level+=50;
 
-	money=3+(rand()%((level/5)+4));
+	// AA luck addition
+	luck = (int)SpecificSkillVal(1, SKILL_LUCK);
+	if (player.parka.magic == EM_LUCKY)
+		luck++;
+
+	money=3+(rand()%((level/5)+4+luck));	// AA luck add
+
+	// AA now the itemdrop luck
+	luck = (int)SpecificSkillVal(0, SKILL_LUCK);
+	if (player.parka.magic == EM_LUCKY)
+		luck += 25;
+	if (GlassEffect() == GE_LUCK)
+		luck += 25;
+
+	if (player.potionType == POT_LUCKENBRAU)
+		luck += PotionEffect(player.potionType, player.potionPower);
+
+	itemdrop = rand() % 100;
+	odds = 8 * (100 + luck) / 100 - 8;
+
+	// AA chest magic item
+	bossDrop = 1;
+	b = FireBullet(goodguy->ID, x, y, FIXAMT * 15, rand() % 256, BLT_ITEM, 0);
+	if (b)
+	{
+		EquipCreateItem(level, &type, &b->target, &b->owner);
+		b->anim = type;
+	}
+	bossDrop = 0;//gohere
+
+	// AA chest XP
+	if (!player.var[VAR_MADCAP])
+		PlayerGetExactXP(100);
+	else
+		PlayerGetExactXP(1000);
 
 	drops=3;
+	if (itemdrop < odds)	// AA chest bonusdrop
+	{
+		++drops;
+		TalentPoint(TLT_SCAVENGING,1);
+	}
 	while(drops--)
 	{
 		b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
@@ -418,8 +476,37 @@ void ChestPop(byte type,int mapx,int mapy)
 		b=FireBullet(goodguy->ID,x,y,FIXAMT*15,rand()%256,BLT_ITEM,0);
 		if(b)
 		{
-			b->anim=IT_COIN;
+			b->anim=IT_TENCOIN;		// changed to better coins
 			b->timer=30*10;
 		}
 	}
+
+	// AA dropping mining items
+	drops = level / 10;
+	while (drops--)
+	{
+		b = FireBullet(goodguy->ID, x, y, FIXAMT * 15, rand() % 256, BLT_ITEM, 0);
+		if (b)
+		{
+			money = rand() % 38;
+			if (money < 20)
+				b->anim = IT_SILVER;
+			else if (money < 20 + 10)
+				b->anim = IT_GOLD;
+			else if (money < 20 + 10 + 5)
+				b->anim = IT_RUBY;
+			else if (money < 20 + 10 + 5 + 2)
+				b->anim = IT_EMERALD;
+			else
+				b->anim = IT_DIAMOND;
+		}
+	}
+
+	// AA countchests
+	x=0;
+	for (i=0; i < 50; ++i)
+		if (player.var[VAR_CHEST+i])
+			++x;
+	sprintf(s, "%d/50 chests opened.", x);
+	NewMessage(s, 0);
 }

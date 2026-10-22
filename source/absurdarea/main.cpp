@@ -51,7 +51,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 	LoadConfig();
-	MGLDraw *mainmgl=new MGLDraw("Loonyland 2", SCRWID, SCRHEI, windowedGame);
+	MGLDraw *mainmgl=new MGLDraw("Absurd Area", SCRWID, SCRHEI, windowedGame);
 
 	if(!mainmgl)
 		CO_RETURN 0;
@@ -62,7 +62,7 @@ TASK(int) main(int argc, char* argv[])
 	while(1)
 	{
 		player.var[VAR_COMMENTARY]=0;
-		Song(SONG_FACTORY);
+		Song(SONG_TITLE);	// AA renamed song
 		switch(AWAIT MainMenu(mainmgl))
 		{
 			case 255:	// quit

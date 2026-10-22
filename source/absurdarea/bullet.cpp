@@ -14,6 +14,7 @@ sprite_set_t *bulletSpr;
 byte bulControl;
 
 byte bulletHittingType;
+int bulletHittingOwner;
 
 bulletDef_t bulDef[BLT_TYPES]={
 	// 0 - none
@@ -376,7 +377,7 @@ bulletDef_t bulDef[BLT_TYPES]={
 	 0,0,0,				// delay,type,rate
 	},
 	// 22 - BLT_DRAIN
-	{BF_HITEVIL|BF_GLOW|BF_PLAYERONLY|BF_LIGHT,	// flags
+	{BF_HITGOOD|BF_GLOW|BF_PLAYERONLY|BF_LIGHT,	// flags
 	 0,0,20,FIXAMT*1,FIXAMT*5,FIXAMT/2,0,60,10,	// gravity,damage,hit size,hitForce,speed,dspeed,beginDZ,timer,homing
 	 128,243,243,1,			// anim speed, first frame, last frame, # of facings
 	 // run out of time effect
@@ -1174,7 +1175,7 @@ bulletDef_t bulDef[BLT_TYPES]={
 	 // spawn particles
 	 0,0,0,				// delay,type,rate
 	},
-	// 40 - BLT_BADBURNIN
+	// 69 - BLT_BADBURNIN
 	{BF_HITEVIL|BF_HITMANY|BF_NOREHIT|BF_GLOW,	// flags
 	 0,1,30,FIXAMT*10,FIXAMT*6,0,0,30*4,6,	// gravity,damage,hit size,hitForce,speed,dspeed,beginDZ,timer,homing
 	 128,75,80,8,			// anim speed, first frame, last frame, # of facings
@@ -1191,6 +1192,23 @@ bulletDef_t bulDef[BLT_TYPES]={
 	 // spawn particles
 	 10,PART_FIREPOP,10,				// delay,type,rate
 	},
+	// 70 - BLT_BADIGNITE
+	{ BF_HITEVIL | BF_NOREHIT | BF_SHADOW | BF_GLOW | BF_INVIS,	// flags
+	 0,0,12,0,FIXAMT * 14,0,0,30,8,	// gravity,damage,hit size,hitForce,speed,dspeed,beginDZ,timer,homing
+	 256,200,203,1,			// anim speed, first frame, last frame, # of facings
+	 // run out of time effect
+	 BH_BECOME,0,PART_SPARKPOP,0,		// effect,value,particle,sound
+	 // hit an enemy effect
+	 BH_BECOME,0,PART_SPARKPOP,SND_IGNITE,5,	// effect,value,particle,sound,hitrate
+	 // hit the floor effect
+	 BH_BECOME,0,PART_SPARKPOP,0,0,					// effect,value,particle,sound,friction
+	 // hit a wall effect
+	 BH_BECOME,0,PART_SPARKPOP,0,	// effect,value,particle,sound
+	 // spawn bullets
+	 0,0,BS_NONE,0,0,0,	// delay,type,method,count,rate,damage
+	 // spawn particles
+	 1,PART_SPARKPOP,2,				// delay,type,rate
+	},
 };
 
 static byte itmBright;
@@ -1205,7 +1223,10 @@ void SetupAxeBullet(void)
 	bulDef[BLT_AXE].speed=FIXAMT*7+(FIXAMT/2)*(word)SpecificSkillVal(0,SKILL_THROWING);
 	bulDef[BLT_AXE].timer=20+(word)SpecificSkillVal(0,SKILL_THROWING)*10;
 	bulDef[BLT_AXE].homing=(byte)SpecificSkillVal(0,SKILL_HOMING);
-	bulDef[BLT_AXE].partDelay=CalcShockRate((byte)SpecificSkillVal(0,SKILL_STATIC));
+	if (SpecificSkillVal(0, SKILL_STATIC) > 0)
+		bulDef[BLT_AXE].partDelay = CalcShockRate((byte)(30.0f / SpecificSkillVal(0, SKILL_STATIC)));
+	else
+		bulDef[BLT_AXE].partDelay = 0;
 
 	bulDef[BLT_BOOMAXE].damage=DamageAmt(SpecificSkillVal(0,SKILL_AIRSTRIKE),GOOD);
 	bulDef[BLT_AXEBOOM].size=(byte)SpecificSkillVal(1,SKILL_AIRSTRIKE);
@@ -1238,7 +1259,10 @@ void SetupAxeBullet(void)
 	bulDef[BLT_MINIAXE].speed=(word)(FIXAMT*7+(float)((FIXAMT/2)*(word)SpecificSkillVal(0,SKILL_THROWING))*f);
 	bulDef[BLT_MINIAXE].timer=(word)(20+(SpecificSkillVal(0,SKILL_THROWING)*10*f));
 	bulDef[BLT_MINIAXE].homing=(byte)(SpecificSkillVal(0,SKILL_HOMING)*f);
-	bulDef[BLT_MINIAXE].partDelay=CalcShockRate((byte)SpecificSkillValDiminished(0,SKILL_STATIC,f));
+	if (SpecificSkillValDiminished(0, SKILL_STATIC, f) > 0)
+		bulDef[BLT_MINIAXE].partDelay = CalcShockRate((byte)(30.0f / SpecificSkillValDiminished(0, SKILL_STATIC, f)));
+	else
+		bulDef[BLT_MINIAXE].partDelay = 0;
 
 	bulDef[BLT_MINIAXE].hitForce=(short)((3*FIXAMT+TalentBonus(TLT_TOSSING))*f);
 
@@ -1290,11 +1314,15 @@ void SetupAxeBullet(void)
 
 	bulDef[BLT_DRAINMASTER].timer=(int)SpecificSkillVal(1,SKILL_DRAIN);
 	bulDef[BLT_BRAMBLE2].timer=(int)SpecificSkillVal(1,SKILL_BRAMBLES);
+	if (bulDef[BLT_BRAMBLE2].timer == 0)		// AA fix
+		bulDef[BLT_BRAMBLE2].timer = 1;
 
 	bulDef[BLT_GALE2].speed=(word)SpecificSkillVal(0,SKILL_GALE);
 	bulDef[BLT_GALE2].dspeed=(word)SpecificSkillVal(1,SKILL_GALE);
 
 	bulDef[BLT_BURNFLAME2].timer=(int)SpecificSkillVal(1,SKILL_BURNINATE);
+	if (bulDef[BLT_BURNFLAME2].timer == 0)		// AA fix
+		bulDef[BLT_BURNFLAME2].timer = 1;
 	bulDef[BLT_BURNINATE].damage=(int)(SpecificSkillVal(0,SKILL_BURNINATE)*(SpellDamageBoost(SC_FIRE))/100.0f);
 
 	bulDef[BLT_TORNADO].timer=30*(int)SpecificSkillVal(1,SKILL_TORNADO);
@@ -1304,6 +1332,8 @@ void SetupAxeBullet(void)
 	bulDef[BLT_SHOCKORB].partDelay=CalcShockRate(30);
 
 	bulDef[BLT_BLIZZARD].size=(byte)SpecificSkillVal(1,SKILL_ICECUBE);
+	if (bulDef[BLT_BLIZZARD].size == 0)	// AA fix
+		bulDef[BLT_BLIZZARD].size = 52;
 	bulDef[BLT_BLIZZARD].spawnDmg=(byte)((SpecificSkillLevel(SKILL_ICECUBE))*(SpellDamageBoost(SC_ICE))/100.0f);
 	bulDef[BLT_BLIZZARD].timer=(word)(SpecificSkillVal(0,SKILL_ICECUBE)*30);
 	bulDef[BLT_BLIZZARD].spawnRate=10-(SpecificSkillLevel(SKILL_ICECUBE)/2);
@@ -1319,6 +1349,8 @@ void InitBullets(void)
 	memset(bullet,0,MAX_BULLETS*sizeof(bullet_t));
 	itmBright=0;
 	itmDBright=1;
+	bulletHittingType = 0;	// AA fixes
+	bulletHittingOwner = 0;
 }
 
 void ExitBullets(void)
@@ -1398,7 +1430,7 @@ void BurninateSpew(bullet_t *me)
 		x=me->x-64*FIXAMT+(rand()%(128*FIXAMT+1));
 		y=me->y-64*FIXAMT+(rand()%(128*FIXAMT+1));
 
-		FireBullet(me->owner,x,y,FIXAMT*10,rand()%256,BLT_BURNFLAME,CurseDmg(1,GOOD));
+		FireBullet(me->owner,x,y,FIXAMT*10,rand()%256,BLT_BURNFLAME,FlameDmg(1,GOOD));
 	}
 }
 
@@ -1477,8 +1509,34 @@ void BulletHitWall(byte y,bullet_t *me,Map *map,world_t *world)
 			{
 				b=FireBullet(me->owner,me->x,me->y,me->z,me->facing,bulDef[me->type].walValue,me->damage);
 				if(b)
+				{
 					b->canthit=me->canthit;
+					b->team=me->team;	// AA fix
+				}
 				newT=0;
+			}
+			if(me->type==BLT_CLOCKBULLET)
+			{
+				if(player.var[VAR_CLOCKBOT-IT_LOG+IT_CLAW])
+				{
+					bullet_t *b;
+					int i;
+
+					for(i=0;i<player.var[VAR_CLOCKBOT-IT_LOG+IT_CLAW];i++)
+					{
+						b=FireBullet(me->owner,me->x,me->y,me->z,rand()%256,BLT_AXESHARD,bulDef[BLT_AXESHARD].damage);
+						if(b)
+							b->canthit=me->canthit;
+					}
+				}
+				if(player.var[VAR_CLOCKBOT-IT_LOG+IT_DIAMOND])
+				{
+					bullet_t *b;
+					b=FireBullet(me->owner,me->x,me->y,me->z,rand()%256,BLT_CLOCKBOOM,me->damage);
+					if(b)
+						b->canthit=me->canthit;
+					MakeSound(SND_BOOM, me->x, me->y, SND_CUTOFF | SND_RANDOM, 100);
+				}
 			}
 			break;
 		case BH_STOP:	// stop moving
@@ -1539,6 +1597,8 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 	newT=me->type;
 	me->z=0;
 
+	Guy* g;		// added for fruit punch exception
+
 	switch(bulDef[me->type].flrEffect)
 	{
 		case BH_NONE:
@@ -1557,7 +1617,10 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BH_SUMMON:
 			newT=0;
-			AddGuy(me->x,me->y,me->z,bulDef[me->type].flrValue);
+			g = AddGuy(me->x,me->y,me->z,bulDef[me->type].flrValue);
+			if (g)
+				if (g->type == MONS_FRUITPUNCH)
+					g->tag=255;		// moved from AddGuy
 			break;
 		case BH_BECOME:	// vanish, replaced by bullet type V (v=0, no bullet)
 			if(bulDef[me->type].flrValue==0)
@@ -1605,6 +1668,8 @@ void BulletHitFloor(bullet_t *me,Map *map,world_t *world)
 
 void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 {
+	Guy* g;		// for fruitpunch
+
 	switch(bulDef[me->type].endEffect)
 	{
 		case BH_NONE:
@@ -1614,7 +1679,10 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 		case BH_BOUNCE:
 			break;
 		case BH_SUMMON:
-			AddGuy(me->x,me->y,me->z,bulDef[me->type].endValue);
+			g = AddGuy(me->x,me->y,me->z,bulDef[me->type].endValue);
+			if (g)
+				if (g->type == MONS_FRUITPUNCH)
+					g->tag = 255;		// moved from AddGuy
 			break;
 		case BH_BECOME:	// vanish, replaced by bullet type V (v=0, no bullet)
 			if(bulDef[me->type].endValue!=0)
@@ -1630,10 +1698,15 @@ void BulletRanOut(bullet_t *me,Map *map,world_t *world)
 					if(me->owner==goodguy->ID)
 					{
 						b->timer=(word)SpecificSkillVal(0,SKILL_FLAME);
+						if (b->timer == 0)	// AA fix
+							b->timer = 1;
 					}
 				}
 				if(b)
+				{
 					b->canthit=me->canthit;
+					b->team=me->team;	// AA fix
+				}
 			}
 			break;
 		case BH_STOP:	// stop moving
@@ -1684,7 +1757,10 @@ void BulletHitAGuy(bullet_t *me,Map *map,world_t *world)
 			{
 				b=FireBullet(me->owner,me->x,me->y,me->z,me->facing,bulDef[me->type].hitValue,me->damage);
 				if(b)
+				{
 					b->canthit=me->canthit;
+					b->team=me->team;	// AA fix
+				}
 				newT=0;
 			}
 			break;
@@ -1754,6 +1830,7 @@ void BulletHitAGuy(bullet_t *me,Map *map,world_t *world)
 			b=FireBullet(me->owner,me->x,me->y,me->z,rand()%256,BLT_CLOCKBOOM,me->damage);
 			if(b)
 				b->canthit=me->canthit;
+			MakeSound(SND_BOOM, me->x, me->y, SND_CUTOFF | SND_RANDOM, 100);
 		}
 	}
 
@@ -1801,6 +1878,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 		return;	// items can only be gotten when on the ground
 
 	bulletHittingType=me->type;
+	bulletHittingOwner = me->owner;	// AA bear
 
 	team=0;
 	if(bulDef[me->type].flags&BF_HITEVIL)
@@ -1920,6 +1998,11 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				{
 					GetGuy(i-1)->ignited=(word)SpecificSkillVal(0,SKILL_IGNITE);
 				}
+				if (me->type==BLT_BADIGNITE)
+				{
+					if (!goodguy || !(GetGuy(i-1)->type == goodguy->type && player.invinc))	// can't be ignited while invincible
+						GetGuy(i-1)->ignited=3300; // AA added, 3000+ means evil ignite
+				}
 				if(me->type==BLT_DRAIN)
 					HealGoodguy((byte)(1.0f*SpellDamageBoost(SC_DEATH)/100.0f));	// heal you on impact
 				if(me->type==BLT_GALE1)
@@ -1935,8 +2018,8 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			if(GetGuy(i-1)->type!=player.monsType)
 			{
 				GetGuy(i-1)->hp+=me->damage;
-				if(GetGuy(i-1)->hp>MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->team))
-					GetGuy(i-1)->hp=MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->team);
+				if(GetGuy(i-1)->hp>MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->RealTeam()))	// AA hp fix
+					GetGuy(i-1)->hp=MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->RealTeam());	// AA hp fix
 				if(GetGuy(i-1)->type==MONS_YOURBOT)
 				{
 					player.var[VAR_CLOCKLIFE]=GetGuy(i-1)->hp&0xFF;
@@ -1984,6 +2067,7 @@ void SpawnFromMe(bullet_t *me)
 {
 	byte f,d;
 	int i;
+	word dmg;
 
 	for(i=0;i<bulDef[me->type].spawnCount;i++)
 	{
@@ -2008,6 +2092,9 @@ void SpawnFromMe(bullet_t *me)
 				f=(256/bulDef[me->type].spawnCount)*i;
 				break;
 		}
+		if (me->type == BLT_FLAMETRAIL)
+			bulDef[me->type].spawnDmg = me->damage;
+		dmg = bulDef[me->type].spawnDmg;
 		if(me->type==BLT_STONESPIKE || me->type==BLT_EVILSPIKE || me->type==BLT_EVILSPIKE2)
 		{
 			if(me->x/(TILE_WIDTH*FIXAMT)>=0 && me->y/(TILE_HEIGHT*FIXAMT)>=0 && me->x/(TILE_WIDTH*FIXAMT)<curMap->width &&
@@ -2017,11 +2104,14 @@ void SpawnFromMe(bullet_t *me)
 			}
 			MakeSound(SND_STONERUMBLE,me->x,me->y,SND_CUTOFF|SND_RANDOM,1);
 			bulDef[me->type].spawnDmg=me->damage;
+			if (bulDef[me->type].spawnDmg < me->damage)
+				bulDef[me->type].spawnDmg = 255; // fix unneeded
+			dmg = me->damage;	// actual AA fix
 		}
-		if(me->type==BLT_FLAMETRAIL)
-			bulDef[me->type].spawnDmg=me->damage;
 
-		FireBullet(me->owner,me->x,me->y,me->z,f,bulDef[me->type].spawnType,bulDef[me->type].spawnDmg);
+		bullet_t *b = FireBullet(me->owner,me->x,me->y,me->z,f,bulDef[me->type].spawnType, dmg);
+		if (b)
+			b->team = me->team;	// AA, spawn keeps same team, in case the original owner changed teams
 	}
 }
 
@@ -2031,6 +2121,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 
 	meleeAttacker=NULL;
 	bulletHittingType=me->type;
+	bulletHittingOwner = me->owner;	// AA bear
 
 	if(!me->type)
 		return;
@@ -2245,14 +2336,18 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				int t;
 
 				me->pSpawnTimer=bulDef[me->type].partDelay;
-				t=BulletFindTargetClosest(me->team,me->x,me->y,0,100*FIXAMT,map,world);
-				if(t!=0 && curMap->CheckLOS(mapx,mapy,8,GetGuy(t-1)->mapx,GetGuy(t-1)->mapy))
+				if (SpecificSkillVal(1, SKILL_STATIC) > 0)	// AA fix
 				{
-					bulletHittingType=me->type;
-					meleeAttacker=NULL;
-					GetGuy(t-1)->GetShotReal(0,0,ShockDmg((word)SpecificSkillVal(1,SKILL_STATIC),GOOD),map,world);
-					TalentPoint(TLT_ELECTROCUTION,(word)SpecificSkillVal(1,SKILL_STATIC));
-					LightningBolt(me->x,me->y-me->z,GetGuy(t-1)->x,GetGuy(t-1)->y-FIXAMT*20);
+					t = BulletFindTargetClosest(me->team, me->x, me->y, 0, 100 * FIXAMT, map, world);
+					if (t != 0 && curMap->CheckLOS(mapx, mapy, 8, GetGuy(t - 1)->mapx, GetGuy(t - 1)->mapy))
+					{
+						bulletHittingType = me->type;
+						bulletHittingOwner = me->owner;	// AA bear
+						meleeAttacker = NULL;
+						GetGuy(t - 1)->GetShotReal(0, 0, ShockDmg((word)SpecificSkillVal(1, SKILL_STATIC), GOOD), map, world);
+						TalentPoint(TLT_ELECTROCUTION, ShockDmg((word)SpecificSkillVal(1, SKILL_STATIC), GOOD));	// AA fix
+						LightningBolt(me->x, me->y - me->z, GetGuy(t - 1)->x, GetGuy(t - 1)->y - FIXAMT * 20);
+					}
 				}
 			}
 		}
@@ -2273,6 +2368,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 				if(t!=0 && curMap->CheckLOS(mapx,mapy,8,GetGuy(t-1)->mapx,GetGuy(t-1)->mapy))
 				{
 					bulletHittingType=me->type;
+					bulletHittingOwner = me->owner;	// AA bear
 					meleeAttacker=NULL;
 					GetGuy(t-1)->GetShot(0,0,me->damage,map,world);
 					TalentPoint(TLT_ELECTROCUTION,me->damage);
@@ -2364,7 +2460,7 @@ void RenderBullet(bullet_t *me)
 		if(player.levelNum<LVL_GEYSER || player.levelNum>LVL_TITANS)	// overworld, brown spikes (maybe add exceptions for grey ones, like tundra, grey caves)
 			SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,b,curSpr,flags);
 		else
-			OffSprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,2,6,b,curSpr,flags|DISPLAY_OFFCOLOR);
+			OffSprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,2,4,b,curSpr,flags|DISPLAY_OFFCOLOR);
 	}
 	else
 		SprDraw(me->x>>FIXSHIFT,me->y>>FIXSHIFT,me->z>>FIXSHIFT,255,b,curSpr,flags);
@@ -2431,6 +2527,8 @@ void FireMe(bullet_t *me,int x,int y,int z,int owner,byte facing,byte type,word 
 	me->anim=0;
 	me->frame=bulDef[me->type].firstFrm;
 	me->team=GetGuy(owner)->team;
+	if (type==BLT_DRAINMASTER||type==BLT_DRAIN||type==BLT_GALE2)	//added: test if this is an enemy-attached bullet
+		me->team=(GOOD+EVIL)-me->team;								//was attached by enemy, invert team
 	me->nohit=0;
 	me->bSpawnTimer=bulDef[me->type].spawnDelay;
 	me->pSpawnTimer=bulDef[me->type].partDelay;
@@ -2494,15 +2592,76 @@ void DestroyBullets(int x,int y,byte team,int radius)
 	{
 		if(bullet[i].type && bullet[i].team==team && Distance(bullet[i].x,bullet[i].y,x,y)<radius)
 		{
-			if(player.amulet.magic==EM_MIRRORED)
+			switch (bullet[i].type)		// don't remove items or explosion "bullets"
 			{
-				bullet[i].facing+=128;
-				bullet[i].team=goodguy->team;
+			case BLT_ITEM:
+			case BLT_NOVA:
+			case BLT_AXEBOOM:
+			case BLT_BONEBOOM:
+			case BLT_KABOOM:
+			case BLT_SMALLBOOM:
+			case BLT_BERRY:
+			case BLT_STUN:
+			case BLT_CRITICAL:
+			case BLT_SMOKE:
+			case BLT_CLOCKBOOM:
+			case BLT_CLOCKBOOM2:
+			case BLT_BLIZZARD:
+			case BLT_GALE1:
+			case BLT_GALE2:
+			case BLT_ROSESEED:
+			case BLT_BERRY2:
+				break;
+				default:
+				{
+					if (player.amulet.magic == EM_MIRRORED)
+					{
+						bullet[i].facing += 128;
+						bullet[i].team = goodguy->team;
+					}
+					else
+					{
+						bullet[i].type = BLT_NONE;
+						ParticleBoom(PART_WHITEPOP, bullet[i].x, bullet[i].y, bullet[i].z);	// whitepop for restoration
+					}
+				}
 			}
-			else
+		}
+	}
+}
+
+void DestroyBulletsOther(int x, int y, byte team, int radius, byte parttype)
+{
+	int i;
+
+	for (i = 0; i < MAX_BULLETS; i++)
+	{
+		if (bullet[i].type && bullet[i].team == team && Distance(bullet[i].x, bullet[i].y, x, y) < radius)
+		{
+			switch (bullet[i].type)		// don't remove items or explosion "bullets"
 			{
-				bullet[i].type=BLT_NONE;
-				ParticleBoom(PART_WHITEPOP,bullet[i].x,bullet[i].y,bullet[i].z);
+			case BLT_ITEM:
+			case BLT_NOVA:
+			case BLT_AXEBOOM:
+			case BLT_BONEBOOM:
+			case BLT_KABOOM:
+			case BLT_SMALLBOOM:
+			case BLT_BERRY:
+			case BLT_STUN:
+			case BLT_CRITICAL:
+			case BLT_SMOKE:
+			case BLT_CLOCKBOOM:
+			case BLT_CLOCKBOOM2:
+			case BLT_BLIZZARD:
+			case BLT_GALE1:
+			case BLT_GALE2:
+			case BLT_ROSESEED:
+			case BLT_BERRY2:
+				break;
+			default:
+				bullet[i].type = BLT_NONE;
+				if (parttype)
+					ParticleBoom(parttype, bullet[i].x, bullet[i].y, bullet[i].z);		// fire for firewall
 			}
 		}
 	}
@@ -2584,24 +2743,24 @@ void SmashTrees(int owner,int x,int y,int radius,Map *map)
 #ifdef DIRECTORS
 				if(player.var[VAR_KLONKSMASH]<20)
 					player.var[VAR_KLONKSMASH]++;
-				else
-				{
-					picToDrop=6;
-					if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
-					{
-						bullet_t *b;
+				//else
+				//{
+				//	picToDrop=6;
+				//	if(opt.galPix[picToDrop-1]==0 && player.var[VAR_TEMP+15]==0)
+				//	{
+				//		bullet_t *b;
 
-						b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
-						if(b)
-						{
-							player.var[VAR_TEMP+15]=1;
-							b->anim=IT_PICTURE;
-							b->target=picToDrop;
-							NewMessage("Klonk smashed 20 trees!",0);
-						}
-					}
-					picToDrop=0;
-				}
+				//		b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*15,64,BLT_ITEM,0);
+				//		if(b)
+				//		{
+				//			player.var[VAR_TEMP+15]=1;
+				//			b->anim=IT_PICTURE;
+				//			b->target=picToDrop;
+				//			NewMessage("Klonk smashed 20 trees!",0);
+				//		}
+				//	}
+				//	picToDrop=0;
+				//}
 #endif
 				map->map[i+j*map->width].item=IT_PINESTUMP;
 				for(n=0;n<10;n++)
@@ -2637,4 +2796,22 @@ byte EatItem(int x,int y)
 		}
 	}
 	return 0;
+}
+
+byte NumBulletItem(byte item)
+{
+	int i;
+	byte c = 0;
+
+	for (i = 0; i < MAX_BULLETS; i++)
+	{
+		if (bullet[i].type == BLT_ITEM && bullet[i].anim == item)
+		{
+			if (c <= 254)
+				++c;
+			else
+				return 255;
+		}
+	}
+	return c;
 }

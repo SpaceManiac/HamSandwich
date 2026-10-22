@@ -36,6 +36,10 @@
 #define TRG_GETITEM		4096	// triggers if the item on the chosen space is taken
 #define TRG_DELAYCHAIN	8192	// same as chain, but goes off N ticks later
 #define TRG_ITEMHERE	16384	// triggers if item type N is on this space
+// Absurd Area triggers
+#define TRG_HASITEMYM	32768	// triggers if the player has an item of type N, including in the mimic. OK so actually you need at least trigval2 (or 1 if the value is 0)
+#define TRG_HASITEMNM	65536	// triggers if the player has an item of type N, EXCLUDING in the mimic
+#define TRG_SKILLGREQ	131072	// triggers if skill M is currently at least skill level N
 
 //special effect choices
 #define SPC_NONE		0
@@ -55,7 +59,7 @@
 #define SPC_SWAPMAP		14
 #define SPC_CHGTILE		15
 #define SPC_CHAT		16
-#define SPC_LIGHTBALL	17
+#define SPC_LIGHTBALL	17	// AA makes this Achievement!
 #define SPC_MAXEFFECTS  18
 
 // Map flags

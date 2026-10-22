@@ -87,7 +87,8 @@ void RenderShopStuff(MGLDraw *mgl)
 				else if(player.shopInv[shopType][cursor-100].type==IT_GOLDENPARKA)
 					Print(206,304,"Some Kinda Golden Parka",0,1);
 				Print(206,304+24,"Ya gotta buy it to see the details!",0,1);
-				sprintf(s,"Buy for $%d",ItemCost(&player.shopInv[shopType][cursor-100],0)*3);
+				//sprintf(s,"Buy for $%d",(ItemCost(&player.shopInv[shopType][cursor-100],0)+1)/2);	// price changed to /2
+				sprintf(s,"Buy for $%d", (ItemCost(&player.shopInv[shopType][cursor-100],0)*3+1)/4);	// actually 3/4
 				RightPrint(636,304,s,0,1);
 			}
 			else
@@ -170,10 +171,10 @@ void InitShop(byte type)
 			strcpy(shopName,"The Magic Box");
 			break;
 		case SHOP_ROPES:
-			strcpy(shopName,"Ropes n' Ropes");
+			strcpy(shopName,"Ropes n' Scopes");
 			break;
 		case SHOP_SHROOM:
-			strcpy(shopName,"The Black Heart Of Commerce");
+			strcpy(shopName,"Volcanically Hot Topic");
 			break;
 		case SHOP_STASH:
 			strcpy(shopName,"Your Friendly Mimic");
@@ -291,7 +292,7 @@ byte ButtonPressed(byte btn)
 			}
 			else	// in the shop, trying to buy
 			{
-				int cost;
+				word cost;
 
 				if(shopType==SHOP_STASH)	// free, take it
 				{
@@ -304,6 +305,7 @@ byte ButtonPressed(byte btn)
 							if(player.shopInv[shopType][cursor-100].count==0)
 								player.shopInv[shopType][cursor-100].type=IT_NONE;
 							SortShop(SHOP_STASH);
+							AllPotionCheck();	// AA fix
 						}
 						else
 							MakeNormalSound(SND_CANTBUY);
@@ -315,8 +317,8 @@ byte ButtonPressed(byte btn)
 				{
 					cost=ItemCost(&player.shopInv[shopType][cursor-100],0);
 					if(shopType==SHOP_BLACKMARKET)
-						cost*=3;	// triple prices here!
-
+						//cost = (cost+1)/2;	// changed to half prices here!
+						cost = (cost*3+1)/4;	// nope actually 3/4 price
 					if(cost==0)
 					{
 						MakeNormalSound(SND_CANTBUY);	// can't buy nothing
@@ -337,11 +339,36 @@ byte ButtonPressed(byte btn)
 						{
 							if(EquipAdd(player.shopInv[shopType][cursor-100].type,v1,v2))
 							{
+#ifdef DIRECTORS
+								picToDrop = 4;
+								if (player.shopInv[shopType][cursor - 100].type == IT_ARTBIT && opt.galPix[picToDrop - 1] == 0) // && player.var[VAR_TEMP+15]==0)
+								{
+									opt.galPix[picToDrop - 1] = 1;
+									SaveOptions();
+									bullet_t* b;
+									b = FireBullet(goodguy->ID, goodguy->x, goodguy->y, FIXAMT * 15, 64, BLT_ITEM, 0);
+									if (b)
+									{
+										//player.var[VAR_TEMP+15]=1;
+										b->anim = IT_PICTURE;
+										b->target = picToDrop;
+									}
+									NewMessage("Artifact Bit purchased!", 0);
+									MakeNormalSound(SND_TALENTUP);
+									if (goodguy)
+									{
+										FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 1);
+										FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 2);
+									}
+								}
+								picToDrop = 0;
+#endif
 								MakeNormalSound(SND_JUNKGET);
 								player.money-=cost;
 								TalentPoint(TLT_HAGGLING,cost);
 								player.shopInv[shopType][cursor-100].type=IT_NONE;
 								NewChat(66);
+								AllPotionCheck();	// AA fix
 							}
 							else
 							{
@@ -352,6 +379,7 @@ byte ButtonPressed(byte btn)
 						else
 						{
 							player.money-=cost;
+							TalentPoint(TLT_HAGGLING, cost);
 							player.var[VAR_GLASSES]=1;
 							TipEvent(TIP_GLASSES);
 							MakeNormalSound(SND_SPECIALGET);
@@ -414,7 +442,10 @@ byte ButtonPressed(byte btn)
 							}
 						}
 						if(ok)
+						{
 							MakeNormalSound(SND_JUNKGET);
+							AllPotionCheck();	// AA fix
+						}
 						else
 							MakeNormalSound(SND_CANTBUY);
 						SortShop(SHOP_STASH);
@@ -486,10 +517,11 @@ byte UpdateShop(MGLDraw *mgl)
 	oldc=c;
 
 	HandleShopKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit shop
+	if(lastKey == 27 || GetGamepadStart())	// hit ESC to exit shop
 	{
+		FreezeGamepadStart();
+		lastKey = 0;	// AA fix
 		return 0;
-		lastKey=0;
 	}
 
 	return 1;

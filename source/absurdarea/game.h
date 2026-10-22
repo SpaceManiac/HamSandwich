@@ -104,4 +104,6 @@ void BeatLoonyUp(void);
 
 void EnterAchieve(byte ach,byte mod1,byte mod2);
 
+byte ItemExists(byte item); // AA addition, also checks bullets. here because it needs access to items and bullets
+
 #endif

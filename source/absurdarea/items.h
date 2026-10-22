@@ -229,9 +229,13 @@ enum itemList {
 	IT_ARTPARKA,
 	IT_PICTURE,
 	IT_ARTBIT,
+	// AA breakcrystals
+	IT_GREENCRY2,
+	IT_GREENCRY3,
+	IT_GREENCRY4,
 };
 
-#define MAX_ITMS	212
+#define MAX_ITMS	215
 
 // item flags
 #define IF_GET			1	// can be picked up by player

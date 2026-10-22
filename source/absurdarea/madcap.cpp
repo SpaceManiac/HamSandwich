@@ -105,6 +105,23 @@ word DamageAmt(word dmg,byte team)
 		return dmg*(100+player.var[VAR_MADGEM+MC_MIGHT]*10)/100;
 }
 
+word FlameDmg(word dmg, byte team)
+{
+	if (player.var[VAR_MADCAP])
+	{
+		if (team == EVIL)
+		{
+			return dmg * MADCAP_CURSEBOOST;
+		}
+		else
+		{
+			return dmg * (100 + player.var[VAR_MADGEM + MC_CURSE] * 20) / 100;
+		}
+	}
+	else
+		return dmg;
+}
+
 word CurseDmg(word dmg,byte team)
 {
 	if(player.var[VAR_MADCAP])
@@ -146,6 +163,16 @@ word RecoverAmt(word dmg)
 	}
 	else
 		return dmg;
+}
+
+word HealAmtTeams(word dmg, byte team)
+{
+	if (player.var[VAR_MADCAP] == 0)
+		return dmg;	// normal damage
+	else if (team == EVIL)
+		return dmg * MADCAP_DAMBOOST;
+	else
+		return dmg * (100 + player.var[VAR_MADGEM + MC_HEALTH] * 10) / 100;
 }
 
 byte CrystalCost(byte w)

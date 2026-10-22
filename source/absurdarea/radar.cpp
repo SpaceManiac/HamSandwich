@@ -151,9 +151,10 @@ void Radar_Update(void)
 			// show items (only ones you can pick up!)
 			for(i=0;i<curMap->width*curMap->height;i++)
 			{
-				if((curMap->map[i].item>=IT_ROPE && curMap->map[i].item<IT_ENERGYBARRIER) || curMap->map[i].item==IT_SCROLL ||
+				if((curMap->map[i].item>=IT_ROPE && curMap->map[i].item<IT_ENERGYBARRIER && curMap->map[i].tag < 200) || (curMap->map[i].item == IT_SCROLL && curMap->map[i].tag < 200) ||
+					(curMap->map[i].item>=IT_AXE && curMap->map[i].item<=IT_GOLDENPARKA && curMap->map[i].tag < 200) ||
 					curMap->map[i].item==IT_CRACKUNDER || curMap->map[i].item==IT_CRACK || curMap->map[i].item==IT_BURIEDASB ||
-					curMap->map[i].item==IT_SUPCRACK || curMap->map[i].item==IT_SUPPLIES || curMap->map[i].item==IT_SUPPLIES2 ||
+					curMap->map[i].item==IT_SUPCRACK || ((curMap->map[i].item==IT_SUPPLIES || curMap->map[i].item==IT_SUPPLIES2) && curMap->map[i].tag < 50) ||
 					curMap->map[i].item==IT_GEYSER || curMap->map[i].item==IT_UPGEYSER ||
 					(curMap->map[i].item>=IT_CHEST1 && curMap->map[i].item<=IT_CHEST5 && curMap->map[i].itemInfo==0) || curMap->map[i].item==IT_EXIT)
 				{

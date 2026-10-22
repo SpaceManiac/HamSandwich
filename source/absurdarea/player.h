@@ -12,6 +12,8 @@
 #include "equip.h"
 #include "talents.h"
 #include "shop.h"
+#include "upgrade.h"
+
 #pragma pack(1)
 
 #define MAX_MONEY	99999
@@ -104,6 +106,237 @@
 #define VAR_FLAMEPAID	514	// 514=have paid for the flame skill this attack
 #define VAR_KLONKSMASH	515	// 515=how many trees klonk has smashed
 
+//ABSURD AREA VARIABLES
+#define VAA_CROWDED		520 // 520=is one of the variables Crowded?
+#define VAA_HALLSEXIT	521 // 521=which exit from the Halls of Mastery?
+#define VAA_TRIALTYPE	522 // 522=active trial type
+#define VAA_TOWNLOC		523 // 523=which location in a town or trial?
+//524-539: unused
+#define VAA_REWARD		540 // 540=which reward did you pick?
+#define VAA_REWARDTYPE	541 // 541=which type of reward? (1 parka, 2 axe, 3 amulet)
+#define VAA_REWARDGET	542 // 542=have you obtained the reward?
+#define VAA_FACTORY1	543 // 543=destroyed first part of the factory?
+#define VAA_FACTORY2	544 // 544=destroyed second part of the factory?
+#define VAA_TRIALSTAT	545 // 545-549: status of trial N-545 (0 nothing, 1 found, 2 partial, 3 passed) //, 4 claimed)
+#define VAA_INFESTED	550 // 550=discovered the Infested Woods?
+#define VAA_MARIONETTES	551	// 551=discovered the Island?
+#define VAA_STORAGE		552 // 552=unblocked the Storage Cabin in Einsburg?
+#define VAA_BEARLAIR	553 // 553=opened the Bear Lair?
+#define VAA_VAULTWALL	554 // 554=broken the Vault wall?
+#define VAA_NEARFORT	555 // 555=near the fort entrance?
+#define VAA_ARENASIDE	556 // 556=found the Tweestad arena side entrance?
+#define VAA_TRAPDOOR	557 // 557=opened the Tweestad Curaga trapdoor?
+#define VAA_KINYOVA		558 // 558=opened the Kinyova cave?
+#define VAA_MONKEYS		559	// 559=opened the Monkey Grotto?
+#define VAA_FACTORYGATE	560 // 560=opened the Toy Factory gate?
+#define VAA_PEAKDEBRIS	561 // 561=dug out the debris blocking the peak?
+#define VAA_ICEFLOOD	562 // 562=flooded the ice hole?
+#define VAA_ICEBALL		563 // 563=pushed the iceball into the ice hole?
+#define VAA_ICEROCK		564 // 564=pushed the rock onto the ice hole?
+#define VAA_POISONPIT	565 // 565=opened the Poisonous Pit entrance?
+#define VAA_CAVITYROCK	566 // 566=pushed down the Caliginous Cavities rock?
+#define VAA_BODZHANEST	567 // 567=found the Bodzha Nest entrance?
+#define VAA_CASTLEROCK	568 // 568=pushed down the Sankyo Castle rocks?
+#define VAA_WHAPUNI		569 // 569=entered Whapuni with friends
+#define VAA_CASTLEWALK	570 // 570=opened the chest walkway in sankyo castle
+#define VAA_AAPRESENT	571 // 571-591=has any present tagged N-571 been collected? Which?
+#define VAA_PUPPETLIFE2 592 // 592-596=upperhalf of puppet life
+#define VAA_BARONCACHE	597 // 597=opened the secret hiding spot in baron room
+#define VAA_BUNNYDRESS	598 // 598=got the potion from Bunny chamber
+#define VAA_CLOUDLADDER	599 // 599=dropped the cloud ladder
+
+#define VAA_UPGRADENUM	600 // 600=how many upgrades chosen?
+#define VAA_UPGRADESTAT	601 // 601-630=has each specific upgrade been chosen?
+#define VAA_OBJECTIVES	631 // 631-659=has each objective been completed?
+#define VAA_WOODYAXE	660 // 660=get woody's axe 3/3 beef critical
+#define VAA_CELLARSNOW	661 // 661=cellar snowman door cache (1/1 safety lifeberry) (cache moved)
+#define VAA_POLARPARKA	662 // 662=polar pond parka 4/2 toasty survival
+#define VAA_GRIZCACHE	663 // 663=grizzly bear cache H (rest moved)
+#define VAA_LUCKYPARK	664	// 664=Vault 5/5 lucky parka of luck
+#define VAA_VAULTCACHE1	665 // 665=vault $20 cache
+#define VAA_VAULTCACHE2	666 // 666=vault $100 cache
+#define VAA_VAULTCACHE3	667 // 667=vault $50 plus ruby money only (ruby moved)
+#define VAA_VAULTCACHE4	668 // 668=vault diamond
+#define VAA_VAULTROPE	669 // 669=rope in vault
+#define VAA_ARMYCACHE	670 // 670=potion storage in army camp - heal level 4 (rest moved)
+#define VAA_FARMAMULET	671 // 671=feral farm 8/2 druidic brambles
+#define VAA_ARENACACHE	672	// 672=arena cache, 5/9 thorny axe of vampirism (rest moved)
+#define VAA_ARENAROPE	673 // 673=arena rope
+#define VAA_CIVIECACHE	674 // 674=arena civie cache, 8/20 energetic parka of luck, toughness, energy (rest moved)
+#define VAA_MIMICAMULET 675 // 675=got mimic amulet 2/8 boney bonehead
+#define VAA_CREEPAMULET	676 // 676=got spooky amulet boney amulet drain, bonehead, bone bomb
+#define VAA_SHROOMULET	677 // 677=got sharona amulet 6/2 holy amulet lifeberry, brambles, shroom
+#define VAA_CUREPOTIONS 678 // 678=got curaga's potions (rest moved)
+#define VAA_CUREBIT		679 // 679=got curaga's artifact bit
+#define VAA_CUREAMUET	680 // 680=got curaga's amulet 16/12 nothing
+#define VAA_HATCHET		681 // 681=got kinyova hatchet (1/1 sharpened nothing)
+#define VAA_KINYOVAXE	682 // 682=got kinyova's axe (12/12 nothing)
+#define VAA_SHOCKCACHE	683 // 683=got shock cache and parka 7/9 electric energy, static, shock orb (potions moved)
+#define VAA_SOUPCACHE	684 // 684=got soup (milk moved)
+#define VAA_ROSEPARKA	685 // 685=got rosetta parka + soup (11/15 nothing) (bonus soup moved)
+#define VAA_STORMULET	686 // 686=got storm amulet 10/2 shocking gale, tornado, berserk
+#define VAA_TOYCACHE	687 // 687=got toy factory super secret inc boom parka (10/10 nuclear strength, burninate, airstrike)  (all items moved)
+#define VAA_ICECACHE	688 // 688=got ice cache inc freeze amulet 7/5 mirrored cryozoid, cold wave, ice cube (potions moved)
+#define VAA_POISONAM	689 // 689=got poison amulet 9/1 cursed plague
+#define VAA_POISONAXE	690 // 690=got poison axe 8/2 ebola poison
+#define VAA_POISONPARK	691 // 691=got poison parka 9/1 sickening energy
+#define VAA_PITBLOODNW	692 // 692=poison pit NW alien bloods, second moved
+#define VAA_PITBLOODNE	693 // 693=poison pit NE alien blood
+#define VAA_DRAFTYADENW	694	// 694=drafty den NW coolade, second moved
+#define VAA_DRAFTYFLAKE 695 // 695=drafty den flake door cache coolade, rest moved
+#define VAA_ULTIMATE	696 // 696=ultimate reward, artbit, K L M (lenses moved)
+#define VAA_PEAKLIONS	697 // 697=beaten thornpaw lions on peak
+#define VAA_MAGICJUNKED	698 // 698=junksmithed a magic or better item
+#define VAA_CLOCKGRADE	699	// 699=upgraded a bot for the clockmaker
+
+#define VAA_RUMBLING	700 // 700=are we rumbling? 0=no, 1=onion, 2=bunny)
+#define VAA_OUTPOST		700 // 701-706=state of outpost N-700
+#define VAA_CLOCKGOT	707 // 707: unlocked clockmaker?
+#define VAA_FIREAXE		708 // 708: got fire axe
+#define VAA_FIREAMULET	709 // 709: got fire amulet
+//AA cache redo variables!
+#define VAA_CELLARDIAM	710 // 710: cellar snowman door diamond
+#define VAA_CELLARSTONE	711 // 711: cellar stone soup
+#define VAA_CELLARLIFE	712 // 712: cellar lifeade
+#define VAA_CELLARASB1	713 // 713: cellar asbestos 1
+#define VAA_CELLARASB2	714 // 714: cellar asbestos 2
+#define VAA_GRIZWATER	715 // 715: water in grizzly cache
+#define VAA_GRIZEMERALD	716 // 716: emerald in griz cache
+#define VAA_GRIZRUBY1	717 // 717: grizzly ruby 1
+#define VAA_GRIZRUBY2	718 // 718: grizzly ruby 2
+#define VAA_GRIZGOLD1	719 // 719: grizzly gold 1
+#define VAA_GRIZGOLD2	720 // 720: grizzly gold 2
+#define VAA_GRIZGOLD3	721 // 721: grizzly gold 3
+#define VAA_VAULTRUBY	722 // 722: vault ruby in ne cache
+#define VAA_ARMYPOT2	723 // 723: army potions 2
+#define VAA_ARMYPOT3	724 // 723: army potions 3
+#define VAA_ARMYPOT4	725 // 723: army potions 4
+#define VAA_ARMYPOT5	726 // 723: army potions 5
+#define VAA_ARMYPOT6	727 // 723: army potions 6
+#define VAA_ARMYPOT7	728 // 723: army potions 7
+#define VAA_ARMYPOT8	729 // 723: army potions 8
+#define VAA_ARMYPOT9	730 // 723: army potions 9
+#define VAA_ARMYPOT10	731 // 723: army potions 10
+#define VAA_ARMYPOT11	732 // 723: army potions 11
+#define VAA_ARMYPOT12	733 // 723: army potions 12
+#define VAA_ARMYPOT13	734 // 723: army potions 13
+#define VAA_ARMYPOT14	735 // 723: army potions 14
+#define VAA_ARMYPOT15	736 // 723: army potions 15
+#define VAA_ARMYPOT16	737 // 723: army potions 16
+#define VAA_ARMYPOT17	738 // 723: army potions 17
+#define VAA_ARMYPOT18	739 // 723: army potions 18
+#define VAA_ARENADIAM	740 // 740: diamond in arena cache
+#define VAA_CIVVIEDIAM	741 // 741: diamond in civvie arena cache
+#define VAA_CIVVIEART	742 // 742: artbit in civvie arena cache
+#define VAA_CURAGAJUICE 743 // 743: second curaga brainjuice
+#define VAA_CURAGACOLA1 744 // 744: first curaga cola
+#define VAA_CURAGACOLA2 745 // 745: second curaga cola
+#define VAA_SHOCKSODA1	746 // 746: first hiemal shock
+#define VAA_SHOCKSODA2	747 // 747: second hiemal shock
+#define VAA_ROSEMILK	748 // 748: rosetta milk
+#define VAA_MORESOUP	749 // 749: rosetta bonus soup
+#define VAA_TOYPARKA	750 // 750: boom parka
+#define VAA_TOYARTBIT	751 // 751: artbit in toy cache
+#define VAA_TOYPOTION	752 // 752: explosivo in toy cache
+#define VAA_TOYLENS		753 // 753: lens in toy cache
+#define VAA_COOLADE1	754 // 754: drafty coolade 1
+#define VAA_COOLADE2	755 // 755: drafty coolade 2
+#define VAA_COOLDIAMOND	756 // 756: flake door diamond
+#define VAA_COOLLENSL	757 // 756: flake door L
+#define VAA_DENNWCOOL	758 // 758: draft den NW coolade 2
+#define VAA_POISONBLOOD 759 // 759: poison pit NW alien blood 2
+#define VAA_ULTIMATEK	760 // 760: ultimate reward K
+#define VAA_ULTIMATEL	761 // 761: ultimate reward L
+#define VAA_ULTIMATEM	762 // 762: ultimate reward M
+#define VAA_RIMEAXE		763 // 763: rime axe in draftyden
+#define VAA_FRIDGEPARKA	764 // 764: parka of refrig in drafty
+#define VAA_ONIONSANKYO 765 // 765: beaten onion hideout in sankyo
+#define VAA_BUNNYSANKYO 766 // 766: beaten bunny stronghold in sankyo
+#define VAA_FROSTSANKYO 767 // 767: beaten frost keep in sankyo
+#define VAA_BEARSANKYO	768 // 768: beaten bear mansion in sankyo
+#define VAA_VOLCANEXPLO	769 // 769: volcano explosivo
+#define VAA_VOLROCKET1	770 // 770: first volcano rocket sauce
+#define VAA_VOLROCKET2	771 // 771: second volcano rocket sauce
+#define VAA_TREASURYK	772 // 772: treasury lens
+#define VAA_TREASCOW1	773 // 773: treasury mad cow 1
+#define VAA_TREASCOW2	774 // 774: treasury mad cow 2
+#define VAA_TREASLUCK	775 // 775: treasury luckenbrau
+#define VAA_TREASSMRT	776 // 776: treasury smart sauce
+#define VAA_TREASLIFE	777 // 777: treasury lifeade
+#define VAA_TREASDIAM1	778 // 778: treasury diamond 1
+#define VAA_TREASDIAM2	779 // 779: treasury diamond 2
+#define VAA_TREASDIAM3	780 // 780: treasury diamond 3
+#define VAA_TREASEMER1	781 // 781: treasury emerald 1
+#define VAA_TREASEMER2	782 // 782: treasury emerald 2
+#define VAA_TREASEMER3	783 // 783: treasury emerald 3
+#define VAA_TREASEMER4	784 // 784: treasury emerald 4
+#define VAA_TREASEMER5	785 // 785: treasury emerald 5
+#define VAA_TREASRUBY1	786 // 786: treasury ruby 1
+#define VAA_TREASRUBY2	787 // 787: treasury ruby 2
+#define VAA_TREASRUBY3	788 // 788: treasury ruby 3
+#define VAA_TREASRUBY4	789 // 789: treasury ruby 4
+#define VAA_TREASRUBY5	790 // 790: treasury ruby 5
+#define VAA_CASTLEGOLD	791 // 791: castle cash cache
+#define VAA_CASTLEDEF1	792 // 792: castle deflector 1
+#define VAA_CASTLEDEF2	793 // 793: castle deflector 2
+#define VAA_CASTLEDEF3	794 // 794: castle deflector 3
+#define VAA_CASTLECOL1	795 // 795: castle cola 1
+#define VAA_CASTLECOL2	796 // 796: castle cola 2
+#define VAA_CASTLECOL3	797 // 797: castle cola 3
+// 798-799: unused
+
+#define VAA_TRIAL1BIT	800 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT1	801 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT2	802 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT3	803 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT4	804 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT5	805 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1POT6	806 // 800-807: trial rewards for trial 1
+#define VAA_TRIAL1EQUIP	807 // 800-807: trial rewards for trial 1
+//808-809: unused
+#define VAA_TRIAL2BIT	810 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT1	811 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT2	812 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT3	813 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT4	814 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT5	815 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2POT6	816 // 810-817: trial rewards for trial 2
+#define VAA_TRIAL2EQUIP	817 // 810-817: trial rewards for trial 2
+//818-819: unused
+#define VAA_TRIAL3BIT	820 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT1	821 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT2	822 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT3	823 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT4	824 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT5	825 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3POT6	826 // 820-827: trial rewards for trial 3
+#define VAA_TRIAL3EQUIP	827 // 820-827: trial rewards for trial 3
+//828-829: unused
+#define VAA_TRIAL4BIT	830 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT1	831 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT2	832 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT3	833 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT4	834 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT5	835 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4POT6	836 // 830-837: trial rewards for trial 4
+#define VAA_TRIAL4EQUIP	837 // 830-837: trial rewards for trial 4
+//838-839: unused
+#define VAA_TRIAL5BIT	840 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT1	841 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT2	842 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT3	843 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT4	844 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT5	845 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5POT6	846 // 840-847: trial rewards for trial 5
+#define VAA_TRIAL5EQUIP	847 // 840-847: trial rewards for trial 5
+//848: unused
+#define VAA_TRIALREFILL 849 // 849: need to refill health and magic at trial entrance
+// special achievement nonsense
+#define VAA_ARENA		850 // 850-909: how many times winning each arena match?
+#define VAA_BRUTAL		910 // 910: stored bonus damage for the Brutal modifier
+#define VAA_COMBOOM		911 // 911: combo for explosivo. wow... did not plan the variable number like that
+#define VAA_SKILLBONUS	912 // 912: overflow for skill points!
+
 #define PLAYER_SKILLS	(50)	// the most skills the player can have.  Presumably the map will be setup appropriately
 #define MAX_LEVEL		(50)	// the highest level you can level up to
 
@@ -135,6 +368,7 @@
 #define KC_PLANT	(20)
 #define KC_ONION	(22)
 #define KC_BUNNY	(24)
+
 
 #pragma pack(1)
 
@@ -263,6 +497,7 @@ void PlayerControlMe(Guy *me,Map *map,mapTile_t *mapTile,world_t *world);
 
 void DoPlayerFacing(byte c,Guy *me);
 byte PlayerGetItem(byte itm,int val1,int val2);
+void TryToGetItem(byte item, int val1, int val2); // AA addition for copying
 void PlayerWinLevel(byte w,byte l,byte isSecret);
 void SetPlayerHP(int hp);
 void SetPlayerGlow(byte v);
@@ -277,6 +512,7 @@ void PlayerGetMonsterPoints(int level);
 void PlayerGetBossPoints(int level);
 
 void PlayerGetExactXP(int amt);
+void PlayerGetSkillPoints(byte num);
 
 void PlayerCalcStats(void);
 void PlayerBackToLastTown(byte *mapNum);
@@ -285,5 +521,7 @@ void PlayerGetMoney(int amt);
 
 void MadcapPlayer(void);
 void PlayerAddKill(byte type);
+
+byte PlayerUpgradeStatus(byte n);
 
 #endif

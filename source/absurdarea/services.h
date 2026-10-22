@@ -14,6 +14,7 @@
 #define SVC_JUNKSMITH	(56)
 #define SVC_CLOCKWORK	(57)
 #define SVC_ALLUS		(58)
+#define SVC_GURU		(59)
 
 void RenderService(MGLDraw *mgl);
 byte UpdateService(MGLDraw *mgl);

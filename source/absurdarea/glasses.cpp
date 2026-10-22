@@ -1,6 +1,7 @@
 #include "glasses.h"
 #include "player.h"
 #include "display.h"
+#include "achieve.h"
 
 glassEff_t glassEff[NUM_GLASSES]={
 	{{0,1},GE_STAMINA,1},
@@ -25,7 +26,7 @@ glassEff_t glassEff[NUM_GLASSES]={
 	{{3,6},GE_DAMAGE,2},
 	{{1,7},GE_MAGICDAM,10},
 	{{2,7},GE_MAGICGEN,10},
-	{{4,6},GE_LIFEGEN,30},
+	{{4,6},GE_LIFEGEN,15},		// AA changed
 	{{3,7},GE_SPELLCOST,1},
 	{{0,8},GE_SPELLCOST,0},
 	{{1,8},GE_SPELLCOST,3},
@@ -44,7 +45,7 @@ glassEff_t glassEff[NUM_GLASSES]={
 	{{0,10},GE_MAGICGEN,15},
 	{{1,10},GE_STUN,5},
 	{{4,9},GE_KNOCK,8},
-	{{2,10},GE_LIFEGEN,20},
+	{{2,10},GE_LIFEGEN,10},		// AA changed
 	{{6,8},GE_STAMINA,4},
 	{{5,9},GE_STAMGEN,20},
 	{{3,10},GE_MAGIC,4},
@@ -70,7 +71,7 @@ glassEff_t glassEff[NUM_GLASSES]={
 	{{4,12},GE_DAMAGE,5},
 	{{8,10},GE_MAGICDAM,25},
 	{{5,12},GE_MAGICGEN,25},
-	{{7,11},GE_LIFEGEN,10},
+	{{7,11},GE_LIFEGEN,5},		// AA changed
 	{{6,12},GE_LUCK,1},
 	{{9,10},GE_TALENT,0},
 	{{8,11},GE_TALENT,2},
@@ -308,7 +309,22 @@ void GuyDropLens(byte level,byte *type,int *val1,int *val2)
 		6,
 		2,
 	};
-
+	if (ModifierOn(MOD_GLAUCOMA))	// AA, adds up to 999 - 1/1000 fallthrough to artbit!
+	{
+		odds[0]=154;
+		odds[1]=145;
+		odds[2]=132;
+		odds[3]=125;
+		odds[4]=110;
+		odds[5]=95;
+		odds[6]=64;
+		odds[7]=41;
+		odds[8]=34;
+		odds[9]=30;
+		odds[10]=26;
+		odds[11]=23;
+		odds[12]=20;
+	}
 	// decide which lens
 	total=0;
 	chose=rand()%1000;
@@ -322,7 +338,7 @@ void GuyDropLens(byte level,byte *type,int *val1,int *val2)
 		}
 	}
 	if(i>=13)
-		(*type)=IT_LENSA;	// this should never happen
+		(*type)=IT_ARTBIT;	// AA glaucoma 1/1000 artifact bit
 
 	(*val1)=0;
 	(*val2)=0;

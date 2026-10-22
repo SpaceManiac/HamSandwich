@@ -21,26 +21,52 @@ static char shopName[32];
 static byte potionPick[3],curPot;
 static byte svcStuff[SHOP_WID*SHOP_HEI];
 static equip_t msmithItem;
+static char greaserText[4][48];
+
+// AA guru shop
+word CalcAssignedSkillPoints()
+{
+	word amt=0;
+	for (int i = 0; i < PLAYER_SKILLS; ++i)
+		if (player.skillHave[i])
+			amt += player.skillLvl[i];
+	return amt;
+}
+
+word CalcSkillResetCost()
+{
+	word amt = CalcAssignedSkillPoints();
+	if (amt > 100)
+		amt = 100;
+	amt *= 100;
+	amt = (word)((int)amt * (100 - (int)TalentBonus(TLT_HAGGLING) - 10 * (player.axe.magic == EM_QUESTION)) / 100);
+	return amt;
+}
 
 word CalcSmithCost(equip_t *e1,equip_t *e2)
 {
 	word cost;
 
 	cost=(e1->value+e2->value+e1->speed+e2->speed);
+	if (e1->sharpened)
+		cost--;
+	if (e2->sharpened)
+		cost--;
 	if(e1->magic>=1 && e1->magic<=30)	// regular magic
 		cost*=2;
-	else if(e1->magic>=31 && e1->magic<=35)	// elite magic
+	else if(e1->magic>=31 && e1->magic<=45)	// elite magic
 		cost*=5;
 	else if(e1->magic>=46 && e1->magic<=54)	// cursed magic
 		cost*=3;
 	if(e2->magic>=1 && e2->magic<=30)	// regular magic
 		cost*=2;
-	else if(e2->magic>=31 && e2->magic<=35)	// elite magic
+	else if(e2->magic>=31 && e2->magic<=45)	// elite magic
 		cost*=5;
 	else if(e2->magic>=46 && e2->magic<=54)	// cursed magic
 		cost*=3;
 
 	cost*=8;
+	cost = (word)((int)cost * (100 - (int)TalentBonus(TLT_HAGGLING) - 10 * (player.axe.magic == EM_QUESTION)) / 100); // AA haggling discount
 	return cost;
 }
 
@@ -70,7 +96,7 @@ void RenderServiceAlchemy(MGLDraw *mgl)
 void RenderServiceArena(MGLDraw *mgl)
 {
 	int i,cost;
-	char s[16];
+	char s[32];
 
 	PauseBox(120,40,520,320,234);
 
@@ -146,6 +172,8 @@ void RenderServiceArena(MGLDraw *mgl)
 				cost*=2;
 			sprintf(s,"Prize: $%d",cost);
 			PrintGlow(125,360,s,0,1);
+			sprintf(s, "Cleared: %d", player.var[VAA_ARENA+cursor+arenaPage*5]);
+			PrintGlow(400,360,s,0,1);
 		}
 	}
 	else
@@ -158,18 +186,18 @@ void RenderServiceBalloon(MGLDraw *mgl)
 {
 	int i;
 	char s[48];
-	char placeName[6][16]={
-		"Eisburg",
-		"Tina's Arena",
-		"Baskerville",
-		"Frosty Cliffs",
-		"Haunted Highway",
-		"Glacial Gorge",
+	char placeName[6][18]={
+		"Einsburg",
+		"Rooms of Research",
+		"Pitiless Peak",
+		"Rickety Ridge",
+		"Tweestad",
+		"Sankyo Castle",
 	};
 
 	PauseBox(140,40,500,350,234);
 
-	sprintf(s,"Oh, The Places You've Been");
+	sprintf(s,"Everywhere you want to be");
 	CenterPrintGlow(320,45,s,0,0);
 
 	for(i=0;i<6;i++)
@@ -181,7 +209,7 @@ void RenderServiceBalloon(MGLDraw *mgl)
 		if(player.var[VAR_VISITED+i])
 			PrintDark(150,80+i*32+2,placeName[i],0);
 		else
-			PrintDark(150,80+i*32+2,"???",0);
+			PrintDark(150,80+i*32+2,"Tweestad (Under Attack)",0);
 	}
 	i=6;
 	if(cursor!=6)
@@ -301,7 +329,7 @@ void RenderYourJunkJunk(MGLDraw *mgl)
 	y=0;
 	PauseBox(202,32,638,298,234);
 	PauseBox(202,300,638,378,234);
-
+	
 	ConvertEquipmentForShow(1);
 	for(i=0;i<10;i++)
 		for(j=0;j<6;j++)
@@ -324,6 +352,13 @@ void RenderYourJunkJunk(MGLDraw *mgl)
 			else
 				RightPrint(636,304,"Can't be used here",0,1);
 		}
+	}
+
+	if (shopType==SVC_JUNKSMITH && ModifierOn(MOD_GREASER)) // AA Greaser
+	{
+		PauseBox(202,380,638,434,234);
+		for (i=0; i<4; ++i)
+			Print(206, 384+12*i, greaserText[i], 0, 1);
 	}
 }
 
@@ -384,7 +419,6 @@ void RenderServiceMagicSmith(MGLDraw *mgl)
 	Print(6,360,"Jump to cancel",0,1);
 }
 
-
 void RenderServiceJunksmith(MGLDraw *mgl)
 {
 	RenderClockJunkStuff(mgl);
@@ -400,7 +434,7 @@ void RenderServiceClockwork(MGLDraw *mgl)
 void RenderServiceOnion(MGLDraw *mgl)
 {
 	int i;
-	char txt[2][32]={"Join The Onion Ring","Get Beaten Senseless"};
+	char txt[2][32]={"Join The Onion Ring","Promise To Go Away"};
 
 	PauseBox(140,70,500,160,234);
 
@@ -442,8 +476,41 @@ void RenderServiceAllusionary(MGLDraw *mgl)
 
 	sprintf(s,"Page %d",(cursor/9)+1);
 	PrintDark(328,315,s,1);
-	sprintf(s,"Allusion %d/99",cursor+1);
+	sprintf(s,"Allusion %d/99",cursor+1);	// AA
 	RightPrintDark(633,315,s,1);
+}
+
+void RenderServiceGuru(MGLDraw* mgl)
+{
+	byte c;
+	char s[32];
+
+	PauseBox(140, 40, 500, 230, 234);
+
+	CenterPrintGlow(320, 45, "Empty Your Mind?", 0, 0);
+
+	sprintf(s, "Skill Points Assigned: %d", CalcAssignedSkillPoints());
+	CenterPrintGlow(320, 85, s, 0, 1);
+	sprintf(s, "Cost To Reset: $%d", CalcSkillResetCost());
+	CenterPrintGlow(320, 105, s, 0, 1);
+
+	if (cursor == 0)
+		c = 32 * 5 + 16;
+	else
+		c = 240;
+
+	PauseBox(145, 130, 310, 160, c);
+	CenterPrintDark((310 - 145) / 2 + 145, 135, "No", 0);
+
+	if (cursor == 1)
+		c = 32 * 5 + 16;
+	else
+		c = 240;
+	PauseBox(330, 130, 495, 160, c);
+	CenterPrintDark((495 - 330) / 2 + 330, 135, "Yes", 0);
+
+	CenterPrintGlow(320, 180, "Left & Right to choose, Fire to accept.", 0, 1);
+	CenterPrintGlow(320, 200, "All skill points will be refunded.", 0, 1);
 }
 
 void RenderService(MGLDraw *mgl)
@@ -490,6 +557,10 @@ void RenderService(MGLDraw *mgl)
 			break;
 		case SVC_ALLUS:
 			RenderServiceAllusionary(mgl);
+			break;
+		case SVC_GURU:
+			RenderServiceGuru(mgl);
+			RenderChatNoName(mgl);
 			break;
 	}
 }
@@ -572,9 +643,11 @@ byte AddJunk(byte type)
 	return 0;
 }
 
-void JunksmithItem(void)
+void JunksmithItem(bool makeItem = true);	// AA add; if you pass False, it will update the Greaser text instead
+
+void JunksmithItem(bool makeItem)
 {
-	int seed,lvl,i;
+	int seed,lvl,i,c;
 	word seedVal[]={
 		1,	// log
 		2,	// gear
@@ -615,49 +688,150 @@ void JunksmithItem(void)
 
 	seed=0;
 	lvl=0;
+	c=0;
 	for(i=0;i<SHOP_WID*SHOP_HEI;i++)
 	{
 		if(svcStuff[i])
 		{
 			seed+=seedVal[svcStuff[i]-IT_LOG];
 			lvl+=lvlVal[svcStuff[i]-IT_LOG];
+			++c;
 		}
 	}
-	if((rand()%100)>75+(int)TalentBonus(TLT_JUNKSMITH))
+	// AA greaser
+	if (!makeItem)
+	{
+		sprintf(greaserText[0], "Seed: %d", seed);
+		sprintf(greaserText[1], "Level: %d", lvl);
+		if (c<4)
+		{
+			sprintf(greaserText[3], "Nothing (Need 4 Items)");
+			return;
+		}
+	}
+	if(makeItem && ((rand()%100)>75+(int)TalentBonus(TLT_JUNKSMITH)))
 	{
 		NewMessage("You broke the junk!",0);
 		MakeNormalSound(SND_BOOM);
 		return;
 	}
-	TalentPoint(TLT_JUNKSMITH,1);
+	if(makeItem)
+		TalentPoint(TLT_JUNKSMITH,2); // AA double junk XP
 	srand((dword)seed);
 	type=0;
 	while(type<IT_AXE || type>IT_GOLDENPARKA)
 	{
 		EquipCreateItem((byte)lvl,&type,&val1,&val2);
 	}
+	srand(timeGetTime()); // AA moved here
 	if((type==IT_MAGICAXE || type==IT_MAGICPARKA || type==IT_MAGICAMULET) && player.talentLevel[TLT_JUNKSMITH]<4)
 	{
-		NewMessage("The junk exploded!",0);
-		MakeNormalSound(SND_BOOM);
-		return;
+		if (makeItem)
+		{
+			NewMessage("The junk exploded!", 0);
+			MakeNormalSound(SND_BOOM);
+			return;
+		}
+		else
+		{
+			sprintf(greaserText[3], "An explosion!");
+			return;
+		}
 	}
 	if((type==IT_GOLDENAXE || type==IT_GOLDENPARKA || type==IT_GOLDENAMULET))
 	{
 		if(player.talentLevel[TLT_JUNKSMITH]<7)
 		{
-			NewMessage("The junk exploded!",0);
-			MakeNormalSound(SND_BOOM);
-			return;
+			if (makeItem)
+			{
+				NewMessage("The junk exploded!", 0);
+				MakeNormalSound(SND_BOOM);
+				return;
+			}
+			else
+			{
+				sprintf(greaserText[3], "An explosion!");
+				return;
+			}
 		}
 		else if((val1/65536)>=EM_ARTSTART && (val1/65536)<=EM_ARTEND && player.talentLevel[TLT_JUNKSMITH]<10)	// it's an artifact!
 		{
-			NewMessage("The junk exploded!",0);
-			MakeNormalSound(SND_BOOM);
-			return;
+			if (makeItem)
+			{
+				NewMessage("The junk exploded!", 0);
+				MakeNormalSound(SND_BOOM);
+				return;
+			}
+			else
+			{
+				sprintf(greaserText[3], "An explosion!");
+				return;
+			}
 		}
 	}
-	srand(timeGetTime());
+	if (!makeItem)
+	{
+		// copied from EquipAdd
+		equip_t eq;
+		eq.type = type;
+		eq.value = (val1) % 256;
+		eq.speed = ((val1) / 256) % 256;
+		eq.magic = (val1) / 65536;
+		eq.sharpened = 0;
+		eq.count = 1;
+		switch (eq.type)
+		{
+		case IT_MAGICAXE:
+		case IT_MAGICAMULET:
+		case IT_MAGICPARKA:
+			eq.skill[0] = (val2) % 256;
+			eq.skill[1] = 0;
+			eq.skill[2] = 0;
+			break;
+		case IT_GOLDENAXE:
+		case IT_GOLDENAMULET:
+		case IT_GOLDENPARKA:
+			eq.skill[0] = (val2) % 256;
+			eq.skill[1] = ((val2) / 256) % 256;
+			eq.skill[2] = ((val2) / 65536) % 256;
+			break;
+		default:
+			eq.skill[0] = 0;
+			eq.skill[1] = 0;
+			eq.skill[2] = 0;
+			break;
+		}
+		sprintf(greaserText[3], "%s", EquipName(&eq));
+		return;
+	}
+	if (type != IT_AXE && type != IT_PARKA && type != IT_AMULET) // AA crafted magic
+	{
+		PlayerSetVar(VAA_MAGICJUNKED, 1);
+#ifdef DIRECTORS
+		picToDrop = 6;
+		if ((type == IT_GOLDENAXE || type == IT_GOLDENPARKA || type == IT_GOLDENAMULET) && opt.galPix[picToDrop - 1] == 0) // && player.var[VAR_TEMP+15]==0)
+		{
+			opt.galPix[picToDrop - 1] = 1;
+			SaveOptions();
+			bullet_t* b;
+			b = FireBullet(goodguy->ID, goodguy->x, goodguy->y, FIXAMT * 15, 64, BLT_ITEM, 0);
+			if (b)
+			{
+				//player.var[VAR_TEMP+15]=1;
+				b->anim = IT_PICTURE;
+				b->target = picToDrop;
+			}
+			NewMessage("You Junksmithed a Golden item!", 0);
+			MakeNormalSound(SND_TALENTUP);
+			if (goodguy)
+			{
+				FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 1);
+				FXRing(1, goodguy->x, goodguy->y, goodguy->z, 10, 2);
+			}
+		}
+		picToDrop = 0;
+#endif
+	}
 	b=FireBullet(goodguy->ID,goodguy->x,goodguy->y,FIXAMT*20,rand()%256,BLT_ITEM,0);
 	if(b)
 	{
@@ -692,6 +866,14 @@ void MakeClockBot(void)
 
 	MakeNormalSound(SND_SMITH);
 	MakeNormalSound(SND_PUPPETHAT);
+}
+
+void InitGreaser()
+{
+	sprintf(greaserText[0], "Seed: 0");
+	sprintf(greaserText[1], "Level: 0");
+	sprintf(greaserText[2], "Smithing:");
+	sprintf(greaserText[3], "Nothing (Need 4 Items)");
 }
 
 void InitService(byte type)
@@ -730,6 +912,8 @@ void InitService(byte type)
 		case SVC_JUNKSMITH:
 			strcpy(shopName,"Junksmithing");
 			ClearJunkpile();
+			if (ModifierOn(MOD_GREASER))
+				InitGreaser();
 			break;
 		case SVC_CLOCKWORK:
 			strcpy(shopName,"Clockwork");
@@ -738,7 +922,15 @@ void InitService(byte type)
 		case SVC_ALLUS:
 			strcpy(shopName,"The Allusionary");
 			break;
+		case SVC_GURU:
+			strcpy(shopName, "Transcendental Meditation");
+			break;
 	}
+}
+
+void UpdateGreaser()
+{
+	JunksmithItem(false);
 }
 
 static byte ButtonPressedClockJunk(byte btn)
@@ -851,6 +1043,8 @@ static byte ButtonPressedClockJunk(byte btn)
 						DropItem(cursor);
 						SortEquipment();
 						MakeNormalSound(SND_MENUSELECT);
+						if (shopType == SVC_JUNKSMITH && ModifierOn(MOD_GREASER))
+							UpdateGreaser();
 					}
 					else
 						MakeNormalSound(SND_MENUCANCEL);
@@ -903,6 +1097,8 @@ static byte ButtonPressedClockJunk(byte btn)
 					SortJunkpile();
 					MakeNormalSound(SND_MENUSELECT);
 					MessageDisable(0);
+					if (shopType == SVC_JUNKSMITH && ModifierOn(MOD_GREASER))
+						UpdateGreaser();
 				}
 			}
 			break;
@@ -990,9 +1186,11 @@ static byte ButtonPressedMagicSmith(byte btn)
 			}
 			else	// already have one item
 			{
-				if(player.items[cursor].type==msmithItem.type && player.money>=CalcSmithCost(&msmithItem,&player.items[cursor]))
+				word cost = CalcSmithCost(&msmithItem, &player.items[cursor]);
+				if(player.items[cursor].type==msmithItem.type && player.money>=cost)
 				{
-					player.money-=CalcSmithCost(&msmithItem,&player.items[cursor]);
+					TalentPoint(TLT_HAGGLING, cost);
+					player.money-=cost;
 					SmithItems(&msmithItem,&player.items[cursor]);
 					DropItem(cursor);
 					SortEquipment();
@@ -1277,12 +1475,19 @@ static byte ButtonPressedSharpen(byte btn)
 				}
 				else
 				{
-					if(player.axe.sharpened)
-						NewMessage("That axe is as sharp as it gets!",0);
-					else if(player.money<50)
-						NewMessage("You can't afford it!",0);
 					MakeNormalSound(SND_MENUCANCEL);
-					return 0;
+					if (player.axe.sharpened)
+					{
+						NewChat(53);
+						NewMessage("That axe is as sharp as it gets!", 0);
+					}
+					else
+					{
+						if (player.money < 50)
+							NewMessage("You can't afford it!", 0);
+						MakeNormalSound(SND_MENUCANCEL);
+						return 0;
+					}
 				}
 			}
 			else
@@ -1331,6 +1536,63 @@ static byte ButtonPressedOnion(byte btn)
 	return 1;
 }
 
+static byte ButtonPressedGuru(byte btn)
+{
+	char s[LOG_LEN];
+
+	switch (btn)
+	{
+	case CONTROL_LF:
+	case CONTROL_RT:
+		cursor = 1 - cursor;
+		break;
+	case CONTROL_B1:
+		if (cursor == 1)	// yes
+		{
+			word cost = CalcSkillResetCost();
+			if (CalcAssignedSkillPoints() > 0 && player.money >= cost)
+			{
+				if (CalcAssignedSkillPoints() >= 100)
+					AchieveNow(88);	// AA achievement
+				TalentPoint(TLT_HAGGLING, cost);
+				player.money -= cost;
+				for (int i = 0; i < PLAYER_SKILLS; ++i)
+					if (player.skillHave[i])
+					{
+						PlayerGetSkillPoints(player.skillLvl[i]);
+						player.skillLvl[i] = 0;
+					}
+				PlayerCalcStats();
+				MakeNormalSound(SND_GURUFLOAT);
+				sprintf(s, "Skills reset! You have %d Skill Points.", (word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]));
+				NewMessage(s, 0);
+				NewChat(375);
+				return 1;
+			}
+			else
+			{
+				if (CalcAssignedSkillPoints() == 0)
+					NewMessage("You have no assigned Skill Points!", 0);
+				else if (player.money < CalcSkillResetCost())
+					NewMessage("You can't afford Nirvana!", 0);
+				MakeNormalSound(SND_MENUCANCEL);
+				return 0;
+			}
+		}
+		else
+		{
+			MakeNormalSound(SND_MENUSELECT);
+			return 0;
+		}
+		break;
+	case CONTROL_B2:
+		MakeNormalSound(SND_MENUCANCEL);
+		return 0;
+		break;
+	}
+	return 1;
+}
+
 static byte ButtonPressed(byte btn)
 {
 	switch(shopType)
@@ -1352,6 +1614,8 @@ static byte ButtonPressed(byte btn)
 			return ButtonPressedClockJunk(btn);
 		case SVC_ALLUS:
 			return ButtonPressedAllusionary(btn);
+		case SVC_GURU:
+			return ButtonPressedGuru(btn);
 	}
 	return 0;
 }
@@ -1404,8 +1668,9 @@ byte UpdateService(MGLDraw *mgl)
 	oldc=c;
 
 	HandleServiceKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit shop
+	if (lastKey == 27 || GetGamepadStart())	// hit ESC to exit shop		// AA or gamepad start
 	{
+		FreezeGamepadStart();
 		if(shopType==SVC_ALCHEMY)
 		{
 			while(curPot>0)
@@ -1427,8 +1692,10 @@ byte UpdateService(MGLDraw *mgl)
 				SortEquipment();
 			}
 		}
+		else if (shopType==SVC_ONION)
+			return 1;
+		lastKey = 0;
 		return 0;
-		lastKey=0;
 	}
 
 	return 1;

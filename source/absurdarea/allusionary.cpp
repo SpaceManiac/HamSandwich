@@ -1,302 +1,539 @@
 #include "allusionary.h"
 
 allusion_t allusion[NUM_ALLUSIONS]={
-	{"Alien Blood",
-	 "A reference to the Alien(s) movie series.  In that movie, the aliens bled acid that would burn through things, so that is just what you do when you drink this delicious treat.",
+	{"Class System",
+	 "The Absurd Area Class System is based on the Mini Monster Madness addon that came with the Collector's Edition. Mini Monster "
+	 "Madness was kinda... unfinished? But I really liked the core idea of picking a class and its skills! That's why I've been "
+	 "calling it the Class System instead of a \"skill tree\" or whatever. I took the idea and ran with it pretty far, and here we "
+	 "are!"
 	},
-	{"All Up In Your Grill",
- 	 "(From the Throwing skill description)  I don't actually know what this is a reference to.  It's just a bit of incredibly stupid slang that we sometimes use around here for fun.  Grill means \"mouth\" literally (Or maybe it means face, but I thought it was mouth), so this phrase means \"in your face\", as in invasive and into your business, though it can also literally mean getting in someone's face, which is how it is used in the game.  Use the throwing skill to avoid having to get close to enemies!"
+	{"Alliteration",
+	 "I overused alliteration because it is a very cheap and easy way to be silly. However, I had to do extra work to make some of "
+	 "the level names alliterate, so it didn't save much effort. I didn't know what \"Hiemal\" meant before I looked up synonyms for "
+	 "\"cold,\" for example. \"Caliginous\" means \"dark,\" and so on. I am proud of \"Precipitous Precipices\" though."
 	},
-	{"Asbestos Underwear",
-	 "Asbestos is of course a flame retardant (and highly toxic) material.  On the internet, people sometimes say they are putting on their asbestos underwear when they have said something controversial.  This means they are preparing themselves for the flames (insults/attacks) they expect to be coming."
+	{"General Quest Names",
+	 "I'm not going to waste space explaining all the quest names, since so MANY of them are just slight parodies on the existing LL2 "
+	 "quest name. I did want to change EVERY quest name, and all the quest descriptions, and all the dialogue. Even if I didn't "
+	 "have a knee-slapper of an idea, I wanted to change it, and a simple play on words is enough."
 	},
-	{"Axes R Us",
-	 "This obviously refers to the toy store chain \"Toys 'R' Us\", although there are many other stores in the real world that have also stolen the naming convention and terrible grammar, like Tools-R-Us."
+	{"Equipment Changes",
+	 "I'm sure most people won't notice, but I made a few changes to magic items! The ones that heal you or recover stamina give you "
+	 "more than they used to, because they were actually kind of lame. 1 HP every 25 seconds or whatever? Weaksauce. You get that "
+	 "with 1 skill point in Survival. But the biggest change is the super artifacts... I figured those were SO powerful they could "
+	 "break the game, and it's more likely than usual because I hand out Artifact Bits! So I halved their stats and halved the "
+	 "damage from the Doom Parka. They're still really good, but they don't make the game trivial."
 	},
-	{"Ballooning",
-	 "You'll notice when using Phileas' balloon service that he will only take you to places you've been before.  This is standard in such games - can't let the player just teleport to new places!  The balloon is instead a shortcut to avoid repetition.  An attempt to rationalize this is made by Phileas.  Apparently he is so forgetful that he needs you to describe in detail where you are going, and you can't do that if you haven't been there.  It's a shame he won't just let you wander around in the balloon, maybe find some hidden stuff!"
+	{"Town Names",
+	 "The first town was what decided my naming convention. \"Eisburg\" becomes \"Einsburg,\" literally \"One + Village\" in German. "
+	 "The other towns follow a similar pattern in other languages - \"Tweestad\" is \"Two + City\" in Dutch, \"Sankyo\" = \"Three + "
+	 "Big City\" in Japanese, and the mushroom one, according to Google Translate, is \"Four + Camp\" in Maori. They also sound like "
+	 "other English words - \"Twisted,\" \"Thank You,\" and \"Weapon,\" but those words don't mean anything here."
 	},
-	{"Baskerville",
-	 "You meet the Ice Hounds here, a reference to \"The Hound Of The Baskervilles\", a Sherlock Holmes story by (surprisingly) Sir Arthur Conan Doyle. Only this time it's houndS, and just one Baskerville."
+	{"Curium",
+	 "Well, in LL2 it's called \"Healium,\" so this one cures instead of heals. Also, the Frostbane is mixed with \"22 other "
+	 "flavors\" because... well, did you read the LL2 allusion for Healium? She's mixing a batch of KFC? Well, Dr. Pepper is made "
+	 "from a mix of \"23 flavors.\""
 	},
-	{"Bear Room Brawl",
-	 "This is a reference to the common phrase \"bar room brawl\", only this isn't a bar, it's a room full of bears.  Secondly, the description says it's a necessity that you slay the bears.  This is an oblique and weak reference to the phrase \"the bare necessities\", which is so often redone as \"the bear necessities\" for various cartoon purposes.",
+	{"No, No, It's A Medicine",
+	 "While on the subject of Curium... the real life Curium is an element like Helium. Except it's not like helium, because helium "
+	 "is fairly nonreactive and harmless, whereas Curium is famously so radioactive that it killed the people who first isolated it, "
+	 "because they didn't know that 1 gram of the stuff is all it takes to end you. But yeah, this stuff just heals you. Wouldn't "
+	 "that be funny as a mean prank in a game though? Have a substance called \"Curium,\" mislead the player into thinking it's a "
+	 "health potion, and then politely inform them that their character will die of radiation poisoning."
 	},
-	{"Beowulf",
-	 "From the Axe Mastery skill description.  This is not a reference to classic literature at all, but rather to the song \"Let's Build A Snowman\" from Cannibal: The Musical, in which the singer declares \"So, let's build a snowman, we can make him our best friend, We can name him Bob, or we can name him Beowulf!  We can make him tall or we can make him not-so-tall!  Snowman!\"  No, it doesn't rhyme or have much rhythm.  It's just very funny.",
+	{"10,000th Customer",
+	 "This is a reference to scammy internet ads from my childhood. In Absurd Area, Geoffrey is up to some shady stuff...",
 	},
-	{"Black Market Bob",
-	 "There is no reason this guy is named Bob other than that it starts with a B and sounds goofy.  It's just the name that came to me when I needed a black market character.  Why did I need one?  So I could totally rip off the \"gambling\" feature (which is so not gambling) in Diablo 2.  Which I did."
+	{"Taylor",
+	 "Honestly, half of my character writing for Absurd Area was \"make the character the opposite of their original personality\" "
+	 "or \"make them an exaggeration of their original personality.\" Especially if they didn't have much character to begin with. "
+	 "Taylor is one of those, since his only character trait was \"old.\" Not much to work with, so I just exaggerated it. Also, "
+	 "when he says \"That's just grand, that is!\" It's a Wallace and Gromit reference."
+	},	// 9
+	{"Mickey",
+	 "Mickey was kind of mean in the original, although it's understandable because you do kind of just barge into his house. I "
+	 "decided to take that and run with it. Now he manages the inn, which appears to be the only residential building in town, "
+	 "and he's very short-tempered without such a good reason. And yet, I still gave him more characterization than most. I think I "
+	 "was just inspired. I was originally going to make Healiana be a bit snarky at you, \"I SOMEHOW still don't have enough "
+	 "Frostbane herbs!\" But I figured they shouldn't ALL be jerks."
 	},
-	{"Blunderdome",
-	 "The second reference to Mad Max 3: Beyond Thunderdome in the game.  The first was Tina herself.  The third is Beyond Blunderdome.",
+	{"Teleporting Guru",
+	 "I think the Guru Teleporting In effect in Absurd Area is really cool. That's just what happens when you summon monsters onto "
+	 "a specific tile, but it's perfect for the Guru. Part of it is that villagers seem to always do their idle animation when you "
+	 "summon them, so he will always be flapping his arms as he lands. It wasn't planned, but it was fortuitous."
 	},
-	{"Bobby Joe",
-	 "Just a name that sounds like a child, and very unfantasy style.  Which is important to me.  I want to subvert expectations where possible.  Man, that kid has an awful haircut.",
+	{"Guru Skill Resetting",
+	 "Originally, the Guru was going to \"reveal the true forms\" of equipment, since you couldn't just have the player pick up "
+	 "magic items off the ground. After I resumed the project in Jan 2025, I decided to just code in a way to hand items to the "
+	 "player. So... what was I going to do with all the teleporting Guru locations I had created? Well, I was ALSO thinking how "
+	 "cool it would be to be able to reset your skills. It was a lot easier than I expected. You still can't reset Upgrades though!"
 	},
-	{"Bodzha",
-	 "This monster's name is phonetically almost identical to \"badger\" as pronounced by a British person.  I based the monster on badgers, because I needed a monster with big claws, and so I could name one the Stinkin' Bodzha, but I also wanted an original name so I could carry the monster on into Loonyland history.  I mean, it's clearly not a badger...  Stinkin' Bodzha is a reference to the line \"We don't need no stinkin' badgers!\" from the Weird Al movie UHF, which is itself a parody of \"We don't need no stinkin' badges\" in Treasure Of The Sierra Madre."
+	{"Early Bokboks",
+	 "In the original, the Bokboks were in the Underworld, so you could only do the Magicsmithing very late. I wanted to let you do "
+	 "it MUCH earlier, which is why you can find all the Bokboks so early on. It also is why Sharona left the Underworld to travel "
+	 "above ground, which made it more fun writing her character dialogue. It worked out."
 	},
-	{"Bonehead",
-	 "Obviously a common insult indicating someone is unintelligent, neatly juxtaposed with the fact that, as skeletons, these guys have heads made entirely of bone.  These monsters are from Dr. Lunatic (and Loonyland, Spooky Castle, and... well, it's a long list).  They're brought back here specifically only for Loony to use, kind of a post-foreshadowing of his future as Dr. Lunatic.  Very postmodern.",
+	{"Magicsmithing",
+	 "You know... it is nice that you CAN do Magicsmithing much earlier. But I did throw some useful magic items at you, so if you "
+	 "go exploring enough, you might not WANT to spend your money on Magicsmithing. Which is why it's a good thing I gave you other "
+	 "things to spend large sums of money on..."
 	},
-	{"Bop Em On The Head",
-	 "This quest name is a reference to the creepy children's song \"Little Bunny Foo-Foo\" who hops through the forest, scooping up field mice and bopping them on the head.  I made the reference thinking it was a bear that bopped bunnies on the head, so it's not a very good reference after all.",
+	{"To Tame Them Is Your",
+	 "\"To Tame Them Is Your Cause!\" Who doesn't know this one? Is there anybody who hasn't memorized the Pokemon theme song? OK, "
+	"I never watched the show. Actually, I've never even played one of the games. But yeah, it's a Pokemon reference."
 	},
-	{"Bubbleweed",
-	 "You notice how the herb names are a bit odd?  That's because I came up with Asbestos (for the asbestos underwear) and Frostbane (because it seemed appropriate to the winter environment), and then discovered that to have 20 potions, I needed exactly 6 herbs.  Thus I realized I could have herbs with initials from A to F!  Brilliant!!  Bubbleweed is just a name that came to me looking for B's, then the idea of making it grow in riverbanks was obvious and gives it a little realism.",
-	},
-	{"Burly Brawl",
-	 "This is a reference to the fight in The Matrix Reloaded, when Neo battles dozens of copies of Agent Smith at once.  I don't know how the term entered popular conversation, since it's not called that in the movie, but apparently the effects team called it the burly brawl, and everyone else does too.  It's also the name of the song on the soundtrack pertaining to that scene.",
-	},
-	{"Burninate",
-	 "This is how Trogdor the dragon describes destroying peasant villages via fire.  Trogdor is a cartoon invention of Strongbad, who himself is a cartoon invention of the Brothers Chaps, featured on Homestar Runner (a web cartoon).  This skill also references Kid Mystic (a Hamumu character) directly in its description, because Kid Mystic never paid attention in magic class except for fireballs, the one kind of magic he really likes.  Lastly, the description says \"asplodes\" instead of \"explodes\", another Strongbad reference.",
-	},
-	{"Cave Bear",
-	 "The book \"Clan Of The Cave Bear\" by Jean M. Auel.  Never read it, but nonetheless I'm sure this is a very accurate portrayal.",
-	},
-	{"Cereal",
-	 "When Curaga tells you she is being \"totally cereal\", that's actually a South Park reference.  On South Park, for no reason I can fathom, they had Al Gore repeatedly using the word cereal in place of serious, making him sound like a preteen girl.  Curaga shares this particular affectation.",
-	},
-	{"Cilantro",
-	 "My dad really hates cilantro.  I don't particularly like it myself.  This is a nice herb to include because what other fantasy game includes cilantro as an herb?",
-	},
-	{"Cool-Ade",
-	 "A very blunt reference to the drink Kool-Aid, but with the subtle changes needed to avoid lawsuits, and to make it very clearly about \"cool\", which is to say freezing enemies that get close.",
-	},
-	{"Cryozoid",
-	 "Another Hamumu reference.  These monsters are in Dr. Lunatic, and they're brought back here, since you are in fact a young Dr. Lunatic.  Note that these, Boneheads, and Shrooms are the ONLY monsters or items in the entire game that are brought in from another game.  This was an artistic choice, to say \"You are Dr. Lunatic, so this is what you know how to do.\"  The description of this skill is just meant to be vaguely Lovecraftian, to make them sound horribly frightful, until you see that they're fuzzy.",
-	},
-	{"Crystal Quest",
-	 "A very direct and clear name for the quest, and also the name of a video game.",
-	},
-	{"Curaga",
-	 "Like her sister Healiana, Curaga is named after the act of healing.  However, her name is directly lifted from the Final Fantasy game series.  In that game, oddly, spells get more powerful by adding the suffixes '-ra' and then '-ga' to them.  So the Cure spell upgrades to Cura, which then reaches the ultimate form as Curaga.  Hence the name.",
-	},
-	{"Devil Grass",
-	 "This herb is referenced a few times in Stephen King's Dark Tower series.  Always good to have a shout-out to Stephen King!  The description of devil grass in-game refers to the thing I most commonly associate with LSD use - proclamations that the Earth is being invaded by giant lizard men from space.  Saw it on the Daily Show once!  Actually, they didn't say the guy saying it used LSD, I just assumed that... because he was talking about giant space lizards.",
-	},
-	{"Dr. Deflector",
-	 "A take on Dr. Pepper.  There's a fair chance that there actually IS a drink called Dr. Deflector, because all the generic companies that try to rip off Dr. Pepper come up with the most insane names.  A classic (and disgusting) one from my college days was Dr. Smooth.  Such a cool name that a friend adopted it as a handle.  He was also the only one who dared to drink that stuff.",
-	},
-	{"Eau De Monster",
-	 "In French, perfume is called \"eau de toilette\", which contrary to popular belief does not mean \"toilet water\".  Well, I guess it does literally.  But what it MEANS is water you apply to yourself in the bathroom, i.e. for personal grooming purposes.  Nonetheless, Eau De Monster is a delightful scent of monster, to attract monsters to you.",
-	},
-	{"Elderberry",
-	 "This is a vague Monty Python reference.  Elderberries are a real thing, but I thought of them because of the line in Monty Python And The Holy Grail, \"Your mother was a hamster and your father smelt of elderberries!\"  I don't know what they smell like, but based on a little googling, they probably have a nice berry smell.",
-	},
-	{"Explosivo",
-	 "A Tenacious D reference!  Explosivo is a song by Tenacious D, which isn't actually about anything.  In fact, the chorus goes \"What's the name of the song, Explosivo!  Don't know what it's about, but it's good to go.\"",
-	},
-	{"Factory Clearance",
-	 "Often, businesses will have \"factory clearance sales\", which really means they want to clear out their warehouse, I believe.  I mean, to clear out the factory, they'd have to sell the equipment they use to make their products, not the products themselves!  Anyway, in the game, you are indeed clearing out an actual factory, proving that once again, Hamumu is more scientifically accurate than common terminology.",
-	},
-	{"Fear Beer",
-	 "Seemingly self-explanatory, but it's actually inspired loosely by \"near beer\", the popular term for non-alcoholic beer.",
-	},
-	{"Festivus",
-	 "The people of Winter Woods celebrate Festivus.  This is a holiday popularized on the TV show Seinfeld, although it did actually exist before that.  It is a fairly recent invention, and it's very silly.  The metal pole in the middle of Eisburg is a Festivus Pole, an actual Festivus tradition.  Feel free to Google the origins of this unique holiday.",
-	},
-	{"Freezing",
-	 "The description of this talent says \"Icy glare, cold shoulder, assorted other ice puns.\"  What's that an allusion to?  The obnoxious way that everything in this game has to be a big joke!  Yes, I'm even mocking myself!",
-	},
-	{"Frostbane",
-	 "Can't have a list of herbs without some kind of \"bane\" in it, right?  This is an original invention.  It is of course the bane of frost, so the villagers believe that it wards away frost somehow.  Don't know why they think that, since it grows in snow.",
-	},
-	{"Gale",
-	 "Not a reference to anything, simply the name of exactly what it does.  But I should mention that there is a spell called Gale in the game Guild Wars which also knocks down enemies.  Mine is cooler.",
-	},
-	{"Gear",
-	 "The gear is described as metal and solid, a lame little reference to Metal Gear Solid, a Playstation game.",
-	},
-	{"Geoffrey",
-	 "As the proprietor of Axes R Us, it is only proper that Geoffrey should have a very long neck... he's a human version of Geoffrey the Giraffe, the mascot of Toys R Us.",
-	},
-	{"Ghost Dog",
-	 "A very very minimal reference to the movie \"Ghost Dog: Way Of The Samurai,\" which features precisely zero undead canines.",
-	},
-	{"Gladiator",
-	 "The description of this talent is a complex allusion.  Gladiator is of course a Russell Crowe movie, and on South Park, they poked fun at Russell Crowe by giving him a TV show wherein he and his friend the talking tugboat would travel around the world getting in brawls.  The show's song said that Russell was \"fightin' round the world.\"",
-	},
-	{"Going and Going...",
-	 "(Piercing skill description) The phrase \"Keeps on going, and going, and going...\" is of course from Energizer commercials featuring a pink bunny.  Don't pretend you don't know it.",
-	},
-	{"Haggling",
-	 "The idea of pinching pennies so hard you can sell them as souvenirs refers to those machines at tourist attractions.  You put a penny in them (and a quarter or more to pay for the great prize), and the machine smashes the penny, imprinting some kind of emblem on it, as a keepsake of your visit.",
-	},
-	{"Healiana",
-	 "This name is not actually a reference to anything, but rather a play on the very overly fey and sparkly names that female healing magic people in fantasy games and literature have.  Like \"Moonmist\" or \"Alluria\".  I just took it one step further and flat out called her Healiana, because she heals.",
-	},
-	{"Healium",
-	 "Obviously a play on \"Helium\".  But more importantly, when Healiana says she is mixing the Frostbane with 10 other secret herbs and spices, that's an allusion to the KFC secret recipe of 11 herbs and spices.",
-	},
-	{"Herbal Essences",
-	 "I use this brand of shampoo.",
-	},
-	{"Hornswaggle, Lt.",
-	 "If you talk to the Lt. again without completing his task, he says \"What do I look like, some kind of guy who's not lazy?\", which is a direct quote from the TV show Futurama.  His name is not a reference to anything, it just sounds funny.",
-	},
-	{"Ignite",
-	 "There's no reference in this actual spell, but the symbol for it on the Spell Menu is an homage to those stick figure warning labels that are so amusing, with their heads on fire and whatnot.",
-	},
-	{"It's Not Easy",
-	 "In this Arena battle, you are poisoned the entire time, making you green.  This is a reference to the Kermit The Frog song \"It's Not Easy Being Green.\"",
-	},
-	{"Jolting Soda",
-	 "An obvious, perhaps too obvious, take on Jolt Cola.  Making it shoot electricity was a no-brainer.",
-	},
-	{"Junksmith",
-	 "Ah, once again attaching a word to the suffix -smith has paid off!  This talent's description refers to the TV show MacGyver, in which the titular character would always build amazing weapons and tools out of tiny bits of seemingly useless junk.  Also note when junksmithing that the go button is labeled \"Smith It Good\", a reference to the Devo song \"Whip It Good.\"",
-	},
-	{"Klonk",
-	 "Klonk is your basic troll/ogre monster.  They always have names like Ugg and Bonk.  I chose Klonk.  It is nothing more than a description of what he does with his club.",
-	},
-	{"Legitimate Business",
-	 "Mafia people, at least in stories, always refer to themselves as \"legitimate businessmen\", and hide behind fronts of seemingly respectable businesses.  Bob is not as clever as they are, and simply puts up this sign in front of his business.  Subtlety is not his forte.",
-	},
-	{"Leeeroy Jenkins",
-	 "This is one possible combination of Inscribed Lenses you can put in your glasses.  It is a reference to a World Of Warcraft legend, based on a joke video about a player who charges in ahead of his guild into a dangerous area, forcing them to all rush in after him and end up getting wiped out.  His name, as well as his infamous battlecry, is \"LEEEEROOOY JENKINS!\"  The effect of the lenses is designed accordingly.  Don't ask me why this is so famous, it just is.",
-	},
-	{"Log",
-	 "The description of the Logs in the item list is a line from the song in a fake commercial for a toy called \"Log\" (which was simply a log) in the TV show Ren & Stimpy.  It also describes logs quite eloquently.",
-	},
-	{"Luckenbrau",
-	 "A riff on the beer Lowenbrau.  Brau is German for brew, did you know?  Hence German beers are often called somethingbrau.  Which (besides a lack of creativity) is why there is also a potion called Healenbrau.  Once on the Simpsons, Homer mentioned \"Skittlebrau\", the beer with Skittles in it.",
-	},
-	{"Macguffins",
-	 "The package for Curaga is filled with these.  What are they?  It's a classic term from moviemaking, referring to an object that has no other purpose than to move the story along - doesn't matter what's in the package, it's just the thing you need to deliver to complete the quest!  See also \"Thing Of Majig.\"",
-	},
-	{"Magic Box, The",
-	 "The magic shop owned by Giles on Buffy The Vampire Slayer was called The Magic Box!  The proprietor of this shop is named Guy Magic, because for the longest time I just had him listed as 'Magic Guy', since I couldn't come up with a name for him.",
-	},
-	{"Magicsmith",
-	 "This is not a reference to anything at all, it's simply my own invention.  You can put almost anything in front of the suffix -smith and make a new craft.  In this case, it's a magicsmith, who smiths magic.  In the web game Kingdom Of Loathing, there's a skill of meatsmithing, which is building things out of meat.  Kind of gross.  The Magicsmith's name is Mrs. Smith.  We never find out her first name, until now: it's Magic.  Her name is Magic Smith.",
-	},
-	{"Major Fishbug",
-	 "A major in-joke.  My nephew Trey once drew a picture that looked like some kind of large fish-monster (he was 3, so the exact details were a bit unclear).  When asked what it was, he called it a \"major fish-bug!\"  And that is where Major Fishbug got his name.",
-	},
-	{"Maze Of Death, The",
-	 "An obscure reference to an obscure series, the Clerks animated series.  In the pilot episode, after ascending the side of Leonardo Leonardo's office building, they are presented with two doors they can enter to get inside.  One is blank, and the other is labeled \"The Maze Of Death\".  Randal says they should take that one, because they don't know what they're getting with the other door.  This proves unwise.",
+	{"Free Melly",
+	 "A reference to \"Free Willy,\" a movie which I might have seen when I was 8. Or maybe I only saw part of it, asked my parents "
+	 "if I could see the full movie, and never got around to it. I actually don't remember. The scene where the beached whale "
+	 "exploded was cool, though. Why did they try to use dynamite? Terrible idea."
 	},
 	{"Melody",
-	 "The only reason Bob's wife is named Melody is so that I could include this reference in a quest name: Unchain Melody.  It of course refers to the song \"Unchained Melody\" by The Righteous Brothers, which was made exceedingly popular (again) by the movie Ghost.",
+	 "Melody's character writing started as my just turning her character upside down, but then I just kind of wrote a subplot "
+	 "about it. It's fine to START with lazy writing, as long as you follow that little voice telling you to take it farther and "
+	 "do something cool with it."
 	},
-	{"Mickey",
-	 "This villager is named Mickey only so that the quest to rid the mice from his basement could be called \"Mickey's Mice\", which is of course an allusion to a fairly well known rodent.  Mickey himself (despite his disco appearance, which was just a random notion to make him distinctive) is a play on how you always barge into everybody's house in RPGs and take what you want.  Mickey doesn't approve.",
+	{"Polar Pond Ice Maze",
+	 "The ice maze is based on similar mazes in Chip's Challenge, for which I enjoyed making maps to solve the levels. We actually "
+	 "had a big ol' scrapbook full of graph paper maps of Chip's Challenge levels. I found out later that some gamers actually don't "
+	 "enjoy making their own maps. Ridiculous! Anyway, if you want the parka early, you will have to make your own map and find your "
+	 "way through. Lucky you!"
+	},	// 18
+	{"Rock 'N Stole",
+	 "Rock And Roll. But they stole, a rock. OK, this one was a stretch.",
 	},
-	{"Mixology",
-	 "The description of this Talent mentions several different mixed drinks and says \"Shaken, not stirred.\"  That is how James Bond (of the James Bond movie series, in case you haven't heard of him) always requests his martinis.",
+	{"Not Folded Enough",
+	 "If you try to sharpen an already-sharpened axe, Woody will tell you the metal hasn't been folded enough to hold an edge that "
+	 "sharp. This is a reference to the myth that Japanese swords were SO sharp because they folded the metal over 1,000 times. "
+	 "Actually, they folded the steel 1,000 times because it was poor quality and had too much carbon, and they had to fold it to "
+	 "squeeze the extra carbon out. Or maybe Japanese metalsmiths had a former career as pastry chefs."
 	},
-	{"Mudder's Milk",
-	 "Originally called Mighty Milk (since it boosts your strength), but changed as an homage to the best TV series ever to (briefly) exist, Firefly!  Mudder's Milk is featured in the episode \"Jaynestown\", where it is the high protein malted beverage that the people known as mudders choke down.  It also is obviously a play on the common phrase \"mother's milk.\"",
+	{"Tina",
+	 "I dunno, I just think it's funny to have the super serious gladiator mistress become a ditzy valley girl.",
 	},
-	{"Offer You Can't Refuse",
-	 "This is a reference to the Godfather series of movies.  Mobsters like to make people offers that they can't refuse.  Black Market Bob is not so subtly a mobster.",
+	{"Loonymania",
+	 "The quest name is a reference to Hulkamania, which is a Hulk Hogan thing. That's all I know, I don't watch wrestling. However, "
+	 "ignorance never stopped me from putting in a reference!"
 	},
-	{"Oh, The Pl. You've Been",
-	 "A Dr. Seuss book is named \"Oh The Places You'll Go.\" so Phileas lists The Places You've Been.",
+	{"Creepy Copse Hut",
+	 "This isn't really a reference to anything. You know those horror movies where the heroes are trying to run away from the "
+	 "spooky forest, only they find that the way out has been blocked off? Let's say it's a reference to those movies. I also think "
+	 "it's extra cool how it looks like there's light coming through a crack in the hut door."
 	},
-	{"Phileas",
-	 "This character (the guy who flies the balloon) is named after the main character Phileas Fogg in Jules Verne's \"Around The World In 80 Days\", who of course flies a hot air balloon (among other transport methods).",
+	{"Copse Skeletons",
+	 "I have a text file in which I planned out the secrets that the copse skeletons give you, and the creepy things they say if you "
+	 "don't have Bonehead. I wanted to give them a unique verb and adjective. Again with the thesaurus!"
 	},
-	{"Pine Key",
-	 "The description of the Pine Key evokes those pine-tree shaped car air fresheners, which are typically hung from the mirror of a car.",
+	{"Copse Warm Bones",
+	 "One of the evil ghosts says something about how \"your bones look warm.\" This is sort of a reference to a book, \"The Last "
+	 "Guardian of Everness,\" in which an evil necromancer craves the warmth in the bones of his victims, since shedding his "
+	 "humanity has left him perpetually cold. He's a reference to Koschei the Deathless from Russian folklore. The takeaway is that "
+	 "folklore is gross."
 	},
-	{"Punch",
-	 "A popular and very well known puppet show, Punch And Judy.  Originally this monster was called Punch Sans Judy, which is more clever and amusing, but also much too long and unwieldy.",
+	{"Oh my heavens!",
+	 "The Historian says this, which is a direct reference to the Wacky Wizard. They just seem so similar. I wonder if their voice "
+	 "actors are related."
 	},
-	{"Random Gibberish",
-	 "This is what is literally written on the generic signs you see everywhere, that you can bump into for different messages.  It's a reference to how so many games do this same thing - a sign that clearly has some random gibberish printed on it (the same gibberish on every sign!), and yet when you read it, you read something entirely different.",
+	{"Doing stuff... Things.",
+	 "Handyman Hank says this, which is a reference to early on in The Walking Dead. This is another reference to something I "
+	 "haven't actually seen, and am not even sure it's a real quote. I've just seen memes about it."
+	},	// 27
+	{"Titan Furnace Quest",
+	 "This quest is kind of the core of the Absurd Area storyline. Like, when I set out to redo the dialogue, I had to decide what "
+	 "to do with the plot. The simple formula of \"turn the plot upside down\" suggested an idea that was so ridiculous, so crazy, "
+	 "so unspeakably DUMB, that I had to run with it."
 	},
-	{"Ratatouille",
-	 "You see, it's a rat... and the word ratatouille begins with \"rat\"!  Brilliant!!  Ratatouille is of course a French dish, some sort of vegetable casserole.  The \"touille\" part sounds like \"ptooey\" to me, so probably it should've shot things at you, but I thought the dashing attack was a nice twist - a boss you could easily defeat if you figured out how.  Actually, you pretty much can easily defeat him, end of story.",
+	{"Reverse Fetch Quest",
+	 "Just a reference to the fact that this quest is kind of the opposite of the classic Fetch Quest. Except that the quest giver "
+	 "has no way of knowing that you actually did the task. I suppose the Historian might have given you a receipt or something?"
 	},
-	{"Red Cow",
-	 "The energy drink that gives you wings (doubles your speed, technically)!  A reference to Red Bull, the energy drink. Probably a bit on the obvious side.",
+	{"Klunk's Revenge",
+	 "The \"Klunk's Pirates\" fight is in the game entirely because of the flavor text for that one arena match. I thought it was a "
+	 "cool idea, so I put it in the main game! I actually planned for Klunk to get MORE revenge, with Mutant Clone Klunk appearing "
+	 "randomly to attack you! Imagine if every level had specials giving a 1/100 chance to spawn Mutant Klunk and some friends. "
+	 "There was just one problem... Mutant Clone Klunk isn't actually a creature! That arena fight just spawns Klunk, and has a "
+	 "special rule that heals all the enemies. Oh well."
 	},
-	{"Remember The Titans",
-	 "This is the name of a football movie, but also quite appropriate here, since you are learning of the ancient legend of the Ice Titans!",
+	{"Bobby Joe",
+	 "I just thought it would be funny to have the baby character be a scheming mogul. I'm nowhere near this cynical in real life."
 	},
-	{"Rocket Sauce",
-	 "A Tenacious D reference!  Rocket Sauce is the preferred beverage of Tenacious D, and it really gets you rocking.",
+	{"I've Got 99 Presents",
+	 "There's some rap called \"I've Got 99 Problems.\" That's all. Once again, I've never actually heard the thing I'm referencing!"
 	},
-	{"Rosetta Roper",
-	 "This is not a reference to the Rosetta Stone, it's just a woman's name that has the same beginning sound as the word \"rope\", sort of like her husband Rupert.  Anyway, if you talk to Rosetta after finishing all her quests, she says \"No soup for you!\", which is a reference to the Soup Nazi character from the TV show Seinfeld.",
+	{"Precipitous Precipices",
+	 "I apologize for the name, but it alliterates. I have a text file where I listed all the exits in the Precipices and everywhere "
+	 "else that connects to the Hiemal Holes, to make sure the maps \"line up\" as if it was one real map instead of several pocket "
+	 "dimensions connected by portals. Awful hard, since the maps all have an offset. I had to do math to create an effect that "
+	 "nobody will probably notice!"
 	},
-	{"Rosie O'Bomber",
-	 "This is of course a reference to talk show host Rosie O'Donnell.  There's no reason for it other than that it's very hard to come up with names for these monsters.  And it's a rose, that fires bombs.",
+	{"Geoffrey",
+	 "Somewhere in the LL2 developer commentary or something, it says Geoffrey was originally going to have some role in the axe "
+	 "smugglers operation run by the Onion Ring. I decided, like many other things in Absurd Area, that I was just gonna put it in "
+	 "if Jamul wasn't. It's like the old \"Are you gonna eat that?\" And then I just snatch it right off the plate. He wasn't eating "
+	 "it, it's mine now."
 	},
-	{"Rupert Roper",
-	 "Rupert's comment \"That was brisk, baby\" is a reference, that I use often in daily life unwittingly, to a series of TV commercials for Lipton Brisk Iced Tea, in which that line was used obnoxiously.  He also points out the oddness of the avalanche that got him - it's the only lump of snow in the entire game more than an inch deep.",
+	{"Curaga",
+	 "Curaga already gave off stoner vibes in the original... so I just leaned into it. Exaggeration is cheaply funny, and I never "
+	 "would have come up with \"oops, I was accidentally reading my OWN Talents!\" or \"I found this cool amulet in the trash\" if "
+	 "I hadn't decided on that as the \"core.\" Picking a Motif and running with it is a great way to break out of writer's block."
 	},
-	{"Sharona",
-	 "All the Shroomulans have names that almost/sorta begin with SHR.  Sharona's is the most questionable of the bunch.  It's a very minimal nod to the TV series Monk, where Sharona is the name of Monk's nurse.  It could also refer to the song \"My Sharona.\"  But it doesn't.",
+	{"Quest Reworking",
+	 "Many of the quests have completely redone requirements. This caused no end of problems originally, since I didn't have access "
+	 "to the source code! I had to use complicated arrays of specials to prevent you from talking to certain characters until you "
+	 "met MY quest requirements. Otherwise, Curaga's quests would auto complete if you brought her 10 Devil Grass and so on. "
+	 "I think I hit special limit in the Hiemal Holes until I was able to re-code the quests and delete all those specials!"
+	},	// 36
+	{"Monkey Grotto Present",
+	 "I guess if you're reading this, you've probably already found the Monkey Grotto cliff present, and this isn't a spoiler. "
+	 "Spoiler alert: You need to jump right when a monkey hits you to get damage-boosted up onto the cliff! I originally had this "
+	 "idea for a cut-content plan to have a tunnel system between the Onion and Bunny camps. Some sort of mission where you "
+	 "traverse the tunnels with friends to invade the other team. A rogue clockbot, your enemy no matter which team you're on, was "
+	 "supposed to damage-boost you. But the whole idea was axed."
 	},
-	{"Sharpest Tool, The",
-	 "This quest's name is a very slight allusion to the phrase \"he's not the sharpest tool in the shed.\"",
+	{"Kinyova",
+	 "I didn't really feel like changing Kinyova's character, since he's already kinda cool. But, since I was placing all sorts of "
+	 "secret areas, I thought it would be awesome to hide one of the NPCs somewhere hard to find. Every game needs secrets guarded "
+	 "by cryptic hints! And he gives you a hint to the Super Secret too."
 	},
-	{"Show Him The Ropes",
-	 "This is a common phrase meaning to teach someone the basics of something.  In this game, it's being used literally - go find some ropes and show them to the balloonist!  Also give them to him, once you're done showing them.  The phrase actually comes from sailing - new sailors had to be \"shown the ropes\" so that they learned which ropes on the ship did what.",
+	{"Balloonist Text",
+	 "The balloonist's shop text in LL2 was a reference to Dr. Seuss. I couldn't keep it, because Absurd Area lets you go to places "
+	 "you haven't visited yet! So I looked up other things to reference. \"Everywhere You Want To Be\" is the slogan for Visa, "
+	 "which fits better than I expected."
 	},
-	{"Shroom",
-	 "Hamumu reference!  Since you are the young Dr. Lunatic, you can turn monsters into Shrooms, something that will be handy later in life.  I had an idea to make all the spells reflect Dr. Lunatic's future abilites, but that was too hard, so instead there is just this, Boneheads, and Cryozoid.  Shrooms are of course a monster from Dr. Lunatic (also in Kid Mystic, but called Mushies there at publisher request - because \"Shrooms\" can also be a reference to hallucinogenic mushrooms).",
+	{"Toymonger",
+	 "I just thought it would be funny to make Toymonger a little more morally questionable. OK, maybe I'm a little cynical. But, I "
+	 "mean, I'm trying to make everything sillier. \"Making a nice character cynical\" is easy to be silly, whereas \"Making a mean "
+	 "character nice\" gives you less to work with. Wait, now I'm imagining Darth Vader running an orphanage and it's hilarious. "
+	 "OK, never mind."
 	},
-	{"Smart Sauce",
-	 "The description of this potion is a reference to a very old Saturday Night Live skit, which was a commercial for a product that was both a floor polish and a dessert topping.",
+	{ "Crush and Smash",
+	 "These two were basically the same character, so I thought it would be funny to take them in opposite directions. One of them "
+	 "extra stupid, and the other as verbose as I can make him. I put the bookshelves there to make him look extra smart!"
 	},
-	{"Smith, Mrs.",
-	 "We never find out Mrs. Smith's first name.  That's because it's Magic.  Her name is Magic Smith and she's the Magicsmith.",
+	{ "MacGregor Farm",
+	 "The abandoned farm is called the MacGregor farm, as a reference to Peter Rabbit. And now it's occupied and used as a supply "
+	 "depot by the Order of the Snuggly Bunny..."
 	},
-	{"Static",
-	 "The description of this skill is a reference to an actual thing you can do - rub a balloon on your hair to charge it up and make it stand up straight.  It's just a weak attempt to offer some explanation as to why your axe would shoot lightning.  Most games offer absolutely ridiculous high-minded explanations of why you can do the completely nonsense things you do, so this like many other skill descriptions really just parodies that.",
+	{ "Captain Capitan",
+	 "I don't really know why he's Texan. Maybe because you have to duel him at some point. I grabbed a motif and ran with it."
 	},
-	{"Stockboy",
-	 "A Hamumu reference!  This quest name refers of course to the Hamumu game Stockboy.  Also to the fact that by fetching axes for the shop, you are in fact acting as a stockboy.",
+	{"Your Creator, Obey!",
+	 "This quest name is a reference to the old trope where a robot turns on its creator. The quest is such a obvious use of this "
+	 "trope, I felt compelled. While I was at it, I threw in a bunch of other cliches. Robot Revolts are basically a giant pile of "
+	 "cliches anyway. Maybe the clockbots are mad that he kept kicking them when they didn't do what he wanted the first time? Who "
+	 "knows."
 	},
-	{"Stone Rose",
-	 "This is a reference to the band The Stone Roses.  I don't even know what their music is like.  Did you know one of the Castlevania games also has a monster called a Stone Rose?  I believe it's for the same reason.  Or perhaps is there a deeper reference yet?",
+	{"Defense Missions",
+	 "It took a lot of work to get the two Defense missions working properly... I sure hope the balance is OK. If you have a build "
+	 "to do them quickly, you will get a lot of powerful potions! And if you don't, you get NOTHING. Rather hard to tweak since it's "
+	 "a bit swing-ey, but I think they're really fun! Also, if you fail, you can just leave the level and try again."
+	},	// 45
+	{"Does Whittling Count?",
+	 "I just couldn't come up with a good name for the Craft Talent quest. So I made something up. There really isn't any hidden "
+	 "meaning or reference, I just grabbed the idea that no matter how much time you spend on something, it's not going to impress "
+	 "anybody unless it's useful or artistic. Ideally both."
 	},
-	{"Stone Soup",
-	 "Surely you've heard of Stone Soup?  I believe there's a children's book of that name, and I know there's a card game.  Maybe it's a classic fable.  Anyway, I wanted a potion that made you more resistant to harm, and the name Stone Soup fits very nicely.",
+	{"The Rumble",
+	 "This may have been the first idea I had for Absurd Area! It pretty much came to me in a dream. I really like this sort of "
+	 "mission, where there is a bigger battle and you can influence it. I tested it in a test world to get the unit ratio correct - "
+	 "3 bunnies to 4 thugs will fight to a standstill! Too bad the enemies also have big boys to give an advantage. Once I figured "
+	 "out how it worked, it was simple to implement - I copied the specials in a hex editor and tweaked them. The part with enemies "
+	 "in the walls to \"pull\" the combatants was so cool, I had to reuse it in the volcano."
 	},
-	{"Taylor's Knits",
-	 "This guy is the tailor in the game, hence his name being Taylor.  Kind of obvious, you could say.  Taylor's Knits is a reference to \"tailor knit\", which is a term that is snootily applied to some articles of clothing, and most likely doesn't mean anything at all.",
+	{"Schrodinger",
+	 "I decided I wanted the Shroomulans to have really exaggerated personalities, and that's why Sharona ran off to the overworld. "
+	 "Schrodinger is well-dressed, so I decided he's a posh British guy. I've read a lot of P.G. Wodehouse, which I drew on to give "
+	 "him his idioms."
 	},
-	{"Terrible Sock Monkeys",
-	 "This description of the battle \"Sock It To Ya\" is a reference to the TV show Firefly, in which Captain Mal asks Kaylee, after seeing the mess in the engine room, \"What happened here?  Were there monkeys?  Terrible space monkeys?\"",
+	{"Shrumford Old",
+	 "I think he's the third character whose distinctive personality is just \"old dude.\" In the original he didn't really have "
+	 "any lines, but I figured I could make him a stereotype. Stereotypes are funny (except when they're really not)."
 	},
-	{"Thing Of Majig",
-	 "When said quickly, this is 'Thingamajig'.  Just like its brethren, the Watch Of Makalit and the Thing Of Mabob, it is a completely meaningless object, a spoof on all those arbitrary magical artifacts in games (like, I confess, the Binding Crystal) which could be anything.  It doesn't matter what they are, they're just the things you need to finish the quest.  See also \"MacGuffins.\"",
+	{"Shrumford Young",
+	 "I'm sorry. I'm so sorry for this. Anyway, I did Google up a list of Gen Alpha slang to throw in as much as I could. Sadly, I "
+	 "couldn't work in the word \"mewing\" anywhere."
 	},
-	{"Thuggin' Love",
-	 "This battle's name is a reference to the cartoon show \"The Boondocks\" (based on the comic strip), in which that is the title of a song you hear in the background of many episodes.",
+	{"Supercalifragilistic",
+	 "I think it's originally from \"Mary Poppins,\" but I used it because it kinda has the word \"fragile\" in there. Yeah, that "
+	 "was bad."
 	},
-	{"Tinny Tim",
-	 "Tinny refers to the fact that this enemy is obviously a type of Tin Soldier.  But it's called Tinny Tim in reference to the character Tiny Tim from Dickens' A Christmas Carol.",
+	{"B Feeder",
+	 "The first two bomb parts were easy to name - the Fission Chip sounds very British, and the Doomsday Clock is an obvious "
+	 "choice. But the third one... I can't even really tell what it's supposed to be! Made it awfully hard to come up with a name. "
+	 "Eventually, I decided it looks like some kind of power cables. The term \"B Feeder\" came to me, and I had to make it work. "
+	 "It's a reference to the \"Beefeaters,\" one of the most iconic British things ever. And I really had to stretch the dialogue "
+	 "to make it fit!"
 	},
-	{"To The Pain!",
-	 "The name of this Arena match is a reference to the book and movie \"The Princess Bride\".  In it, Westley threatens to engage the prince in a duel \"to the pain\" as opposed to \"to the death\".  There is an extensive description of what this means in the highly recommended source material.  \"The Cliffs Of Insanity\" is also a Princess Bride reference.",
+	{"Crystal Caves",
+	 "This level is named after the game by Apogee Software. I had a lot of fun with that one as a kid. If they included an editor, "
+	 "I would have spent hours making not-very-good levels. Heck, I designed plenty of them on graph paper."
 	},
-	{"Toasties",
-	 "An original invention, though I am dead certain you'll find many generic cereal products bearing the name, among other things.  That was sort of the idea, to make it a brand name for the little fire buddies.",
+	{"I've been defeated!",
+	 "Capitan's quote when you defeat him at the furnace is ripped straight out of the Fire Emblem fan community. I don't know if "
+	 "it's a quote from the games, but it's definitely making fun of all the times where you defeat an enemy who, instead of dying "
+	 "like the vast majority of enemies or allies who get to 0 HP, suddenly retreats despite being completely surrounded, or maybe "
+	 "they have some previously unused teleportation ability."
+	},	//54
+	{"Choose the Deuce",
+	 "Fishbug's quote when arresting Capitan is from... the Minecraft movie. It was really stupid, and I wasn't originally going "
+	 "to waste time on it. But the director did Napoleon Dynamite, so I had to give him a chance. I was shocked that it had this "
+	 "quote, which I actually liked. Very deep and philosophical!"
 	},
-	{"Toy Story 2",
-	 "One of the more obvious references in the history of the world.  Second story of the Toy Factory, Toy Story 2, movie, you get it.",
+	{"Only thing that's left",
+	 "Fishbug says, in the volcano, \"The only thing that's left to do...\" It's a phrase commonly used by the food YouTuber Guga. "
+	 "He has a lot of idioms that don't entirely fit, like using the word \"because\" to link two paragraphs that have nothing "
+	 "causally to do with each other."
 	},
-	{"Trigun",
-	 "This enemy is named after the anime series of the same name.  He has no other relationship to it.  He just happens to fire tri-shots.  The Arena battle against him is a further reference to the show - Vash The Stampede was the main character, and Knives was the villain.",
+	{"Artifact Jack",
+	 "In the original game, Artifact Jack was a rare Madcap-Only miniboss. I wasn't going to stand for that! I put MOST of the "
+	 "Madcap-Only or Arena-Only enemies in the game somehow. Or is it all? I think it's all. Jack seemed a perfect choice for the "
+	 "\"final\" Objective Point. I didn't want him coming up more often, since he drops an Artifact Bit, and I didn't want to give "
+	 "you a replenishing supply! But then I was inspired to use him in two of the Trials, and again in the final level... so I just "
+	 "contrived a way to make it impossible to collect drops from those."
 	},
-	{"Tsarina, Tina",
-	 "Three layers to this joke, none very funny.  First, Tina rhymes with Arena, and that tends to be how I decide what to name people (see Healiana, Taylor, Woody, Mrs. Smith, and more).  Second, \"Tina Tsarina\" is exactly the same sound as \"Tina's Arena\".  And thirdly and most subtly, Tina is a reference to Tina Turner, who played the queen of the Thunderdome (a gladiatorial arena) in Mad Max 3.",
+	{"Toymonger = Kinyova",
+	 "In the castle, I had to make sure to place the Toymonger a bit further up from the entrance so he appears off screen. This is "
+	 "because of a complication in how specials work with NPCs when you start a level... if you SUMMON a villager as the level "
+	 "loads, it will appear with the default sprite for villagers - Kinyova. It won't change to the correct sprite until the "
+	 "villager's AI function takes over. But AI functions are disabled when the level is fading in! So you'd see Kinyova standing "
+	 "there for a second before turning into the Toymonger. I had the same issue with the Guru."
+	},
+	{"Puppet Pals",
+	 "This quest name is a reference to the YouTube parody sketch, \"Potter Puppet Pals.\" Which... well, I might have seen one of "
+	 "them."
+	},
+	{"Have fun storming!",
+	 "Jamul mentioned he was going to have the Toymonger quote this line from \"The Princes Bride,\" \"Bye-bye, boys! Have fun "
+	 "storming the castle!\" But, he decided not to. So, I did!"
+	},
+	{"Forbidden Secrets",
+	 "I wanted the Baron's library to be a little more colorful, so I spent some time thinking up what an evil mastermind might have "
+	 "in his library. Took me forever! But that means I had to settle for some very silly examples, which fits. I just grabbed "
+	 "anything that would be forbidden from some reason or another. My favorite is the My Little Pony lore."
+	},
+	{"Wing Boots",
+	 "This was cut content from LL2, which I thought was a cool idea. So I stole it! I really like the effect where you fall through "
+	 "the clouds, but it takes specials, so I made sure there are only 2 places you can actually fall through. I didn't want to "
+	 "spend any more time on a silly gimmick than I had to."
+	},
+	{"Bruce Willis Movie",
+	 "\"Unbreakable,\" is the movie the bird refers to."
+	},	// 63
+	{"3D Arena",
+	 "I wanted to really soup up the aesthetics of the Arena, so I designed a cool 3D effect. I really like how it worked out! "
+	 "I had to do a lot of individual tile art to get it to work though... since walls don't cast shadows on other walls. So I had "
+	 "to place walls in the editor, cast shadows onto some tiles, screenshot those, and import the screenshot into the tileset. I "
+	 "used this trick in a few places, which is one reason the tileset is so confusing!"
+	},
+	{"Arena Maze",
+	 "The maze gave me the most trouble, not just designing the maze part, but also the Souvenir Swords! I had to change how I did "
+	 "the sections at the top and sides, with the NPCs watching you, because the Souvenir Swords can appear on any empty floor. And "
+	 "you can't place creatures on top of an item, or an item under a creature... So Swords would appear under Tina et al! I had to "
+	 "summon them with specials. Then, later, I found you can copy+paste items under a creature. Oh well. I am rather pleased with "
+	 "hiding a Bokbok in the arena!"
+	},
+	{"Arena Capital",
+	 "I drew circles in MS Paint to make sure I got the circular shapes correct! Also, the original reason the 3x3 walls are dark in "
+	 "the middle is, I was going to add Tinpot Generals in there to make the arena missions more challenging. I thought the arena "
+	 "matches would have you win when all the monsters of a certain tag were killed. That was just a guess, and I was wrong! It ends "
+	 "when there is nobody left on the Badguy team. So I scrapped that. But I liked the look as it is now."
+	},
+	{ "Arena Side",
+	 "I just like hiding things behind secrets. Hiding Betty in a secret side entrance seemed like a cool idea. I had to add "
+	 "specials to only summon her if you're in Tweestad... hey, how does Tina go from one franchise to another? Does she teleport? "
+	 "Anyway, I think it's cool how the Tweestad arena lets you see Betty and the present to give you a hint to look for the side "
+	 "entrance. And I put a hint in the Creepy Copse. It's not supposed to be hard to find."
+	},
+	{"Firewall",
+	 "The first monster I added! I wasn't originally going to add more, but that didn't last long. I was already going to have a "
+	 "volcano area, so this was the obvious choice. A Firewall is something that blocks your network from attacks, which is why the "
+	 "Firewall erases nearby projectiles! I then had to tweak the code to make sure it only erased the correct projectiles, and not "
+	 "dropped items or explosions that have already dealt damage. More effort than I expected!"
+	},
+	{"Nice Titan",
+	 "While I was adding monsters, I had this idea come to me. An enemy area-of-effect healer? Awesome. And it erases projectiles "
+	 "just like your Restoration spell. I really had to mess around with the code to get this to work... and while I was at it, I "
+	 "fixed an old issue in LL2. Ice Titans you have mind controlled always stunned enemies instead of freezing them... this is "
+	 "because it uses the same function as Stomp! And it only checked for what team the attacker was on. After I fixed the function, "
+	 "I had to fix it again so they could heal the bird!"
+	},
+	{"Spice Mice",
+	 "Sort of a pun on the already-existing Ice Mice. I had to do crazy stuff in the code to let it know the difference between "
+	 "getting set on fire by the player and by the Spice Mice, since I didn't want the enemy Ignite to use your Ignite skill level!"
+	},
+	{"One Punch",
+	 "There's an anime or manga or whatever called \"One Punch Man,\" about a guy who is so powerful he can defeat anything in one "
+	 "punch. But, that doesn't help him do his taxes or whatever. I haven't seen any of it. But I wanted to add a late-game puppet "
+	 "enemy, since all the other toy types get a late game version. They're usually pretty easy to avoid, but when you DO get tagged "
+	 "it is satisfyingly dramatic. And then I had to re-use the damage boost from the Monkey Grotto! If you're having trouble with "
+	 "that jump, a Safety Amulet can be a massive help."
+	},
+	{"Rock Gorilla",
+	 "I didn't need to add another monkey type, but I had the idea just because of how mean it is in combination with the Spice "
+	 "Mice. The Spice Mice will halve your armor, and then the rock spikes can multi-hit you for massive damage! Same thing you "
+	 "can do with Brambles + Arsenic, then casting Stone Spike. Turnabout is fair play!"
+	},	// 72
+	{"Square Hole",
+	 "I kinda just threw random crafting phrases into the \"crafting an Artifact\" text. The square hole one is a reference to a "
+	 "famous tiktok where somebody is increasingly aghast at... look, just Google it, it's quicker. As a side note, I placed 10 "
+	 "Artifact Bits for you to collect without buying one in the shop. So you could craft 2 artifacts, as long as you find the "
+	 "Super Secret! Also, with the Glaucoma modifier, there is a 1/1000 chance that a randomly dropped Lens will be an Artifact "
+	 "Bit! Have you unlocked it yet?"
+	},
+	{"Infested Woods",
+	 "The first secret \"themed\" level I placed. This one has specials to randomly respawn the rats - but they all appear behind "
+	 "the trees! So it just looks like more and more keep coming from nowhere. The miniboss gave me trouble because I can't check for "
+	 "whether the monster tag is dead - because it respawns more with tag 255. And I can't simply check whether the monster type is "
+	 "dead - because what if you use Shroom? That actually changes their monster type! It was easy once I figured out the bugs, but "
+	 "it meant a few annoying headbang moments."
+	},
+	{"Puppet Island",
+	 "The island's name is a reference to... Rudolph? I think? I've never seen the movie. Originally, it was going to just have a "
+	 "KO Punch as the miniboss, but that wasn't \"hard\" enough. So now there are randomly spawned KO Punches and the very dangerous "
+	 "Fruit Punch! Well, except that it sometimes charges right past you without landing its hit. Still, it's quite dangerous at the "
+	 "level it's first available to fight."
+	},
+	{"Bear Lair",
+	 "I made this secret level because I wanted to spice up the \"kill the bears\" quest. A themed secret level seemed the perfect "
+	 "way! I really like how it leads into a secret underground path back to the starting area. That way, you don't have to go "
+	 "through the Perilous Pass ever again! I also think it's neat how the Grizzly is only summoned when you enter its part of the "
+	 "level, like it's waiting to ambush you."
+	},
+	{"Army Camp",
+	 "This one isn't technically a secret level, and neither is the Creepy Copse. However, I did sort of hide it by making the Taiga "
+	 "level really big. Unless you're deliberately searching the whole level, you could easily miss it... which is why I put those "
+	 "paths on the taiga. And the soldiers all spawn at a random location (out of 4) when you get close - they're on patrol! The "
+	 "camp itself let me stress test my method for giving loot to the player, with the massive stash of potions. It took a lot of "
+	 "testing to make sure the variables were all set and checked properly."
+	},
+	{"Monkey Grotto",
+	 "One of my ideas for the secret levels was to make each one have a different environmental \"hint\" letting you know where to "
+	 "look. For the audio cue, I put a friendly Arena Crystal off in the darkness with a few monkey monsters nearby, trying to "
+	 "attack it but unable to reach the target. The miniboss fight is pretty cool, since the rocks lying around allow the Gorilla "
+	 "projectile to pass over it, but it actually doesn't do that much damage."
+	},
+	{"Drafty Den",
+	 "I am pretty happy with hiding this one in plain sight - if you visited the Polar Pond before getting the skates, you might "
+	 "not even know this place exists and could skip it entirely! And it really is quite missable, unless you're going for the "
+	 "Super Secret or 100%. If you found it early, let me know if the loot was useful to you!"
+	},
+	{"Poisonous Pit",
+	 "Probably my favorite secret level. The theme is that the swirly blue is some kind of poison gas, and it's heavier than air so "
+	 "you can avoid it by jumping. That still doesn't explain why it destroys items, though. This is technically the same level as "
+	 "the Power Core fight, but that's just because I ran out of levels. The Power Core was going to be on the same level as the "
+	 "Factory, but that caused problems if you save and load after beating the core - that would summon the Onion to recruit you "
+	 "while you're still in the basement!"
+	},
+	{"Bodzha Nest",
+	 "This one was a challenge to get right. The specials to swap-map the boulders in flight were a little finicky, and I had to "
+	 "make some custom tiles to hide what was happening. But the result is a cool unique level that is shooting at you. I thought "
+	 "of putting something similar in the Frostburn Castle, but decided against it. The castle is mean enough!"
+	},	// 81
+	{"Equipment",
+	 "I spent a lot of effort originally to get pre-placed loot into Absurd Area, so you can understand it was something I really "
+	 "wanted to have! It originally took a lot of annoying specials to convert the equipment, but after I got the code it became "
+	 "really simple. They aren't all super broken - or else why would you ever buy anything or use Magicsmithing? But most builds "
+	 "will find one of them useful. And the Historian Rewards have the potential to be VERY useful! Let me know which one is your "
+	 "favorite!"
+	},
+	{"The Five Hidden Trials",
+	 "I think every game should have something like this! These are supposed to be technically available early on - you can find all "
+	 "of them before you even finish the Toy Factory. And yet, unless you have maxed out one of the skill paths, it will simply be "
+	 "an ominous gate... And even if you DO max out a skill path, it might just be too hard for you! They are also deliberately not "
+	 "the same difficulty... the two Mage trials give MUCH better rewards, so they are way harder! You don't get potions because "
+	 "they could make it too easy. They are supposed to be a challenge, not a keyhole!"
+	},
+	{"Duelist's Trial",
+	 "This one is just supposed to be a boss rush against a bunch of really tough monsters all in a room. It's mostly just a power "
+	 "check, although you do need some skill against the Army Of One since you can't use potions! Duelist skills will come in handy "
+	 "in this trial, and Parry is especially useful against the Army Of One. That was part of the design goal for the Trials - "
+	 "make each Trial benefit from the skills you mastered to unlock it."
+	},
+	{"Gladiator's Trial",
+	 "This trial is based on the arena defense missions. Only, this one is a lot more extra! There are a lot of weak enemies because "
+	 "the Gladiator skill path focuses on crowd control, but you will have to strategize a bit. Boneheads are a big help; anything "
+	 "that gives your opponents extra targets can be a big help! Plague fans will also have fun. But as long as you have a powerful "
+	 "build you'll be fine. Just don't stray too far chasing down enemies and let the monsters swarm in from the other side."
+	},
+	{"Marksman's Trial",
+	 "OK, this trial doesn't really have anything to do with marksmanship. It used to be called the Ranger, not the Marksman, and "
+	 "it had skills like Dodge and Tracking. So, that kinda fit better. I wanted to keep the trial I'd designed, so when I redid the "
+	 "class system, I just ignored the fact that it didn't fit. Hey, the Tossing Talent pushes enemies away, which will help here! "
+	 "Anyway, this trial is also a boosted version of a type of arena match. Actually, they all are, except the Enchanter's Trial."
+	},
+	{"Enchanter's Trial",
+	 "This one is definitely the hardest! Well, the Sorceror's Trial is close, depending on your build. I actually made it easier a "
+	 "couple times, but there's only so much I can do. You will need a cheap ranged attack to keep the Nuclear Bokboks away, and you "
+	 "will definitely find certain Enchantment spells useful - Tornado, Restoration obviously, Berserk definitely. You will "
+	 "definitely have to use the crystals to trap Killbor, since he respawns! If you haven't beaten it yet... best I can say is keep "
+	 "trying!"
+	},
+	{"Sorceror's Trial",
+	 "This one is also pretty hard, and could be the hardest if you have the wrong build. Since you can't use potions, you will need "
+	 "to use Berserk to keep your distance, and ranged attacks are a great friend. Throwing Axes are a great help, and I found Ice "
+	 "Cube to be the most useful spell. Or you could use high-level Restoration and just wail on him. Good luck! You'll need it."
+	},
+	{"Mystery of the Trials",
+	 "You may be wondering what's up with the trials. They're set in some kinda spooky buildings, embedded in some dark spooky "
+	 "caves, and Phase 2 of the trials is against Titanic Titans? What's the deal? Well, I didn't actually write lore for them. "
+	 "But if I had to, it would be something about somebody imprisoning them because they couldn't kill the things, waiting for "
+	 "somebody to do the job for them. If this was a serious game I would have written something. But... I do plan to make more "
+	 "games... And this is the sort of idea I would definitely re-use!"
+	},
+	{ "Soundtrack",
+	 "The soundtrack is from the game Hero Core, by Daniel Remar. \"Brother Android\" composed the score. I liked "
+	 "both the game and the music, so I emailed Brother Android and asked for permission. He said it's cool as "
+	 "long as I tell you who I got it from. The soundtrack came with a couple of tunes that were cut from Hero "
+	 "Core, but they fit perfectly into Absurd Area! (It's the music for the Trial Entrance and the Hidden Trials "
+	 "themselves.)"
+	},	// 90
+	{"Gallery Goals",
+	 "One of the Gallery Goals has spoilers, so I invented a system to encrypt them. No opening the Graphics folder to see them! "
+	 "In case you are reading this without having found all the Gallery Goals yet, I'll give a one-word hint for each one. 01: "
+	 "Damage. 02: ComBOOM! 03: Artifact. 04: Purchase. 05: Presents. 06: Golden. 07: Supreme. 08-12: Trial."
+	},
+	{"Secret To Everybody",
+	 "This achievement name is a reference to the original Legend of Zelda. Well, the English translation, anyway. Anyway, Kinyova "
+	 "is an old dude who hides in a secret cave and hands you free weapons, so it seemed to fit."
+	},
+	{"Bearmageddon",
+	 "This achievement name is a reference to the webcomic of the same name, which sadly has been on hiatus since 2019. It's "
+	 "basically a zombie apocalypse story, except instead of zombies, it's all the world's bears. Except some of the bears are also "
+	 "mutant hybrids. So there's this one scene where the heroes are barricaded inside a building, but a star-nosed mole bear "
+	 "burrows through the floor! Fortunately, there's a lawnmower in reach... It gets pretty gruesome sometimes."
+	},
+	{"Where's The Iron Boots",
+	 "This achievement name is a reference to \"The Legend of Zelda: Ocarina of Time,\" in which an Ice Cavern holds the Iron Boots. "
+	 "Pretty straightforward. This one just holds more secrets!"
+	},
+	{"Don't Bite Them",
+	 "This achievement name is because it's a poison cave, full of all the poisonous enemies. It's a reference to the fact that "
+	 "poisonous animals are the ones that kill you if you bite THEM, and it's VENOMOUS enemies that kill you when they bite you. "
+	 "So the Poison damage effect should really be called \"Venom!\" Except that the colloquial definition encompasses both "
+	 "scientific definitions, and you can use that to correct any annoying nerds who try to correct you. Same with when \"slander\" "
+	 "is used instead of \"libel.\" When you correct them, shout \"OBJECTION!\" first!"
+	},
+	{"Badger Badger Badger",
+	 "This achievement name is a reference to a mind melting animation from the old days of the internet. It's really really stupid, "
+	 "but simple and catchy. Which just makes you hate it more. It's not as bad as the Hamster Dance, but that isn't saying much."
 	 },
-	{"Vampirism",
-	 "There's no reference in this skill (other than that vampires suck life, as does this skill), but I wanted to comment on the description and how it frustratedly proclaims there's no sense to it.  That's because lots of games have a skill like this and it DOESN'T MAKE SENSE!",
+	{"The Great Gonzales",
+	 "This achievement name is a reference to \"Paper Mario: The Thousand Year Door,\" in which one chapter requires you to join "
+	 "an arena and fight your way to the title championship. I changed the achievement requirement because I didn't want you to "
+	 "be able to get it by grinding an easy match. Gotta beat the annoying ones too!"
 	},
-	{"Whirl",
-	 "This skill is a total ripoff of the Whirlwind skill from Diablo 2.  Which is a really silly skill, hence its appropriateness in this game!",
+	{"Pile Of Secrets",
+	 "This achievement name is a reference to Dracula's quote from \"Castlevania: Symphony of the "
+	 "Night:\" \"What is a man? A miserable little pile of secrets.\" I've never played the game. In fact, until I Googled it just "
+	 "now, I could have sworn the quote was from Hamlet. It's also a reference to the fact that the Trials are a bunch of secrets. "
+	 "Some of them might even make you miserable!"
 	},
-	{"Woodsman, Woody",
-	 "Though it sounds like a play on Woody Woodpecker, that's actually just a coincidence.  In fact, I had conceived this character early on and thought of him simply as \"The Woodsman\".  When it came to putting him in the game, I needed a name for him, so the thing that came immediately to mind was of course Woody.  What else would it be?",
+	{"The Super Secret",
+	 "How to get the Super Secret: First, do NOT return the toolbox. You will also need the two Ropes from the Vulgar Vault and "
+	 "Betty's reward. Use one to reach Kinyova and get the Hatchet. It's sharp enough to cut down the tree and get to the upper "
+	 "Hiemal Holes. Use the other rope to cross to the Drafty Den. Go outside and push down the rock. Then go back to the Polar Pond "
+	 "and skate across to the Drafty Den. Top-center, you must dislodge a rock blocking a spring. Kill the Icebox, and push its egg "
+	 "into the hole. Cross, and traverse the Poisonous Pits to the Factory. Pick the lock with the toolbox!"
 	},
 };
 

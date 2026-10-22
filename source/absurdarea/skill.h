@@ -40,7 +40,7 @@
 #define SE_CRITICAL (14)	// val0% chance of inflicting val1% extra damage
 #define SE_KNOCKBACK (15)	// knock back enemies val0 pixels when hit
 #define SE_POISON	(16)	// add val0 seconds of poison to enemy hit
-#define SE_SHOCK	(17)	// once every val0 ticks, do val1 damage to the nearest enemy (within a fairly small range) with a jolt
+#define SE_SHOCK	(17)	// once every val0 ticks, do val1 damage to the nearest enemy (within a fairly small range) with a jolt // changed to val0 is shocks per 30 frames
 #define SE_SPIKE	(18)	// enter a state where when you hit the ground, you'll launch val0 stone spikes forward
 #define SE_WHIRL	(19)	// whirl around hitting all guys around you every val0 frames. Lasts val1 frames.
 #define SE_FIRE		(20)	// makes a fire bullet at the spot that lasts val0 ticks
@@ -165,6 +165,7 @@ void LearnSkill(byte s);
 byte SkillDodgeRate(void);
 word SkillTrainingAmount(void);
 word SkillStunAmount(void);
+word SkillCriticalAmount(void);		// added so that level 0 1% crits still do bonus damage
 byte SkillHaveASpell(void);
 byte SkillHave(byte s);
 

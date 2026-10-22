@@ -35,12 +35,27 @@ void LoadGalPic(byte p,byte *backScr)
 {
 	int i;
 	char s[64];
+	char s2[64];
 
 	GetDisplayMGL()->ClearScreen();
 	//GetDisplayMGL()->Flip();
-	sprintf(s,"graphics/glr%02d.bmp",p);
+	sprintf(s,"graphics/aag%02d.bmp",p);
+	sprintf(s2,"graphics/dec_aag%02d.bmp",p);
 	GetDisplayMGL()->LoadBMP(s);
 	GetDisplayMGL()->LastKeyPressed();
+
+	// AA scramble!
+	srand(dword(p) * 10000);
+	for (int i = 0; i < 640 * 480; ++i)
+		GetDisplayMGL()->GetScreen()[i] += byte(rand() % 256);
+	srand(timeGetTime());
+	if (opt.galPix[p-1]==1)
+	{
+		GetDisplayMGL()->SaveBMP(s2);
+		opt.galPix[p-1]=2;
+		SaveOptions();
+	}
+
 	for(i=0;i<480;i++)
 		memcpy(&backScr[i*640],GetDisplayMGL()->GetScreen()+GetDisplayMGL()->GetWidth()*i,640);
 }
@@ -138,8 +153,10 @@ byte UpdateGallery(MGLDraw *mgl)
 	oldc=c;
 
 	HandleGalleryKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit
+	if (lastKey == 27 || GetGamepadStart())	// hit ESC to exit	// AA or gamepad start
 	{
+		FreezeGamepadStart();
+		lastKey = 0;
 		return 1;
 	}
 #endif

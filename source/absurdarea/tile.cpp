@@ -365,7 +365,12 @@ inline void GouraudBoxWater(int x,int y,byte *src,char light0,char light1,char l
 				{
 					b=*src;
 
-					if(b==3*32+15)
+					if (water%10==2)	// AA lava kludge
+					{
+						if(b==4*32+15)
+							b=LavaPixel(x+i,y+j);
+					}
+					else if(b==3*32+15)
 						b=WaterPixel(x+i,y+j);
 
 					tmp=(b&31)+(curLight/FIXAMT);

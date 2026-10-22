@@ -19,6 +19,7 @@
 #define EDITMODE_SPECIAL	10
 #define EDITMODE_TILELOAD	11
 #define EDITMODE_PICKRANDOM 12
+#define EDITMODE_MAPSCREEN	13	// AA added
 
 static char lastKey=0;
 static byte showPwrUps;
@@ -681,7 +682,38 @@ word ProcessFloorChoice(int x,int y,word f)
 		case 641: // purple stone
 			return 641-(641-625)*(rand()%2)+(x%3)+(y%3)*20;
 			break;
-
+		case 689: // AA add grey stone
+			return 689 - (689 - 673) * (rand() % 2) + (x % 3) + (y % 3) * 20;
+			break;
+		//case 840: // AA add lava rocks
+		case 900: // AA greycliffs impassable
+		case 923: // AA greycliffs slide
+			return threeby + f;
+			break;
+		case 1111:	//top edge snow
+			return 1111 + (x % 3);
+			break;
+		case 1171:	//bottom edge snow
+			return 1171 + (x % 3);
+			break;
+		case 1116:	//top edge snow
+			return 1116 + (x % 3);
+			break;
+		case 1176:	//bottom edge snow
+			return 1176 + (x % 3);
+			break;
+		case 1103:	//right edge of snow
+			return 1103 + (y % 3) * 20;
+			break;
+		case 1104:	//left edge of snow
+			return 1104 + (y % 3) * 20;
+			break;
+		case 1107:	//right edge of snow
+			return 1107 + (y % 3) * 20;
+			break;
+		case 1108:	//left edge of snow
+			return 1108 + (y % 3) * 20;
+			break;
 	}
 	return f;
 }
@@ -752,6 +784,11 @@ byte EditorMouseClick(void)
 	else if(editMode==EDITMODE_TERRAIN)
 	{
 		TerrainMouseClick();
+		return 0;
+	}
+	else if (editMode == EDITMODE_MAPSCREEN)	// AA added
+	{
+		MapScreenClick(mouseX, mouseY);
 		return 0;
 	}
 
@@ -914,6 +951,11 @@ byte EditorMouseClick(void)
 					case IT_VINEWALL2:
 					case IT_VINEWALL3:
 						editopt.curItem=IT_VINEWALL+(rand()%3);
+						break;
+					case IT_GREENCRY2:
+					case IT_GREENCRY3:
+					case IT_GREENCRY4:
+						editopt.curItem=IT_GREENCRY2+(rand()%3);
 						break;
 				}
 				AddItem(tileX,tileY,editopt.curItem);
@@ -1229,7 +1271,7 @@ void RenderTerrainInfo(int which)
 
 	RenderCheckbox(5,250,world.terrain[which].flags&TF_SOLID,"Impassable");
 	RenderCheckbox(5,262,world.terrain[which].flags&TF_ICE,"Icy");
-	RenderCheckbox(5,274,world.terrain[which].flags&TF_SKYFX,"Sky FX");
+	RenderCheckbox(5,274,world.terrain[which].flags&TF_SKYFX,"Lava Not Water");	// AA replaces this
 	RenderCheckbox(5,286,world.terrain[which].flags&TF_WATER,"Water");
 	RenderCheckbox(5,298,world.terrain[which].flags&TF_LAVA,"Lava");
 	RenderCheckbox(5,310,world.terrain[which].flags&TF_PUSHY,"Pushable");
@@ -1468,6 +1510,14 @@ void EditorDraw(void)
 			RenderEditMenu();
 			RenderSpclDialog(mouseX,mouseY,editmgl);
 			break;
+		case EDITMODE_MAPSCREEN:	// AA added
+			if (editopt.displayFlags & MAP_SHOWBADGUYS)
+				RenderGuys(editopt.displayFlags & MAP_SHOWLIGHTS);
+			RenderItAll(&world, curMap, editopt.displayFlags);
+			ShowSpecials();
+			RenderEditMenu();
+			RenderMapScreen(mouseX, mouseY, editmgl);
+			break;
 	}
 
 	if(showPwrUps)
@@ -1570,12 +1620,18 @@ void Cavernize(void)
 
 byte IsPurpleFloor(word f)
 {
-	return ((f>=620 && f<=627) || (f>=640 && f<=647) || (f>=660 && f<=667) || (f>=680 && f<=684) || (f>=700 && f<=704));
+	return ((f>=620 && f<=627) || (f>=640 && f<=647) || (f>=660 && f<=667) || (f>=680 && f<=684) || (f>=700 && f<=704)
+			|| (f>=1015 && f<=1019) || (f>=1035 && f<=1037) || (f==1039) || (f>=1055 && f<=1057) || (f==1059) || (f==1075) || (f==1079) || (f>=1095 && f<=1099));	// AA addition
 }
 
 byte IsPurpleHole(word f)
 {
 	return (f==603 || (f>=720 && f<=724) || (f>=740 && f<=744));
+}
+
+byte IsLava(word f)
+{
+	return ((f>=840 && f<=842) || (f>=860 && f<=862) || (f>=880 && f<=882) || (f>=952 && f<=954) || (f>=972 && f<=974) || (f>=992 && f<=994));
 }
 
 byte IsGorgeFloor(word f)
@@ -1793,48 +1849,230 @@ void CavernizeBrown(byte adj)
 			}
 			else if(adj==60 && IsPurpleFloor(flr))	// is floor
 			{
+				byte l=0;		// AA add lava
 				// walls[]=1 when there is a hole there
 				char xtab[]={1,1,0,-1,-1,-1,0,1};
 				char ytab[]={0,1,1,1,0,-1,-1,-1};
 
 				for(i=0;i<8;i++)
 				{
-					if(x+xtab[i]>=0 && x+xtab[i]<curMap->width && y+ytab[i]>=0 && y+ytab[i]<curMap->height)
-						walls[i]=IsPurpleHole(curMap->map[x+xtab[i]+(y+ytab[i])*curMap->width].floor);
-					else
+					if(!(x+xtab[i]>=0 && x+xtab[i]<curMap->width && y+ytab[i]>=0 && y+ytab[i]<curMap->height))
+					{
 						walls[i]=0;
+						continue;
+					}
+					if (IsLava(curMap->map[x+xtab[i]+(y+ytab[i])*curMap->width].floor))
+					{
+						l=1;
+						walls[i]=1;
+					}
+					else
+						walls[i]=IsPurpleHole(curMap->map[x+xtab[i]+(y+ytab[i])*curMap->width].floor);
 				}
 
+				// AA lava fix added
 				if(walls[6]==1 && walls[0]==1)
-					flr=624;	// upper right corner
+					flr=624+l*395;	// upper right corner
 				else if(walls[2]==1 && walls[0]==1)
-					flr=704;	// lower right corner
+					flr=704+l*395;	// lower right corner
 				else if(walls[2]==1 && walls[4]==1)
-					flr=700;	// lower left corner
+					flr=700+l*395;	// lower left corner
 				else if(walls[4]==1 && walls[6]==1)
-					flr=620;	// upper left corner
+					flr=620+l*395;	// upper left corner
 				else if(walls[0]==1)
-					flr=644+(y%3)*20;	// just the right side
+					flr=644+(y%3)*20+l*395;	// just the right side
 				else if(walls[2]==1)
-					flr=701+(x%3);		// just the bottom side
+					flr=701+(x%3)+l*395;		// just the bottom side
 				else if(walls[4]==1)
-					flr=640+(y%3)*20;	// just the left side
+					flr=640+(y%3)*20+l*395;	// just the left side
 				else if(walls[6]==1)
-					flr=621+(x%3);		// just the top side
+					flr=621+(x%3)+l*395;		// just the top side
 				else if(walls[7]==1)
-					flr=705;	// hole to upper right
+					flr=705+l*351;	// hole to upper right
 				else if(walls[1]==1)
-					flr=685;	// hole to lower right
+					flr=685+l*351;	// hole to lower right
 				else if(walls[3]==1)
-					flr=686;	// hole to lower left
+					flr=686+l*351;	// hole to lower left
 				else if(walls[5]==1)
-					flr=706;	// hole to upper left
+					flr=706+l*351;	// hole to upper left
 				else
 					flr=641-(641-625)*(rand()%2)+(x%3)+(y%3)*20;	// default is plain old ground
 
 				curMap->map[x+y*curMap->width].floor=flr;
 			}
 		}
+}
+
+void MushroomLights()
+{
+	int x, y, i;
+	auto SetLightAtLeast = [](int x, int y, int l)
+	{
+		if (x < 0 || x >= curMap->width || y < 0 || y >= curMap->height)
+			return;
+		if (curMap->map[x + y * curMap->width].light < l)
+			curMap->map[x + y * curMap->width].light = l;
+	};
+	for (i = 0; i < curMap->width * curMap->height; ++i)
+	{
+		if (curMap->map[i].item >= IT_SHROOM && curMap->map[i].item <= IT_SHROOMPATCH2)
+		{
+			x = i % curMap->width;
+			y = i / curMap->width;
+			SetLightAtLeast(x,y,0);
+			SetLightAtLeast(x-1,y,0);
+			SetLightAtLeast(x+1,y,0);
+			SetLightAtLeast(x,y-1,0);
+			SetLightAtLeast(x,y+1,0);
+			SetLightAtLeast(x-1,y-1,-6);
+			SetLightAtLeast(x-1,y+1,-6);
+			SetLightAtLeast(x+1,y-1,-6);
+			SetLightAtLeast(x+1,y+1,-6);
+			SetLightAtLeast(x-2,y,-16);
+			SetLightAtLeast(x+2,y,-16);
+			SetLightAtLeast(x,y-2,-16);
+			SetLightAtLeast(x,y+2,-16);
+		}
+	}
+}
+
+void GreenCrystals()
+{
+	int x, y, i, j, s, sx, sy, sn;
+	auto SetFloor = [](int x, int y, int f)
+	{
+		if (x < 0 || x >= curMap->width || y < 0 || y >= curMap->height)
+			return;
+		if (curMap->map[x + y * curMap->width].wall == 0)
+			curMap->map[x + y * curMap->width].floor = f;
+	};
+	auto DeleteSpecial = [](int s)
+	{
+		if (s>=0 && s < MAX_SPECIAL)
+			memset(&curMap->special[s], 0, sizeof(special_t));
+	};
+
+	for (s = 0; s < MAX_SPECIAL; ++s)
+		if (curMap->special[s].trigger == 0)
+			break;
+	if (s == MAX_SPECIAL)
+		return;
+
+	sx = 2;
+	sy = 2;
+	sn = 0;
+
+	for (i = 0; i < curMap->width * curMap->height; ++i)
+	{
+		if (curMap->map[i].item >= IT_GREENCRY2 && curMap->map[i].item <= IT_GREENCRY4)
+		{
+			x = i % curMap->width;
+			y = i / curMap->width;
+			curMap->map[i].tag = 101 + (curMap->map[i].item - IT_GREENCRY2);
+			for (j=0; j<9; ++j)
+				SetFloor(x + j%3-1, y + j/3-1, 892 + j%3 + (j/3)*20);
+
+			DeleteSpecial(s);
+			curMap->special[s].x = x;
+			curMap->special[s].y = y;
+			curMap->special[s].trigger = TRG_RANDOM | TRG_REPEATABLE;
+			curMap->special[s].trigValue = 1;
+			curMap->special[s].effect = SPC_DROPITEM;
+			curMap->special[s].value = curMap->map[i].item;
+			curMap->special[s].effectX = x;
+			curMap->special[s].effectY = y;
+
+			curMap->map[i].item = 0;
+			++s;
+			if (s == MAX_SPECIAL)
+				return;
+
+			if (sn == 0)
+			{
+				DeleteSpecial(s);
+				curMap->special[s].x = sx;
+				curMap->special[s].y = sy;
+				curMap->special[s].trigger = TRG_VARON | TRG_CHAIN | TRG_REPEATABLE;
+				curMap->special[s].trigValue = 240;
+				curMap->special[s].trigValue2 = 0;
+				curMap->special[s].effect = SPC_SETVAR;
+				curMap->special[s].value = 240;
+				curMap->special[s].effectTag = 5;
+				++s;
+				if (s == MAX_SPECIAL)
+					return;
+			}
+
+			DeleteSpecial(s);
+			curMap->special[s].x = sx + sn%3 - 1;
+			curMap->special[s].y = sy + sn/3 - 1;
+			curMap->special[s].trigger = TRG_SHOOT | TRG_REPEATABLE;
+			curMap->special[s].trigX = x;
+			curMap->special[s].trigY = y;
+			curMap->special[s].effect = SPC_DROPITEM;
+			curMap->special[s].value = 0;
+			curMap->special[s].effectX = x;
+			curMap->special[s].effectY = y;
+			++s;
+			if (s == MAX_SPECIAL)
+				return;
+			++sn;
+			if (sn == 4)
+				++sn;
+			if (sn == 9)
+			{
+				sn = 0;
+				sy += 4;
+			}
+		}
+	}
+}
+
+void HiddenWalls(void)
+{
+	int i, s, x, y;
+	auto DeleteSpecial = [](int s)
+		{
+			if (s >= 0 && s < MAX_SPECIAL)
+				memset(&curMap->special[s], 0, sizeof(special_t));
+		};
+	auto AdvanceSpecial = [&s]()->bool
+		{
+			do
+			{
+				++s;
+			} while (s < MAX_SPECIAL && curMap->special[s].trigger != 0);
+			return s < MAX_SPECIAL;
+		};
+
+	for (s = 0; s < MAX_SPECIAL; ++s)
+		if (curMap->special[s].trigger == 0)
+			break;
+	if (s == MAX_SPECIAL)
+		return;
+
+	for (i = 0; i < curMap->width * curMap->height; ++i)
+	{
+		if (curMap->map[i].tag == 250)
+		{
+			x = i % curMap->width;
+			y = i / curMap->width;
+
+			DeleteSpecial(s);
+			curMap->special[s].x = x;
+			curMap->special[s].y = y;
+			curMap->special[s].trigger = TRG_STEP | TRG_SHOOT;
+			curMap->special[s].trigX = x;
+			curMap->special[s].trigY = y;
+			curMap->special[s].effect = SPC_COPYMAP;
+			curMap->special[s].effectX = x;
+			curMap->special[s].effectY = y;
+			sprintf(curMap->special[s].msg, "59,70-59,70");
+
+			if (!AdvanceSpecial())
+				return;
+		}
+	}
 }
 
 void ScanChests(void)
@@ -1877,6 +2115,177 @@ void ScanChests(void)
 	}
 	fclose(f);
 	AppdataSync();
+}
+
+void PrintLoc(char* s, int x, int y)
+{
+	int o = 0;
+	if (x < 100)
+		s[o++] = ' ';
+	if (x < 10)
+		s[o++] = ' ';
+	sprintf(s+o, "%d,", x);
+	o = 4;
+	if (y < 100)
+		s[o++] = ' ';
+	if (y < 10)
+		s[o++] = ' ';
+	sprintf(s+o, "%d", y);
+}
+
+void ScanExits(void)
+{
+	int i,j,k;
+	FILE* f;
+	char loc1[16];
+	char loc2[16];
+
+	f = AppdataOpen("lmao.txt", "wt");
+
+	for (i = 0; i < world.numMaps; i++)
+	{
+		fprintf(f, "Level %d: %s\nSpecials Out:\n", i, world.map[i]->name);
+		for (k = 0; k < MAX_SPECIAL; ++k)
+		{
+			if (world.map[i]->special[k].trigger && world.map[i]->special[k].effect == SPC_GOTOMAP)
+			{
+				PrintLoc(loc1, world.map[i]->special[k].x, world.map[i]->special[k].y);
+				PrintLoc(loc2, world.map[i]->special[k].effectX, world.map[i]->special[k].effectY);
+				fprintf(f, "SPC #%d at %s TO Map %d at %s\n",
+					k, loc1,
+					world.map[i]->special[k].value, loc2);
+			}
+		}
+		fprintf(f, "Specials In:\n");
+		for (j = 0; j < world.numMaps; ++j)
+		{
+			for (k = 0; k < MAX_SPECIAL; ++k)
+			{
+				if (world.map[j]->special[k].trigger && world.map[j]->special[k].effect == SPC_GOTOMAP && world.map[j]->special[k].value == i)
+				{
+					PrintLoc(loc1, world.map[j]->special[k].x, world.map[j]->special[k].y);
+					PrintLoc(loc2, world.map[j]->special[k].effectX, world.map[j]->special[k].effectY);
+					fprintf(f, "MAP %d SPC #%d at %s TO here at %s\n", j, k, loc1, loc2);
+				}
+			}
+		}
+		fprintf(f, "\n");
+	}
+
+	fclose(f);
+	AppdataSync();
+}
+
+void ScanTile(int mytile)
+{
+	int i, j, x, y;
+	FILE* f;
+	char loc[32];
+
+	f = AppdataOpen("rofl.txt", "wt");
+	fprintf(f, "Scanning For Tile #%d\n\n", mytile);
+
+	for (i = 0; i < world.numMaps; i++)
+	{
+		bool bFound = false;
+		for(j=0;j<world.map[i]->width*world.map[i]->height;j++)
+		{
+			if (world.map[i]->map[j].floor == mytile || world.map[i]->map[j].wall == mytile)
+			{
+				x = j % world.map[i]->width;
+				y = j / world.map[i]->width;
+				PrintLoc(loc, x, y);
+				if (!bFound)
+					fprintf(f, "MAP %d: %s\n", i, world.map[i]->name);
+				bFound = true;
+
+				if (world.map[i]->map[j].floor == mytile)
+					fprintf(f, "%s FLOOR\n", loc);
+				if (world.map[i]->map[j].wall == mytile)
+					fprintf(f, "%s WALL\n", loc);
+			}
+		}
+		for (j = 0; j < MAX_SPECIAL; ++j)
+		{
+			if (world.map[i]->special[j].trigger && world.map[i]->special[j].value == mytile &&
+				(world.map[i]->special[j].effect == SPC_ZAPWALL || world.map[i]->special[j].effect == SPC_RAISEWALL
+					|| world.map[i]->special[j].effect == SPC_TOGGLEWALL || world.map[i]->special[j].effect == SPC_CHGTILE))
+			{
+				x = world.map[i]->special[j].x;
+				x = world.map[i]->special[j].y;
+				PrintLoc(loc, x, y);
+				if (!bFound)
+					fprintf(f, "MAP %d: %s\n", i, world.map[i]->name);
+				bFound = true;
+
+				if (world.map[i]->special[j].effect == SPC_ZAPWALL)
+					fprintf(f, "%s SPECIAL ZAPWALL", loc);
+				if (world.map[i]->special[j].effect == SPC_RAISEWALL)
+					fprintf(f, "%s SPECIAL RAISEWALL", loc);
+				if (world.map[i]->special[j].effect == SPC_TOGGLEWALL)
+					fprintf(f, "%s SPECIAL TOGGLEWALL", loc);
+				if (world.map[i]->special[j].effect == SPC_CHGTILE)
+					fprintf(f, "%s SPECIAL CHGTILE", loc);
+			}
+		}
+		if (bFound)
+			fprintf(f, "\n");
+	}
+
+	fclose(f);
+	AppdataSync();
+}
+
+void CountTag(byte mytag)
+{
+	int i, j, x, y;
+	FILE* f;
+	char loc[32];
+
+	f = AppdataOpen("ooloo.txt", "wt");
+	fprintf(f, "Scanning For Tag #%d\n\n", mytag);
+
+	i = 0;
+	for (j = 0; j < curMap->width * curMap->height; j++)
+	{
+		if (curMap->map[j].tag == mytag)
+		{
+			++i;
+			x = j % curMap->width;
+			y = j / curMap->width;
+			PrintLoc(loc, x, y);
+			fprintf(f, "%s\n", loc);
+		}
+	}
+	fprintf(f, "\n%d\n",i);
+
+	fclose(f);
+	AppdataSync();
+}
+
+void TagAllBlankToItem(byte t)
+{
+	for (int x = 0; x < curMap->width * curMap->height; x++)
+		if (curMap->map[x].tag == t && curMap->map[x].item == 0 && curMap->map[x].wall == 0)
+			curMap->map[x].item = editopt.curItem;
+}
+
+void TagAllTag(byte t)
+{
+	for (int x = 0; x < curMap->width * curMap->height; x++)
+		if (curMap->map[x].tag == t)
+			curMap->map[x].tag = editopt.curTag;
+}
+
+byte ScanTag(byte t)
+{
+	byte answer = 0;
+
+	for (int x = 0; answer < 255 && x < curMap->width * curMap->height; x++)
+		if (curMap->map[x].tag == t)
+			++answer;
+
+	return answer;
 }
 
 static void HandleKeyPresses(void)
@@ -1935,8 +2344,11 @@ static void HandleKeyPresses(void)
 				InitFileDialog();
 				break;
 			case 'm':
-				editMode=EDITMODE_MAPMENU;
-				InitMapDialog(&world,curMapNum);
+				//editMode=EDITMODE_MAPMENU;
+				//InitMapDialog(&world,curMapNum);
+				// AA change
+				editMode=EDITMODE_MAPSCREEN;
+				InitMapScreen(&world, curMapNum);
 				break;
 			case ' ':
 				editopt.plopMode++;
@@ -2119,11 +2531,28 @@ static void HandleKeyPresses(void)
 				if(tileX>=0 && tileY>=0 && tileX<curMap->width && tileY<curMap->height)
 					curMap->map[tileX+tileY*curMap->width].tag=editopt.curTag;
 				break;
+			case 'Y': // AA add
+				if (tileX >= 0 && tileY >= 0 && tileX < curMap->width && tileY < curMap->height)
+					TagAllBlankToItem(curMap->map[tileX + tileY * curMap->width].tag);
+				break;
+			case 'y': // AA add
+				if (tileX >= 0 && tileY >= 0 && tileX < curMap->width && tileY < curMap->height)
+					TagAllTag(curMap->map[tileX + tileY * curMap->width].tag);
+				break;
+			case 'u': // AA add
+				editopt.curTag = ScanTag(editopt.curTag);
+				break;
 			case ';':
 				editopt.curTag--;
 				break;
+			case ':': // AA add
+				editopt.curTag -= 10;
+				break;
 			case '\'':
 				editopt.curTag++;
+				break;
+			case '\"': // AA add
+				editopt.curTag += 10;
 				break;
 			case 'c':
 				// Copy
@@ -2144,13 +2573,14 @@ static void HandleKeyPresses(void)
 				// get tile
 				if(tileX>=0 && tileY>=0 && tileX<curMap->width && tileY<curMap->height)
 				{
-					editopt.curFloor=curMap->map[tileX+tileY*curMap->width].floor;
 					if(curMap->map[tileX+tileY*curMap->width].wall)
 					{
 						editopt.curWall=curMap->map[tileX+tileY*curMap->width].wall;
 						editopt.curWallFloor=curMap->map[tileX+tileY*curMap->width].floor;
 					}
-					if(curMap->map[tileX+tileY*curMap->width].item)
+					else
+						editopt.curFloor = curMap->map[tileX + tileY * curMap->width].floor;	// AA don't get floor if we are getting wall
+					//if(curMap->map[tileX+tileY*curMap->width].item) // AA always get
 						editopt.curItem=curMap->map[tileX+tileY*curMap->width].item;
 				}
 				break;
@@ -2160,14 +2590,57 @@ static void HandleKeyPresses(void)
 				for(x=0;x<curMap->width*curMap->height;x++)
 					curMap->map[x].light=m.light;
 				break;
+			case 's':			// AA added
+				// when LIGHT, set area to same brightness as tag. when DARK, -tag
+				if (editopt.plopMode == PLOP_LIGHT || editopt.plopMode == PLOP_DARK)
+				{
+					int x1, x2, y1, y2, i, j;
+					x1 = tileX - (editopt.brushSize - 1);
+					x2 = tileX + (editopt.brushSize - 1);
+					y1 = tileY - (editopt.brushSize - 1);
+					y2 = tileY + (editopt.brushSize - 1);
+
+					for (i = x1; i <= x2; i++)
+						for (j = y1; j <= y2; j++)
+						{
+							if (i >= 0 && i < curMap->width && j >= 0 && j < curMap->height)
+							{
+								if (editopt.plopMode == PLOP_LIGHT && editopt.curTag <= MAX_LIGHT)
+									curMap->map[i + j * curMap->width].light = editopt.curTag;
+								if (editopt.plopMode == PLOP_DARK && -editopt.curTag >= MIN_LIGHT)
+									curMap->map[i + j * curMap->width].light = -editopt.curTag;
+							}
+						}
+				}
+				break;
 			case 'Q':
 				Cavernize();
 				CavernizeBrown(0);
 				CavernizeBrown(60);
-				//Gorgify();
+				break;
+			case 'q':		// AA put back in
+				Gorgify();
 				break;
 			case '!':
 				ScanChests();
+				break;
+			case '?': // AA add
+				ScanExits();
+				break;
+			case 'F': // AA add
+				ScanTile(editopt.curFloor);
+				break;
+			case 'G':
+				CountTag(editopt.curTag);
+				break;
+			case 'n':
+				MushroomLights();
+				break;
+			case 'N':
+				GreenCrystals();
+				break;
+			case 'h':
+				HiddenWalls();
 				break;
 		}
 	}
@@ -2244,6 +2717,18 @@ static void HandleKeyPresses(void)
 				break;
 		}
 	}
+	else if (editMode == EDITMODE_MAPSCREEN)	// AA added
+	{
+		if (k)
+		{
+			if (!MapScreenKey(lastKey))
+			{
+				editMode=EDITMODE_EDIT;
+				ExitMapScreen();
+			}
+			lastKey=0;
+		}
+	}
 	else
 	{
 		switch(k)
@@ -2276,7 +2761,7 @@ TASK(byte) LunaticEditor(MGLDraw *mgl)
 		EditorDraw();
 		AWAIT editmgl->Flip();
 
-		if(lastKey==27)
+		if(lastKey == 27)
 			exitcode=QUITGAME;
 
 		if(!editmgl->Process())
@@ -2331,7 +2816,7 @@ void EditorSaveWorld(const char *fname)
 {
 	char s[64];
 
-	sprintf(s,"backup/%s_back%d%d%d%d.llw",fname,rand()%10,rand()%10,rand()%10,rand()%10);
+	sprintf(s,"backup/%s_back%d%d%d%d.aaw",fname,rand()%10,rand()%10,rand()%10,rand()%10);
 	SaveWorld(&world,s);
 	sprintf(s,"addons/%s",fname);
 	SaveWorld(&world,s);

@@ -44,6 +44,12 @@ void LoonyFire(Guy *me)
 		magCost=1;
 	}
 
+	if (ModifierOn(MOD_BRUTAL) && me->z>0 && staCost<=player.stamina)	// AA brutal mod
+	{
+		player.var[VAA_BRUTAL]=player.stamina-byte(staCost);
+		staCost+=player.var[VAA_BRUTAL];
+	}
+
 	if(player.stamina<staCost || player.magic<magCost)
 	{
 		// fail effect somehow?
@@ -150,7 +156,10 @@ void LoonyHitGuy(Guy *me,int n,world_t *world)
 
 	dmg=player.damage+(me->z>0); // +1 damage for air attacks
 	if(me->z>0)
+	{
 		dmg+=(int)SpecificSkillVal(1,SKILL_BASH);
+		dmg+=player.var[VAA_BRUTAL];	// AA add brutal damage
+	}
 	if(player.potionType==POT_MUDMILK)
 		dmg+=PotionEffect(player.potionType,player.potionPower);
 	if((rand()%100)<SpecificSkillVal(0,SKILL_CRITICAL)+1)
@@ -158,7 +167,7 @@ void LoonyHitGuy(Guy *me,int n,world_t *world)
 		// add sparkling critical stuff and noise and all
 		MakeNormalSound(SND_CRITICAL);
 		FireBullet(me->ID,GetGuy(n-1)->x,GetGuy(n-1)->y+FIXAMT,FIXAMT*30,0,BLT_CRITICAL,0);
-		dmg=(dmg*100+dmg*(word)SpecificSkillVal(1,SKILL_CRITICAL))/100;
+		dmg=(dmg*100+dmg*SkillCriticalAmount())/100;
 		isCritical=1;
 		TalentPoint(TLT_CRITICISM,1);
 	}
@@ -176,7 +185,7 @@ void LoonyHitGuy(Guy *me,int n,world_t *world)
 			y=GetGuy((word)(n-1))->y;
 			x=x-FIXAMT*30+(rand()%(FIXAMT*60+1));
 			y=y-FIXAMT*20+(rand()%(FIXAMT*40+1));
-			FireBullet(me->ID,x,y,0,0,BLT_FLAME,CurseDmg(1,GOOD));
+			FireBullet(me->ID,x,y,0,0,BLT_FLAME,FlameDmg(1,GOOD));
 		}
 	}
 	if((player.axe.magic==EM_VAMPIRIC && (rand()%100)<5) || (player.axe.magic==EM_VAMPIRIC2 && (rand()%100)<10))
@@ -356,6 +365,8 @@ void LoonyWhirlHit(Guy *me,world_t *world)
 	{
 		if(id==-1)
 			id=0;
+		if (!id)		// added wallshoot
+			SpecialShootCheck(curMap, me->x / (TILE_WIDTH * FIXAMT), me->y / (TILE_HEIGHT * FIXAMT));
 		id=FindVictim(me->x,me->y,me->mapx,me->mapy,48+48*(player.axe.magic==EM_WHIRLING),0,EVIL,id,curMap,world);
 		if(id)
 		{
@@ -391,7 +402,7 @@ void LoonyWhirlHit(Guy *me,world_t *world)
 					y=GetGuy((word)(id-1))->y;
 					x=x-FIXAMT*30+(rand()%(FIXAMT*60+1));
 					y=y-FIXAMT*20+(rand()%(FIXAMT*40+1));
-					FireBullet(me->ID,x,y,0,0,BLT_FLAME,CurseDmg(1,GOOD));
+					FireBullet(me->ID,x,y,0,0,BLT_FLAME, FlameDmg(1,GOOD));
 				}
 			}
 		}
@@ -521,10 +532,11 @@ void CastSpell(Guy *me)
 	switch(sp)
 	{
 		case SKILL_RESTORE:
-			HealGoodguy((byte)(SpecificSkillVal(0,SKILL_RESTORE)*SpellDamageBoost(SC_ICE)/100.0f));
-			player.invinc=(byte)SpecificSkillVal(1,SKILL_RESTORE);
+			HealGoodguy((word)(SpecificSkillVal(0,SKILL_RESTORE)*SpellDamageBoost(SC_ICE)/100.0f));
+			player.invinc=(word)SpecificSkillVal(1,SKILL_RESTORE);
 			me->poison=0;
 			me->frozen=0;
+			me->ignited=0;
 			MakeColdRingParticle(me->x,me->y,0,64);
 			DestroyBullets(me->x,me->y,2,100*FIXAMT);
 			MakeNormalSound(SND_BIGHEAL);
@@ -586,14 +598,14 @@ void CastSpell(Guy *me)
 			}
 			if(TalentBonus(TLT_GREENTHUMB)>0)
 				HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_GREENTHUMB,1);
 			break;
 		case SKILL_SHOCK:
 			x=me->x+Cosine(me->facing*32)*24;
 			y=me->y+Sine(me->facing*32)*24;
 			FireBullet(goodguy->ID,x,y,FIXAMT*20,me->facing*32,BLT_SHOCKORB,(word)(SpecificSkillVal(0,SKILL_SHOCK)*(SpellDamageBoost(SC_WIND))/100.0f));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_GALE:
@@ -608,20 +620,20 @@ void CastSpell(Guy *me)
 				y=me->y+Sine(me->facing*32+64+128)*i*24;
 				FireBullet(goodguy->ID,x,y,0,me->facing*32,BLT_GALE1,0);
 			}
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_BERSERK:
 			MakeNormalSound(SND_BERSERK);
 			player.berserkClock=(word)SpecificSkillVal(0,SKILL_BERSERK);
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_TORNADO:
 			// launch off a wall of Gale shots
 			MakeNormalSound(SND_TORNADO);
 			FireBullet(me->ID,me->x,me->y,0,me->facing*32,BLT_TORNADO,0);
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_WINDBAG,1);
 			break;
 		case SKILL_SPIKE:
@@ -634,7 +646,7 @@ void CastSpell(Guy *me)
 			MakeNormalSound(SND_STONERUMBLE);
 			if(TalentBonus(TLT_GREENTHUMB)>0)
 				HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_GREENTHUMB,1);
 			break;
 		case SKILL_BRAMBLES:
@@ -642,7 +654,7 @@ void CastSpell(Guy *me)
 			MakeNormalSound(SND_PLANTSURFACE);
 			if(TalentBonus(TLT_GREENTHUMB)>0)
 				HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-			if(!levelDef[player.levelNum].flags&LF_TOWN)
+			if(!(levelDef[player.levelNum].flags&LF_TOWN))
 				TalentPoint(TLT_GREENTHUMB,1);
 			break;
 		case SKILL_CRYOZOID:
@@ -736,7 +748,7 @@ void CastSpell(Guy *me)
 				g->mind1=30;
 				if(TalentBonus(TLT_GREENTHUMB)>0)
 					HealGoodguy(RecoverAmt((word)(0.5f+TalentBonus(TLT_GREENTHUMB))));
-				if(!levelDef[player.levelNum].flags&LF_TOWN)
+				if(!(levelDef[player.levelNum].flags&LF_TOWN))
 					TalentPoint(TLT_GREENTHUMB,1);
 			}
 			break;
@@ -773,7 +785,7 @@ void CastSpell(Guy *me)
 			}
 		}
 	}
-	if(!levelDef[player.levelNum].flags&LF_TOWN)
+	if(!(levelDef[player.levelNum].flags&LF_TOWN))
 		TalentPoint(TLT_MEDITATION,(byte)SpecificSkillCost(1,sp));
 }
 
@@ -830,7 +842,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 		monsType[player.monsType].offc[1]=rand()%8;
 		monsType[player.monsType].offc[2]=-4+(rand()%9);
 		if((player.timeToFinish%30)==0)
-			NovaGuys(GOOD,goodguy->x,goodguy->y,FIXAMT*50,0,20,0);
+			NovaGuys(GOOD,0,goodguy->x,goodguy->y,FIXAMT*50,0,20,0);
 	}
 	if(ModifierOn(MOD_GANGSTA) && ModifierOn(MOD_KNIGHT))
 	{
@@ -901,14 +913,15 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 			{
 				meleeAttacker=NULL;
 				bulletHittingType=0;
+				bulletHittingOwner = 65535;	// AA bear
 				GetGuy(t-1)->GetShotReal(0,0,ShockDmg(1,GOOD),curMap,world);
-				TalentPoint(TLT_ELECTROCUTION,1);
+				TalentPoint(TLT_ELECTROCUTION,ShockDmg(1,GOOD));	// AA fix)
 				LightningBolt(me->x,me->y-me->z-FIXAMT*20,GetGuy(t-1)->x,GetGuy(t-1)->y-FIXAMT*20);
 			}
 		}
 		if(player.potionType==POT_ROCKETSAUCE && (player.potionClock%PotionEffect(player.potionType,player.potionPower)==0))
 		{
-			FireBullet(me->ID,me->x,me->y,me->z,rand()%256,BLT_FLAMEB,CurseDmg(1,GOOD));
+			FireBullet(me->ID,me->x,me->y,me->z,rand()%256,BLT_FLAMEB, FlameDmg(1,GOOD));
 		}
 		if(player.potionType==POT_STAMINO)
 			player.stamina=player.maxStamina;
@@ -918,6 +931,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 		{
 			player.potionPower=0;
 			player.potionType=0;
+			player.var[VAA_COMBOOM]=0;	// AA comboom
 			PlayerCalcStats();
 		}
 	}
@@ -945,7 +959,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.berserkClock--;
 		if(player.amulet.magic==EM_HOTFOOT && (rand()%10)==0)
 		{
-			FireBullet(me->ID,me->x,me->y,me->z,rand()%256,BLT_FLAMEB,CurseDmg(1,GOOD));
+			FireBullet(me->ID,me->x,me->y,me->z,rand()%256,BLT_FLAMEB, FlameDmg(1,GOOD));
 		}
 		player.stamina=player.maxStamina;
 		if(!player.berserkClock)
@@ -959,7 +973,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 	player.amuletClock++;
 	if(player.parka.magic==EM_HEALTHY)
 	{
-		if(player.parkaClock>=(20*30))
+		if(player.parkaClock>=(10*30))		// changed to 1 per 10 sec
 		{
 			player.parkaClock=0;
 			HealGoodguy(RecoverAmt(1));
@@ -967,7 +981,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if(player.parka.magic==EM_HEALTHY2)
 	{
-		if(player.parkaClock>=(15*30))
+		if(player.parkaClock>=(5*30))		// changed to 1 per 5 sec
 		{
 			player.parkaClock=0;
 			HealGoodguy(RecoverAmt(1));
@@ -975,7 +989,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if(player.parka.magic==EM_ENERGETIC)
 	{
-		if(player.parkaClock>=5*30)
+		if(player.parkaClock>=2*30)		// changed to 1 per 2 sec
 		{
 			player.parkaClock=0;
 			if(player.stamina<player.maxStamina)
@@ -984,7 +998,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if(player.amulet.magic==EM_CHARGED)
 	{
-		if(player.amuletClock>=20*30)
+		if(player.amuletClock>=10*30)	// changed to 1 per 10 sec
 		{
 			player.amuletClock=0;
 			if(player.magic<player.maxMagic)
@@ -993,7 +1007,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if(player.amulet.magic==EM_THINKING)
 	{
-		if(player.amuletClock>=15*30)
+		if(player.amuletClock>=5*30)	// changed to 1 per 5 sec
 		{
 			player.amuletClock=0;
 			if(player.magic<player.maxMagic)
@@ -1002,7 +1016,7 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 	if(player.amulet.magic==EM_SHOCKING)
 	{
-		if(player.amuletClock>=CalcShockRate(30))
+		if(player.amuletClock>=CalcShockRate(30)) // changed to 2/sec // reverted
 		{
 			int t;
 			player.amuletClock=0;
@@ -1012,8 +1026,9 @@ void LoonyControlCommon(Guy *me,mapTile_t *mapTile,world_t *world)
 			{
 				meleeAttacker=NULL;
 				bulletHittingType=0;
+				bulletHittingOwner = 65535;	// AA bear
 				GetGuy(t-1)->GetShotReal(0,0,ShockDmg(1,GOOD),curMap,world);
-				TalentPoint(TLT_ELECTROCUTION,1);
+				TalentPoint(TLT_ELECTROCUTION,ShockDmg(1,GOOD));	// AA fix
 				LightningBolt(me->x,me->y-me->z-FIXAMT*20,GetGuy(t-1)->x,GetGuy(t-1)->y-FIXAMT*20);
 			}
 		}
@@ -1200,11 +1215,12 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 					me->frmTimer=0;
 					return;
 				}
-				if(((player.whirlClock+5)%((byte)SpecificSkillVal(0,SKILL_WHIRL)))==0)
-				{
-					LoonyWhirlHit(me,world);
-				}
-				me->facing=(me->facing+1)&7;
+				if (SpecificSkillLevel(SKILL_WHIRL) > 0)		// AA fix
+					if(((player.whirlClock+5)%((byte)SpecificSkillVal(0,SKILL_WHIRL)))==0)
+					{
+						LoonyWhirlHit(me,world);
+					}
+				me->facing=(me->facing-1)&7;
 				me->frm=3;
 				me->frmTimer=0;
 				c=GetControls();
@@ -1251,6 +1267,8 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 					{
 						if(i==-1)
 							i=0;
+						if (!i)		// added wallshoot
+							SpecialShootCheck(curMap, x / (TILE_WIDTH * FIXAMT), y / (TILE_HEIGHT * FIXAMT));
 						i=FindVictim(x,y,me->mapx,me->mapy,24,0,2,i,curMap,world);
 						CheckForChopTree(curMap,x/(TILE_WIDTH*FIXAMT),y/(TILE_HEIGHT*FIXAMT));
 						if(i)
@@ -1315,6 +1333,8 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				{
 					byte stun;
 					word knock;
+					// added wallshoot
+					SpecialShootCheck(curMap, me->x / (TILE_WIDTH * FIXAMT), me->y / (TILE_HEIGHT * FIXAMT));
 
 					player.spclMove=SM_NONE;
 					DoMove(me,ANIM_IDLE,128,0,0,0);
@@ -1322,7 +1342,7 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 					stun=(byte)SpecificSkillVal(0,SKILL_STOMP)*10;
 					knock=(word)SpecificSkillVal(0,SKILL_STOMP)*8*FIXAMT;
 					ShakeScreen(20);
-					NovaGuys(me->team,me->x,me->y,(int)SpecificSkillVal(1,SKILL_STOMP)*FIXAMT,(word)SpecificSkillVal(0,SKILL_STOMP)*2,stun,knock);
+					NovaGuys(me->team,0,me->x,me->y,(int)SpecificSkillVal(1,SKILL_STOMP)*FIXAMT,(word)SpecificSkillVal(0,SKILL_STOMP)*2,stun,knock);
 					me->z=1;
 					me->dz=FIXAMT*5;
 					me->dx=0;
@@ -1348,6 +1368,8 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				{
 					if(i==-1)
 						i=0;
+					if (!i)		// added wallshoot
+						SpecialShootCheck(curMap, x / (TILE_WIDTH * FIXAMT), y / (TILE_HEIGHT * FIXAMT));
 					i=FindVictim(x,y,me->mapx,me->mapy,24,0,2,i,curMap,world);
 					if(i)
 					{
@@ -1355,6 +1377,7 @@ void LoonyControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 					}
 				}
 				player.reload=3;
+				player.var[VAA_BRUTAL]=0;	// AA clear after every air attack
 			}
 			if(me->z==0)
 			{

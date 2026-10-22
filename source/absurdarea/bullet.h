@@ -168,7 +168,8 @@ typedef struct bulletDef_t
 #define BLT_CLOCKBOOM2 67
 #define BLT_BERRY2	68
 #define BLT_BADBURNIN 69
-#define BLT_TYPES	70
+#define BLT_BADIGNITE 70	// AA addition
+#define BLT_TYPES	71
 
 #define MAX_BULLETS 400
 
@@ -210,6 +211,7 @@ typedef struct bullet_t
 
 extern bulletDef_t bulDef[BLT_TYPES];
 extern byte bulletHittingType;
+extern int bulletHittingOwner;	// AA add
 
 void InitBullets(void);
 void ExitBullets(void);
@@ -226,10 +228,12 @@ void BulletSwap(int sx,int sy,int width,int height,int dx,int dy);
 byte BulletCanGo(bullet_t *me,int xx,int yy,Map *map,byte size);
 byte Intersect(int rx,int ry,int rx2,int ry2,int r2x,int r2y,int r2x2,int r2y2);
 void DestroyBullets(int x,int y,byte team,int radius);
+void DestroyBulletsOther(int x, int y, byte team, int radius, byte parttype);	// AA added for firewall, nicetitan
 void SmashTrees(int owner,int x,int y,int radius,Map *map);
 byte NotBeingDrained(int who);
 void RenderBullet(bullet_t *me);
 byte EatItem(int x,int y);
+byte NumBulletItem(byte item);
 
 void LoadBullets(FILE *f);
 void SaveBullets(FILE *f);

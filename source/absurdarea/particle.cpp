@@ -172,7 +172,7 @@ void Particle::Update(Map *map)
 					v=31-16;
 				color=64+v;
 				if(player.levelNum>=LVL_GEYSER && player.levelNum<=LVL_TITANS)
-					color=32*6+v;
+					color=32*4+v;	// AA color switch
 				if(life>20)
 					size=2;
 				else if(life<10)
@@ -1267,7 +1267,7 @@ void ParticleBoom(byte type,int x,int y,int z)
 				if(!particleList[i]->Alive())
 				{
 					amt=rand()%256;
-					force=rand()%((byte)SpecificSkillVal(1,SKILL_ICECUBE));
+					force=rand()%(bulDef[BLT_BLIZZARD].size);	// AA fix
 					particleList[i]->x=x+Cosine(amt)*force;
 					particleList[i]->y=y+Sine(amt)*force;
 					particleList[i]->z=z;

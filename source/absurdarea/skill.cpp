@@ -133,7 +133,7 @@ skill_t skills[MAX_SKILLS+1]={
 		{"With training, you can become resistant to the pain of",
 		 "injuries, and recover better when you are tired.  This skill",
 		 "makes you lose less Stamina when injured, and recover",
-		 "Stamina more quickly.",
+		 "Stamina more quickly. (Past level 12, +1 Stamina/level)", // (AA explain max level)
 		 "(10% less per level, and slightly faster)"},
 		ST_PASSIVE,
 		SA_NONE,
@@ -389,7 +389,7 @@ skill_t skills[MAX_SKILLS+1]={
 		{"A skilled craftsman can make miniature axe replicas,",
 		 "suitable for collecting.  A less skilled one, like you,",
 		 "can make ones suitable for throwing alongside normal axes.",
-		 "They have a percentage of the normal axe's abilities.",
+		 "(Effect maxes at level 10, extra levels reduce cost)",
 		 "(10% of full power per level, +1/2 Stamina cost per level)"},
 		ST_THROWP,
 		SA_NONE,
@@ -398,7 +398,7 @@ skill_t skills[MAX_SKILLS+1]={
 		0,0,	// magic
 		{0.1f,0},
 		{0.1f,0},
-		{10,18},	// max level
+		{10,10},	// max level			// changed "secondary" max level to 10, for my new "refund" code
 	},
 	{	// #25
 		"Ricochet",
@@ -444,9 +444,9 @@ skill_t skills[MAX_SKILLS+1]={
 		SE_SHOCK,
 		0.5f,0.5f,	// stamina
 		0,0,	// magic
-		{35,1},
-		{-1,0},
-		{18,18},	// max level
+		{0.85f,1},						// changed Static to shock more often
+		{0.15f,0},						// instead of reload frames, it's shocks per second
+		{16,1},	// max level
 	},
 	{	// #28
 		"Poison",
@@ -866,6 +866,20 @@ byte SkillLevel(byte s)
 	return lvl;
 }
 
+// AA triple fix
+byte SkillLevelCapped(byte s)
+{
+	byte lvl = SkillLevel(s);
+	if (lvl > skills[player.skillHave[s]].capLevel[0] && lvl > skills[player.skillHave[s]].capLevel[1])
+	{
+		if (skills[player.skillHave[s]].capLevel[0] > skills[player.skillHave[s]].capLevel[1])
+			lvl = 2 * skills[player.skillHave[s]].capLevel[0] - lvl;
+		else
+			lvl = 2 * skills[player.skillHave[s]].capLevel[1] - lvl;
+	}
+	return lvl;
+}
+
 byte SpecificSkillLevel(byte s)
 {
 	int i;
@@ -936,12 +950,14 @@ float SpecificSkillValDiminished(byte w,byte s,float f)
 
 float SkillStaminaCost(byte s)
 {
-	return (skills[player.skillHave[s]].stamina+skills[player.skillHave[s]].staminaUp*(SkillLevel(s)-1));
+	byte lvl = SkillLevelCapped(s);
+	return (skills[player.skillHave[s]].stamina+skills[player.skillHave[s]].staminaUp*(lvl-1));	// cost fixed
 }
 
 float SkillMagicCost(byte s)
 {
-	return (skills[player.skillHave[s]].magic+skills[player.skillHave[s]].magicUp*(SkillLevel(s)-1));
+	byte lvl = SkillLevelCapped(s);
+	return (skills[player.skillHave[s]].magic+skills[player.skillHave[s]].magicUp*(lvl-1));		// cost fixed
 }
 
 float SpecificSkillCost(byte w,byte s)
@@ -1404,6 +1420,14 @@ word SkillStunAmount(void)
 	}
 
 	return bonus;
+}
+
+word SkillCriticalAmount(void)		// added so that level 0 1% crits still do bonus damage
+{
+	if (SpecificSkillLevel(SKILL_CRITICAL))
+		return SpecificSkillVal(1, SKILL_CRITICAL);
+	else
+		return skills[SKILL_CRITICAL].val[1];
 }
 
 byte SkillHaveASpell(void)

@@ -12,6 +12,7 @@
 short *water1,*water2;
 static byte *waterbkgd,scrollX,scrollY;
 static byte waterColor;
+static byte lavaColorOff;	// AA addition
 static char waterAdj,scrollAmtX,scrollAmtY;
 
 void InitWater(void)
@@ -70,6 +71,7 @@ void SetupWater(void)
 		default:
 			GetDisplayMGL()->LoadBMP("graphics/water.bmp");
 			waterColor=32*3;	// blue
+			lavaColorOff=32*4 - waterColor;		// AA lava red
 			waterAdj=5;	// 5 levels brightened
 			scrollAmtX=-1;
 			scrollAmtY=0;
@@ -179,6 +181,11 @@ byte WaterPixel(int x,int y)
 		s=31;
 
 	return (byte)(s+waterColor);
+}
+
+byte LavaPixel(int x, int y)
+{
+	return WaterPixel(x, y) + lavaColorOff;
 }
 
 void WaterRipple(int x,int y,short amt)

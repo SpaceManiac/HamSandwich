@@ -159,7 +159,7 @@ void InitSpellPick(void)
 	numPicks=1;
 
 	// add throwing button if have throwing skill
-	if(SpecificSkillLevel(SKILL_THROWING))
+	if(SpecificSkillLevel(SKILL_THROWING)||player.axeMode==1)	// AA fix can unthrow
 	{
 		picks[numPicks].spell=SKILL_THROWING;
 		picks[numPicks].updown=0;

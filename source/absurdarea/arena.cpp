@@ -11,7 +11,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	// Rank 0 matches
 	{"To The Pain!",
 		{"Simple fight - Beat all monsters, you win.  Die, you",
-		 "lose.  Also, run out of time, you lose."},
+		 "lose.  Also, run out of time, you lose. (AA!)"},
 	 0,		// rank
 	 0,	 	// var
 	 10,	// cost
@@ -24,7 +24,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	 1,		// wave count
 		{
 			// wave 1
-			{{2,MONS_PUPPET},{2,MONS_MOUSE},{2,MONS_MOUSE2},{0,0},{0,0}},
+			{{2,MONS_PUPPET},{2,MONS_MOUSE},{2,MONS_MOUSE2},{1,MONS_MONKEY},{0,0}},	// AA add monkey
 		},
 	},
 	{"Don't Get Shot",
@@ -204,7 +204,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"Stronghold",
 		{"Guard the base as wave after wave of toys strike",
-		 "from every direction."},
+		 "from every direction. (AA!)"},
 	 1,		// rank
 	 0,	 	// var
 	 50,	// cost
@@ -221,7 +221,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			// wave 2
 			{{20,MONS_PUPPET},{0,0},{0,0},{0,0},{0,0}},
 			// wave 3
-			{{15,MONS_MOUSE2},{10,MONS_MOUSE},{0,0},{0,0},{0,0}},
+			{{15,MONS_MOUSE2},{10,MONS_MOUSE},{5,MONS_MOUSE4},{0,0},{0,0}},	// AA add plaguerat
 			// wave 4
 			{{10,MONS_PUPPET},{5,MONS_MONKEY},{0,0},{0,0},{0,0}},
 			// wave 5
@@ -230,7 +230,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	// Rank 2
 	{"Burlier Brawl",
-		{"WAY more puppets than before.",
+		{"WAY more puppets than before. (AA!)",
 		 ""},
 	 2,		// rank
 	 0,	 	// var
@@ -241,7 +241,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	 AF_RANDOM,		// flags
 	 0,		// time limit
 	 30*10,		// spawn rate
-	 7,		// wave count
+	 8,		// wave count
 		{
 			// wave 1
 			{{30,MONS_PUPPET},{0,0},{0,0},{0,0},{0,0}},
@@ -257,6 +257,8 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			{{5,MONS_PUPPET2},{0,0},{0,0},{0,0},{0,0}},
 			// wave 7
 			{{5,MONS_PUPPET3},{0,0},{0,0},{0,0},{0,0}},
+			// wave 8
+			{{1,MONS_FRUITPUNCH},{0,0},{0,0},{0,0},{0,0}},	// AA add fruitpunch
 		},
 	},
 	{"Blunderdome",
@@ -392,7 +394,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"Garden Of Pain",
 		{"Looks like the crops are coming up nicely this year.",
-		 "Can you put them back in the ground?"},
+		 "Can you put them back in the ground? (AA!)"},
 	 3,		// rank
 	 0,	 	// var
 	 80,	// cost
@@ -407,7 +409,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			// wave 1
 			{{4,MONS_ROSE2},{0,0},{0,0},{0,0},{0,0}},
 			// wave 2
-			{{2,MONS_ROSE},{0,0},{0,0},{0,0},{0,0}},
+			{{2,MONS_ROSE},{2,MONS_ROSE3},{0,0},{0,0},{0,0}},	// AA add yellowrose
 		},
 	},
 	{"In The Army Now",
@@ -458,6 +460,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			{{15,MONS_PUPPET},{0,0},{0,0},{0,0},{0,0}},
 		},
 	},
+	// Rank 4
 	{"12 Monkeys",
 		{"You face the dreaded army of the 12 monkeys!",
 		 "Beware their deadly virus."},
@@ -478,7 +481,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"The Cliffs Of Insanity",
 		{"Relive the horrors of the Frosty Cliffs.",
-		 "This time on level ground."},
+		 "This time on level ground. (AA!)"},
 	 4,		// rank
 	 0,	 	// var
 	 120,	// cost
@@ -491,11 +494,11 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	 5,		// wave count
 		{
 			// wave 1
-			{{5,MONS_TEDDY},{5,MONS_ROSE2},{5,MONS_PUPPET3},{0,0},{0,0}},
+			{{5,MONS_TEDDY},{5,MONS_ROSE2},{5,MONS_PUPPET3},{2,MONS_MONKEY2},{0,0}},	// AA add stinkysocks
 			// wave 2
-			{{4,MONS_PUPPET3},{4,MONS_TEDDY},{4,MONS_ROSE2},{0,0},{0,0}},
+			{{4,MONS_PUPPET3},{4,MONS_TEDDY},{4,MONS_ROSE2},{2,MONS_MONKEY2},{0,0}},
 			// wave 3
-			{{3,MONS_PUPPET3},{3,MONS_TEDDY},{3,MONS_TEDDY},{0,0},{0,0}},
+			{{3,MONS_PUPPET3},{3,MONS_TEDDY},{3,MONS_TEDDY},{1,MONS_MONKEY2},{0,0}},
 			// wave 4
 			{{2,MONS_PUPPET3},{2,MONS_TEDDY},{2,MONS_TEDDY},{0,0},{0,0}},
 			// wave 5
@@ -567,6 +570,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			{{1,MONS_BRUISER},{1,MONS_EVILBOT},{0,0},{0,0},{0,0}},
 		},
 	},
+	// Rank 5
 	{"Factory Redux",
 		{"Did you miss the Toy Factory?  It's back, and its",
 		 "pollution is slowly killing you!"},
@@ -613,7 +617,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"Feeling Crabby",
 		{"We're miles from the ocean, yet still the crabs keep",
-		 "on coming."},
+		 "on coming. (AA!)"},
 	 5,		// rank
 	 0,	 	// var
 	 170,	// cost
@@ -636,7 +640,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			// wave 5
 			{{2,MONS_CRAB},{0,0},{0,0},{0,0},{0,0}},
 			// wave 6
-			{{2,MONS_CRAB},{0,0},{0,0},{0,0},{0,0}},
+			{{2,MONS_CRAB},{2,MONS_SOCKCRAB},{0,0},{0,0},{0,0}},	// AA add sockcrab
 			// wave 7
 			{{2,MONS_CRAB},{0,0},{0,0},{0,0},{0,0}},
 			// wave 8
@@ -689,6 +693,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			{{1,MONS_TRIGUN},{0,0},{0,0},{0,0},{0,0}},
 		},
 	},
+	// Rank 6
 	{"Ghostbusting",
 		{"The maze has become haunted.  Cleanse it!",
 		 ""},
@@ -779,7 +784,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"Caught Between",
 		{"Rock, meet hard place.  You get in middle!",
-		 ""},
+		 "(AA!)"},
 	 6,		// rank
 	 0,	 	// var
 	 230,	// cost
@@ -796,7 +801,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			// wave 2
 			{{4,MONS_STONEWALL},{0,0},{0,0},{0,0},{0,0}},
 			// wave 3
-			{{2,MONS_STONEWALL},{10,MONS_CRAB},{0,0},{0,0},{0,0}},
+			{{1,MONS_STONEWALL},{10,MONS_CRAB},{1,MONS_FIREWALL},{0,0},{0,0}},	// AA replace with firewall
 		},
 	},
 	{"Quake Deathmatch",
@@ -889,7 +894,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"Titanica",
 		{"Titans big.  You small.  Titans win!",
-		 ""},
+		 "(AA!)"},
 	 7,		// rank
 	 VAR_QUESTDONE+QUEST_FURNACE,	 	// var
 	 300,	// cost
@@ -904,9 +909,10 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			// wave 1
 			{{1,MONS_TITAN2},{0,0},{0,0},{0,0},{0,0}},
 			// wave 2
-			{{2,MONS_TITAN2},{4,MONS_TITAN},{0,0},{0,0},{0,0}},
+			{{2,MONS_TITAN2},{4,MONS_TITAN},{2,MONS_NICETITAN},{0,0},{0,0}},	// AA add nicetitans
 		},
 	},
+	// Rank 8
 	{"Save Tokyo!",
 		{"This is a re-enactment of a terrible battle that",
 		 "leveled a distant city."},
@@ -999,7 +1005,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"My, What Big Ears",
 		{"A new challenger has joined our proud arena, and it",
-		 "seems he is seeking revenge..."},
+		 "seems he is seeking revenge... (AA!)"},
 	 8,		// rank
 	 VAR_QUESTDONE+QUEST_FURNACE,	 	// var
 	 380,	// cost
@@ -1012,9 +1018,10 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	 1,		// wave count
 		{
 			// wave 1
-			{{1,MONS_BUNNYBOSS2},{0,0},{0,0},{0,0},{0,0}},
+			{{1,MONS_BUNNYBOSS2},{2,MONS_TURRET},{0,0},{0,0},{0,0}},	// AA add turrets
 		},
 	},
+	// Rank 9
 	{"Big Bodzha Battle",
 		{"No waves, no timer, no tricks.  Just every Bodzha",
 		 "from within 100 miles, all at once."},
@@ -1093,7 +1100,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"Pot, Meet Kettle",
 		{"All you have to do is clear 10 waves.  But",
-		 "somebody seems to be getting in the way!"},
+		 "somebody seems to be getting in the way! (AA!)"},
 	 9,		// rank
 	 0,	 	// var
 	 1000,	// cost
@@ -1116,17 +1123,18 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			// wave 5
 			{{1,MONS_TINPOT},{10,MONS_BADGER3},{0,0},{0,0},{0,0}},
 			// wave 6
-			{{2,MONS_TINPOT},{10,MONS_TEDDY4},{0,0},{0,0},{0,0}},
+			{{2,MONS_TINPOT},{10,MONS_TEDDY4},{5,MONS_ONEPUNCH},{0,0},{0,0}},	// AA added onepunch
 			// wave 7
-			{{2,MONS_TINPOT},{10,MONS_MONKEY4},{0,0},{0,0},{0,0}},
+			{{2,MONS_TINPOT},{10,MONS_MONKEY4},{5,MONS_ROCKMONKEY},{0,0},{0,0}},	// AA added rockmonkey
 			// wave 8
-			{{2,MONS_TINPOT},{10,MONS_MOUSE5},{0,0},{0,0},{0,0}},
+			{{2,MONS_TINPOT},{10,MONS_MOUSE5},{5,MONS_SPICEMICE},{0,0},{0,0}},	// AA added spicemice
 			// wave 9
-			{{2,MONS_TINPOT},{10,MONS_TRIGUN},{0,0},{0,0},{0,0}},
+			{{2,MONS_TINPOT},{10,MONS_TRIGUN},{10,MONS_HOTDOG},{0,0},{0,0}},	// AA added hotdogs
 			// wave 10
 			{{4,MONS_TINPOT},{3,MONS_BADGER3},{3,MONS_TEDDY4},{3,MONS_MONKEY4},{3,MONS_MOUSE5}},
 		},
 	},
+	// Rank 10
 	{"Not Just A Job",
 		{"One on one match against one of the top warriors",
 		 "in the arena!  Hoo-ah!"},
@@ -1209,14 +1217,14 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"The Championship",
 		{"You have proven yourself against all other foes.",
-		 "Now face the champion himself!"},
+		 "Now face the champion himself! (AA!)"},
 	 10,		// rank
 	 0,	 	// var
 	 5000,	// cost
 	 6000,	// prize
 	 AR_BRAWL,	// rules
 	 LVL_ARENA1,	// level
-	 AF_RANDOM,		// flags
+	 AF_RANDOM|AF_HEALING,		// flags	// AA healing. I'm sorry!
 	 0,		// time limit
 	 0,		// spawn rate
 	 1,		// wave count
@@ -1308,7 +1316,7 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 	},
 	{"Ultimate Cage Match",
 		{"The title says it all (although there is no cage,",
-		 "so ignore that part)."},
+		 "so ignore that part). (AA!)"},
 	 11,		// rank
 	 VAR_MADCAP,	 	// var
 	 10000,	// cost
@@ -1323,17 +1331,19 @@ arenaMatch_t arenaMatch[MAX_MATCHES]=
 			// wave 1
 			{{10,MONS_KLUNK},{0,0},{0,0},{0,0},{0,0}},
 			// wave 2
-			{{5,MONS_MOUSE3},{5,MONS_MONKEY2},{5,MONS_ROSE},{0,0},{0,0}},
-			// wave 3
-			{{10,MONS_TEDDY3},{0,0},{0,0},{0,0},{0,0}},
-			// wave 4
-			{{10,MONS_TRIGUN},{5,MONS_JUNKSMITH},{0,0},{0,0},{0,0}},
-			// wave 5
-			{{2,MONS_BIGPLANT},{3,MONS_BUNNYBOSS2},{0,0},{0,0},{0,0}},
-			// wave 6
-			{{4,MONS_TITAN2},{20,MONS_TITAN},{0,0},{0,0},{0,0}},
-			// wave 7
-			{{5,MONS_TURRET},{20,MONS_MOUSE5},{4,MONS_TINPOT},{5,MONS_MONKEY4},{5,MONS_TEDDY4}},
+			{{5,MONS_MOUSE3},{5,MONS_MONKEY2},{5,MONS_ROSE},{10,MONS_TEDDY3},{0,0}},	// AA combine waves!
+			//// wave 3
+			//{{10,MONS_TEDDY3},{0,0},{0,0},{0,0},{0,0}},
+			// wave 4/3
+			{{10,MONS_TRIGUN},{5,MONS_JUNKSMITH},{1,MONS_TINPOT},{0,0},{0,0}},	// AA add tinpot
+			// wave 5/4
+			{{2,MONS_BIGPLANT},{3,MONS_BUNNYBOSS2},{2,MONS_FIREWALL},{0,0},{0,0}},	// AA add firewall
+			// wave 6/5
+			{{4,MONS_TITAN2},{20,MONS_TITAN},{8,MONS_NICETITAN},{0,0},{0,0}},	// AA add nicetitans
+			// wave 7/6
+			{{5,MONS_ONEPUNCH},{20,MONS_MOUSE5},{4,MONS_TINPOT},{5,MONS_MONKEY4},{5,MONS_TEDDY4}},	// AA onepunch
+			// new wave 7
+			{{5,MONS_TURRET},{10,MONS_SPICEMICE},{4,MONS_TINPOT},{10,MONS_ROCKMONKEY},{5,MONS_TEDDY5}},	// AA new enemies
 			// wave 8
 			{{20,MONS_GORKA2},{3,MONS_ARMYONE},{0,0},{0,0},{0,0}},
 			// wave 9
@@ -1517,22 +1527,33 @@ void WinArena(void)
 		PlayerGetMoney(prize);
 	player.destx=12;
 	player.desty=4;
-	if(player.var[VAR_ARENAWINS]<255)
+	// AA achievement
+	if (player.var[VAR_ARENAWINS]<255)
 		player.var[VAR_ARENAWINS]++;
-	if(player.var[VAR_ARENAWINS]>=100)
-		AchieveNow(9);
+	if(player.var[VAA_ARENA+player.arenaLvl]<255)
+		player.var[VAA_ARENA+player.arenaLvl]++;
+	{
+		bool bFound = false;
+		for (int i = 0; !bFound && i < 55; ++i)	// madcap arena excluded
+			if (!player.var[VAA_ARENA + i])
+				bFound = true;
+		if (!bFound)
+			AchieveNow(9);
+	}
+	//if(player.var[VAR_ARENAWINS]>=100)
+	//	AchieveNow(9);
 	SendMessageToGame(MSG_GOTOMAP,LVL_ARENALOBBY);
 	TalentPoint(TLT_GLADIATOR,arenaMatch[player.arenaLvl].rank+1);
 	goodguy->poison=0;
 	ResetPlayer();
-#ifdef DIRECTORS
-	if(player.arenaLvl>=57 && player.arenaLvl<=59)
-		picToDrop=player.arenaLvl-57+10;
-	else if(player.arenaLvl==56 && player.var[VAR_TEMP]>=10)
-		picToDrop=9;
-	else if(player.arenaLvl==55 && player.var[VAR_TEMP]>=50)
-		picToDrop=8;
-#endif
+//#ifdef DIRECTORS
+//	if(player.arenaLvl>=57 && player.arenaLvl<=59)
+//		picToDrop=player.arenaLvl-57+10;
+//	else if(player.arenaLvl==56 && player.var[VAR_TEMP]>=10)
+//		picToDrop=9;
+//	else if(player.arenaLvl==55 && player.var[VAR_TEMP]>=50)
+//		picToDrop=8;
+//#endif
 }
 
 void LoseArena(void)

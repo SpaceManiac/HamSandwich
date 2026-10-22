@@ -6,7 +6,7 @@
 #define ALL_NAMELEN	(48)
 #define ALL_DESCLEN	(600)
 
-#define NUM_ALLUSIONS	(99)
+#define NUM_ALLUSIONS	(99) // AA
 
 typedef struct allusion_t
 {

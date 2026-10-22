@@ -39,12 +39,15 @@ class Guy
 		void GetStunned(word amt);
 		void GetPoisoned(word amt);
 		void GetFrozen(word amt);
+		byte ValidTarget(Guy *him);		//AA addition for nice titan
 		void FindTarget(Map *map,world_t *world);
 		byte WalkCheck(int xx,int yy,Map *map,world_t *world);	// like CanWalk, but doesn't shove guys around, just tells you if
 																// you are bumping one or a wall or anything else
 		void FrozenUpdate(Map *map,world_t *world);
 
 		byte IsActive(Map *map);
+
+		byte RealTeam();	// AA addition; for HP checking when mind controlled in madcap / ticking
 
 		int safeX,safeY;	// last time you were safely on the ground
 		int x,y,z;
@@ -122,7 +125,7 @@ byte SurpriseMonster(byte origType,byte tag,int x,int y,Map *map,world_t *world)
 void SurprisePlace(byte type,byte tag,int x,int y,Map *map,world_t *world);
 void BadguyDrop(byte guytype,byte level,int x,int y);
 void RandomRespawnMap(Map *map);
-void NovaGuys(byte team,int x,int y,int radius,word dmg,byte stun,word knock);
+void NovaGuys(byte team,byte effect,int x,int y,int radius,word dmg,byte stun,word knock);	//AA added effect: 0 stun 1 freeze 2 heal
 int BulletFindTarget(byte team,byte myFace,int x,int y,int notme,Map *map,world_t *world);
 int BulletFindTargetClosest(byte team,int x,int y,int notme,int maxRange,Map *map,world_t *world);
 int BulletFindDrainTarget(byte team,byte myFace,int x,int y,int notme,Map *map,world_t *world);
@@ -143,6 +146,8 @@ void EvilEye(byte mx,byte my,byte facing);
 void ExplodePlagueRats(void);
 void AddPuppetPals(void);
 void RepairPuppets(void);
+void SetPuppetLife(byte i, word life); // AA add
+word GetPuppetLife(byte i); // AA add
 void GroundStomp(word damage,Map *map,world_t *world);
 void DropMoney(int money,int x,int y);
 

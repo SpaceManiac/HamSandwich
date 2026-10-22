@@ -68,6 +68,9 @@
 #define QE_TALENT 3
 #define QE_QUEST 4
 #define QE_VAR	5
+// added for AA
+#define QE_LEVELXP  6
+#define QE_LEVELTL	7
 
 char *QuestName(byte quest);
 

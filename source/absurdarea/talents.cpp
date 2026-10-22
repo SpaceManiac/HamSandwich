@@ -11,7 +11,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Learn to strike enemies in the less protected parts.  Your",
 		 "swinging attacks penetrate 3% of enemy armor per level.",
 		 "",
-		 ""},
+		 "(XP: Kill Enemies in Melee)"},
 		 3.0f,
 		{100,200,300,400,500,600,700,800,900,2000},	// enemies killed by melee axe
 	},
@@ -19,7 +19,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Build up your throwing arm!  As this talent grows, you'll",
 		 "knock enemies back further with thrown axes.",
 		 "",
-		 ""},
+		 "(XP: Kill Enemies with Thrown Axes)"},
 		 1.5f,
 		{100,200,300,400,500,600,700,800,900,2000},	// enemies killed by throwing axe
 	},
@@ -27,7 +27,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Enemies beating on you?  Meh, you get used to it.",
 		 "Increase your Defense by 3% per level.",
 		 "",
-		 ""},
+		 "(XP: Take Damage)"},
 		 3.0f,
 		{100,200,300,400,500,600,700,800,900,2000},	// damage taken
 	},
@@ -35,7 +35,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Improve your critical strikes - they penetrate 5% of",
 		 "enemy armor per level.",
 		 "",
-		 ""},
+		 "(XP: Get Critical Hits)"},
 		 5.0f,
 		{50,60,70,80,90,100,110,120,130,200},	// critical hits obtained
 	},
@@ -43,7 +43,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Reduce the Stamina costs of all actions by 3% per level.",
 		 "Can't beat that with a stick!  But if you try, it won't be",
 		 "as tiring as it was.",
-		 ""},
+		 "(XP: Use Stamina)"},
 		 3.0f,
 		{1000,1200,1400,1600,1800,2000,2200,2400,2600,4000},	// stamina used
 	},
@@ -51,7 +51,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Smash unsuspecting foes.  They're monsters, they deserve",
 		 "it.  Adds 1 Damage per level to attacks against uninjured",
 		 "monsters.",
-		 ""},
+		 "(XP: Kill Enemies In One Axe Hit)"},
 		 1.0f,
 		{100,200,300,400,500,600,700,800,900,2000}, // enemies killed in one axe hit
 	},
@@ -59,7 +59,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Find just the right soft spot on a monster's head, and he",
 		 "goes down like a sack of potatoes.  Stun enemies 3%",
 		 "longer per level.",
-		 ""},
+		 "(XP: Stun Enemies)"},
 		 3.0f,
 		{30*30,90*30,150*30,210*30,270*30,330*30,390*30,450*30,510*30,700*30}, // (time enemies have spent stunned)
 	},
@@ -67,7 +67,7 @@ talent_t talents[MAX_TALENTS]={
 		{"You have a knack for not getting hit that simply",
 		 "confounds enemies.  Stun enemies for 1/8 second per",
 		 "level each time you parry, dodge, or deflect one of their",
-		 "melee attacks."},
+		 "melee attacks. (XP: Parry/Dodge/Deflect Melee Attacks)"},
 		 30.0f/8.0f,
 		{50,60,70,80,90,100,110,120,130,200},	// hits parried, dodged, or deflected (Stone Parka)
 	},
@@ -75,7 +75,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Let's not discuss how you are gaining Life from each",
 		 "monster you slay.  Maybe they're carrying crackers in",
 		 "their pockets.  Could be!  10% chance per level to",
-		 "recover 1 Life when you beat a monster."},
+		 "recover 1 Life when you beat a monster. (XP: Item Drops)"},
 		 10.0f,
 		{50,100,150,200,250,300,350,400,450,1000},	// items dropped by enemies
 	},
@@ -83,7 +83,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Prove your skills at fightin' round the world!  This talent",
 		 "has one effect: it shows Tina at the battle arena just",
 		 "how tough you are, so she'll let you enter harder",
-		 "matches."},
+		 "matches. (XP: Win High Level Matches)"},
 		 1.0f,
 		{5,10,15,20,25,30,35,40,45,50},	// battles won in the arena (N points per battle, N=rank)
 	},
@@ -92,15 +92,15 @@ talent_t talents[MAX_TALENTS]={
 		{"As you cast spells, you obtain a clarity of mind that",
 		 "greatly improves your ability to blow things up.  Adds 3%",
 		 "damage per level to offensive spells.",
-		 ""},
+		 "(XP: Kill Enemies With Magic)"},
 		 3.0f,
-		{100,200,300,400,500,600,700,800,900,2000},	// kills by magic
+		{50,100,150,200,250,300,350,400,450,1000},	// kills by magic
 	},
 	{"Combustion",
 		{"Boy, you really like fire, don't you?  This talent slightly",
 		 "increases the rate at which fire does damage to enemies.",
 		 "",
-		 ""},
+		 "(XP: Deal Damage with Fire/Explosions)"},
 		 1.0f,
 		{300,600,900,1200,1500,1800,2100,2400,2700,5000},	// damage done via fire or explosions
 	},
@@ -108,7 +108,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Icy glare, cold shoulder, assorted other ice puns. Frozen",
 		 "enemies take damage over time, more rapidly with more",
 		 "levels.",
-		 ""},
+		 "(XP: Freeze Enemies)"},
 		 8.0f,
 		{100*30,200*30,300*30,400*30,500*30,600*30,700*30,800*30,900*30,2000*30},	// seconds enemies have spent frozen
 	},
@@ -116,7 +116,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Over time, you have developed a discerning eye for the",
 		 "best toxins.  Decreases the armor of poisoned enemies by",
 		 "5% per level.",
-		 ""},
+		 "(XP: Poison Enemies)"},
 		 5.0f,
 		{100*30,200*30,300*30,400*30,500*30,600*30,700*30,800*30,900*30,2000*30},	// seconds enemies spent poisoned
 	},
@@ -124,7 +124,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Lightning never strikes twice in the same place, but with",
 		 "this talent, it will come closer to doing so.  Increases the",
 		 "rate at which all Lightning abilities zap, by 5% per level.",
-		 ""},
+		 "(XP: Deal Damage With Lightning)"},
 		 5.0f,
 		{300,600,900,1200,1500,1800,2100,2400,2700,5000},	// damage done by lightning
 	},
@@ -132,7 +132,7 @@ talent_t talents[MAX_TALENTS]={
 		{"You are able to maintain your calm even when Ice Mice",
 		 "are trying to drive you insane.  Regenerate Magic faster",
 		 "when standing still.",
-		 ""},
+		 "(XP: Use Magic)"},
 		 2.0f,
 		{100,200,300,400,500,600,700,800,900,2000},	// magic used
 	},
@@ -140,7 +140,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Be careful with this dark magic stuff, it can be",
 		 "dangerous! Enemies slain by Death Magic create Ghosts",
 		 "that live for 2 seconds per level, attacking enemies.",
-		 ""},
+		 "(XP: Kill High Level Enemies With Death Magic)"},
 		 2.0f,
 		{2000,3000,4000,5000,6000,7000,8000,9000,10000,20000},	// kills by death magic (1 point per level of killed guy)
 	},
@@ -148,7 +148,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Get in touch with nature.  Heal 1 Life for every 2 levels,",
 		 "each time you cast a Nature spell.",
 		 "",
-		 ""},
+		 "(XP: Cast Nature Spells)"},
 		 0.5f,
 		{50,70,90,110,130,150,170,190,210,400},	// nature spells cast
 	},
@@ -156,7 +156,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Casting too much fire magic seems to build up an internal",
 		 "fire of your own.  Each time you cast a Fire spell, 1",
 		 "fireball per level will shoot off in a random direction.",
-		 ""},
+		 "(XP: Kill Enemies With Fire Magic)"},
 		 1.0f,
 		{100,200,300,400,500,600,700,800,900,2000},	// kills by fire magic
 	},
@@ -164,7 +164,7 @@ talent_t talents[MAX_TALENTS]={
 		{"It's not a flattering name for a talent, but it's handy",
 		 "anyway.  Wind spells cost 3% less Magic per level.",
 		 "",
-		 ""},
+		 "(XP: Cast Wind Spells)"},
 		 3.0f,
 		{50,70,90,110,130,150,170,190,210,400},	// wind spells cast
 	},
@@ -173,7 +173,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Go outside!  Exercise your leg muscles!  This will gradually",
 		 "increase your movement speed.",
 		 "",
-		 ""},
+		 "(XP: Walk Around)"},
 		 (FIXAMT*3.0f)/10.0f,
 		{4000,6000,8000,10000,12000,14000,16000,18000,20000,32000},	// tiles traversed
 	},
@@ -181,23 +181,23 @@ talent_t talents[MAX_TALENTS]={
 		{"Use this talent to mix your own potions from herbs you",
 		 "find!  Higher level improves your odds of success, and",
 		 "results in higher quality potions.  You'll need a Cauldron",
-		 "to do your mixing in."},
+		 "to do your mixing in. (XP: Brew Potions)"},
 		 1.0f,
 		{10,15,20,25,30,35,40,45,50,100},	// potions brewed
 	},
 	{"Junksmith",
-		{"There was a famed Scottish inventor named MacGiver who",
+		{"There was a famed Scottish inventor named MacGyver who",
 		 "was known for his ability to take seemingly random junk",
 		 "and make it into useful items.  Just wanted to share",
-		 "that story.  Requires an Oven to work at."},
+		 "that story.  Requires an Oven to work at. (XP: Smith)"},
 		 2.0f,
 		{10,15,20,25,30,35,40,45,50,100},	// items crafted
 	},
 	{"Clockwork",
 		{"It gets lonely out in the snow.  Build yourself a friend",
 		 "out of the junk you find!  The friend can be made from",
-		 "5 items, plus 1 per level.  Different items have different",
-		 "effects.  Can only be done at a Clock."},
+		 "5 items, plus 1.5 per level.  Different items have different",
+		 "effects.  Can only be done at a Clock. (XP: Clockbot Kills)"},
 		 1.5f,
 		{10,20,30,40,50,60,70,80,90,200},	// kills by clockwork buddy
 	},
@@ -205,7 +205,7 @@ talent_t talents[MAX_TALENTS]={
 		{"There's good stuff beneath the ground, and you seem to",
 		 "be naturally attracted to it!  Odds of finding things when",
 		 "digging increase with each level.",
-		 ""},
+		 "(XP: Dig Up Treasure)"},
 		 2.0f,
 		{10,13,16,19,22,25,28,31,34,50},	// items dug up
 	},
@@ -213,7 +213,7 @@ talent_t talents[MAX_TALENTS]={
 		{"You are frugal to your very bones.  You pinch pennies so",
 		 "hard, you can sell them as souvenirs (and you do!).  Buy",
 		 "things 3% cheaper per level.",
-		 ""},
+		 "(XP: Spend Money Buying Stuff)"},
 		 3.0f,
 		{2000,4000,6000,8000,10000,12000,14000,16000,18000,30000},	// money spent shopping
 	},
@@ -221,7 +221,7 @@ talent_t talents[MAX_TALENTS]={
 		{"You are unwilling to part with even the most crass of",
 		 "garbage... except for a good price.  Earn 3% more per",
 		 "level when you sell items.",
-		 ""},
+		 "(XP: Pick Up Coins)"},
 		 3.0f,
 		{100,200,300,400,500,600,700,800,900,2000},	// coins collected off the ground
 	},
@@ -229,7 +229,7 @@ talent_t talents[MAX_TALENTS]={
 		{"Soula Cola with a twist of lemon?  A Brain Juice and",
 		 "Tonic?  Shaken, not stirred.  Potions you drink have a 3%",
 		 "bigger effect per level.",
-		 ""},
+		 "(XP: Drink High Level Potions)"},
 		 3.0f,
 		{30,50,70,90,110,130,150,170,190,300},	// potions drank
 	},
@@ -237,7 +237,7 @@ talent_t talents[MAX_TALENTS]={
 		{"There's no junk you will pass over in your collecting",
 		 "frenzy.  Increases odds of finding junk items by 2% per",
 		 "level.",
-		 ""},
+		 "(XP: Pick Up Junk)"},
 		 2.0f,
 		{50,70,90,110,130,150,170,190,210,500},	// junk collected
 	},
@@ -245,7 +245,7 @@ talent_t talents[MAX_TALENTS]={
 		{"In your travels, you've collected so many herbs that you",
 		 "are able to spot even the scraggly ones at a glance.",
 		 "Increases odds of finding herbs.",
-		 ""},
+		 "(XP: Pick Herbs)"},
 		 0.25f,
 		{50,60,70,80,90,100,110,120,130,300},	// herbs collected
 	},
@@ -270,7 +270,7 @@ char *TalentName(byte n)
 {
 	static char huh[]="????";
 
-	if(n>MAX_TALENTS)
+	if(n>=MAX_TALENTS)
 		return huh;
 	if(player.talentLevel[n]!=255)
 		return talents[n].name;
@@ -280,7 +280,7 @@ char *TalentName(byte n)
 
 talent_t *GetTalent(byte n)
 {
-	if(n>MAX_TALENTS)
+	if(n>=MAX_TALENTS)
 		return NULL;
 	return &talents[n];
 }
@@ -348,6 +348,7 @@ void TalentPoint(byte which,word amt)
 				FXRing(6,goodguy->x,goodguy->y,goodguy->z,10,1);
 				FXRing(6,goodguy->x,goodguy->y,goodguy->z,10,2);
 			}
+			QuestReportEvent(QE_LEVELTL, which); // added for AA
 		}
 	}
 }
@@ -392,4 +393,50 @@ void TalentDecrease(void)
 				player.talentPts[i]=0;
 		}
 	}
+}
+
+// AA functions
+
+// if talent unassigned, level is 0
+byte CurrentTalentLevel(byte which)
+{
+	if (which >= MAX_TALENTS || player.talentLevel[which] == 255)
+		return 0;
+	byte lv = player.talentLevel[which];
+	if (GlassEffect() == GE_TALENT)
+	{
+		if (GlassAmount() == 3)
+			++lv;
+		else if (GlassAmount() == 0 && which >= TLT_CHOPPING && which <= TLT_GLADIATOR)
+			++lv;
+		else if (GlassAmount() == 1 && which >= TLT_FOCUS && which <= TLT_WINDBAG)
+			++lv;
+		else if (GlassAmount() == 2 && which >= TLT_MOBILITY && which <= TLT_HERBALISM)
+			++lv;
+	}
+	if (lv > 10)
+		lv = 10;
+	return lv;
+}
+
+// unassigned is 0, max is 10 even with glasses
+byte MaxTalentLevel(byte talenttype)
+{
+	byte biggest = 0;
+	byte t = 10 * talenttype;
+	byte rhs = t + 10;
+	if (talenttype == TLTP_ANY)
+	{
+		t = 0;
+		rhs = 30;
+	}
+	while (biggest < 10 && t < rhs)
+	{
+		byte lv = CurrentTalentLevel(t);
+		if (lv > biggest)
+			biggest = lv;
+
+		++t;
+	}
+	return biggest;
 }

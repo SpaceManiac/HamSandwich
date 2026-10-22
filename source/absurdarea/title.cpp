@@ -15,7 +15,7 @@
 #endif
 
 #ifdef DIRECTORS
-#define VERSION_NO	"Version 1.2CE"
+#define VERSION_NO	"Version 1.3 AA"//"Version 1.2CE"
 #else
 #define VERSION_NO	"Version 1.0O"
 #endif
@@ -139,7 +139,7 @@ void GetAddOns(void)
 	for (const auto& str : filenames)
 	{
 		const char* name = str.c_str();
-		if (strncmp(name, "lvl_", 4))
+		if (strncmp(name, "aal_", 4))
 			continue;
 		addOnCount++;
 	}
@@ -148,14 +148,14 @@ void GetAddOns(void)
 	addOnList=(addon_t *)malloc(sizeof(addon_t)*addOnCount);
 
 
-	strcpy(addOnList[0].dispName,"Original");
+	strcpy(addOnList[0].dispName,"Absurd Area, by Frogdude");
 	addOnList[0].filename[0]='\0';
 
 	done=1;
 	for (auto& str : filenames)
 	{
 		char* name = str.data();  // Since C++11, data() is null-terminated.
-		if (strncmp(name, "lvl_", 4))
+		if (strncmp(name, "aal_", 4))
 			continue;
 		GetAddOn(name, done);
 		done++;
@@ -174,7 +174,7 @@ void GetSavesForMenu(void)
 	hole=-1;
 	for(i=0;i<MAX_CHARS;i++)
 	{
-		sprintf(txt,"profiles/char%02d.loony",i+1);
+		sprintf(txt,"profiles/char%02d.absurd",i+1);	// changed profile extension
 		f=AppdataOpen(txt,"rb");
 		if(!f && hole==-1)
 		{
@@ -511,7 +511,7 @@ void DeleteCharacter(void)
 {
 	char s[64];
 
-	sprintf(s,"profiles/char%02d.loony",save[whoToDelete].realNum+1);
+	sprintf(s,"profiles/char%02d.absurd",save[whoToDelete].realNum+1);	// changed profile extension
 	AppdataDelete(s);	// delete that file
 	GetSavesForMenu();
 	curChar=0;
@@ -524,6 +524,8 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 
 	if(*lastTime>TIME_PER_FRAME*30)
 		*lastTime=TIME_PER_FRAME*30;
+
+	AdvanceGamepadStart();	// AA gamepad start fix
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
@@ -779,7 +781,7 @@ TASK(byte) MainMenuUpdate(int *lastTime,MGLDraw *mgl)
 				MakeNormalSound(SND_MENUCLICK);
 				subcursor=1;
 			}
-			if((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9') && subcursor==0)
+			if(((k>='a' && k<='z') || (k>='A' && k<='Z') || (k>='0' && k<='9')) && subcursor==0)
 			{
 				if(strlen(save[curChar].name)<10)
 				{

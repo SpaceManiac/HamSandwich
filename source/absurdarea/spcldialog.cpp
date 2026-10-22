@@ -72,6 +72,9 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	RenderCheckbox(220,82,spcl->trigger&TRG_GETITEM,"Get Item");
 	RenderCheckbox(220,96,spcl->trigger&TRG_DELAYCHAIN,"Delayed Chain");
 	RenderCheckbox(300,96,spcl->trigger&TRG_ITEMHERE,"Item Here");
+	RenderCheckbox(260, 110, spcl->trigger&TRG_HASITEMYM, "Have Item Inc. Stash");
+	RenderCheckbox(260, 124, spcl->trigger&TRG_HASITEMNM, "Have Item In Hand");
+	RenderCheckbox(260, 138, spcl->trigger & TRG_SKILLGREQ, "Skill Level At Least");
 
 	RenderCheckbox(62,148,spcl->trigger&TRG_REPEATABLE,"Multiple use");
 	RenderCheckbox(62,162,spcl->trigger&TRG_MESSAGE,"Show message");
@@ -121,7 +124,7 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	DrawBox(206,306,276,320,16+15*(spcl->effect==SPC_CHAT));
 	Print(206,308,"Chat",0,1);
 	DrawBox(206,290,276,304,16+15*(spcl->effect==SPC_LIGHTBALL));
-	Print(206,292,"Lghtball",0,1);
+	Print(206,292,"Achieve",0,1);
 
 	// trigger value
 	RenderValueAdjuster("Trigger Value",spcl->trigValue,210,12);
@@ -171,14 +174,19 @@ byte SpclDialogKey(char key)
 
 void CheckValueAdjustClick(int msx,int msy,int x,int y,int *value,int min,int max)
 {
-	if(msx>x-1 && msx<x+21 && msy>y+13 && msy<y+29)
+	// AA increments by 100
+	if(msx>x-1 && msx<x+11 && msy>y+13 && msy<y+29)
+		*value-=100;
+	if(msx>x+10 && msx<x+21 && msy>y+13 && msy<y+29)
 		*value-=10;
 	if(msx>x+21 && msx<x+33 && msy>y+13 && msy<y+29)
 		*value-=1;
 	if(msx>x+67 && msx<x+79 && msy>y+13 && msy<y+29)
 		*value+=1;
-	if(msx>x+79 && msx<x+101 && msy>y+13 && msy<y+29)
+	if(msx>x+79 && msx<x+91 && msy>y+13 && msy<y+29)
 		*value+=10;
+	if(msx>x+90 && msx<x+101 && msy>y+13 && msy<y+29)
+		*value += 100;
 
 	if(*value<min)
 		*value=max;
@@ -223,6 +231,13 @@ byte SpclDialogClick(int msx,int msy)
 
 	if(msx>299 && msx<310 && msy>95 && msy<96+14)
 		spcl->trigger^=TRG_ITEMHERE;
+	//Absurd Area
+	if (msx>259 && msx<270 && msy>109 && msy<110+14)
+		spcl->trigger^=TRG_HASITEMYM;
+	if (msx>259 && msx<270 && msy>123 && msy<124+14)
+		spcl->trigger^=TRG_HASITEMNM;
+	if (msx > 259 && msx < 270 && msy>137 && msy < 138 + 14)
+		spcl->trigger^=TRG_SKILLGREQ;
 
 	// effect choices
 	if(msx>61 && msx<133 && msy>193 && msy<209)

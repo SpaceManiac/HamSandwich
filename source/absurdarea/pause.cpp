@@ -166,7 +166,7 @@ void SetHelpText(void)
 	{
 		strcpy(helpTxt[0],"Up & Down to choose options.  Press Fire to select,");
 		strcpy(helpTxt[1],"Jump or ESC to resume play.");
-		strcpy(helpTxt[2],"");
+		strcpy(helpTxt[2],"On \"Resume,\" press Magic to view Upgrades.");
 		strcpy(helpTxt[3],"");
 	}
 	if(subMode==SUBMODE_SKILL)
@@ -174,7 +174,7 @@ void SetHelpText(void)
 		strcpy(helpTxt[0],"Up & Down to choose skills.  Press Fire to add a point");
 		strcpy(helpTxt[1],"to a skill if you have any.  Left & Right will take you");
 		strcpy(helpTxt[2],"to more pages of skills.  Jump or ESC exits.");
-		strcpy(helpTxt[3],"WARNING: Skill points are permanent once placed!");
+		strcpy(helpTxt[3],"WARNING: Skill points are costly to reset!");
 	}
 	if(subMode==SUBMODE_TALENT)
 	{
@@ -224,6 +224,13 @@ void SetHelpText(void)
 		strcpy(helpTxt[1],"an option.  Jump to exit.  Changes made here affect");
 		strcpy(helpTxt[2],"only this profile. To change newly-made profiles and");
 		strcpy(helpTxt[3],"the title screen, use the title options menu.");
+	}
+	if (subMode==SUBMODE_AAUPGRADE)
+	{
+		strcpy(helpTxt[0], "Up, Down, Left and Right to view your Upgrades.");
+		strcpy(helpTxt[1], "To assign new Upgrades, return to the Halls of Mastery,");
+		strcpy(helpTxt[2], "   which can be reached from any Festivus pole.");
+		strcpy(helpTxt[3], "Press Fire or Jump to exit.");
 	}
 }
 
@@ -865,6 +872,169 @@ void PlayerStat(const char *txt,int val,int y)
 		PrintGlow(i,y,".",0,1);
 }
 
+void RenderUpgrade(int x, int y, int w, int h, byte u, byte mode)
+{
+	byte colors[6] = {230,234,240,166,170,176};
+	char s[5];
+
+	if (u >= MAX_UPGRADES)
+		u = 0;
+	if (mode > 5)
+		mode = 0;
+
+	PauseBox(x,y,x+w-1,y+h-1,colors[mode]);
+	
+	x+=w/2+1;
+	y+=h/2+1;
+	upgrade_t* up = GetUpgrade(u);
+	if (up->level == 255)
+		y-=6;
+	else
+		y-=12;
+
+	CenterPrintDark(x,y,up->name,1);
+	if (up->level != 255)
+	{
+		sprintf(s, "%d", up->level);
+		CenterPrintDark(x,y+12,s,1);
+	}
+}
+
+void PlayerAltSlashStat(const char* txt, int val, int val2, int y)
+{
+	char s[32];
+	int x1, x2, wid, i;
+
+	sprintf(s, "%d/%d", val, val2);
+	x1 = ((396 + GetStrLength(txt, 1) + 4) / 6) * 6;
+	x2 = ((635 - GetStrLength(s, 1)) / 6) * 6;
+	wid = 6;
+	PrintGlow(396, y, txt, 0, 1);
+	RightPrintGlow(635, y, s, 0, 1);
+	for (i = x1; i < x2; i += wid)
+		PrintGlow(i, y, ".", 0, 1);
+}
+
+void PlayerAltStat(const char* txt, int val, int y)
+{
+	char s[32];
+	int x1, x2, wid, i;
+
+	sprintf(s, "%d", val);
+	x1 = ((396 + GetStrLength(txt, 1) + 4) / 6) * 6;
+	x2 = ((635 - GetStrLength(s, 1)) / 6) * 6;
+	wid = 6;
+	PrintGlow(396, y, txt, 0, 1);
+	RightPrintGlow(635, y, s, 0, 1);
+	for (i = x1; i < x2; i += wid)
+		PrintGlow(i, y, ".", 0, 1);
+}
+
+void DescribeUpgrade(int x, int y, byte u)
+{
+	char s[64];
+	char ns[32];
+
+	if (u >= MAX_UPGRADES)
+		u=0;
+
+	PrintUpgradeName(u, ns);
+	if (PlayerUpgradeStatus(u) == 2)
+		sprintf(s, "%s (Purchased)", ns);
+	else if (PlayerUpgradeStatus(u) == 1)
+		sprintf(s, "%s (Available)", ns);
+	else
+		sprintf(s, "%s (Locked)", ns);
+	Print(x+208,y+352,s,0,1);
+
+	if (PlayerUpgradeStatus(u) == 0)
+	{
+		PrintRequirements(u, s);
+		Print(x+208,y+352+12,s,0,1);
+	}
+
+	for (byte d=0; d < 4; ++d)
+		Print(x+208,y+352+12*2+12*d,GetUpgrade(u)->perktext[d],0,1);
+
+	//x+208,y+352
+}
+
+void RenderAAUpgrades(int x, int y)
+{
+	static constexpr int boxw = 74, boxh = 34, textheight=14, margin = 12, smallmargin = 5, border = 3;
+	byte cursorToUpgrade[MAX_UPGRADES] =
+	{
+		9, 14, 19, 24, 29,
+		8, 13, 18, 23, 28,
+		7, 12, 17, 22, 27,
+		6, 11, 16, 21, 26,
+		5, 10, 15, 20, 25,
+		0, 1,  2,  3,  4
+	};
+
+	PauseBox(x + 202, y + 5, x + 638, y + 345, 234);
+	PauseBox(x + 202, y + 347, x + 638, y + 428, 234);
+	
+	if (subcursor >= MAX_UPGRADES)
+		subcursor=0;
+	if (subMode==SUBMODE_AAUPGRADE)
+		DescribeUpgrade(x, y, cursorToUpgrade[subcursor]);
+	
+	PrintGlow(x + 251, y + 8, "Upgrades", 0, 0);
+	byte o=1;
+	for (byte ob=0; ob<MAX_OBJECTIVES; ++ob)
+		if (player.var[VAA_OBJECTIVES+ob])
+			++o;
+	byte p=o-player.var[VAA_UPGRADENUM];
+	if (p>MAX_UPGRADES)
+		p=0;
+	PlayerAltSlashStat("Objective Points Earned:",o,30,y+11);
+	PlayerAltStat("Unspent Objective Points:",p,y+23);
+
+	x += 206;
+	y += 38;
+	
+	// class boxes
+	PauseBox(x, y, x+2*smallmargin+2*margin+3*boxw-1, y+textheight+2*smallmargin+4*margin+5*boxh-1, 234);
+	PauseBox(x+3*margin+3*boxw, y ,x+2*smallmargin+4*margin+5*boxw-1, y+textheight+2*smallmargin+4*margin+5*boxh-1, 234);
+	PauseBox(x, y+textheight+5*margin+5*boxh, x+2*smallmargin+4*margin+5*boxw-1, y+2*textheight+2*smallmargin+5*margin+6*boxh-1, 234);
+	CenterPrintDark(x+(2*smallmargin+2*margin+3*boxw)/2+1,y+smallmargin+1,"WARRIOR UPGRADES",1);
+	CenterPrint(x+(2*smallmargin+2*margin+3*boxw)/2,y+smallmargin,"WARRIOR UPGRADES",0,1);
+	CenterPrintDark(x+3*(boxw+margin)+(2*smallmargin+margin+2*boxw)/2+1,y+smallmargin+1,"MAGE UPGRADES",1);
+	CenterPrint(x+3*(boxw+margin)+(2*smallmargin+margin+2*boxw)/2,y+smallmargin,"MAGE UPGRADES",0,1);
+	CenterPrintDark(x+(2*smallmargin+4*margin+5*boxw)/2+1,y+5*margin+6*boxh+textheight+smallmargin+3,"CIVILIAN UPGRADES",1);
+	CenterPrint(x+(2*smallmargin+4*margin+5*boxw)/2,y+5*margin+6*boxh+textheight+smallmargin+2,"CIVILIAN UPGRADES",0,1);
+
+	x += smallmargin;
+	y += (smallmargin+textheight);
+
+	//dependency lines
+	DrawBox(x+boxw/2, y+boxh/2+1, x+boxw/2+1, y+4*(boxh+margin)+boxh/2, 0); // duelist
+	DrawBox(x+(boxw+margin)+boxw/2, y+boxh/2+1, x+(boxw+margin)+boxw/2+1, y+4*(boxh+margin)+boxh/2, 0); // gladiator
+	DrawBox(x+2*(boxw+margin)+boxw/2, y+boxh/2+1, x+2*(boxw+margin)+boxw/2+1, y+4*(boxh+margin)+boxh/2, 0); // marksman
+	for (byte m=0; m<4; ++m)
+	{
+		DrawBox(x+3*(boxw+margin)+boxw/2,	y+m*(boxh+margin)+boxh/2+1,	x+3*(boxw+margin)+boxw/2+1, y+m*(boxh+margin)+boxh+3,		0);
+		DrawBox(x+4*(boxw+margin)+boxw/2,	y+m*(boxh+margin)+boxh/2+1,	x+4*(boxw+margin)+boxw/2+1, y+m*(boxh+margin)+boxh+3,		0);
+		DrawBox(x+3*(boxw+margin)+boxw/2,	y+m*(boxh+margin)+boxh+2,	x+4*(boxw+margin)+boxw/2+1, y+m*(boxh+margin)+boxh+3,		0);
+		DrawBox(x+4*(boxw+margin)-7,		y+m*(boxh+margin)+boxh+2,	x+4*(boxw+margin)-6,		y+(m+1)*(boxh+margin)-3,		0);
+		DrawBox(x+3*(boxw+margin)+boxw/2,	y+(m+1)*(boxh+margin)-4,	x+4*(boxw+margin)+boxw/2+1, y+(m+1)*(boxh+margin)-3,		0);
+		DrawBox(x+3*(boxw+margin)+boxw/2,	y+(m+1)*(boxh+margin)-4,	x+3*(boxw+margin)+boxw/2+1, y+(m+1)*(boxh+margin)+boxh/2,	0);
+		DrawBox(x+4*(boxw+margin)+boxw/2,	y+(m+1)*(boxh+margin)-4,	x+4*(boxw+margin)+boxw/2+1, y+(m+1)*(boxh+margin)+boxh/2,	0);
+	}
+	DrawBox(x+2*(boxw+margin)+boxw/2+1, y+5*(boxh+margin)+boxh/2, x+3*(boxw+margin)+boxw/2, y+5*(boxh+margin)+boxh/2+1, 0); // expert
+
+	// print boxes 
+	for (byte sc = 0; sc < MAX_UPGRADES; ++sc)
+	{
+		byte r = sc/5;
+		byte c = sc%5;
+		byte u = cursorToUpgrade[sc];
+		byte mode = PlayerUpgradeStatus(u) + 3*(subMode==SUBMODE_AAUPGRADE && subcursor==sc);
+		RenderUpgrade(x+c*(boxw+margin), y+r*(boxh+margin), boxw, boxh, u, mode);
+	}
+}
+
 void PlayerSlashStat(const char *txt,int val,int val2,int y)
 {
 	char s[32];
@@ -891,7 +1061,7 @@ void RenderPlayerStats(MGLDraw *mgl)
 		PlayerSlashStat("XP",player.xp,player.xpNeed,16);
 	else
 		PlayerStat("XP",player.xp,16);
-	PlayerStat("Skill Pts",player.skillPts,28);
+	PlayerStat("Skill Pts",(word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS]),28);
 	if(player.axeMode==1)
 	{
 		d=((((float)player.damage)/2.0f+0.5f));
@@ -962,6 +1132,8 @@ void RenderPauseMenu(MGLDraw *mgl)
 		else if(subMode==SUBMODE_SETBTN)
 			RenderSetKey(offX,-offX-5,1);
 	}
+	if (cursor == PAUSE_RESUME)
+		RenderAAUpgrades(offX, -offX - 5);
 
 	Print(210,430,helpTxt[0],0,1);
 	Print(210,442,helpTxt[1],0,1);
@@ -984,7 +1156,7 @@ void LoadGame(void)
 	char txt[64];
 
 
-	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
+	sprintf(txt,"profiles/char%02d.absurd",gameToLoad+1);	// changed profile extension
 	f=AppdataOpen(txt,"rb");
 	if(!f)
 	{
@@ -996,11 +1168,11 @@ void LoadGame(void)
 		if(player.addonName[0]=='\0')
 		{
 			ResetLevelDefs();
-			LoadWorld(&curWorld,"winter.llw");
+			LoadWorld(&curWorld,"absurdarea.aaw");
 		}
 		else
 		{
-			sprintf(txt,"addons/%s.llw",player.addonName);
+			sprintf(txt,"addons/%s.aaw",player.addonName);
 			LoadLevelDefs(player.addonName);
 			LoadWorld(&curWorld,txt);
 		}
@@ -1022,7 +1194,7 @@ void SaveGame(void)
 	FILE *f;
 	char txt[64];
 
-	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
+	sprintf(txt,"profiles/char%02d.absurd",gameToLoad+1);	// changed profile extension
 	f=AppdataOpen(txt,"wb");
 	if(!f)
 	{
@@ -1191,6 +1363,15 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		{
 			return PAUSE_RESUME;
 		}
+		if (((c & CONTROL_B3) && (!(oldc & CONTROL_B3))))
+		{
+			if (cursor == PAUSE_RESUME)
+			{
+				subMode = SUBMODE_AAUPGRADE;
+				subcursor = 25;
+				SetHelpText();
+			}
+		}
 	}
 	else if(subMode==SUBMODE_SKILL)
 	{
@@ -1223,11 +1404,14 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
 		{
 			// add a point to a skill
-			if(skillPtr[subcursor]!=255 && player.skillHave[skillPtr[subcursor]] && player.skillPts>0 && player.skillLvl[skillPtr[subcursor]]<10)
+			if(skillPtr[subcursor]!=255 && player.skillHave[skillPtr[subcursor]] && (word)(player.skillPts)+(word)(player.var[VAA_SKILLBONUS])>0 && player.skillLvl[skillPtr[subcursor]]<10)
 			{
 				player.skillClock[skillPtr[subcursor]]=0;
 				player.skillLvl[skillPtr[subcursor]]++;
-				player.skillPts--;
+				if (player.var[VAA_SKILLBONUS] > 0)	// AA fix
+					player.var[VAA_SKILLBONUS]--;
+				else
+					player.skillPts--;
 				if(skillPtr[subcursor]==SKILL_THROWING)
 					TipEvent(TIP_THROWING);
 				if(skillPtr[subcursor]>=SKILL_SHROOM && skillPtr[subcursor]<=SKILL_BONEBOMB)
@@ -1361,7 +1545,8 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 						while(i<10000 && GetJoyButtons())
 						{
 							i++;
-							SDL_Delay(1);
+							//SDL_Delay(1);
+							mgl->Flip();	// AA fix
 						}
 						MakeNormalSound(SND_MENUSELECT);
 					}
@@ -1389,7 +1574,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		byte r;
 
 		r=LastScanCode();
-		if(r==59)
+		if(r==SDL_SCANCODE_ESCAPE)
 		{
 			subMode=SUBMODE_OPTIONS;	// escape
 			MakeNormalSound(SND_MENUCANCEL);
@@ -1411,21 +1596,30 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	else if(subMode==SUBMODE_SETBTN)
 	{
 		dword btn;
-
-		btn=GetJoyButtons();
-
-		j=1;
-		for(i=0;i<16;i++)
+		if (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_START))	// AA gamepad add
 		{
-			if((btn&j))
+			FreezeGamepadStart();
+			subMode = SUBMODE_OPTIONS;
+			MakeNormalSound(SND_MENUCANCEL);
+			mgl->LastKeyPressed();
+		}
+		else
+		{
+			btn = GetJoyButtons();
+
+			j = 1;
+			for (i = 0; i < 16; i++)
 			{
-				player.var[VAR_CONTROLS+16+(subcursor-17)/3]=i;
-				subMode=SUBMODE_OPTIONS;
-				MakeNormalSound(SND_MENUSELECT);
-				ApplyControlSettingsMem(&player.var[VAR_CONTROLS]);
-				SaveOptions();
+				if ((btn & j))
+				{
+					player.var[VAR_CONTROLS + 16 + (subcursor - 17) / 3] = i;
+					subMode = SUBMODE_OPTIONS;
+					MakeNormalSound(SND_MENUSELECT);
+					ApplyControlSettingsMem(&player.var[VAR_CONTROLS]);
+					SaveOptions();
+				}
+				j *= 2;
 			}
-			j*=2;
 		}
 	}
 	else if(subMode==SUBMODE_MADCAP)
@@ -1452,13 +1646,15 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				player.var[VAR_MADGEM+subcursor]++;
 				MakeNormalSound(SND_MENUSELECT);
 				PlayerCalcStats();
+				// AA change
 				j=0;
-				for(i=0;i<11;i++)
+				for(i=0;j<100 && i<11;i++)
 				{
-					if(player.var[VAR_MADGEM+i]==100)
-						j++;
+					//if(player.var[VAR_MADGEM+i]==100)
+					//	j++;
+					j += player.var[VAR_MADGEM + i];
 				}
-				if(j==11)
+				if(j>=100)
 					AchieveNow(99);
 			}
 			else
@@ -1660,12 +1856,13 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 				}
 				else
 					MakeNormalSound(SND_MENUCANCEL);
-				if(player.axe.magic>=EM_ARTSTART && player.axe.magic<=EM_ARTEND &&
-				   player.amulet.magic>=EM_ARTSTART && player.amulet.magic<=EM_ARTEND &&
-				   player.parka.magic>=EM_ARTSTART && player.parka.magic<=EM_ARTEND)
-					AchieveNow(55);
-				if(player.lens[0]==7 && player.lens[1]==12)
-					AchieveNow(77);
+				// AA removed
+				//if(player.axe.magic>=EM_ARTSTART && player.axe.magic<=EM_ARTEND &&
+				//   player.amulet.magic>=EM_ARTSTART && player.amulet.magic<=EM_ARTEND &&
+				//   player.parka.magic>=EM_ARTSTART && player.parka.magic<=EM_ARTEND)
+				//	AchieveNow(55);
+				//if(player.lens[0]==7 && player.lens[1]==12)
+				//	AchieveNow(77);
 
 			}
 		}
@@ -1718,6 +1915,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					DropItem(subcursor);
 					MakeNormalSound(SND_EQUIP);
 					SortEquipment();
+					PlayerCalcStats();	// AA fix for breaking lenses with skill features!
 				}
 			}
 			subMode=SUBMODE_EQUIP;
@@ -1792,12 +1990,48 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			SetHelpText();
 		}
 	}
+	else if (subMode==SUBMODE_AAUPGRADE)
+	{
+		if ((c & CONTROL_UP) && (!reptCounter))
+		{
+			subcursor -= 5;
+			if (subcursor >= MAX_UPGRADES)
+				subcursor += MAX_UPGRADES;
+		}
+		if ((c & CONTROL_DN) && (!reptCounter))
+		{
+			subcursor += 5;
+			if (subcursor >= MAX_UPGRADES)
+				subcursor -= MAX_UPGRADES;
+		}
+		if ((c & CONTROL_LF) && (!reptCounter))
+		{
+			if (subcursor%5==0)
+				subcursor+=4;
+			else
+				subcursor--;
+		}
+		if ((c & CONTROL_RT) && (!reptCounter))
+		{
+			if (subcursor%5==4)
+				subcursor-=4;
+			else
+				subcursor++;
+		}
+		if (((c & CONTROL_B1) && (!(oldc & CONTROL_B1))) || ((c & CONTROL_B2) && (!(oldc & CONTROL_B2))))
+		{
+			// exit the tip menu
+			subMode = SUBMODE_NONE;
+			SetHelpText();
+		}
+	}
 
 	oldc=c;
 
 	HandlePauseKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit pause menu
+	if(lastKey == 27 || GetGamepadStart())	// hit ESC to exit pause menu	// AA or gamepad start
 	{
+		FreezeGamepadStart();
 		if(subMode==SUBMODE_NONE)
 			return PAUSE_RESUME;
 		else if(subMode==SUBMODE_SETKEY || subMode==SUBMODE_SETBTN)
@@ -1805,7 +2039,10 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		else if(subMode==SUBMODE_EQUIPYESNO)
 			subMode=SUBMODE_EQUIP;
 		else
+		{
 			subMode=SUBMODE_NONE;
+			SetHelpText();
+		}
 		lastKey=0;
 	}
 	return PAUSE_PAUSED;

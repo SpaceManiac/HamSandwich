@@ -7,6 +7,30 @@
 #include "title.h"
 
 char credits[][48]={
+	"Absurd Area",
+	"",
+	"Copyright 2025,",
+	"CPE Gaebler",
+	"AKA Frogdude",
+	"",
+	"Programming:",
+	"Frogdude",
+	"With help from:",
+	"Tad \"SpaceManiac\" Hardesty",
+	"",
+	"Level Design And Such:",
+	"Frogdude",
+	"",
+	"Music:",
+	"Brother Android",
+	"brotherandroid.bandcamp.com/music",
+	"",
+	"Thanks To:",
+	"Mike Hommel for Loonyland II",
+	"Thanks for the hours of fun!",
+	"",
+	"Original Loonyland II Credits:",
+	"",
 	"Loonyland II:",
 	"Winter Woods",
 #ifdef DIRECTORS
@@ -92,7 +116,7 @@ void InitCredits(MGLDraw *mgl,byte ending)
 	int i;
 
 	if(ending)
-		mgl->LoadBMP("graphics/dvfgh.bmp");
+		mgl->LoadBMP("graphics/qwert.bmp");	// AA endscreen
 	else
 		mgl->LoadBMP(TITLEBMP);
 	mgl->LastKeyPressed();

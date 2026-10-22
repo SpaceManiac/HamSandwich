@@ -350,6 +350,7 @@ void DrinkPotion(byte type,byte lvl)
 	player.potionsDrunk++;
 	TalentPoint(TLT_MIXOLOGY,1+lvl/2);
 	MakeNormalSound(SND_DRINKPOTION);
+	player.var[VAA_COMBOOM]=0;	// AA comboom
 	PlayerCalcStats();
 }
 

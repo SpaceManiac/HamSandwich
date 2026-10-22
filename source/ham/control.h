@@ -32,7 +32,14 @@ const char *ScanCodeText(byte s);
 
 // Options menu support.
 dword GetJoyButtons();
+dword GetGamepadButtons();	//AA gamepad add
 void SetKeyboardBindings(int keyboard, int nkeys, const byte* keys);
 void SetJoystickBindings(int nbuttons, const byte* buttons);
+
+// AA Start delay fixes
+bool GetGamepadStart();
+void FreezeGamepadStart();
+void FreeGamepadStart();
+void AdvanceGamepadStart();
 
 #endif  // HAMCONTROL_H

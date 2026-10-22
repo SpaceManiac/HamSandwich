@@ -160,7 +160,8 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 						while(i<10000 && GetJoyButtons())
 						{
 							i++;
-							SDL_Delay(1);
+							//SDL_Delay(1);
+							mgl->Flip();	// AA fix
 						}
 						MakeNormalSound(SND_MENUSELECT);
 					}
@@ -211,28 +212,39 @@ byte UpdateOptionsMenu(MGLDraw *mgl)
 	{
 		dword btn;
 
-		btn=GetJoyButtons();
-
-		j=1;
-		for(i=0;i<32;i++)
+		if (GetGamepadButtons() & (1 << SDL_CONTROLLER_BUTTON_START))	// AA gamepad add
 		{
-			if((btn&j))
+			FreezeGamepadStart();
+			subMode=SUBMODE_OPTIONS;
+			MakeNormalSound(SND_MENUCANCEL);
+			mgl->LastKeyPressed();
+		}
+		else
+		{
+			btn = GetJoyButtons();
+
+			j = 1;
+			for (i = 0; i < 32; i++)
 			{
-				opt.joyCtrl[(subcursor-17)/3]=i;
-				subMode=SUBMODE_OPTIONS;
-				MakeNormalSound(SND_MENUSELECT);
-				ApplyControlSettings();
-				SaveOptions();
+				if ((btn & j))
+				{
+					opt.joyCtrl[(subcursor - 17) / 3] = i;
+					subMode = SUBMODE_OPTIONS;
+					MakeNormalSound(SND_MENUSELECT);
+					ApplyControlSettings();
+					SaveOptions();
+				}
+				j *= 2;
 			}
-			j*=2;
 		}
 	}
 
 	oldc=c;
 
 	HandleOptionKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit pause menu
+	if (lastKey == 27 || GetGamepadStart())	// hit ESC to exit pause menu	// AA or gamepad start
 	{
+		FreezeGamepadStart();
 		if(subMode==SUBMODE_SETKEY || subMode==SUBMODE_SETBTN)
 			subMode=SUBMODE_OPTIONS;
 		else
@@ -254,6 +266,8 @@ static void OptionButton(int x,int y,int wid,const char *txt,byte spot)
 
 static void RenderSetKey(int x,int y,byte t)
 {
+	x-=106;	// AA fix
+	y-=158;	// for title options
 	char actName[7][16]={
 		"Up",
 		"Down",
@@ -365,7 +379,7 @@ void LoadOptions(void)
 	FILE *f;
 	int i;
 
-	f=AppdataOpen("loony.cfg","rb");
+	f=AppdataOpen("absurd.cfg","rb");	// Absurd Area uses different config file
 	if(!f)
 	{
 		opt.sound=127;
@@ -393,12 +407,18 @@ void LoadOptions(void)
 		opt.joyCtrl[2]=2;
 		opt.joyCtrl[3]=3;
 
-		for(i=0;i<30;i++)
-			opt.modifier[i]=0;
-		opt.modifier[0]=1;
-		opt.modifier[1]=1;
-		opt.modifier[2]=1;
-		opt.modifier[3]=1;	// start with "None", and the first 3 modifiers
+		//opt.modifier[0]=1;
+		//opt.modifier[1]=1;
+		//opt.modifier[2]=1;
+		//opt.modifier[3]=1;	// start with "None", and the first 3 modifiers
+
+		for (i = 0; i < 30; i++)	// AA modifier starts
+		{
+			if (i < 4 || i == 7 || i == 13 || i == 15 || i == 27)		// AA start with the same starting 3 AND the four starting equipment mods. file not included so no defines
+				opt.modifier[i] = 1;
+			else
+				opt.modifier[i] = 0;
+		}
 
 		for(i=0;i<100;i++)
 			opt.achieve[i]=0;
@@ -426,7 +446,7 @@ void SaveOptions(void)
 {
 	FILE *f;
 
-	f=AppdataOpen("loony.cfg","wb");
+	f=AppdataOpen("absurd.cfg","wb");		// changed config file name
 	fwrite(&opt,sizeof(options_t),1,f);
 	fclose(f);
 	AppdataSync();

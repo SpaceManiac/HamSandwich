@@ -16,11 +16,11 @@ void Song(byte w)
 #ifdef DIRECTORS
 	if(player.var[VAR_COMMENTARY])
 	{
-		sprintf(s,"music/comm%02d.ogg",player.levelNum);
+		sprintf(s,"music/aacomm%02d.ogg",player.levelNum);
 	}
 	else
 #endif
-	sprintf(s,"music/song%03d.ogg",w-SONG_UNDERWORLD);
+	sprintf(s,"music/aasong%03d.ogg",w-SONG_GUARDIAN);
 
 	PlaySongFile(s);
 #ifdef DIRECTORS
