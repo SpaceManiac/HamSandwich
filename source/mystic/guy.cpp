@@ -1,16 +1,31 @@
 #include "guy.h"
+#include <math.h>
+#include <memory>
 #include "player.h"
 #include "intface.h"
 #include "fairy.h"
 #include "spell.h"
 #include "challenge.h"
+#include <limits.h>
+#include "particle.h"
+#include "skills.h"
+#include "runes.h"
+#include "achieves.h"
+#include "water.h"
+#include "options.h"
 
-Guy **guys;
-Guy *goodguy;
-int maxGuys;
-byte badguys;
-int lastSafeX,lastSafeY;
+namespace
+{
+	std::unique_ptr<Guy[]> guys;
+	int maxGuys;
+	Guy *goodguy;
+	byte badguys;
+	int lastSafeX,lastSafeY;
+	word frozenGuys;
+	byte logX[2], logY[2];
+}
 
+int lootCoins, lootBigCoins, lootRunestones, lootXP;
 //------------------------------------------------------------------------
 // CLASS GUY
 
@@ -27,6 +42,8 @@ byte Guy::CoconutBonk(int xx,int yy,Guy *him)
 {
 	int x2,y2;
 
+	if (birthState >= 1 || him->birthState >= 1)
+		return 0;	// no collisions with newborns
 	if((MonsterFlags(him->type)&MF_ENEMYWALK) && (type!=MONS_BOUAPHA))
 		return 0;
 	if((MonsterFlags(him->type)&MF_FREEWALK) && (type==MONS_BOUAPHA))
@@ -47,6 +64,10 @@ byte Guy::CoconutBonk(int xx,int yy,Guy *him)
 	return 0;
 }
 
+bool Guy::IsInTileRect(int tx, int ty, int tx2, int ty2)
+{
+	return (mapx >= tx && mapy >= ty && mapx <= tx2 && mapy <= ty2);
+}
 // checks to see if a rect of size, located at (xx,yy) hits HIM
 byte Guy::AttackCheck(byte size,int xx,int yy,Guy *him)
 {
@@ -159,9 +180,9 @@ void TryToPush(Guy *me,int x,int y,Map *map,world_t *world)
 		xx=destx*TILE_WIDTH;
 		yy=desty*TILE_HEIGHT;
 		for(i=0;i<maxGuys;i++)
-			if((guys[i]) && (guys[i]->type) && (guys[i]->hp>0) &&
-				(abs(guys[i]->mapx-destx)<8) && (abs(guys[i]->mapy-desty)<8))
-				if(TileBonkCheck(xx,yy,guys[i]))
+			if((guys[i].type) && (guys[i].hp>0) &&
+				(abs(guys[i].mapx-destx)<8) && (abs(guys[i].mapy-desty)<8))
+				if(TileBonkCheck(xx,yy,&guys[i]))
 					return;	// the pushy block would hit the guy
 
 		// the floor is pushonable, let's do it
@@ -170,6 +191,8 @@ void TryToPush(Guy *me,int x,int y,Map *map,world_t *world)
 		map->map[destx+desty*map->width].floor=map->map[x+y*map->width].floor;
 		map->map[x+y*map->width].floor=world->terrain[map->map[x+y*map->width].floor].next;
 		map->map[x+y*map->width].wall=0;
+		if(player.worldNum==2 && player.levelNum==9)
+			LibraryPuzzle(map);
 	}
 }
 
@@ -179,6 +202,9 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 	mapTile_t *m=&map->map[x+y*map->width];
 
 	result=1;
+
+	if (!(monsType[me->type].flags & MF_GOODGUY) && (world->terrain[m->floor].flags & TF_NOENEMY))
+		result = 0;	// badguys can't walk on this
 
 	if((me->type==MONS_BOUAPHA || me->type==MONS_LOG) && (!PlayerGetItem(m->item,me->x,me->y)))
 		m->item=ITM_NONE;
@@ -201,26 +227,26 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 			if(PlayerKeys(3))
 			{
 				m->item=ITM_NONE;
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 		if(m->item==ITM_DOOR1G || m->item==ITM_DOOR2G)
 			if(PlayerKeys(2))
 			{
 				m->item=ITM_NONE;
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 		if(m->item==ITM_DOOR1R || m->item==ITM_DOOR2R)
 			if(PlayerKeys(1))
 			{
 				m->item=ITM_NONE;
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 		if(m->item==ITM_DOOR1 || m->item==ITM_DOOR2)
 			if(PlayerKeys(0))
 			{
 				m->item=ITM_NONE;
 				PlayerLoseKey(0);
-				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
+				MakeSound(SND_DOOROPEN,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
 			}
 	}
 
@@ -244,8 +270,9 @@ byte Walkable(Guy *me,int x,int y,Map *map,world_t *world)
 			{
 				m->wall=0;
 				m->floor=(byte)MGL_random(3);
-				MakeSound(SND_BOMBBOOM,(x*TILE_WIDTH)<<FIXSHIFT,(y*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1500);
-				ExplodeParticles(PART_DIRT,(x*TILE_WIDTH+TILE_WIDTH/2)<<FIXSHIFT,(y*TILE_HEIGHT+TILE_HEIGHT/2)<<FIXSHIFT,FIXAMT*10,20);
+				MakeSound(SND_BOMBBOOM,(x*TILE_WIDTH)*FIXAMT,(y*TILE_HEIGHT)*FIXAMT,SND_CUTOFF,1500);
+				ExplodeParticles(PART_DIRT,(x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,FIXAMT*10,20);
+				ChallengeEvent(CE_SMASHBALL, 1);
 			}
 
 			result=0;
@@ -295,17 +322,18 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 			break;
 	}
 
-	if(result)	// no wall collision, look for guy collision
+	// you don't collide with enemies on the overworld when using the no-battles cheatstone
+	if(result && (!CheatStoneOn(CheatStone::NONRANDOM) || player.levelNum!=1))	// no wall collision, look for guy collision
 		for(i=0;i<maxGuys;i++)
-			if((guys[i]) && (guys[i]!=this) && (guys[i]->type) && (guys[i]->hp>0) &&
-				(abs(guys[i]->mapx-mapx)<8) && (abs(guys[i]->mapy-mapy)<8))
+			if((&guys[i]!=this) && (guys[i].type) && (guys[i].hp>0) &&
+				(abs(guys[i].mapx-mapx)<8) && (abs(guys[i].mapy-mapy)<8))
 			{
-				if(CoconutBonk(xx,yy,guys[i]))
+				if(CoconutBonk(xx,yy,&guys[i]))
 				{
-					if(type==MONS_BOUAPHA && guys[i]->type==MONS_SPIDER && abs(dx)+abs(dy)>FIXAMT*4)
+					if(!VeryClassicMode() && type==MONS_BOUAPHA && guys[i].type==MONS_SPIDER && abs(dx)+abs(dy)>FIXAMT*4)
 					{
 						MakeSound(SND_ACIDSPLAT,x,y,SND_CUTOFF,20);
-						guys[i]->GetShot(0,0,10,map,world);	// squish the spider!
+						guys[i].GetShot(0,0,10,map,world);	// squish the spider!
 					}
 					return 0;	// hit heads with somebody
 				}
@@ -314,13 +342,115 @@ byte Guy::CanWalk(int xx,int yy,Map *map,world_t *world)
 	return result;
 }
 
+byte Guy::WalkCheckOnly(int xx, int yy, Map* map, world_t* world)
+{
+	byte result;
+	int mapx1, mapx2, mapy1, mapy2;
+	int i, j;
+
+	xx >>= FIXSHIFT;
+	yy >>= FIXSHIFT;
+
+	mapx1 = (xx + rectx) / TILE_WIDTH;
+	mapy1 = (yy + recty) / TILE_HEIGHT;
+	mapx2 = (xx + rectx2) / TILE_WIDTH;
+	mapy2 = (yy + recty2) / TILE_HEIGHT;
+
+	// boundary conditions
+	if (mapx1 < 0 || mapy1 < 0 || mapx2 >= map->width || mapy2 >= map->height || xx < 0 || yy < 0)
+		return BUMP_WALL;
+
+	if (type == MONS_FAIRY2)
+		return BUMP_NONE;
+
+	for (i = mapx1; i <= mapx2; i++)
+	{
+		for (j = mapy1; j <= mapy2; j++)
+		{
+			if (!Walkable(this, i, j, map, world))
+			{
+				return BUMP_WALL;
+			}
+		}
+	}
+
+	byte myBS = birthState;
+	birthState = 0;
+	for (i = 0; i < maxGuys; i++)
+	{
+		Guy* him = &guys[i];
+		if ((&guys[i] != this) && (guys[i].type) && (guys[i].hp > 0) &&
+			(abs(guys[i].mapx - mapx) < 8) && (abs(guys[i].mapy - mapy) < 8))
+		{
+			if (CoconutBonk(xx, yy, &guys[i]))
+			{
+				birthState = myBS;
+				return BUMP_GUY;	// hit heads with somebody
+			}
+		}
+	}
+	birthState = myBS;
+	return BUMP_NONE;
+}
+
+void Guy::ResetRedRiver(void)
+{
+	ResetLogs();
+	/*
+	if (player.worldNum == 3 && player.levelNum == 12)	// died while riding the raft in red river rafting
+	{
+		parent = nullptr;
+		for (int i = 0; i < maxGuys; i++)
+		{
+			if (guys[i].type == MONS_LOG)	// delete the existing logs
+				guys[i].type = MONS_NONE;
+		}
+		AddGuy((29 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (1 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
+		AddGuy((5 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (2 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
+		x = (2 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+		y = (3 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+		parent = nullptr;
+		dx = 0;
+		dy = 0;
+	}
+	*/
+}
+
 void Guy::SeqFinished(void)
 {
+	if (!ClassicMode() && seq == ANIM_A3 && type == MONS_BOUAPHA)
+	{
+		if (player.life > WATER_DAMAGE)
+		{
+			// if somehow your previous safe spot has changed to water, you're dead for real
+			if (!(curWorld.terrain[CurrentMap()->map[(lastSafeX / (FIXAMT*TILE_WIDTH)) + (lastSafeY / (FIXAMT*TILE_HEIGHT)) * CurrentMap()->width].floor].flags & TF_WATER) || PlayerCanWaterwalk())
+			{
+				x = lastSafeX;
+				y = lastSafeY;
+				player.life -= WATER_DAMAGE;
+				hp = player.life;
+				ouch = 4;
+				seq = ANIM_IDLE;
+				frm = 0;
+				frmAdvance = 128;
+				action = ACTION_IDLE;
+				return;
+			}
+		}
+
+	}
 	if((seq==ANIM_DIE) || (seq==ANIM_A3 && type==MONS_BOUAPHA))
 	{
 		if(type==MONS_BOUAPHA)
 		{
-			if(player.fairyOn==FAIRY_SAVEY && beenReborn==0)
+			dx = 0;
+			dy = 0;
+			byte rebirths = 0;
+			if (player.fairyOn == FAIRY_SAVEY)
+				rebirths++;
+			if (!ClassicMode() && SkillValue(SKILL_RESURRECT) > 0)
+				rebirths++;
+			if (player.fairyOn == FAIRY_SAVEY && beenReborn < rebirths)
 			{
 				seq=ANIM_A4;
 				frm=0;
@@ -330,23 +460,71 @@ void Guy::SeqFinished(void)
 				player.mana=player.maxMana/4;
 				hp=player.life;
 				player.shield=30*2;
-				beenReborn=1;
-				if(player.experience>player.needExp/4)	// lose 25% of the XP needed for next level
-					player.experience-=player.needExp/4;
+				player.poison = 0;
+				beenReborn++;
+				if (beenReborn == 2)
+					EarnAchieve(Achievement::HEAL);
+
+				if (player.experience > player.needExp / 4)	// lose 25% of the XP needed for next level
+					player.experience -= player.needExp / 4;
 				else
-					player.experience=0;
+					player.experience = 0;
 
 				x=lastSafeX;
 				y=lastSafeY;
 				// make resurrect sound
 				MakeNormalSound(SND_RESURRECT);
+				ResetRedRiver();
 				return;
 			}
 			else
 			{
 				// restart current level
-				SendMessageToGame(MSG_RESET,0);
-				ChallengeEvent(CE_DIE,0);
+				if (!ClassicMode() && SkillValue(SKILL_RESURRECT) > 0 && beenReborn < rebirths)
+				{
+					seq = ANIM_A4;
+					frm = 0;
+					frmAdvance = 128;
+					action = ACTION_BUSY;
+					player.life = (int)((float)player.maxLife * SkillValue(SKILL_RESURRECT) / 100.0f);
+					player.mana = (int)((float)player.maxMana * SkillValue(SKILL_RESURRECT) / 100.0f);
+					hp = player.life;
+					player.poison = 0;
+					player.shield = 30 * 2;
+					beenReborn++;
+
+					x = lastSafeX;
+					y = lastSafeY;
+					// make resurrect sound
+					MakeNormalSound(SND_RESURRECT);
+					ResetRedRiver();
+					return;
+				}
+				else if (CheatStoneOn(CheatStone::REBIRTH))
+				{
+					// unlimited cosmic rebirth
+					seq = ANIM_A4;
+					frm = 0;
+					frmAdvance = 128;
+					action = ACTION_BUSY;
+					player.life = player.maxLife;
+					hp = player.life;
+					player.poison = 0;
+					player.shield = 30 * 2;
+					beenReborn++;
+
+					x = lastSafeX;
+					y = lastSafeY;
+					// make resurrect sound
+					MakeNormalSound(SND_RESURRECT);
+					ResetRedRiver();
+					return;
+				}
+				else
+				{
+					SendMessageToGame(MSG_RESET, 0);
+					ChallengeEvent(CE_DIE, 0);
+				}
 			}
 		}
 
@@ -365,10 +543,6 @@ void Guy::SeqFinished(void)
 	action=ACTION_IDLE;
 }
 
-void Guy::AttackThem(void)
-{
-}
-
 void Guy::NextFrame(void)
 {
 	frm++;
@@ -381,7 +555,7 @@ void Guy::NextFrame(void)
 		return;	// seqfinished may have killed the guy
 }
 
-void Guy::CalculateRect(void)
+void Guy::CalculateRect(Map *map)
 {
 	sprite_t *spr;
 	byte s;
@@ -412,6 +586,65 @@ void Guy::CalculateRect(void)
 		recty=-s*3/4;
 		recty2=s*3/4;
 	}
+	if (birthState == 2)	// just born, be tiny
+	{
+		byte result = (WalkCheckOnly(x, y, map, &curWorld));
+		if (result == BUMP_WALL)	// there's a wall here, we need to have a tiny rect until that stops
+		{
+			rectx = 0;
+			rectx2 = 0;
+			recty = 0;
+			recty2 = 0;
+		}
+		else if (result == BUMP_NONE)
+			birthState = 0;	// we did it, we're in the clear!
+		else
+			birthState = 1;	// we're good on walls now! So now we are just avoiding guy collisions
+		if (birthState == 0)
+			CalculateRect(map);	// redo our rectangle if we are now a legit guy
+	}
+	else if (birthState == 1)
+	{
+		birthState = 0;
+		byte result = (WalkCheckOnly(x, y, map, &curWorld));
+		if (result == BUMP_NONE)
+			birthState = 0;	// we did it, we're in the clear!
+		else
+			birthState = 1;
+		if (birthState == 0)
+			CalculateRect(map);	// redo our rectangle if we are now a legit guy
+	}
+}
+
+void Guy::IceShardSpew(Map *map,world_t *world)
+{
+	if (!ClassicMode() && frzDamage >= 1 && RuneValue(Rune::ICESHARD) > 0)
+	{
+		byte shots;
+		float dmgEach;
+		if (frzDamage < 10)
+		{
+			shots = (byte)frzDamage;	// if there are less than 10, we just fire that many shots of 1 dmg each
+			dmgEach = 1;
+		}
+		else
+		{
+			shots = 10;
+			dmgEach = frzDamage / 10.0f;
+			if (dmgEach > 100) dmgEach = 100;
+		}
+		byte dmgUpChance = (byte)((dmgEach - floorf(dmgEach)) * 100.0f);
+		float angle = (float)Random(256);
+		for (byte i = 0; i < shots; i++)
+		{
+			byte myDam = (byte)dmgEach;
+			if (Random(100) < dmgUpChance) myDam++;
+			FireExactBullet(x, y, 20 * FIXAMT, Cosine((int)angle) * 16, Sine((int)angle) * 16, (int)ID, myDam, 30, (int)(angle / 16.0f), BLT_ICESHARD);
+			angle += (256.0f / (float)shots);
+			if (angle > 255)
+				angle -= 256;
+		}
+	}
 }
 
 void Guy::Update(Map *map,world_t *world)
@@ -423,85 +656,128 @@ void Guy::Update(Map *map,world_t *world)
 	oldmapx=mapx;
 	oldmapy=mapy;
 
-	CalculateRect();
+	CalculateRect(map);
 
-	if(frozen && hp>0)
+	executable = false;
+	if (!ClassicMode() && hp>0 && type!=MONS_HORKBOX && (MonsterFlags(type) & (MF_GOODGUY|MF_INVINCIBLE)) == 0)	// only badguys can be executed, duh
 	{
-		bright=map->map[mapx+mapy*map->width].templight;
-
+		float threshold = SkillValue(SKILL_MURDALIZE);
+		if (hp < (int)((float)MonsterHP(type) * threshold / 100.0f))	// life is below threshold
+		{
+			if (map->FindGuy(mapx, mapy, MURDALIZE_RANGE/TILE_WIDTH, goodguy))
+				executable = true;
+		}
+	}
+	if (frozen && hp > 0)
+	{
+		if (!(monsType[type].flags & MF_GOODGUY))
+			frozenGuys++;
+		bright = map->map[mapx + mapy * map->width].templight;
+		frostBite++;
+		if (frostBite >= 30)
+		{
+			frostBite = 0;
+			word tmpFrozen = frozen;
+			if (!ClassicMode() && RuneValue(Rune::FROSTBITE) > 0)
+				GetShot(0, 0, (int)RuneValue(Rune::FROSTBITE), map, world);
+			if (hp > 0) frozen = tmpFrozen;	// don't let this damage disrupt your freeze state
+		}
 		frozen--;
-		if(ouch>0)
+		if (frozen == 0)
+			IceShardSpew(map, world);
+		if (ouch > 0)
 			ouch--;
+		if (ouch2 > 0)
+			ouch2--;
 		return;
+	}
+	else if (hasBeenFrozen)
+		hasBeenFrozen--;
 
+	if (melted)
+	{
+		melted--;
+		if(MGL_random(3)==0)
+			ExplodeParticles2(PART_SHORTYELLOW, x - rectx + MGL_random(rectx2 - rectx+1), y - recty + MGL_random(recty2 - recty+1), MGL_random(10),1,2);
 	}
 
-	if(type==MONS_BOUAPHA)	// special case, player controls Bouapha
-		PlayerControlMe(this,&map->map[mapx+mapy*map->width],world);
+	if (stun == 0)
+	{
+		if (type == MONS_BOUAPHA)	// special case, player controls Bouapha
+			PlayerControlMe(this, &map->map[mapx + mapy * map->width], world);
+		else
+			MonsterControl(map, world);
+	}
 	else
-		MonsterControl(map,world);
+	{
+		stun--;
+	}
 
 	if(ouch>0)
 		ouch--;
-
-	x+=dx;
-
-	if(!CanWalk(x,y,map,world))
+	if (ouch2 > 0)
+		ouch2--;
+	if (stun == 0)
 	{
-		x-=dx;
-		if(type==MONS_BOUAPHA || type==MONS_TOWER || type==MONS_SPIDER || type==MONS_SLUG || type==MONS_BALL ||
-			type==MONS_INCAGOLD || type==MONS_INCAGOLD2 || type==MONS_LOG || type==MONS_INCABOSS || type==MONS_OCTOBOSS ||
-			type==MONS_GOAT1 || type==MONS_GOAT1B)
-			mind1=1;	// tell it that it hit a wall
-	}
+		x += dx;
 
-	y+=dy;
-
-	if(!CanWalk(x,y,map,world))
-	{
-		y-=dy;
-		if(type==MONS_BOUAPHA || type==MONS_TOWER || type==MONS_SPIDER || type==MONS_SLUG || type==MONS_BALL ||
-			type==MONS_INCAGOLD || type==MONS_INCAGOLD2 || type==MONS_LOG || type==MONS_INCABOSS || type==MONS_OCTOBOSS ||
-			type==MONS_GOAT1 || type==MONS_GOAT1B)
-			mind1+=2;	// tell it that it hit a wall
-	}
-
-	if(MonsterFlags(type)&MF_FLYING)
-	{
-		if(z<20*FIXAMT)	// go up if you need to
-			dz+=FIXAMT;
-		else
-			dz-=FIXAMT;
-
-		Clamp(&dz,FIXAMT*4);
-		z+=dz;
-
-		if(z<0)
-			z=0;
-	}
-	else
-	{
-		z+=dz;
-		if(z<0)
+		if (!CanWalk(x, y, map, world))
 		{
-			z=0;
-			dz=0;
+			x -= dx;
+			if (type == MONS_BOUAPHA || type == MONS_TOWER || type == MONS_SPIDER || type == MONS_SLUG || type == MONS_BALL ||
+				type == MONS_INCAGOLD || type == MONS_INCAGOLD2 || type == MONS_LOG || type == MONS_INCABOSS || type == MONS_OCTOBOSS ||
+				type == MONS_GOAT1 || type == MONS_GOAT1B || type==MONS_SWAMPWEED)
+				mind1 = 1;	// tell it that it hit a wall
+		}
+
+		y += dy;
+
+		if (!CanWalk(x, y, map, world))
+		{
+			y -= dy;
+			if (type == MONS_BOUAPHA || type == MONS_TOWER || type == MONS_SPIDER || type == MONS_SLUG || type == MONS_BALL ||
+				type == MONS_INCAGOLD || type == MONS_INCAGOLD2 || type == MONS_LOG || type == MONS_INCABOSS || type == MONS_OCTOBOSS ||
+				type == MONS_GOAT1 || type == MONS_GOAT1B || type==MONS_SWAMPWEED)
+				mind1 += 2;	// tell it that it hit a wall
+		}
+
+		if (MonsterFlags(type) & MF_FLYING)
+		{
+			if (z < 20 * FIXAMT)	// go up if you need to
+				dz += FIXAMT;
+			else
+				dz -= FIXAMT;
+
+			Clamp(&dz, FIXAMT * 4);
+			z += dz;
+
+			if (z < 0)
+				z = 0;
 		}
 		else
 		{
-			if(!(MonsterFlags(type)&MF_NOGRAV))
-				dz-=FIXAMT*2;
+			z += dz;
+			if (z < 0)
+			{
+				z = 0;
+				dz = 0;
+			}
+			else
+			{
+				if (!(MonsterFlags(type) & MF_NOGRAV))
+					dz -= FIXAMT * 2;
+			}
 		}
-	}
 
-	frmTimer+=frmAdvance;
-	while(frmTimer>255)
-	{
-		frmTimer-=255;
-		NextFrame();
+		frmTimer += frmAdvance;
+		while (frmTimer > 255)
+		{
+			frmTimer -= 255;
+			NextFrame();
+		}
+		if (type == MONS_NONE)
+			return;	// NextFrame may have killed you
 	}
-	if(type==MONS_NONE)
-		return;	// NextFrame may have killed you
 
 	mapx=(x>>FIXSHIFT)/TILE_WIDTH;
 	mapy=(y>>FIXSHIFT)/TILE_HEIGHT;
@@ -538,11 +814,14 @@ void Guy::Update(Map *map,world_t *world)
 
 		// standing on water!!!!!!!  DROWN!!!!
 		if((hp>0) && (world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_WATER)
-			&& (!PlayerCanWaterwalk()) && !parent)
+			&& (!PlayerCanWaterwalk()) && !parent && seq!=ANIM_A3)
 		{
 			facing=(4+facing)&7;
-			hp=0;
-			SetPlayerHP(hp);
+			if (ClassicMode())
+			{
+				hp = 0;
+				SetPlayerHP(hp);
+			}
 			seq=ANIM_A3;
 			dx=0;
 			dy=0;
@@ -556,8 +835,14 @@ void Guy::Update(Map *map,world_t *world)
 		if((hp>0) && (world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_LAVA)
 			&& (!PlayerCanWaterwalk()) && !parent && !PlayerShield())
 		{
-			BlowWigglySmoke(x,y,0,FIXAMT*2);
-			BlowWigglySmoke(x,y,0,FIXAMT*4);
+			for (int i = 16; i <= 28; i += 12)
+				WaterRipple(x / FIXAMT - 8 + Random(16), y / FIXAMT + -8+Random(16), MGL_random(32 * 50));
+
+			if (player.worldNum == 3)	// spikes in chapter 3 don't make smoke
+			{
+				BlowWigglySmoke(x, y, 0, FIXAMT * 2);
+				BlowWigglySmoke(x, y, 0, FIXAMT * 4);
+			}
 			if(burnFlip)
 			{
 				GetShot(0,0,12,map,world);
@@ -568,6 +853,20 @@ void Guy::Update(Map *map,world_t *world)
 			}
 			burnFlip=1-burnFlip;
 		}
+		if (player.worldNum == 1 && player.levelNum == 3 && (oldmapx != mapx || oldmapy != mapy))
+			MushAidPuzzleUpdate(map);
+
+		if (player.worldNum == 1 && player.levelNum == 5 && (oldmapx!=mapx || oldmapy!=mapy))
+			AbandonedVillagePuzzle(map);
+		if (player.worldNum == 2 && player.levelNum == 13 && (oldmapx != mapx || oldmapy != mapy))
+			GuestChamberPuzzleStep(map,mapx,mapy);
+		if (player.worldNum == 1 && player.levelNum == 14 && (oldmapx != mapx || oldmapy != mapy))
+			LostInWoodsPuzzleStep(map, mapx, mapy);
+		if (player.worldNum == 2 && player.levelNum == 17 && (oldmapx != mapx || oldmapy != mapy))
+			LockedMazeSpikes(map, oldmapx, oldmapy);	// gonna change the tile you just exited to spikes
+		if (player.worldNum == 3 && player.levelNum == 19 && (oldmapx != mapx || oldmapy != mapy))
+			HorkBoxBones(map, mapx, mapy);
+
 		if(player.worldNum==2 && player.levelNum==16 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			mapx==11 && mapy==31 && map->map[mapx+mapy*map->width].floor==59)
 		{
@@ -579,11 +878,28 @@ void Guy::Update(Map *map,world_t *world)
 				map->map[mapx+mapy*map->width].floor=60;
 				OpenVaultDoor(map);
 			}
+			else if (VaultPuzzle2Check(map))
+			{
+				NewMessage("A side passage opened!", 60);
+				MakeNormalSound(SND_MENUCLICK);
+				map->map[mapx + mapy * map->width].floor = 60;
+				OpenVaultDoor2(map);
+			}
 			else
 			{
 				NewMessage("The switch won't budge!",60);
 				oldmapx=mapx;
 				oldmapy=mapy;	// don't let it switch the tile
+			}
+		}
+		if (player.worldNum == 0 && player.levelNum == 4 && (oldmapx != mapx || oldmapy != mapy) && !GotRuneInLevel(player.worldNum,player.levelNum))
+		{
+			if (map->map[1+4*map->width].floor==map->map[19+16*map->width].floor && map->map[17+2*map->width].floor==map->map[19+16*map->width].floor &&
+				map->map[13+13*map->width].floor==map->map[19+16*map->width].floor && map->map[3+17*map->width].item!=ITM_SILENTRUNE)	// all the runes match!
+			{
+				map->map[3 + 17 * map->width].item = ITM_SILENTRUNE;
+				map->TempTorch(3, 17, 20);
+				MakeNormalSound(SND_CHLGCRYSTAL);
 			}
 		}
 
@@ -592,25 +908,38 @@ void Guy::Update(Map *map,world_t *world)
 			x=parent->x;
 			y=parent->y+FIXAMT*4;
 		}
-		if(seq!=ANIM_DIE && seq!=ANIM_A3)
-		{
-			lastSafeX=x;
-			lastSafeY=y;
-		}
+
 		if(player.worldNum==3 && player.levelNum==14 && (oldmapx!=mapx || oldmapy!=mapy) &&
 			(map->map[mapx+mapy*map->width].floor==72 || map->map[mapx+mapy*map->width].floor==73))
 			LightsOutPuzzle(map,mapx,mapy);
+
+		if (parent == nullptr && (oldmapx != mapx || oldmapy != mapy))
+		{
+			mapTile_t* t = map->GetTile(mapx, mapy);
+			if (t && !(world->terrain[t->floor].flags & (TF_LAVA | TF_WATER)) && t->wall == 0 && CanWalk((mapx * TILE_WIDTH + TILE_WIDTH / 2)*FIXAMT, (mapy * TILE_HEIGHT + TILE_HEIGHT / 2)*FIXAMT, map, world))
+				SetLastSafeXY((mapx * TILE_WIDTH + TILE_WIDTH / 2)*FIXAMT, (mapy * TILE_HEIGHT + TILE_HEIGHT / 2)*FIXAMT);
+		}
 	}
 	if((oldmapx!=mapx || oldmapy!=mapy) &&
 		(world->terrain[map->map[mapx+mapy*map->width].floor].flags&TF_STEP) && !(MonsterFlags(type)&MF_FLYING) &&
 		MySpecialType(type,map,mapx,mapy))
 	{
-		MakeSound(SND_MENUCLICK,(mapx*TILE_WIDTH)<<FIXSHIFT,(mapy*TILE_HEIGHT)<<FIXSHIFT,SND_CUTOFF,1000);
-		map->map[mapx+mapy*map->width].floor=world->terrain[map->map[mapx+mapy*map->width].floor].next;
-	}
-	if(oldmapx!=mapx || oldmapy!=mapy)
-		SpecialStepCheck(map,mapx,mapy,this);
+		if (type == MONS_BOUAPHA || player.worldNum != 2 || player.levelNum != 16)
+		{
+			MakeSound(SND_MENUCLICK, (mapx * TILE_WIDTH) * FIXAMT, (mapy * TILE_HEIGHT) * FIXAMT, SND_CUTOFF, 1000);
+			map->map[mapx + mapy * map->width].floor = world->terrain[map->map[mapx + mapy * map->width].floor].next;
 
+			if (player.worldNum == 3 && player.levelNum == 7)
+				MinesPuzzle(map, mapx, mapy);
+		}
+	}
+
+	if (oldmapx != mapx || oldmapy != mapy)
+	{
+		if(type==MONS_BOUAPHA)
+			player.movedSinceSave = 1;
+		SpecialStepCheck(map, mapx, mapy, this);
+	}
 	bright=map->map[mapx+mapy*map->width].templight;
 }
 
@@ -623,10 +952,11 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 	oldmapx=mapx;
 	oldmapy=mapy;
 
-	CalculateRect();
+	CalculateRect(map);
 
-	if(type==MONS_BOUAPHA)	// special case, player controls Bouapha
-		PlayerControlMe(this,&map->map[mapx+mapy*map->width],world);
+	executable = false;
+	if (type == MONS_BOUAPHA)	// special case, player controls Bouapha
+		PlayerControlMe(this, &map->map[mapx + mapy * map->width], world);
 	else if(player.levelNum!=1)	// not on the overworld
 		MonsterControl(map,world);
 	else
@@ -634,6 +964,8 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 
 	if(ouch>0)
 		ouch--;
+	if (ouch2 > 0)
+		ouch2--;
 
 	x+=dx;
 
@@ -731,10 +1063,15 @@ void Guy::OverworldUpdate(Map *map,world_t *world)
 			map->map[mapx+mapy*map->width].floor=world->terrain[map->map[mapx+mapy*map->width].floor].next;
 		}
 	}
-	if(oldmapx!=mapx || oldmapy!=mapy)
-		SpecialStepCheck(map,mapx,mapy,this);
+	if (oldmapx != mapx || oldmapy != mapy)
+	{
+		if (type == MONS_BOUAPHA)
+			player.movedSinceSave = 1;
+		SpecialStepCheck(map, mapx, mapy, this);
+	}
 
-	bright=map->map[mapx+mapy*map->width].templight;
+	mapTile_t* tile = map->GetTile(mapx, mapy);
+	bright = tile ? tile->templight : -32;
 }
 
 // this is a very half-assed version of update to be called by the editor instead of the game
@@ -744,7 +1081,9 @@ void Guy::EditorUpdate(Map *map)
 
 	mapx=(x>>FIXSHIFT)/TILE_WIDTH;
 	mapy=(y>>FIXSHIFT)/TILE_HEIGHT;
-	bright=map->map[mapx+mapy*map->width].templight;
+
+	mapTile_t* tile = map->GetTile(mapx, mapy);
+	bright = tile ? tile->templight : -32;
 }
 
 void Guy::NoMoveUpdate(Map *map)
@@ -789,15 +1128,22 @@ void Guy::NoMoveUpdate(Map *map)
 
 void Guy::Render(byte light)
 {
-	MonsterDraw(x,y,z,type,seq,frm,facing,bright*(light>0),mind1,ouch,frozen);
+	MonsterDraw(x,y,z,type,seq,frm,facing,bright*(light>0),mind1,ouch,ouch2,frozen);
+	if (executable)
+	{
+		sprite_t *curSpr = bulletSpr->GetSprite(145);	// shockwave sprite
+		SprDraw(x >> FIXSHIFT, (y >> FIXSHIFT)-1, 0, 255, 4, curSpr, DISPLAY_DRAWME);
+	}
 }
 
 void Guy::OverworldControl(Map *map,world_t *world)
 {
-	if(type!=MONS_FRIENDLY && type!=MONS_FAIRY && type!=MONS_FAIRY2)
+	if(type!=MONS_FRIENDLY && type!=MONS_FAIRY && type!=MONS_FAIRY2 && type!=MONS_FARLEY)
 		AI_Overworld(this,map,world,goodguy);
 	else if(type==MONS_FRIENDLY)
 		AI_Friendly(this,map,world,goodguy);
+	else if (type == MONS_FARLEY)
+		AI_Farley(this, map, world, goodguy);
 	else if(type==MONS_FAIRY)
 		AI_Fairy(this,map,world,goodguy);
 	else
@@ -808,10 +1154,16 @@ void Guy::MonsterControl(Map *map,world_t *world)
 {
 	Guy *goodguy;
 
-	goodguy=NearestEnemy(this);
+	if (type == MONS_PTERO)
+		goodguy = NearestEnemy(this,true);	// pteros only target guys they can see
+	else
+		goodguy = NearestEnemy(this,false);
 
 	switch(type)
 	{
+		case MONS_GHOST:
+			AI_Ghost(this, map, world, goodguy);
+			break;
 		case MONS_PINKEYE:
 			AI_Pinkeye(this,map,world,goodguy);
 			break;
@@ -822,6 +1174,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			AI_Bonehead(this,map,world,goodguy);
 			break;
 		case MONS_BAT:
+		case MONS_FIREBAT:
 			AI_Bat(this,map,world,goodguy);
 			break;
 		case MONS_SPIDER:
@@ -829,6 +1182,12 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			break;
 		case MONS_BIGSPDR:
 			AI_BigSpider(this,map,world,goodguy);
+			break;
+		case MONS_GHOSTSPITTER:
+			AI_GhostSpider(this, map, world, goodguy);
+			break;
+		case MONS_SPLITTER:
+			AI_Splitter(this, map, world, goodguy);
 			break;
 		case MONS_ZOMBIE:
 			AI_Zombie(this,map,world,goodguy);
@@ -838,9 +1197,6 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			break;
 		case MONS_MAMASPDR:
 			AI_MamaSpider(this,map,world,goodguy);
-			break;
-		case MONS_PYGMY:
-			AI_Pygmy(this,map,world,goodguy);
 			break;
 		case MONS_SERPENT:
 			AI_Serpent(this,map,world,goodguy);
@@ -886,6 +1242,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			AI_ThingTentacle(this,map,world,goodguy);
 			break;
 		case MONS_HUGEBAT:
+		case MONS_HUGEBAT2:
 			AI_HugeBat(this,map,world,goodguy);
 			break;
 		case MONS_FAIRY:
@@ -895,6 +1252,7 @@ void Guy::MonsterControl(Map *map,world_t *world)
 			AI_Fairy2(this,map,world,goodguy);
 			break;
 		case MONS_BIGBAT:
+		case MONS_BIGBAT2:
 			AI_BigBat(this,map,world,goodguy);
 			break;
 		case MONS_OCTOPUS:
@@ -989,21 +1347,91 @@ void Guy::MonsterControl(Map *map,world_t *world)
 		case MONS_DANCER:
 			AI_Dancer(this,map,world,goodguy);
 			break;
+		case MONS_GLOOPYGUS:
+			AI_GloopyGus(this, map, world, goodguy);
+			break;
+		case MONS_SWAMPWEED:
+			AI_SwampWeed(this, map, world, goodguy);
+			break;
+		case MONS_HORKBOX:
+			AI_Horkbox(this, map, world, goodguy);
+			break;
 	}
 }
 
 void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 {
 	int i,j,formerHP;
+	int brutalMul;
+	bool fatal = false;
 
 	if(hp==0)
 		return;	// can't shoot a dead guy
 
 	if(type==0)
 		return;	// shouldn't have a type 0 guy at all
+	if (type == MONS_GOLEM && ouch > 0)
+		return;	// golems can only take damage when not already ouched, they have an invulnerability window
 
-	if(type==MONS_BOUAPHA && PlayerShield())
+	if (damage > 999999)
+		fatal = true;	// just make this kill them, numbers don't matter
+
+	if (type == MONS_GHOSTSPITTER && player.worldNum == 1 && player.levelNum == 6)
+		return;	// can't kill the ghost spitter in spider's lair
+
+	brutalMul = BRUTALDMG;
+	if (player.worldNum == 3)
+		brutalMul += BRUTALCHAP4DMG;
+
+	if (type == MONS_HORKBOX)	// an uninjured horkbox just goes off when hit, does not take damage
+	{
+		if (player.puzzleVar[0] == HORK_NONE)	// no horkbox active, so go ahead and activate
+		{
+			int dist = ((GetGoodguy()->x >> FIXSHIFT) - (x >> FIXSHIFT)) * ((GetGoodguy()->x >> FIXSHIFT) - (x >> FIXSHIFT)) +
+				((GetGoodguy()->y >> FIXSHIFT) - (y >> FIXSHIFT)) * ((GetGoodguy()->y >> FIXSHIFT) - (y >> FIXSHIFT));
+			if (dist < 200 * 200)	// you have to be in the ring to activate it, so you don't get stuck behind a wall
+			{
+				mind1 = 1;
+				mind = 2 * 30;	// don't summon the first enemy for a moment
+				player.puzzleVar[0] = mind2;	// activate that horkbox effect
+				player.puzzleVar[1] = (byte)ID;	// id of the monster that's doing it. Note that this isn't strictly legal because ID is a word, but since Horkboxes only exist as placed monsters in a level,
+											// we know they will have less than 255 ID
+				hp = 60 * 30 - 3 * 30 * 7 + player.puzzleVar[2] * 30 * 3;	// first horkbox is only 39s long, going up to 60s at max
+				PlaySong(SONG_CHAP34FIGHT);
+				MakeNormalSound(SND_BERSERK);
+			}
+			return;
+		}
+		else // a horkbox is active (maybe this one!), so just ignore the shot
+			return;
+	}
+	if ((type == MONS_PEEPBOMB || type == MONS_PEEPBOMB2) && player.levelNum == 24 && player.worldNum == 2)	// can't hurt them in this level, it just makes them see you
+	{
+		/*byte state, temp, stews;
+		GetOrderUpStats(&state, &stews, &temp);
+		if (state == 2)	// don't teleport you unless you're in mode 2, delivering stew. That would be bad and weird
+		{
+			MakeSound(SND_PEEPALARM, x, y, SND_CUTOFF | SND_ONE, 3000);
+			GetGoodguy()->x = (6 * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT;
+			GetGoodguy()->y = (77 * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT;
+			map->TempTorch(GetGoodguy()->x / (TILE_WIDTH * FIXAMT), GetGoodguy()->y / (TILE_HEIGHT * FIXAMT), 31);
+		}*/
+		return;
+	}
+	if (type == MONS_BOUAPHA && PlayerShield())
+	{
+		if (!ClassicMode() && player.parry > 0)
+		{
+			byte amt=(byte)((float)SpellCost(SPL_ARMOR)*SkillValue(SKILL_PARRY)/100.0f);
+			player.mana += amt;
+			if (player.mana > player.maxMana)
+				player.mana = player.maxMana;
+			MakeSound(SND_UNAVAILABLE, x, y, SND_CUTOFF, 0);
+			FloaterParticles(x, y, 7, 32, 3, 16);
+			player.parry = 0;
+		}
 		return; // invincible when shielded
+	}
 
 	if((MonsterFlags(type)&MF_INVINCIBLE) && (damage!=-1000))	// invincible monsters can be frozen
 		return;	// invincible
@@ -1024,6 +1452,11 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(type==MONS_BOUAPHA)
 	{
+		if (Random(100) < RuneValue(Rune::BLOCK))
+		{
+			ouch2 = 4;
+			return;
+		}
 		if(player.nightmare)
 		{
 			if(player.levelNum==11 && player.worldNum==3)
@@ -1032,8 +1465,12 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				i=damage*NIGHTMAREDMG;
 		}
 		else
-			i=damage;
-
+		{
+			if (BrutalMode())
+				i = damage * brutalMul;
+			else
+				i = damage;
+		}
 		i-=player.defense;
 
 		if(player.fairyOn==FAIRY_RUNNY)
@@ -1042,20 +1479,36 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			i=(i*3)/4;
 		if(player.fairyOn==FAIRY_TOUGHY)
 			i=i/2;
+		if (ClassicMode())
+			i = (i * (100 - player.shieldStones) / 100);
+		else
+			i = i * GetShieldStoneMultiplier(player.shieldStones) / FIXAMT;
 
-		i=(i*(100-player.shieldStones)/100);
 		if(i<1)
 			i=1;
 		if(player.stoneskin)
 		{
-			if(player.spell[6]==1)
+			if(player.spell[6]==1 || (!ClassicMode() && player.downgradeSpell[6]))
 				i/=2;		// stoneskin cuts damage in half
 			else
 				i/=8;		// steelskin divides it by 8
+			if (!ClassicMode() && SkillValue(SKILL_REFLECT) && player.reload==0)
+			{
+				int n = SkillValue(SKILL_REFLECT);
+				for (j = 0; j < n; j++)
+				{
+					int angle = Random(256);
+
+					FireExactBullet(x, y, FIXAMT * 20,
+						Cosine(angle) * 12, Sine(angle) * 12, 0,//FIXAMT*6,
+						0, 30, ((angle+16)/32)&7, BLT_HAMMER);
+				}
+				player.reload = 3;
+			}
 		}
 
 		damage=i;
-		if(player.gear&GEAR_POINTY)
+		if((player.gear&GEAR_POINTY) && !player.disableThorns)
 		{
 			for(i=0;i<3;i++)
 				FireBullet(x,y,(byte)MGL_random(256),BLT_MINIFBALL);
@@ -1064,9 +1517,13 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 	else if(damage!=-1000)
 	{
 		i=BulletHittingType();
-		if(i==BLT_HAMMER || i==BLT_HAMMER2)
+		if(i==BLT_HAMMER || i==BLT_HAMMER2 || i==BLT_SKULL || i==BLT_MINIFBALL)
 		{
-			damage=(damage*(100+player.powerStones*10))/100;
+			if (ClassicMode())
+				damage = (damage * (100 + player.powerStones * 10)) / 100;
+			else
+				damage = damage * GetPowerStoneMultiplier(player.powerStones) / FIXAMT;
+
 			if(player.fairyOn==FAIRY_BLOCKY)
 			{
 				damage=damage*3/4;
@@ -1081,9 +1538,36 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		else
 		{
 			// the damage is coming from a spell, most likely
-			if(!(MonsterFlags(type)&MF_GOODGUY))
-				damage=(damage*(100+player.spellStones*10))/100;
-			// goodguys get hit with full damage
+			if (!(MonsterFlags(type) & MF_GOODGUY))
+			{
+				if(ClassicMode())
+					damage = (damage * (100 + player.spellStones * 10)) / 100;
+				else
+					damage = damage * GetPowerStoneMultiplier(player.spellStones) / FIXAMT;
+			}
+			else
+			{
+				if (player.nightmare)
+					damage *= NIGHTMAREDMG / 2;	// your minions suffer the enhanced damage, but half as much just because it used to be unmodified
+												// and they have no armor. They do gain life from spell stones, of course
+				else if (BrutalMode())
+				{
+					brutalMul = BRUTALDMG;
+					if (player.worldNum == 3)
+						brutalMul += BRUTALCHAP4DMG;
+					damage *= (brutalMul / 2);	// same thing with brutal
+				}
+				if (!ClassicMode() && SkillValue(SKILL_HEALSUMMONS) > 0)
+				{
+					if (player.stoneskin)
+					{
+						if (player.spell[6] == 1)
+							damage /= 2;		// stoneskin cuts damage in half
+						else
+							damage /= 8;		// steelskin divides it by 8
+					}
+				}
+			}
 		}
 	}
 
@@ -1101,44 +1585,212 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		MakeSound(SND_BOBBYBLOCK,x,y,SND_CUTOFF,1200);
 		return;
 	}
+	if (fatal) damage = 1;
 
 	if(damage==-1000)	// freeze code
 	{
-		if(player.nightmare)
-			i=SpellLevel()*20-MonsterHP(type)/NIGHTMAREHP;	// the more hp, the harder to freeze
+		int monsHP = MonsterHP(type);
+		if (player.nightmare)
+			monsHP /= NIGHTMAREHP;
+		else if (BrutalMode())
+		{
+			brutalMul = BRUTALHP;
+			if (player.worldNum == 3)
+				brutalMul += BRUTALCHAP4HP;
+			monsHP /= brutalMul;
+		}
+		if (!ClassicMode() && player.worldNum >= 2)	// chapter 3/4 in modern mode have enhanced HP
+			monsHP /= MODERNCHAP34HP;
+		if (ClassicMode())
+			i = SpellLevel() * 20 - monsHP;	// the more hp, the harder to freeze
 		else
-			i=SpellLevel()*20-MonsterHP(type);	// the more hp, the harder to freeze
-		if(type!=MONS_BOUAPHA)
+		{
+			if (BulletHittingType() == BLT_ICECOMETBOOM)
+			{
+				i = SkillValue(SKILL_FIMBULWINTER) - monsHP;
+				if (i <= 0)
+					i = 1;
+			}
+			else
+			{
+				i = SkillValue(SKILL_ICEPOWER) - monsHP;	// the more hp, the harder to freeze
+			}
+		}
+		if(type!=MONS_BOUAPHA && type!=MONS_FRIENDLY && type!=MONS_GOLEM && type!=MONS_PTERO)
 			ShowEnemyLife(MonsterName(type),hp*128/MonsterHP(type),hp*128/MonsterHP(type),(byte)(hp>0));
 		if(i<0)
 			return;
 		else
 		{
+			if (frozen == 0)
+			{
+				frzDamage = 0;	// reset freeze damage each time you get frozen
+				ExplodeParticles(PART_SNOW2, x, y, z, 4);
+				MakeSound(SND_FROZEN, x, y, SND_CUTOFF, 900);
+			}
 			frozen+=i;
+			if (!ClassicMode())
+			{
+				if (frozen > 30 * 15)
+					frozen = 30 * 15;	// 15 second freeze cap
+			}
 			return;
 		}
 	}
 
-	if(type==MONS_BOUAPHA && damage>0)
-		ChallengeEvent(CE_OUCH,damage);
+	if (!ClassicMode() && !(monsType[type].flags&MF_GOODGUY))
+	{
+		float fDamage = damage;
+		if (melted)
+			fDamage = fDamage * (100 + SkillValue(SKILL_MELTARMOR)) / 100.0f;
+
+		float v = RuneValue(Rune::FIREBALLS)+100;
+		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
+			fDamage = (fDamage * (v) / 100.0f);
+
+		if (player.stoneskin > 0)
+			fDamage = (fDamage * (RuneValue(Rune::ARMOR_DMG) + 100) / 100);
+
+		if (BulletHittingType() == BLT_FLAME || BulletHittingType() == BLT_LIQUIFY)
+		{
+			if (SkillValue(SKILL_MELTARMOR) > 0)
+			{
+				melted += 15;	// 1/2 second per hit
+				if (melted > 30 * 10)
+					melted = 30 * 10;	// 10s max duration
+			}
+		}
+
+		bool critted = false;
+		float critChance = 0;
+		if(BulletHittingType()==BLT_HAMMER || BulletHittingType()==BLT_HAMMER2 || BulletHittingType()==BLT_SKULL)
+			critChance = SkillValue(SKILL_FIREBALL_CRIT);
+		if (hasBeenFrozen)
+			critChance += SkillValue(SKILL_ICECRIT);
+		if (player.berserk)
+			critChance += SkillValue(SKILL_BERSERKCRIT);
+		if (BulletHittingType() == BLT_LASER)
+			critChance += RuneValue(Rune::ENERGY);
+		if (BulletHittingType() == BLT_FLAME || BulletHittingType()==BLT_LIQUIFY)
+			critChance += RuneValue(Rune::FLAMEDMG);
+		if (BulletHittingType() == BLT_MISSILE)
+			critChance += RuneValue(Rune::SEEKER);
+		if(BulletHittingType()==BLT_PTEROSHOT || BulletHittingType()==BLT_GOODSHOCK || BulletHittingType()==BLT_GOLEMBOOM)
+			critChance += RuneValue(Rune::SUMMON);
+		else if(player.usedSpells[SPL_SUMMON]==1 && BulletHittingType() != BLT_MINIFBALL)
+			player.usedSpells[SPL_SUMMON] = 2;	// you hit an enemy somehow other than minion power.
+		// The summon achievement checks for this - other checks for spellcasting can just check if non-zero, but this one checks if SPL_SUMMON=2 to mean you failed the summon challenge
+
+		if(BulletHittingType()==BLT_BOOM || BulletHittingType()==BLT_LIQUIFY2)
+			critChance += RuneValue(Rune::INFERNO);
+
+		if (Random(100) < (dword)critChance)
+		{
+			fDamage*=(SkillValue(SKILL_CRITDMG) / 100.0f);
+			critted = true;
+			if (BulletHittingType() == BLT_PTEROSHOT || BulletHittingType() == BLT_GOODSHOCK || BulletHittingType() == BLT_GOLEMBOOM)
+			{
+				if (RuneValue(Rune::SUMMON))
+					HealAllMinions(1);
+			}
+		}
+
+		partialDamage += (byte)((fDamage - floorf(fDamage)) * 100.0f);
+		if (partialDamage >= 100)
+		{
+			fDamage += 1;
+			partialDamage -= 100;
+		}
+		damage = (int)fDamage;
+		if (fatal)
+			damage = 1000000;
+		if (critted)
+		{
+			ExplodeParticles2(PART_SNOW2, x, y, z, 15, 4);
+			MakeSound(SND_BALLBOUNCE, x, y, SND_CUTOFF, 0);
+			myNumberParticle=AddNumberParticle(x, y, z, damage, 1, myNumberParticle);
+		}
+		else
+			myNumberParticle=AddNumberParticle(x, y, z, damage, 0, myNumberParticle);
+	}
+
+	if(damage>0)
+		SpecialOuchCheck(map, type);
+
+	if (type == MONS_BOUAPHA && damage > 0)
+	{
+		ChallengeEvent(CE_OUCH, damage);
+		if (!ClassicMode() && player.barrier > 0)
+		{
+			if (player.barrier > damage)
+			{
+				player.barrier -= damage;
+				damage = 0;
+				ouch2 = 4;
+			}
+			else
+			{
+				damage -= player.barrier;
+				player.barrier = 0;
+				if (damage == 0)
+					ouch2 = 4;
+			}
+		}
+	}
 	else if(type!=MONS_PTERO && type!=MONS_GOLEM)
 		ChallengeEvent(CE_HIT,damage);
+	if (fatal)
+		damage = hp;
+
 	formerHP=hp;
 	if(damage>0)
 		ouch=4;
 	hp-=damage;
 
-	if(frozen)	// thaw when hit
+	if(frozen && BulletHittingType()!=BLT_ICESHARD)	// thaw when hit
 	{
-		if(frozen-damage*50<0)
+		hasBeenFrozen = FROZEN_GRACE_PERIOD;
+		if(!fatal && frzDamage+damage<65000)	// don't let execution attacks count
+			frzDamage += damage;
+
+		word dmgMul = 50;
+		if (!ClassicMode() && player.nightmare)
+			dmgMul = 10;
+		if(frozen-damage*dmgMul<0)
 		{
 			if(frozen>5)
 				frozen=5;	// so they can blink a bit
 			else
 				frozen=0;
+			IceShardSpew(map, world);
 		}
 		else
-			frozen-=damage*50;
+			frozen-=damage*dmgMul;
+	}
+
+	if (CheatStoneOn(CheatStone::PICKPOCKET) && !(monsType[type].flags & MF_GOODGUY) && Random(10)==0)
+	{
+		byte big = 0;
+		if (ClassicMode())
+		{
+			if (MGL_random(100 - 70 * (player.fairyOn == FAIRY_RICHEY)))
+				big = 0;
+			else
+				big = 1;
+		}
+		else
+		{
+			float amt = SkillValue(SKILL_GREED);
+			amt *= 10;
+			if (!ClassicMode() && hasBeenFrozen)
+				amt += SkillValue(SKILL_FREEZEMONEY) * 10;
+
+			if (MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+				big = 0;
+			else
+				big = 1;
+		}
+		FireBullet(x, y, Random(256), big ? BLT_DIAMOND : BLT_MONEYBAG);
 	}
 
 	if(!(MonsterFlags(type)&MF_NOMOVE))
@@ -1155,10 +1807,44 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 	if(hp<=0)
 	{
+		if (!ClassicMode() && (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM) && SkillValue(SKILL_SEEKBOOM) > 0)
+			FireExactBullet(x, y, z, 0, 0, 0, 0, 7, 0, BLT_SEEKBOOM);
+		if (BulletHittingType() == BLT_MISSILE || BulletHittingType() == BLT_LILBOOM || BulletHittingType() == BLT_SEEKBOOM)
+		{
+			player.seekerKills++;
+			if (player.seekerKills >= 20 && player.usedSpells[SPL_SEEKER] == 0)
+				EarnAchieve(Achievement::SEEKER);
+		}
+		if ((BulletHittingType() == BLT_BOOM || BulletHittingType() == BLT_LIQUIFY2) && player.timeSinceLastInferno < 30)	// you have 1 second since an inferno to get your kills
+		{
+			player.infernoKills++;
+			if (player.infernoKills >= 20)
+				EarnAchieve(Achievement::INFERNO);
+		}
+
+		if (!(monsType[type].flags & MF_GOODGUY) && player.totalKills < 255)
+		{
+			player.totalKills++;
+			if (player.summonKills < 255 && (BulletHittingType() == BLT_PTEROSHOT || BulletHittingType() == BLT_GOODSHOCK || BulletHittingType()==BLT_GOLEMBOOM))
+				player.summonKills++;
+		}
+
+		if (IsABoss(type) && player.usedFireballs == 0)
+		{
+			bool ok = true;
+			for (int i = 0; i < 10; i++)
+				if (player.usedSpells[i] && i != SPL_ENERGY)
+					ok = false;
+			if (ok)
+				EarnAchieve(Achievement::ENERGYBARRAGE);
+		}
+		SpecialKillCheck(map, type);
 		hp=0;
 		seq=ANIM_DIE;
 		this->dx=0;
 		this->dy=0;
+		melted = 0;
+		stun=0;
 		frm=0;
 		frmAdvance=64;
 		frmTimer=0;
@@ -1167,16 +1853,34 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			facing=2;	// these can only die facing forward, artistically speaking
 		if(type==MONS_PEEPBOMB || type==MONS_PEEPBOMB2)
 			facing=0;
+		if (!ClassicMode() && RuneValue(Rune::MANAONKILL) > 0 && !(MonsterFlags(type) & MF_GOODGUY))
+		{
+			player.mana += (byte)RuneValue(Rune::MANAONKILL);
+			if (player.mana > player.maxMana)
+				player.mana = player.maxMana;
+		}
+		if (!ClassicMode() && player.berserk > 0 && RuneValue(Rune::BERSERK) > 0)
+		{
+			player.berserk += (word)(30.0f * RuneValue(Rune::BERSERK));
+			if (player.berserk > SkillValue(SKILL_BERSERK) * 60 * 2)
+				player.berserk = SkillValue(SKILL_BERSERK) * 60 * 2;
+		}
+		if (type==MONS_OCTOPUS && ((player.worldNum == 0 && player.levelNum == 20) ||
+			(player.worldNum == 2 && player.levelNum == 24)))	// octopi spew juice here
+		{
+			for (int i = 0; i < 8; i++)
+			{
+				byte a = i * 32 - 12 + Random(24);
+				FireBullet(x, y, a, BLT_OCTONJUICE);
+			}
+		}
 		// possible item drop
 		switch(type)
 		{
 			case MONS_PINKEYE:
 			case MONS_BOUAPHA:
-			case MONS_SERPENT:	// don't drop items, since you live on the water
 			case MONS_MICRO:	// fish, no drop
-			case MONS_MAGMAZOID:// don't drop items, since you live in the lava
 			case MONS_FRIENDLY:
-			case MONS_MUSH:
 			case MONS_LICH:
 			case MONS_THINGTENT:
 			case MONS_THINGTENTTIP:
@@ -1190,7 +1894,6 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 			case MONS_OCTOBOSS:
 			case MONS_OCTOTENT:
 			case MONS_OCTOTENT2:
-			case MONS_OCTOPUS:
 				break;
 			case MONS_GOAT1:
 			case MONS_GOAT1B:
@@ -1200,27 +1903,77 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 				map->map[mapx+mapy*map->width].item=ITM_BRAIN;
 				break;
 			default:
-				// drop cash!
-				j=MonsterHP(type);
-				if(type==MONS_STICKSHROOM || type==MONS_STICKSPIDER || type==MONS_STICKCORPSE || type==MONS_STICKBAT)
-					j=100;	// way more coins from stick monsters
-				if(type==MONS_BIGSPDR)
-					j*=2;	// double the coins from spitters
-				if(type==MONS_EGGSAC || type==MONS_MAMASPDR)
-					j/=8;	// quarter coins from egg sacs and mama spiders
-				j=MGL_random(j/5+2);
-				// don't allow it to be less than half the max
-				if(j<MonsterHP(type)/10)
-					j=MonsterHP(type)/10;
+				if (VeryClassicMode() && (type == MONS_MAMASPDR || type == MONS_MUSH))
+				{
+					// In 1999 mode, Mama Spider and Mush the Shroom are bosses like the list above, and drop no coins.
+					break;
+				}
+				if (!(curWorld.terrain[map->map[mapx + mapy * map->width].floor].flags & (TF_WATER|TF_LAVA)))
+				{
+					// drop cash!
+					j = MonsterHP(type);
+					if (type == MONS_STICKSHROOM || type == MONS_STICKSPIDER || type == MONS_STICKCORPSE || type == MONS_STICKBAT)
+						j = 100;	// way more coins from stick monsters
+					if (type == MONS_BIGSPDR)
+						j *= 2;	// double the coins from spitters
+					if (type == MONS_EGGSAC || type == MONS_MAMASPDR)
+						j /= 8;	// quarter coins from egg sacs and mama spiders
+					j = MGL_random(j / 5 + 2);
+					// don't allow it to be less than 1/10 the max
+					if (j < MonsterHP(type) / 10)
+						j = MonsterHP(type) / 10;
 
-				if(j>50)
-					j=50;	// max it at 50 coins per guy
-				// 1% chance of 10-coin, up
-				for(i=0;i<j;i++)
-					if(MGL_random(100-70*(player.fairyOn==FAIRY_RICHEY)))
-						FireBullet(x,y,0,BLT_COIN);
-					else
-						FireBullet(x,y,0,BLT_BIGCOIN);
+					if (!ClassicMode())
+					{
+						byte chance = (int)SkillValue(SKILL_GREED);
+						if (hasBeenFrozen)
+							chance += (int)SkillValue(SKILL_FREEZEMONEY);
+						if (player.fairyOn == FAIRY_RICHEY)
+							chance *= 3;
+						if (Random(100) < chance * 2)
+							lootRunestones++;
+						if (Random(500) < monsType[type].hp)
+						{
+							if (Random(2) == 0)
+								FireBullet(x, y, 0, BLT_LIFEPOTION);
+							else
+								FireBullet(x, y, 0, BLT_MANAPOTION);
+						}
+					}
+					int freeBig = 0;
+					if (j > 50)
+					{
+						freeBig = (j - 50) / 20;	// give guaranteed big coins for every 20 coins overage, in modern mode
+						j = 50;	// max it at 50 coins per guy
+					}
+
+					// 1% chance of 10-coin, up
+					for (i = 0; i < j; i++)
+					{
+						if (ClassicMode())
+						{
+							if (MGL_random(100 - 70 * (player.fairyOn == FAIRY_RICHEY)))
+								lootCoins++;
+							else
+								lootBigCoins++;
+						}
+						else
+						{
+							float amt = SkillValue(SKILL_GREED);
+							amt *= 10;
+							if (!ClassicMode() && hasBeenFrozen)
+								amt += SkillValue(SKILL_FREEZEMONEY) * 10;
+
+							if (freeBig == 0 && MGL_random(1000 - 700 * (player.fairyOn == FAIRY_RICHEY)) > (int)amt)
+								lootCoins++;
+							else
+							{
+								lootBigCoins++;
+								if (freeBig > 0) freeBig--;
+							}
+						}
+					}
+				}
 				break;
 		}
 
@@ -1228,10 +1981,24 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 		if(type!=MONS_PTERO && type!=MONS_GOLEM && type!=MONS_BOUAPHA)
 		{
 			ChallengeEvent(CE_KILL,type);
-			PlayerGetPoints(MonsterPoints(type));
+			lootXP += MonsterPoints(type);
+
+			if (!ClassicMode() && player.berserk > 0 && SkillValue(SKILL_BLOODLUST) > 0)
+			{
+				PlayerHeal((byte)SkillValue(SKILL_BLOODLUST));
+			}
+		}
+
+		if (player.worldNum == 3 && player.levelNum == 19 && player.puzzleVar[0] != HORK_NONE)	// a horkbox is active, so just accumulate the rewards
+		{
+
+		}
+		else // otherwise, dump em on the floor now
+		{
+			HorkUpLoot(x, y);
 		}
 	}
-	if(type!=MONS_BOUAPHA && type!=MONS_PTERO && type!=MONS_GOLEM)
+	if(type!=MONS_BOUAPHA && type!=MONS_PTERO && type!=MONS_GOLEM && type!=MONS_FRIENDLY)
 		ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(type),hp*128/MonsterHP(type),(byte)(hp>0));
 	else if(type==MONS_BOUAPHA)
 	{
@@ -1251,42 +2018,83 @@ void Guy::GetShot(int dx,int dy,int damage,Map *map,world_t *world)
 
 //-----------------------------------------------------------------------
 
+void HorkUpLoot(int x, int y)
+{
+	PlayerGetPoints(lootXP);
+	for (int i = 0; i < lootRunestones; i++)
+		FireBullet(x, y, 0, BLT_RUNESTONE);
+	while (lootBigCoins > 0)
+	{
+		if (lootBigCoins > 10)
+		{
+			lootBigCoins -= 10;
+			FireBullet(x, y, 0, BLT_DIAMOND);
+		}
+		else
+		{
+			FireBullet(x, y, 0, BLT_BIGCOIN);
+			lootBigCoins--;
+		}
+	}
+	while (lootCoins > 0)
+	{
+		if (lootCoins > 25)
+		{
+			FireBullet(x, y, 0, BLT_MONEYBAG);
+			lootCoins -= 25;
+		}
+		else
+		{
+			FireBullet(x, y, 0, BLT_COIN);
+			lootCoins--;
+		}
+	}
+	lootXP = 0;
+	lootRunestones = 0;
+	lootBigCoins = 0;
+	lootCoins = 0;
+}
+
 void InitGuys(int max)
 {
-	int i;
-
-	maxGuys=max;
-
-	guys=(Guy **)malloc(sizeof(Guy *)*maxGuys);
-	for(i=0;i<maxGuys;i++)
-		guys[i]=new Guy();
-	goodguy=NULL;
+	guys = std::make_unique<Guy[]>(max);
+	maxGuys = max;
+	goodguy = nullptr;
+	lootCoins = 0;
+	lootBigCoins = 0;
+	lootRunestones = 0;
+	lootXP = 0;
 }
 
 void ExitGuys(void)
 {
-	int i;
-
-	for(i=0;i<maxGuys;i++)
-		delete guys[i];
-
-	free(guys);
+	goodguy = nullptr;
+	maxGuys = 0;
+	guys.reset();
 }
 
 void UpdateGuys(Map *map,world_t *world)
 {
 	int i;
 
+	if(player.timeSinceLastInferno<255)
+		player.timeSinceLastInferno++;
+	frozenGuys = 0;
 	badguys=0;
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE)
+		if(guys[i].type!=MONS_NONE)
 		{
-			if((MonsterFlags(guys[i]->type)&MF_GOODGUY)==0)
+			if((MonsterFlags(guys[i].type)&MF_GOODGUY)==0)
 				badguys=1;
-			guys[i]->Update(map,world);
-			if(guys[i]->type==MONS_BOUAPHA && player.berserk)
-				guys[i]->Update(map,world);
+			guys[i].Update(map,world);
+			if (guys[i].type == MONS_BOUAPHA && player.berserk)
+			{
+				UpdateControls();
+				guys[i].Update(map, world);
+			}
 		}
+	if (frozenGuys >= 20)
+		EarnAchieve(Achievement::ICEBLAST);
 }
 
 void OverworldUpdateGuys(Map *map,world_t *world)
@@ -1295,11 +2103,11 @@ void OverworldUpdateGuys(Map *map,world_t *world)
 
 	badguys=0;
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE)
+		if(guys[i].type!=MONS_NONE)
 		{
-			if((MonsterFlags(guys[i]->type)&MF_GOODGUY)==0)
+			if((MonsterFlags(guys[i].type)&MF_GOODGUY)==0)
 				badguys=1;
-			guys[i]->OverworldUpdate(map,world);
+			guys[i].OverworldUpdate(map,world);
 		}
 }
 
@@ -1308,13 +2116,25 @@ byte BadguyCount(void)
 	return badguys;
 }
 
+int CountGuysOfType(byte type)
+{
+	int i;
+	int total = 0;
+
+	for (i = 0; i < maxGuys; i++)
+		if (guys[i].type == type)
+			total++;
+
+	return total;
+}
+
 void EditorUpdateGuys(Map *map)
 {
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE)
-			guys[i]->EditorUpdate(map);
+		if(guys[i].type!=MONS_NONE)
+			guys[i].EditorUpdate(map);
 }
 
 void NoMoveUpdateGuys(Map *map)
@@ -1322,8 +2142,8 @@ void NoMoveUpdateGuys(Map *map)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE)
-			guys[i]->NoMoveUpdate(map);
+		if(guys[i].type!=MONS_NONE)
+			guys[i].NoMoveUpdate(map);
 }
 
 void RenderGuys(byte light)
@@ -1331,8 +2151,8 @@ void RenderGuys(byte light)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type!=MONS_NONE)
-			guys[i]->Render(light);
+		if(guys[i].type!=MONS_NONE)
+			guys[i].Render(light);
 }
 
 void FairyChange(word former,word now)
@@ -1350,8 +2170,8 @@ void FairyChange(word former,word now)
 	else if(now==0)	// have to remove the fairy
 	{
 		for(i=0;i<maxGuys;i++)
-			if(guys[i]->type==MONS_FAIRY2)
-				guys[i]->type=MONS_NONE;
+			if(guys[i].type==MONS_FAIRY2)
+				guys[i].type=MONS_NONE;
 	}
 	else	// just change the fairy
 	{
@@ -1365,43 +2185,58 @@ Guy *AddGuy(int x,int y,int z,byte type)
 	Guy *g;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==MONS_NONE)
+		if(guys[i].type==MONS_NONE)
 		{
-			guys[i]->placed=0;
-			guys[i]->type=type;
-			guys[i]->x=x;
-			guys[i]->y=y;
-			guys[i]->z=z;
-			guys[i]->seq=ANIM_IDLE;
-			guys[i]->frm=0;
-			guys[i]->frmTimer=0;
-			guys[i]->frmAdvance=128;
-			if(guys[i]->type!=MONS_BOUAPHA)
-				guys[i]->hp=MonsterHP(type);
+			guys[i].birthState = 2;	// born - check for both wall and guy collisions and start with a tiny rect
+			if (MonsterFlags(type) & MF_WALLWALK)
+				guys[i].birthState = 0;	// wall walking enemies can spawn anywhere
+			guys[i].hasBeenFrozen = 0;
+			guys[i].frostBite = 0;
+			guys[i].myNumberParticle = 65535;
+			guys[i].stun = 0;
+			guys[i].executable = false;
+			guys[i].placed=0;
+			guys[i].type=type;
+			guys[i].x=x;
+			guys[i].y=y;
+			guys[i].z=z;
+			guys[i].seq=ANIM_IDLE;
+			guys[i].frm=0;
+			guys[i].frmTimer=0;
+			guys[i].frmAdvance=128;
+			guys[i].frzDamage = 0;
+			if(guys[i].type!=MONS_BOUAPHA)
+				guys[i].hp=MonsterHP(type);
 			else
-				guys[i]->hp=player.maxLife;
-			guys[i]->facing=2;
-			guys[i]->ouch=0;
-			guys[i]->dx=0;
-			guys[i]->dy=0;
-			guys[i]->dz=0;
-			guys[i]->bright=0;
-			guys[i]->mind=0;
-			guys[i]->mind1=0;
-			guys[i]->reload=1;
-			guys[i]->parent=NULL;
-			guys[i]->CalculateRect();
-			guys[i]->ID=i;
-			guys[i]->mapx=(guys[i]->x>>FIXSHIFT)/TILE_WIDTH;
-			guys[i]->mapy=(guys[i]->y>>FIXSHIFT)/TILE_HEIGHT;
-			guys[i]->frozen=0;
+				guys[i].hp = player.maxLife;
+
+			guys[i].facing=2;
+			guys[i].ouch=0;
+			guys[i].ouch2 = 0;
+			guys[i].dx=0;
+			guys[i].dy=0;
+			guys[i].dz=0;
+			guys[i].bright=0;
+			guys[i].mind=0;
+			guys[i].mind1=0;
+			guys[i].mind2 = 0;
+			guys[i].mind3 = 0;
+			guys[i].reload=1;
+			guys[i].parent=NULL;
+			guys[i].ID=i;
+			guys[i].mapx=(guys[i].x>>FIXSHIFT)/TILE_WIDTH;
+			guys[i].mapy=(guys[i].y>>FIXSHIFT)/TILE_HEIGHT;
+			guys[i].frozen=0;
+			guys[i].melted = 0;
+			guys[i].partialDamage = 0;
 			if(type==MONS_BOUAPHA)	// special case: bouapha is the goodguy
 			{
-				goodguy=guys[i];
+				goodguy=&guys[i];
 				PutCamera(x,y);
+				SetLastSafeXY(goodguy->x, goodguy->y);
 				if(player.fairyOn!=0)
 				{
-					g=AddGuy(guys[i]->x,guys[i]->y,0,MONS_FAIRY2);
+					g=AddGuy(guys[i].x,guys[i].y,0,MONS_FAIRY2);
 				}
 			}
 			if(type==MONS_FAIRY2)
@@ -1409,7 +2244,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 				for(j=0;j<16;j++)
 				{
 					if((1<<j)==player.fairyOn)
-						guys[i]->mind1=(byte)(j+1);
+						guys[i].mind1=(byte)(j+1);
 				}
 			}
 			if(type==MONS_BOBBY)
@@ -1421,7 +2256,7 @@ Guy *AddGuy(int x,int y,int z,byte type)
 			{
 				g=AddGuy(x,y,0,MONS_INCATONGUE);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 			}
 
 			if(type==MONS_FRIENDLY)	// friendly has to decide which friendly to be
@@ -1430,55 +2265,109 @@ Guy *AddGuy(int x,int y,int z,byte type)
 				{
 					case 1:
 						// the blond guy
-						guys[i]->mind=ANIM_MOVE;
+						guys[i].mind=ANIM_MOVE;
+						break;
+					case 69:
+					case 151:
+						guys[i].mind = ANIM_A2;	// the witch
+						break;
+					case 21:
+					{
+						// the various beginnerton folks
+						int tx, ty;
+						tx = x / (TILE_WIDTH * FIXAMT);
+						ty = y / (TILE_HEIGHT * FIXAMT);
+						if (tx == 34 && ty == 55)
+							guys[i].mind = ANIM_MOVE;
+						if (tx == 47 && ty == 54)
+							guys[i].mind = ANIM_IDLE;
+						if (tx == 17 && ty == 45)
+							guys[i].mind = ANIM_ATTACK;
+						if (tx == 13 && ty == 22)
+							guys[i].mind = ANIM_A3;
+						if ((tx == 41 && ty == 24) || (tx==57 && ty==60))
+							guys[i].mind = ANIM_A1;
+					}
 						break;
 					case 13:
 					case 51:
 					case 111:
 						// the chick
-						guys[i]->mind=ANIM_ATTACK;
+						guys[i].mind=ANIM_ATTACK;
 						break;
 					case 11:
 					case 10:
 					case 55:
 					case 116:
 						// the wizard
-						guys[i]->mind=ANIM_A1;
+						guys[i].mind=ANIM_A1;
+						break;
+					case 109:
+						guys[i].mind = ANIM_IDLE;	// bald guy?
+						break;
+					case 20:
+					case 169:
+						guys[i].mind = ANIM_A2;	// witch
+						break;
+					case 124:
+					{
+						int tx, ty;
+						tx = x / (TILE_WIDTH * FIXAMT);
+						ty = y / (TILE_HEIGHT * FIXAMT);
+						if (tx == 2 && ty == 109)
+							guys[i].mind = ANIM_A2;	// witch
+						else if (tx == 24 && ty == 49)
+							guys[i].mind = ANIM_MOVE;	// somebody else
+						else if (tx == 31 && ty == 63)
+							guys[i].mind = ANIM_IDLE;	// somebody else
+						else if (tx == 33 && ty == 70)
+							guys[i].mind = ANIM_ATTACK;	// somebody else
+						else if (tx == 55 && ty == 61)
+							guys[i].mind = ANIM_A3;	// somebody else
+					}
 						break;
 				}
+			}
+			if (type == MONS_SHROOM)	// special case, they start out wandering in a random direction
+			{
+				guys[i].facing = Random(8);
+				guys[i].mind = 1;
+				guys[i].mind1 = 10;
 			}
 			if(type==MONS_OCTOBOSS && player.levelNum!=1)
 			{
 				g=AddGuy(x-FIXAMT*140,y-FIXAMT*100,0,MONS_OCTOTENT);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x-FIXAMT*180,y-FIXAMT*30,0,MONS_OCTOTENT);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x-FIXAMT*180,y+FIXAMT*30,0,MONS_OCTOTENT);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x-FIXAMT*140,y+FIXAMT*100,0,MONS_OCTOTENT);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 
 				g=AddGuy(x+FIXAMT*140,y-FIXAMT*100,0,MONS_OCTOTENT2);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x+FIXAMT*180,y-FIXAMT*30,0,MONS_OCTOTENT2);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x+FIXAMT*180,y+FIXAMT*30,0,MONS_OCTOTENT2);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 				g=AddGuy(x+FIXAMT*140,y+FIXAMT*100,0,MONS_OCTOTENT2);
 				if(g)
-					g->parent=guys[i];
+					g->parent=&guys[i];
 			}
 			if(type==MONS_LOOKEYLOO)
-				guys[i]->reload=255;
+				guys[i].reload=255;
 
-			return guys[i];
+			guys[i].CalculateRect(CurrentMap());
+
+			return &guys[i];
 		}
 	return NULL;
 }
@@ -1489,23 +2378,20 @@ void DeleteGuy2(Guy *g)
 
 	g->type=MONS_NONE;
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && guys[i]->parent==g)
+		if(guys[i].type && guys[i].parent==g)
 		{
-			DeleteGuy2(guys[i]);
+			DeleteGuy2(&guys[i]);
 		}
 }
 
 void DeleteGuy(int x,int y,byte type)
 {
-	int i,j;
+	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if((guys[i]->type==type) && (guys[i]->x==x) && (guys[i]->y==y))
+		if((guys[i].type==type) && (guys[i].x==x) && (guys[i].y==y))
 		{
-			guys[i]->type=MONS_NONE;
-			for(j=0;j<maxGuys;j++)
-				if(guys[j]->parent==guys[i])	// kill all the kids too
-					DeleteGuy2(guys[j]);
+			DeleteGuy2(&guys[i]);
 		}
 }
 
@@ -1515,9 +2401,24 @@ void AddMapGuys(Map *map)
 	int x,y;
 	Guy *g;
 
+	logX[0] = logX[1] = logY[0] = logY[1] = 255;
+
 	for(i=0;i<MAX_MAPMONS;i++)
 		if(map->badguy[i].type)
 		{
+			if (map->badguy[i].type == MONS_LOG)
+			{
+				if (logX[0] != 255)
+				{
+					logX[1] = map->badguy[i].x;
+					logY[1] = map->badguy[i].y;
+				}
+				else
+				{
+					logX[0] = map->badguy[i].x;
+					logY[0] = map->badguy[i].y;
+				}
+			}
 			if(map->badguy[i].type==MONS_BOUAPHA && player.levelNum==1 && player.overworldX!=-2000)
 			{
 				x=player.overworldX;
@@ -1525,36 +2426,54 @@ void AddMapGuys(Map *map)
 			}
 			else
 			{
-				x=(map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT;
-				y=(map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT;
+				x=(map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT;
+				y=(map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT;
 			}
 
+			if (map->badguy[i].type == MONS_FARLEY && player.worldNum == 0 && HighestWorldReached() == 0)
+				continue;	// don't put farley in world 0 if that's all you've reached
 			g=AddGuy(x,y,0,map->badguy[i].type);
 			if(g!=NULL)
 				g->placed=1;
 		}
 	if(player.levelNum==1)
 	{
-		for(i=0;i<4;i++)
+		byte fairyLeft = 4;
+		word n = 1;
+		byte fairyID=1;
+		// only the fairies for the current chapter are allowed
+		for (int i = 0; i < player.worldNum * 4; i++)
 		{
-			if(player.chaseFairy[i])
+			fairyID++;
+			n *= 2;
+		}
+		while (fairyLeft>0)
+		{
+			if (player.chaseFairy & n)
 			{
-				while(1)
+				while (1)
 				{
-					x=MGL_random(MAX_SPECIAL);
-					if(map->special[x].effect==SPC_GOTOMAP && abs(map->special[x].x-goodguy->mapx)+abs(map->special[x].y-goodguy->mapy)>3)
+					x = MGL_random(MAX_SPECIAL);
+					if (map->special[x].effect == SPC_GOTOMAP && abs(map->special[x].x - goodguy->mapx) + abs(map->special[x].y - goodguy->mapy) > 3)
 					{
-						y=x;
+						y = x;
 						break;
 					}
 				}
-				g=AddGuy((map->special[y].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,(map->special[y].y*TILE_HEIGHT+TILE_HEIGHT*3/2)*FIXAMT,0,MONS_FAIRY);
-				if(g)
+				g = AddGuy((map->special[y].x * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT, (map->special[y].y * TILE_HEIGHT + TILE_HEIGHT * 3 / 2) * FIXAMT, 0, MONS_FAIRY);
+				if (g)
 				{
-					g->placed=1;
-					g->mind1=player.chaseFairy[i];
+					g->placed = 1;
+					g->mind1 = fairyID;
+					fairyLeft--;
 				}
 			}
+			if (n == 32768)
+				break;	// that's all of them
+			n *= 2;
+			fairyID++;
+			if (fairyID > (player.worldNum + 1) * 4)
+				break;	// we only consider the fairies for this chapter
 		}
 	}
 }
@@ -1573,13 +2492,33 @@ void AddBattleGuys(Map *map,byte t)
 		{
 			if(map->badguy[i].type==MONS_BOUAPHA)
 			{
-				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 					   0,MONS_BOUAPHA);
 			}
 			else if(amt>0)
 			{
-				switch(t)
+				if (CheatStoneOn(CheatStone::HAPPYSTICK))
+				{
+					switch (Random(4))
+					{
+						case 0:
+							me = MONS_STICKSHROOM;
+							break;
+						case 1:
+							me = MONS_STICKSPIDER;
+							break;
+						case 2:
+							me = MONS_STICKCORPSE;
+							break;
+						case 3:
+							me = MONS_STICKBAT;
+							break;
+					}
+					if (Random(20) == 0)
+						me = MONS_DANCER;	// small chance of dancers!
+				}
+				else switch(t)
 				{
 					case MONS_INCABOT:
 						if(MGL_random(20)==0)
@@ -1645,8 +2584,8 @@ void AddBattleGuys(Map *map,byte t)
 						me=MONS_STICKBAT;
 						break;
 				}
-				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				g=AddGuy((map->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					   (map->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 					   0,me);
 
 				amt--;
@@ -1662,41 +2601,69 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 	int x,y;
 	int cx,cy;
 
-	if(chapter<4)
-		if((rnd>0) && MGL_random(200))
-			return;	// only 1 in 200 chance of badguy appearing
-	else
-		if((rnd>0) && MGL_random(100))
-			return;	// only 1 in 100 chance of badguy appearing on final chapter
+	// NOTE: the code here does not match the original comments. The intent was
+	// that the last chapter would have a 1-in-100 chance per frame of a badguy
+	// spawning, but the "else" was written without braces so the real effect
+	// is that on Chapter 4, a new guy spawns every single frame. The presence
+	// of this bug has been confirmed on retail v3.7, so it will remain.
+	// Commented spawn rates: 0.5% and 1%. Actual spawn rates: 1.495% and 100%.
+	if((rnd>0) && MGL_random(200))
+		return;	// only 1 in 200 chance of badguy appearing
+	if((rnd>0) && MGL_random(100))
+		return;	// only 1 in 100 chance of badguy appearing on final chapter
 
 	switch(chapter)
 	{
 		case 1:	// Over the River
-			if(player.level>4)
-				x=MGL_random(7);
+			if (VeryClassicMode())
+			{
+				x = MGL_random(2);
+				if (x == 0)
+					t = MONS_BIGSPDR;
+				else
+					t = MONS_SHROOM;
+			}
 			else
-				x=MGL_random(6);
-			if(x<3)
-				t=MONS_BIGSPDR;
-			else if(x<6)
-				t=MONS_SHROOM;
-			else
-				t=MONS_CRAZYBUSH;
-			if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
-				t=MONS_STICKSHROOM;
+			{
+				if(player.level>4)
+					x=MGL_random(7);
+				else
+					x=MGL_random(6);
+				if(x<3)
+					t=MONS_BIGSPDR;
+				else if(x<6)
+					t=MONS_SHROOM;
+				else
+					t=MONS_CRAZYBUSH;
+				if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
+					t=MONS_STICKSHROOM;
+			}
 			break;
 		case 2:	// through the woods
-			x=MGL_random(6);
-			if(x<2)
-				t=MONS_BIGSPDR;
-			else if(x<4)
-				t=MONS_SHROOM;
-			else if(x<5)
-				t=MONS_SHRMLORD;
+			if (VeryClassicMode())
+			{
+				x = MGL_random(3);
+				if (x == 0)
+					t = MONS_BIGSPDR;
+				else if (x == 1)
+					t = MONS_SHROOM;
+				else
+					t = MONS_SHRMLORD;
+			}
 			else
-				t=MONS_INCABOT;
-			if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
-				t=MONS_STICKSPIDER;
+			{
+				x=MGL_random(6);
+				if(x<2)
+					t=MONS_BIGSPDR;
+				else if(x<4)
+					t=MONS_SHROOM;
+				else if(x<5)
+					t=MONS_SHRMLORD;
+				else
+					t=MONS_INCABOT;
+				if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
+					t=MONS_STICKSPIDER;
+			}
 			break;
 		case 3:	// Castle Heinous
 			x=MGL_random(5);
@@ -1710,21 +2677,50 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 				t=MONS_STICKCORPSE;
 			break;
 		case 4:
-			x=MGL_random(7);
-			if(x<3)
-				t=MONS_BONEHEAD;
-			else if(x<5)
-				t=MONS_BIGBAT;
+			if (VeryClassicMode())
+			{
+				x = MGL_random(5);
+				if (x < 3)
+					t = MONS_BONEHEAD;
+				else
+					t = MONS_BIGBAT;
+			}
 			else
-				t=MONS_SNAIL;
-			if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
-				t=MONS_STICKBAT;
+			{
+				x=MGL_random(7);
+				if(x<3)
+					t=MONS_BONEHEAD;
+				else if(x<5)
+					t=MONS_BIGBAT;
+				else
+					t=MONS_SNAIL;
+				if(PlayerHasAllSecrets(chapter-1) && MGL_random(20)==0)
+					t=MONS_STICKBAT;
+			}
 			break;
 		default:
 			t=MONS_BONEHEAD;
 			break;
 	}
 
+	if (CheatStoneOn(CheatStone::HAPPYSTICK))
+	{
+		switch (Random(4))
+		{
+			case 0:
+				t = MONS_STICKBAT;
+				break;
+			case 1:
+				t = MONS_STICKSHROOM;
+				break;
+			case 2:
+				t = MONS_STICKCORPSE;
+				break;
+			case 3:
+				t = MONS_STICKSPIDER;
+				break;
+		}
+	}
 	x=MGL_random(map->width);
 	y=MGL_random(map->height);
 	GetCamera(&cx,&cy);
@@ -1732,8 +2728,8 @@ void AddRandomGuy(Map *map,world_t *world,byte chapter,byte rnd)
 	if(abs(x*TILE_WIDTH-cx)<400 && abs(y*TILE_HEIGHT-cy)<400)
 		return;	// can't appear on screen!
 
-	g=AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-		   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+	g=AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+		   (y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 		   0,t);
 
 	if(!g)
@@ -1767,13 +2763,13 @@ word FindVictimNot(int x,int y,byte size,int dx,int dy,int damage,word who,Map *
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && guys[i]->ID!=who && (MonsterFlags(guys[i]->type)&(MF_GOODGUY|MF_NOHIT))==0 &&
-			(guys[i]->type!=MONS_OCTOPUS || guys[i]->mind==1))
+		if(guys[i].type && guys[i].hp && guys[i].ID!=who && (MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT))==0 &&
+			(guys[i].type!=MONS_OCTOPUS || guys[i].mind==1))
 		{
-			if(CheckHit(size,x,y,guys[i]))
+			if(CheckHit(size,x,y,&guys[i]))
 			{
-				guys[i]->GetShot(dx,dy,damage,map,world);
-				return guys[i]->ID;
+				guys[i].GetShot(dx,dy,damage,map,world);
+				return guys[i].ID;
 			}
 		}
 
@@ -1785,12 +2781,12 @@ byte FindVictim(int x,int y,byte size,int dx,int dy,int damage,Map *map,world_t 
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (MonsterFlags(guys[i]->type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0 &&
-			(guys[i]->type!=MONS_OCTOPUS || guys[i]->mind==1))
+		if(guys[i].type && guys[i].hp && (MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0 &&
+			(guys[i].type!=MONS_OCTOPUS || guys[i].mind==1))
 		{
-			if(CheckHit(size,x,y,guys[i]))
+			if(CheckHit(size,x,y,&guys[i]))
 			{
-				guys[i]->GetShot(dx,dy,damage,map,world);
+				guys[i].GetShot(dx,dy,damage,map,world);
 				return 1;
 			}
 		}
@@ -1803,12 +2799,12 @@ byte FindGoodVictim(int x,int y,byte size,int dx,int dy,int damage,Map *map,worl
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (MonsterFlags(guys[i]->type)&MF_GOODGUY)!=0 && (MonsterFlags(guys[i]->type)&MF_NOHIT)==0)
+		if(guys[i].type && guys[i].hp && (MonsterFlags(guys[i].type)&MF_GOODGUY)!=0 && (MonsterFlags(guys[i].type)&MF_NOHIT)==0)
 		{
-			if(CheckHit(size,x,y,guys[i]))
+			if(CheckHit(size,x,y,&guys[i]))
 			{
-				guys[i]->GetShot(dx,dy,damage,map,world);
-				if(guys[i]->type==MONS_BOUAPHA)
+				guys[i].GetShot(dx,dy,damage,map,world);
+				if(guys[i].type==MONS_BOUAPHA)
 					return 2;
 				else
 					return 1;
@@ -1824,14 +2820,36 @@ byte FindVictims(int x,int y,byte size,int dx,int dy,int damage,Map *map,world_t
 	int i;
 	byte result=0;
 
-	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && (MonsterFlags(guys[i]->type)&(MF_GOODGUY|MF_NOHIT))==0 &&
-			(guys[i]->type!=MONS_OCTOPUS || guys[i]->mind==1))
+	int mx, my,mx2,my2;
+	mx = x / FIXAMT - size/2;
+	my = y / FIXAMT - size/2;
+	mx2 = x / FIXAMT + size / 2;
+	my2 = y / FIXAMT + size / 2;
+	for(i=mx;i<=mx2;i+=TILE_WIDTH)
+		for (int j = my; j <= my2; j += TILE_HEIGHT)
 		{
-			if((damage!=-1000 || guys[i]->frozen==0) && CheckHit(size,x,y,guys[i]))
+			SpecialShootCheck(map, i / TILE_WIDTH, j / TILE_HEIGHT,true);
+		}
+
+	for(i=0;i<maxGuys;i++)
+		if(guys[i].type && guys[i].hp && (MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT))==0 &&
+			(guys[i].type!=MONS_OCTOPUS || guys[i].mind==1))
+		{
+			if (ClassicMode())
 			{
-				guys[i]->GetShot(dx,dy,damage,map,world);
-				result=1;
+				if ((damage != -1000 || guys[i].frozen == 0) && CheckHit(size, x, y, &guys[i]))
+				{
+					guys[i].GetShot(dx, dy, damage, map, world);
+					result = 1;
+				}
+			}
+			else
+			{
+				if (CheckHit(size, x, y, &guys[i]))
+				{
+					guys[i].GetShot(dx, dy, damage, map, world);
+					result = 1;
+				}
 			}
 		}
 
@@ -1845,20 +2863,43 @@ word LockOnEvil(Map *map,int x,int y)
 	word bestguy;
 
 	bestguy=65535;
-	bestRange=320+240;
+	bestRange=HALFWID+HALFHEI;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type && guys[i]->hp && ((MonsterFlags(guys[i]->type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0) &&
-			guys[i]->type!=MONS_FRIENDLY)
+		if(guys[i].type && guys[i].hp && ((MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0) &&
+			guys[i].type!=MONS_FRIENDLY && guys[i].type!=MONS_HORKBOX)
 		{
-			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
-			if((range<bestRange) || (range<320+240 && MGL_random(32)==0))
+			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
+			if((range<bestRange) || (range<HALFWID+HALFHEI && MGL_random(32)==0))
 			{
-				if(map->FindGuy2((x/TILE_WIDTH),(y/TILE_HEIGHT),15,guys[i]))
+				if(map->FindGuy2((x/TILE_WIDTH),(y/TILE_HEIGHT),15,&guys[i]))
 				{
 					bestguy=i;
 					bestRange=range;
 				}
+			}
+		}
+
+	return bestguy;
+}
+
+word FindMurdalizeGuy(int x, int y,word maxRange)
+{
+	int i;
+	int bestRange, range;
+	word bestguy;
+
+	bestguy = 65535;
+	bestRange = maxRange;
+
+	for (i = 0; i < maxGuys; i++)
+		if (guys[i].type && guys[i].hp && guys[i].executable)
+		{
+			range = abs(x - (guys[i].x >> FIXSHIFT)) + abs(y - (guys[i].y >> FIXSHIFT));
+			if ((range < bestRange))
+			{
+				bestguy = i;
+				bestRange = range;
 			}
 		}
 
@@ -1872,15 +2913,15 @@ Guy *FindNearestOfType(int x,int y,byte type)
 	Guy *him;
 
 	him=NULL;
-	bestRange=320+240;
+	bestRange=HALFWID+HALFHEI;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==type && guys[i]->hp)
+		if(guys[i].type==type && guys[i].hp)
 		{
-			range=abs(x-(guys[i]->x>>FIXSHIFT))+abs(y-(guys[i]->y>>FIXSHIFT));
+			range=abs(x-(guys[i].x>>FIXSHIFT))+abs(y-(guys[i].y>>FIXSHIFT));
 			if((range<bestRange) || him==NULL)
 			{
-				him=guys[i];
+				him=&guys[i];
 				bestRange=range;
 			}
 		}
@@ -1892,11 +2933,11 @@ byte GetGuyPos(word guy,int *x,int *y)
 {
 	if(guy==65535)
 		return 0;
-	if(guys[guy]==NULL)
+	if(!guys[guy].type)
 		return 0;
 
-	*x=guys[guy]->x;
-	*y=guys[guy]->y;
+	*x=guys[guy].x;
+	*y=guys[guy].y;
 
 	return 1;
 }
@@ -1906,7 +2947,7 @@ byte MonsterExists(byte type)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==type || (type==255 && guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_FRIENDLY && guys[i]->type!=MONS_FAIRY2 && (MonsterFlags(guys[i]->type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0 && guys[i]->hp>0))
+		if(guys[i].type==type || (type==255 && guys[i].type!=MONS_NONE && guys[i].type!=MONS_FRIENDLY && guys[i].type!=MONS_FAIRY2 && (MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0 && guys[i].hp>0))
 			return 1;
 
 	return 0;
@@ -1917,7 +2958,7 @@ byte MonsterExistsExcept(byte type)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if((guys[i]->type!=type && guys[i]->type!=MONS_NONE && guys[i]->type!=MONS_FRIENDLY && (MonsterFlags(guys[i]->type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0 && guys[i]->hp>0))
+		if((guys[i].type!=type && guys[i].type!=MONS_NONE && guys[i].type!=MONS_FRIENDLY && (MonsterFlags(guys[i].type)&(MF_GOODGUY|MF_NOHIT|MF_INVINCIBLE))==0 && guys[i].hp>0))
 			return 1;
 
 	return 0;
@@ -1940,9 +2981,9 @@ byte MossCheck(int x,int y)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if((guys[i]) && ((guys[i]->type==MONS_MOSS) || (guys[i]->type==MONS_MOSSGRANDE))
-			&& (guys[i]->hp>0) && ((guys[i]->x>>FIXSHIFT)/TILE_WIDTH==x) &&
-				((guys[i]->y>>FIXSHIFT)/TILE_HEIGHT==y))
+		if(((guys[i].type==MONS_MOSS) || (guys[i].type==MONS_MOSSGRANDE))
+			&& (guys[i].hp>0) && ((guys[i].x>>FIXSHIFT)/TILE_WIDTH==x) &&
+				((guys[i].y>>FIXSHIFT)/TILE_HEIGHT==y))
 				return 1;	// moss is in the way
 	return 0;
 }
@@ -1952,17 +2993,17 @@ void KillKids(Guy *g)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && guys[i]->parent==g)
+		if(guys[i].type && guys[i].parent==g)
 		{
-			KillKids(guys[i]);	// kill my children too
-			if(guys[i]->hp>0)
+			KillKids(&guys[i]);	// kill my children too
+			if(guys[i].hp>0)
 			{
-				guys[i]->hp=0;
-				guys[i]->seq=ANIM_DIE;
-				guys[i]->action=ACTION_BUSY;
-				guys[i]->frm=0;
-				guys[i]->frmTimer=0;
-				guys[i]->frmAdvance=64;
+				guys[i].hp=0;
+				guys[i].seq=ANIM_DIE;
+				guys[i].action=ACTION_BUSY;
+				guys[i].frm=0;
+				guys[i].frmTimer=0;
+				guys[i].frmAdvance=64;
 			}
 		}
 }
@@ -1972,31 +3013,48 @@ void KillPinkeyes(void)
 	int i;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i] && guys[i]->type==MONS_PINKEYE)
+		if(guys[i].type==MONS_PINKEYE)
 		{
-			FireBullet(guys[i]->x,guys[i]->y,0,BLT_BOOM);
-			guys[i]->type=MONS_NONE;
+			FireBullet(guys[i].x,guys[i].y,0,BLT_BOOM);
+			guys[i].type=MONS_NONE;
 		}
 }
 
-Guy *NearestEnemy(Guy *me)
+void KillAllBadguys(void)
+{
+	int i;
+
+	for (i = 0; i < maxGuys; i++)
+		if (guys[i].type !=MONS_HORKBOX && guys[i].type!=MONS_NONE && guys[i].type!=MONS_FRIENDLY && !(monsType[guys[i].type].flags&MF_GOODGUY))
+		{
+			FireBullet(guys[i].x, guys[i].y, 0, BLT_BOOM);
+			guys[i].type = MONS_NONE;
+		}
+}
+
+Guy *NearestEnemy(Guy *me,bool LOS=false)
 {
 	Guy *victim=NULL;
-	int range=2222222222;
+	int range=INT_MAX;
 	int i,j;
 	word f;
 
 	f=MonsterFlags(me->type)&MF_GOODGUY;
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type && (MonsterFlags(guys[i]->type)&MF_GOODGUY)!=f && (MonsterFlags(guys[i]->type)&(MF_NOHIT|MF_INVINCIBLE))==0
-			&& guys[i]->type!=MONS_FAIRY2)
+		if(guys[i].type && guys[i].hp>0 && (MonsterFlags(guys[i].type)&MF_GOODGUY)!=f && (MonsterFlags(guys[i].type)&(MF_NOHIT|MF_INVINCIBLE))==0
+			&& guys[i].type!=MONS_FAIRY2 && (player.taunted==0 || guys[i].type!=MONS_BOUAPHA))
 		{
-			j=abs(me->x-guys[i]->x)+abs(me->y-guys[i]->y);
+			j=abs(me->x-guys[i].x)+abs(me->y-guys[i].y);
 			if(victim==NULL || j<range)
 			{
+				if (LOS)	// must be in our line of sight
+				{
+					if (!CurrentMap()->FindGuy(me->mapx, me->mapy, 5, &guys[i]))
+						continue;
+				}
 				range=j;
-				victim=guys[i];
+				victim=&guys[i];
 			}
 		}
 	}
@@ -2015,16 +3073,16 @@ void FairyDoThing(byte what)
 
 	for(i=0;i<maxGuys;i++)
 	{
-		if(guys[i]->type==MONS_FAIRY2)
+		if(guys[i].type==MONS_FAIRY2)
 		{
 			switch(what)
 			{
 				case 1:	// shoot
-					g=NearestEnemy(guys[i]);
+					g=NearestEnemy(&guys[i]);
 					if(g)
 					{
-						FaceGoodguy(guys[i],g);
-						FireBullet(guys[i]->x,guys[i]->y,guys[i]->facing*32-10+MGL_random(21),BLT_MINIFBALL);
+						FaceGoodguy(&guys[i],g);
+						FireBullet(guys[i].x,guys[i].y,guys[i].facing*32-10+MGL_random(21),BLT_MINIFBALL);
 					}
 					break;
 			}
@@ -2074,17 +3132,59 @@ byte PeepAtKid(int x,int y,Map *map,byte face)
 	return 0;
 }
 
+void StunAllOnscreen(byte duration)
+{
+	int camx, camy;
+	GetCamera(&camx, &camy);
+	camx -= HALFWID+30;
+	camy -= HALFHEI+30;
+	camx *= FIXAMT;
+	camy *= FIXAMT;
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp>0 && (MonsterFlags(guys[i].type) & MF_GOODGUY) == 0 && guys[i].x >= camx && guys[i].y >= camy && guys[i].x < camx + (SCRWID + 60) * FIXAMT && guys[i].y < camy + (SCRHEI + 60) * FIXAMT)
+		{
+			if(guys[i].stun<duration)
+				guys[i].stun = duration;
+		}
+	}
+}
+
+void HealSummons(byte amt)
+{
+	int v=amt;
+	if(ClassicMode())
+		v = (int)(amt * (100 + player.spellStones * 10)) / 100;
+	else
+		v = (int)amt * GetPowerStoneMultiplier(player.spellStones) / FIXAMT;
+
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && (guys[i].type == MONS_PTERO || guys[i].type == MONS_GOLEM))
+		{
+			guys[i].hp += amt;
+			if (guys[i].hp > MonsterHP(guys[i].type))
+				guys[i].hp = MonsterHP(guys[i].type);
+		}
+	}
+}
+
+void HealPterosToFull(void)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && guys[i].type == MONS_PTERO)
+			guys[i].hp = MonsterHP(MONS_PTERO);
+	}
+}
+
 Guy *GetGuy(word ID)
 {
-	int i;
-
-	for(i=0;i<maxGuys;i++)
-	{
-		if(guys[i]->ID==ID)
-			return guys[i];
-	}
-
-	return NULL;
+	if (ID >= maxGuys)
+		return nullptr;
+	if (!guys[ID].type)
+		return nullptr;
+	return &guys[ID];
 }
 
 static dword whackClock,whackTotalClock;
@@ -2109,7 +3209,7 @@ void WhackazoidUpdate(byte init)
 	lastGuy=0;
 
 	for(i=0;i<maxGuys;i++)
-		if(guys[i]->type==0)
+		if(guys[i].type==0)
 		{
 			lastGuy=i-1;
 			break;
@@ -2147,17 +3247,17 @@ void WhackazoidUpdate(byte init)
 
 			i=MGL_random(lastGuy+1);
 			tries=100;
-			while(guys[i]->type!=MONS_TRAPAZOID2 && tries-->0)
+			while(guys[i].type!=MONS_TRAPAZOID2 && tries-->0)
 				i=MGL_random(lastGuy+1);
 			if(tries>0)
 			{
-				guys[i]->type=MONS_WHACKAZOID;
-				guys[i]->action=ACTION_BUSY;
-				guys[i]->seq=ANIM_ATTACK;
-				guys[i]->frm=0;
-				guys[i]->frmTimer=0;
-				guys[i]->frmAdvance=128-(byte)(whackTotalClock/15);
-				guys[i]->hp=1;
+				guys[i].type=MONS_WHACKAZOID;
+				guys[i].action=ACTION_BUSY;
+				guys[i].seq=ANIM_ATTACK;
+				guys[i].frm=0;
+				guys[i].frmTimer=0;
+				guys[i].frmAdvance=128-(byte)(whackTotalClock/15);
+				guys[i].hp=1;
 			}
 		}
 	}
@@ -2170,6 +3270,14 @@ void WhackedAZoid(Map *map)
 	byte prizeItm[8]={ITM_PANTS,ITM_BRAIN,ITM_PANTS,ITM_BRAIN,ITM_BIGCOIN,ITM_HAMMERUP,ITM_BIGCOIN,ITM_FAIRYBELL};
 
 	whacked++;
+	if (whacked > 75)
+		EarnAchieve(Achievement::WHACKAZOID);
+	if (whacked == 60 && !ClassicMode() && !GotSkillShardInLevel(player.worldNum, player.levelNum))
+	{
+		map->GetTile(10, 13)->item = ITM_SKILLSHARD;
+		MakeNormalSound(SND_PURCHASE);
+		NewMessage("Super Skill Bonus Prize!", 60);
+	}
 
 	if(Challenging())
 	{
@@ -2185,7 +3293,7 @@ void WhackedAZoid(Map *map)
 		if(whacked>=prizeLevel[prizeAwarded])
 		{
 			if(prizeItm[prizeAwarded]==ITM_FAIRYBELL &&
-				(player.haveFairy&(1<<(FairyForThisLevel(player.levelNum+player.worldNum*50)-1))))
+				(player.haveFairy&(1<<(FairyForThisLevel(player.levelNum, player.worldNum)-1))))
 			{
 				map->map[prizeX[prizeAwarded]+14*map->width].item=ITM_BIGCOIN;	// replace fairy bell
 			}
@@ -2197,4 +3305,122 @@ void WhackedAZoid(Map *map)
 			MakeNormalSound(SND_PURCHASE);
 		}
 	}
+}
+
+void ChangeAllGuysOfType(byte type, byte newType)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == type)
+		{
+			float pct = (float)guys[i].hp / (float)MonsterHP(guys[i].type);
+			guys[i].type = newType;
+			guys[i].hp= (word)((float)MonsterHP(newType)*pct);
+		}
+	}
+}
+
+void ChangeMind2OfType(byte type, byte newMind2)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == type)
+			guys[i].mind2 = newMind2;
+	}
+}
+
+void SetupHorkboxes(void)
+{
+	std::vector<byte> types;
+	for (int i = 1; i < HORK_MAX; i++)	// skip HORK_NONE of course
+		types.push_back(i);
+
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == MONS_HORKBOX)
+		{
+			int n = Random((int)types.size());
+			guys[i].mind2 = types[n];
+			types.erase(types.begin() + n);
+			if (types.size() == 0)
+				break;	// can't do any more, better not have put it in any more
+		}
+	}
+}
+
+void HealBadguys(word amt)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && guys[i].type!=MONS_NONE && guys[i].type != MONS_HORKBOX && !(monsType[guys[i].type].flags & MF_GOODGUY) && guys[i].type!=MONS_FRIENDLY)
+		{
+			Guy* g = &guys[i];
+
+			word maxHP = MonsterHP(guys[i].type);
+			word healAmt = amt;
+			if (guys[i].hp == maxHP)
+				continue;
+			if (player.nightmare)
+				healAmt *= NIGHTMAREHP;
+			else if (BrutalMode())
+			{
+				int brutalMul = BRUTALHP;
+				if (player.worldNum == 3)
+					brutalMul += BRUTALCHAP4HP;
+				healAmt *= brutalMul;
+			}
+			if (guys[i].hp <= maxHP - healAmt)
+				guys[i].hp += healAmt;
+			else
+				guys[i].hp = maxHP;
+			ShowEnemyLife(MonsterName(guys[i].type), guys[i].hp * 128 / maxHP, guys[i].hp * 128 / maxHP, (byte)(guys[i].hp > 0));
+
+		}
+	}
+}
+
+void HealAllMinions(int amt)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && (guys[i].type == MONS_PTERO || guys[i].type == MONS_GOLEM))
+		{
+			if (guys[i].hp < MonsterHP(guys[i].type))
+				guys[i].hp++;
+		}
+	}
+}
+
+Guy *GetFirstFriendly(void)
+{
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].hp > 0 && guys[i].type == MONS_FRIENDLY)
+			return &guys[i];
+	}
+	return nullptr;
+}
+
+void SetLastSafeXY(int x, int y)
+{
+	lastSafeX = x;
+	lastSafeY = y;
+}
+
+void ResetLogs(void)
+{
+	// remove all existing logs
+	for (int i = 0; i < maxGuys; i++)
+	{
+		if (guys[i].type == MONS_LOG)
+			guys[i].type = MONS_NONE;
+		if (guys[i].type == MONS_BOUAPHA)
+			guys[i].parent = nullptr;
+	}
+	if (logX[0] != 255)
+		AddGuy((logX[0] * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+			(logY[0] * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
+	if (logX[1] != 255)
+		AddGuy((logX[1] * TILE_WIDTH + TILE_WIDTH / 2) * FIXAMT,
+			(logY[1] * TILE_HEIGHT + TILE_HEIGHT / 2) * FIXAMT, 0, MONS_LOG);
 }

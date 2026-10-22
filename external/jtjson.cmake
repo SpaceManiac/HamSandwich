@@ -1,0 +1,7 @@
+add_subdirectory("jtjson" EXCLUDE_FROM_ALL)
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(double-conversion PRIVATE -Wno-unknown-warning-option)
+    target_compile_options(jtjson PRIVATE -Wno-tautological-constant-out-of-range-compare)
+endif()
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/jtjson/double-conversion/LICENSE" TYPE BIN COMPONENT launcher/executables RENAME "LICENSE.double-conversion.txt")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/jtjson/LICENSE" TYPE BIN COMPONENT launcher/executables RENAME "LICENSE.jtjson.txt")

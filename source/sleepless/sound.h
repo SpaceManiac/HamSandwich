@@ -1,9 +1,10 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+#include <stdio.h>
 #include "jamulsound.h"
 #include "jamultypes.h"
-#include <stdio.h>
+#include "owned_mixer.h"
 
 #define SND_NONE		0
 #define SND_MENUCLICK	51
@@ -416,7 +417,6 @@ void InitSound(void);
 void ExitSound(void);
 void MakeSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalSound(int snd);
-void SoundSystemExists(void);
 soundDesc_t *GetSoundInfo(int snd);
 int GetNumSounds(void);
 byte *GetCustomSound(int n);
@@ -426,14 +426,16 @@ byte AddCustomSound(const char *fname);
 int GetNumCustomSounds(void);
 void DeleteCustomSound(int n);
 byte ReplaceCustomSound(int n,const char *fname);
-void LoadCustomSounds(FILE *f);
-void SaveCustomSounds(FILE *f);
+void LoadCustomSounds(SDL_IOStream *f);
+void SaveCustomSounds(SDL_IOStream *f);
 
 void MakeCustomSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalCustomSound(int snd);
 int GetCustomSoundByName(const char *name);
 void MakeSpaceSound(int snd,int priority);
 
-int AppendCustomSounds(FILE *f);
+int AppendCustomSounds(SDL_IOStream *f);
+
+owned::SDL_IOStream SoundLoadOverride(int num);
 
 #endif

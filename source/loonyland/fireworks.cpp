@@ -10,14 +10,14 @@ int firstFree,lastFwork;
 
 void InitFireworks(void)
 {
-	DBG("InitFireworks");
+	LogVerbose("InitFireworks");
 	going=1;
 	fwork=(fwork_t *)calloc(sizeof(fwork_t)*MAX_FWORK,1);
 	if(!fwork)
 		going=0;
 	firstFree=0;
 	lastFwork=-1;
-	DBG("SurvivedInitFireworks");
+	LogVerbose("SurvivedInitFireworks");
 }
 
 void ExitFireworks(void)
@@ -75,7 +75,7 @@ void RenderFireworks(MGLDraw *mgl)
 {
 	int i;
 
-	DBG("RenderingFireworks");
+	LogTrace("RenderingFireworks");
 	if(!going)
 		return;
 

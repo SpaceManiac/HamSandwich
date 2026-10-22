@@ -31,15 +31,15 @@ void RenderYesNoDialog(int msx,int msy,MGLDraw *mgl)
 	RenderButtonImage(msx,msy,320+100,270,60,15,choice[1]);
 }
 
-static void RenderGrnButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt)
+static void RenderGrnButtonImage(int mouseX,int mouseY,int x,int y,int width,int height,const char *txt, int forceChoice)
 {
-	if(PointInRect(mouseX,mouseY,x,y,x+width,y+height))
+	if (forceChoice == -1 ? PointInRect(mouseX,mouseY,x,y,x+width,y+height) : forceChoice)
 		DrawFillBox(x,y,x+width,y+height,8+32*1);
 	DrawBox(x,y,x+width,y+height,32*1+16);
 	PrintLimited(x+2,y+2,x+width-1,txt,0,1);
 }
 
-void RenderYesNoDialog2(int msx,int msy,MGLDraw *mgl)
+void RenderYesNoDialog2(int msx,int msy,MGLDraw *mgl, int forceChoice)
 {
 	// box for the whole dialog
 	mgl->FillBox(150,200,490,300,32*1+4);
@@ -47,8 +47,8 @@ void RenderYesNoDialog2(int msx,int msy,MGLDraw *mgl)
 
 	PrintGlow(320-GetStrLength(text,2)/2,204,text,0,2);
 
-	RenderGrnButtonImage(msx,msy,320-100-60,270,60,15,choice[0]);
-	RenderGrnButtonImage(msx,msy,320+100,270,60,15,choice[1]);
+	RenderGrnButtonImage(msx,msy,320-100-60,270,60,15,choice[0], forceChoice == -1 ? -1 : forceChoice == 0 ? 1 : 0);
+	RenderGrnButtonImage(msx,msy,320+100,270,60,15,choice[1], forceChoice == -1 ? -1 : forceChoice == 1 ? 1 : 0);
 }
 
 void RenderYesNoDialog3(int msx,int msy,MGLDraw *mgl)
@@ -59,8 +59,8 @@ void RenderYesNoDialog3(int msx,int msy,MGLDraw *mgl)
 
 	PrintGlowRect(152,202,488,260,18,text,2);
 
-	RenderGrnButtonImage(msx,msy,320-100-60,270,60,15,choice[0]);
-	RenderGrnButtonImage(msx,msy,320+100,270,60,15,choice[1]);
+	RenderGrnButtonImage(msx,msy,320-100-60,270,60,15,choice[0], -1);
+	RenderGrnButtonImage(msx,msy,320+100,270,60,15,choice[1], -1);
 }
 
 byte YesNoDialogKey(char key)

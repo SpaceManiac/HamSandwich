@@ -65,7 +65,6 @@ enum {
 };
 
 extern world_t curWorld;
-extern FILE *logFile;
 
 // these are the major inits, just at the beginning and ending of a whole game
 void LunaticInit(MGLDraw *mgl);
@@ -95,9 +94,6 @@ TASK(void) TrainingGame(MGLDraw *mgl);
 void SendMessageToGame(byte msg, int content);
 void AddGarbageTime(dword t);
 
-void SetGameIdle(bool b);
-byte GetGameIdle(void);
-void GameIdle(void);
 byte GetCurSong(void);
 
 byte WorldPauseRun(int *lastTime);

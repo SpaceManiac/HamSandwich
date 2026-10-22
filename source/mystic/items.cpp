@@ -4,7 +4,7 @@
 #include "challenge.h"
 
 sprite_set_t *itmSpr;
-static byte glowism;
+static dword glowism = 0;
 
 void InitItems(void)
 {
@@ -35,8 +35,19 @@ void RenderItem(int x,int y,byte type,char bright)
 	{
 		case ITM_NONE:
 			break;
+		case ITM_STEW:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(5), DISPLAY_DRAWME);
+			break;
+		case ITM_SILENTRUNE:
+		{
+			b = (glowism % 8)/2;
+			if (b==3) b = 1;
+			SprDraw(x, y, 0, 255, bright + abs(int(glowism & 7) - 3), itmSpr->GetSprite(281+b), DISPLAY_DRAWME);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(281+b), DISPLAY_DRAWME | DISPLAY_SHADOW);
+		}
+			break;
 		case ITM_HAMMERUP:
-			SprDraw(x,y,0,255,bright+abs((glowism&7)-3),itmSpr->GetSprite(0),DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x,y,0,255,bright+abs(int(glowism&7)-3),itmSpr->GetSprite(0),DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
 		case ITM_PANTS:
 			SprDraw(x,y,8,255,bright,itmSpr->GetSprite(59+(glowism&7)),DISPLAY_DRAWME|DISPLAY_GLOW);
@@ -58,13 +69,50 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(43+((glowism/2)&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_BRAIN:
-			SprDraw(x,y,6,255,bright-6+abs((glowism&7)-3),itmSpr->GetSprite(7),DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x,y,6,255,bright-6+abs(int(glowism&7)-3),itmSpr->GetSprite(7),DISPLAY_DRAWME|DISPLAY_GLOW);
 			break;
-		case ITM_BOX:
+		case ITM_GRIMBLEWEED:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(1), DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(1),DISPLAY_DRAWME);
 			break;
+		case ITM_BIGROCK2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(33), DISPLAY_DRAWME|DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(33), DISPLAY_DRAWME);
+			break;
+		case ITM_CATTAIL:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(34), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(34), DISPLAY_DRAWME);
+			break;
+		case ITM_RUNEPOUCH:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(4), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(4), DISPLAY_DRAWME);
+			break;
+		case ITM_SKILLSHARD:
+			SprDraw(x, y, 8, 6, bright, itmSpr->GetSprite(67 + (glowism & 7)), DISPLAY_DRAWME);	// a purple spinny crystal
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(67 + (glowism & 7)), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			break;
+		case ITM_CAULDRON:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(3), DISPLAY_DRAWME|DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(3), DISPLAY_DRAWME);
+			break;
 		case ITM_TREE:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(2), DISPLAY_DRAWME | DISPLAY_SHADOW);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(2),DISPLAY_DRAWME);
+			break;
+		case ITM_TREE2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(296), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(296), DISPLAY_DRAWME);
+			break;
+		case ITM_DEADTREE:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(41), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(41), DISPLAY_DRAWME);
+			break;
+		case ITM_DEADTREE2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(42), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(42), DISPLAY_DRAWME);
+			break;
+		case ITM_BURNEDTREE:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(284), DISPLAY_DRAWME);
 			break;
 		case ITM_SKLDOOR2:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(40),DISPLAY_DRAWME|DISPLAY_SHADOW);
@@ -74,8 +122,9 @@ void RenderItem(int x,int y,byte type,char bright)
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(39),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(39),DISPLAY_DRAWME);
 			break;
-		case ITM_IGLOO:
-			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(42),DISPLAY_DRAWME);
+		case ITM_LAVAROCK:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(6), DISPLAY_DRAWME | DISPLAY_SHADOW);
+			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(6),DISPLAY_DRAWME);
 			break;
 		case ITM_HEALTHPOT:
 			SprDraw(x,y,0,255,bright+((glowism&7)==0)*2,itmSpr->GetSprite(156),DISPLAY_DRAWME);
@@ -86,26 +135,32 @@ void RenderItem(int x,int y,byte type,char bright)
 		case ITM_BIGCOIN:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(159+((glowism/4)&7)),DISPLAY_DRAWME);
 			break;
+		case ITM_MONEYBAG:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(287), DISPLAY_DRAWME);
+			break;
+		case ITM_DIAMOND:
+			SprDraw(x, y, 0, 0, bright, itmSpr->GetSprite(288 + ((glowism / 4) & 7)), DISPLAY_DRAWME);
+			break;
 		case ITM_COIN:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(147+((glowism/4)&7)),DISPLAY_DRAWME);
 			break;
 		case ITM_FLAME:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(34),DISPLAY_DRAWME);
 			break;
-		case ITM_KEYCH1:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME);
+		case ITM_SWORD1:
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(83+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
-		case ITM_KEYCH2:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME);
+		case ITM_SWORD2:
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(99+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
-		case ITM_KEYCH3:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME);
+		case ITM_SWORD3:
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(115+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
-		case ITM_KEYCH4:
-			SprDraw(x,y,8,255,bright-4+abs((glowism&7)-3),itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME);
+		case ITM_SWORD4:
+			SprDraw(x,y,8,255,bright-4+abs(int(glowism&7)-3),itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME);
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(131+(glowism&15)),DISPLAY_DRAWME|DISPLAY_SHADOW);
 			break;
 		case ITM_KEY:
@@ -120,9 +175,13 @@ void RenderItem(int x,int y,byte type,char bright)
 		case ITM_KEYB:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(20),DISPLAY_DRAWME);
 			break;
-		case ITM_LOONYKEY:
-			b=abs(16-(glowism&31));
-			SprDraw(x,y,0,glowism/32,bright+b,itmSpr->GetSprite(25),DISPLAY_DRAWME);
+		case ITM_TOADSTOOL:
+		{
+			b = int((x+glowism+y*3) % 56) / 4;
+			byte anim[] = { 0,0,1,2,2,2,3,4,4,3,2,2,2,1 };
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(21 + anim[b]), DISPLAY_DRAWME);
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(21 + anim[b]), DISPLAY_DRAWME|DISPLAY_SHADOW);
+		}
 			break;
 		case ITM_SMLROCKS:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(32),DISPLAY_DRAWME);
@@ -145,6 +204,9 @@ void RenderItem(int x,int y,byte type,char bright)
 			break;
 		case ITM_BUSH:
 			SprDraw(x,y,0,255,bright,itmSpr->GetSprite(30),DISPLAY_DRAWME);
+			break;
+		case ITM_BUSH2:
+			SprDraw(x, y, 0, 255, bright, itmSpr->GetSprite(297), DISPLAY_DRAWME);
 			break;
 		case ITM_BIGROCKS:
 			//SprDraw(x,y,0,255,bright,itmSpr->GetSprite(31),DISPLAY_DRAWME|DISPLAY_SHADOW);
@@ -227,17 +289,23 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 	{
 		case ITM_NONE:
 			break;
+		case ITM_STEW:
+			itmSpr->GetSprite(5)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_SILENTRUNE:
+			itmSpr->GetSprite(281)->DrawBright(x, y, mgl, bright);
+			break;
 		case ITM_HAMMERUP:
 			itmSpr->GetSprite(0)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_PANTS:
-			itmSpr->GetSprite(3)->DrawBright(x,y,mgl,bright);
+			itmSpr->GetSprite(59)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_REVERSE:
-			itmSpr->GetSprite(4)->DrawBright(x,y,mgl,bright);
+			itmSpr->GetSprite(67)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_REFLECT:
-			itmSpr->GetSprite(5)->DrawBright(x,y,mgl,bright);
+			itmSpr->GetSprite(75)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_SPELLBOOK:
 			itmSpr->GetSprite(43)->DrawBright(x,y,mgl,bright);
@@ -251,6 +319,12 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		case ITM_BIGCOIN:
 			itmSpr->GetSprite(159)->DrawBright(x,y,mgl,bright);
 			break;
+		case ITM_MONEYBAG:
+			itmSpr->GetSprite(287)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_DIAMOND:
+			itmSpr->GetSprite(288)->DrawColored(x, y, mgl, 0, bright+10);
+			break;
 		case ITM_COIN:
 			itmSpr->GetSprite(147)->DrawBright(x,y,mgl,bright);
 			break;
@@ -260,16 +334,16 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		case ITM_BRAIN:
 			itmSpr->GetSprite(7)->DrawBright(x,y,mgl,bright);
 			break;
-		case ITM_KEYCH1:
+		case ITM_SWORD1:
 			itmSpr->GetSprite(24)->DrawBright(x,y,mgl,bright);
 			break;
-		case ITM_KEYCH2:
+		case ITM_SWORD2:
 			itmSpr->GetSprite(21)->DrawBright(x,y,mgl,bright);
 			break;
-		case ITM_KEYCH3:
+		case ITM_SWORD3:
 			itmSpr->GetSprite(22)->DrawBright(x,y,mgl,bright);
 			break;
-		case ITM_KEYCH4:
+		case ITM_SWORD4:
 			itmSpr->GetSprite(23)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_KEY:
@@ -284,14 +358,41 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		case ITM_KEYB:
 			itmSpr->GetSprite(20)->DrawBright(x,y,mgl,bright);
 			break;
-		case ITM_LOONYKEY:
-			itmSpr->GetSprite(25)->DrawBright(x,y,mgl,bright);
+		case ITM_TOADSTOOL:
+			itmSpr->GetSprite(21)->DrawBright(x,y,mgl,bright);
 			break;
-		case ITM_BOX:
+		case ITM_BIGROCK2:
+			itmSpr->GetSprite(33)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_CATTAIL:
+			itmSpr->GetSprite(34)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_GRIMBLEWEED:
 			itmSpr->GetSprite(1)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_RUNEPOUCH:
+			itmSpr->GetSprite(4)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_SKILLSHARD:
+			itmSpr->GetSprite(67)->DrawColored(x, y, mgl, 6, bright);
+			break;
+		case ITM_CAULDRON:
+			itmSpr->GetSprite(3)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_TREE:
 			itmSpr->GetSprite(2)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_TREE2:
+			itmSpr->GetSprite(296)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_DEADTREE:
+			itmSpr->GetSprite(41)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_DEADTREE2:
+			itmSpr->GetSprite(42)->DrawBright(x, y, mgl, bright);
+			break;
+		case ITM_BURNEDTREE:
+			itmSpr->GetSprite(284)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_SKLDOOR:
 			Print(x,y,"SKLDOOR",0,2);
@@ -299,8 +400,8 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 		case ITM_SKLDOOR2:
 			Print(x,y,"SKLDOOR2",0,2);
 			break;
-		case ITM_IGLOO:
-			itmSpr->GetSprite(42)->DrawBright(x,y,mgl,bright);
+		case ITM_LAVAROCK:
+			itmSpr->GetSprite(6)->DrawBright(x,y,mgl,bright);
 			break;
 		case ITM_DOOR1:
 			itmSpr->GetSprite(9)->DrawBright(x-14,y+11,mgl,bright);
@@ -343,6 +444,9 @@ void InstaRenderItem(int x,int y,byte type,char bright,MGLDraw *mgl)
 			break;
 		case ITM_BUSH:
 			itmSpr->GetSprite(30)->DrawBright(x,y,mgl,bright);
+			break;
+		case ITM_BUSH2:
+			itmSpr->GetSprite(297)->DrawBright(x, y, mgl, bright);
 			break;
 		case ITM_BIGROCKS:
 			itmSpr->GetSprite(31)->DrawBright(x,y,mgl,bright);

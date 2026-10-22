@@ -1,10 +1,14 @@
 #include "player.h"
+#include <math.h>
 #include "spell.h"
 #include "fairy.h"
 #include "challenge.h"
 #include "options.h"
 #include "water.h"
 #include "appdata.h"
+#include "skills.h"
+#include "vfs.h"
+#include "string_extras.h"
 
 #define PLYR_ACCEL	(FIXAMT)
 #define PLYR_DECEL	(FIXAMT*3/4)
@@ -18,6 +22,47 @@ static byte vampyClock,compassClock;
 byte beenReborn;
 static byte fairyReload;
 static int chlgCrystals;
+float restorationBuffer,spellRestorationBuffer;
+float spellRestorationOutput;	// separating the direct restoration from the Heal spell from others, because it can grant barrier
+byte manaRuneValue;
+
+static const int shieldStoneMultiplier[100] = {
+	65536,62557,59714,57000,54409,51936,49576,47322,45171,43118,41159,39288,37502,35798,34171,32617,31135,29720,28369,27080,25849,
+	24674,23552,22482,21460,20485,19554,18665,17817,17007,16234,15496,14792,14119,13478,12865,12280,11722,11189,10681,10195,9732,
+	9290,8867,8464,8080,7712,7362,7027,6708,6403,6112,5834,5569,5316,5074,4844,4623,4413,4213,4021,3838,3664,3497,3338,3187,3042,
+	2904,2772,2646,2525,2411,2301,2197,2097,2001,1910,1824,1741,1662,1586,1514,1445,1379,1317,1257,1200,1145,1093,1044,996,951,
+	908,866,827,789,754,719,687,655 };
+
+static const int powerStoneMultiplier[100] = {
+	65536,67137,68776,70456,72177,73939,75745,77595,79490,81431,83420,85457,87544,89683,91873,94117,96415,98770,101182,103653,106185,
+	108778,111434,114156,116944,119800,122726,125723,128793,131939,135161,138462,141844,145308,148857,152492,156216,160031,163940,167944,
+	172045,176247,180551,184961,189478,194106,198846,203702,208677,213774,218995,224343,229822,235435,241185,247075,253109,259291,265623,
+	272110,278756,285564,292538,299682,307001,314499,322180,330048,338109,346366,354825,363491,372368,381462,390779,400322,410099,420115,
+	430375,440886,451653,462684,473984,485559,497418,509566,522011,534760,547820,561199,574905,588945,603329,618063,633158,648621,664462,
+	680690,697314,714344 };
+
+int GetShieldStoneMultiplier(int stones)
+{
+	if (stones < 0)
+		stones = 0;
+	if (stones > 99)
+		stones = 99;
+	return shieldStoneMultiplier[stones];
+}
+
+int GetPowerStoneMultiplier(int stones)
+{
+	if (stones < 0)
+		stones = 0;
+	if (stones > 99)
+		stones = 99;
+	return powerStoneMultiplier[stones];
+}
+
+void AddToRestorationBuffer(float amt)
+{
+	spellRestorationBuffer += amt;
+}
 
 void InitPlayer(byte initWhat,byte world,byte level)
 {
@@ -28,79 +73,77 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	fairyReload=0;
 	compassClock=0;
 	compassBigClock=0;
+	manaRuneValue = 0;
 	if(initWhat==INIT_GAME)	// initialize everything, this is to start a whole new game
 	{
-		player.vaultOpened=0;
-		player.curSpell=0;
-		player.nightmare=0;
-		player.powerStones=0;
-		player.spellStones=0;
-		player.shieldStones=0;
-		for(i=0;i<20;i++)
-			player.gotSpell[i]=0;
+		player.lastLegitSaveSlot = 0;
+		Difficulty diff = player.difficulty;
+		memset(&player, 0, sizeof(player_t));
+		player.saveVersion = SAVE_VERSION;
+		player.saveCode[0] = 'K';
+		player.saveCode[1] = 'I';
+		player.saveCode[2] = 'D';
+		player.saveCode[3] = '\0';
 
-		player.score=0;
-		player.musicSettings=2;
 		player.level=1;
-		player.experience=0;
-		for(j=0;j<4;j++)
-			player.keychain[j]=0;
-
-		for(i=0;i<6;i++)
-		{
-			for(j=0;j<MAX_MAPS;j++)
-				player.levelPassed[i][j]=0;
-			player.totalCompletion[i]=100;
-			player.complete[i]=0;
-			player.lunacyKey[i]=0;
-		}
-		player.levelsPassed=0;
-		for(i=0;i<10;i++)
-			player.spell[i]=0;
-		player.boots=0;
-		player.hat=0;
-		player.staff=0;
-		player.money=0;
+		player.difficulty = diff;
+		player.boots=0 + BrutalMode();
+		player.hat = 0 + BrutalMode();
+		player.staff = 0 + BrutalMode();
+		if (BrutalMode() && !ClassicMode())
+			player.gear |= GEAR_HEART;
 		player.maxSpeed=FIXAMT*4;
-		player.defense=0;
 		player.damage=2;
-		player.maxLife=15;
-		player.maxMana=15;
-		player.gear=0;
-		player.gameClock=0;
+		PlayerUpdateLife();
 		player.overworldX=-2000;
 		player.rechargeClock=4;
-		player.haveFairy=0;
-		player.fairyOn=0;
-		player.templePuzzleDone=0;
-		for(i=0;i<4;i++)
-			player.chaseFairy[i]=0;
+		player.runePouches = 1;
 	}
 	if(initWhat>=INIT_WORLD) // initialize the things that go with each world
 	{
 		player.levelsPassed=0;
 		player.worldNum=world;
 		for(i=0;i<MAX_MAPS;i++)
-			if(player.levelPassed[world][i] && curWorld.map[i] && !(curWorld.map[i]->flags&MAP_SECRET))
+			if(PlayerPassedLevel(world,i) && curWorld.map[i] && !(curWorld.map[i]->flags&MAP_SECRET))
 				player.levelsPassed++;
 	}
 
+	ResetStoredHealMana();
+	ResetStoredSeekerMana();
+	player.energyRamp = 0;
+	player.ectoplasm = 0;
+	player.castCount = 0;
+	player.storedFlames = 0;
+	player.flameCounter = 0;
+	player.barrier = 0;
+	restorationBuffer = 0;
+	spellRestorationBuffer = 0;
+	spellRestorationOutput = 0;
 	player.levelNum=level;
-	player.prevScore=player.score;	// back up the score (if you give up or die, it is reset)
 	player.prevLevel=player.level;
 	player.prevExp=player.experience;
 	player.prevMoney=player.money;
-
+	player.prevBigMoney = player.bigMoney;
 	for(i=0;i<4;i++)
 		player.keys[i]=0;
 
+	player.usedFireballs = 0;
+	for(i=0;i<10;i++)
+		player.usedSpells[i] = 0;
+	player.cumulativeBerserk = 0;
+	player.totalKills = 0;
+	player.timeSinceLastInferno = 255;
+	player.seekerKills = 0;
+	player.parry = 0;
+	player.taunted = 0;
+	player.summonDmgBoost = 0;
 	player.brains=0;
 	player.boredom=0;
 	player.hammers=0;
 	player.hamSpeed=HAMMER_MIN_SPEED;
-	player.weapon=WPN_NONE;
 	player.ammo=0;
 	player.reload=5;
+	player.summonKills = 0;
 	player.wpnReload=0;
 	player.hammerFlags=0;
 	player.life=player.maxLife;
@@ -109,12 +152,19 @@ void InitPlayer(byte initWhat,byte world,byte level)
 	playerGlow=0;
 	player.pushPower=0;
 	player.poison=0;
-	player.needExp=player.level*player.level*10+player.level*10;
+	if (VeryClassicMode())
+		player.needExp = player.level * 100;
+	else
+		player.needExp = player.level * player.level * 10 + player.level * 10;
 	player.stoneskin=0;
 	player.berserk=0;
 	SetPlayerSpeed();
 	SetPlayerDamage();
 	SetPlayerDefense();
+	for(int i=0;i<3;i++)
+		player.puzzleVar[i] = 0;
+	if (player.runePouches == 0)
+		player.runePouches = 1;
 
 	if(PlayerHasSword())
 		SetKidSprite(1);
@@ -122,6 +172,13 @@ void InitPlayer(byte initWhat,byte world,byte level)
 		SetKidSprite(0);
 
 	armageddon=0;
+	if (CheatStoneOn(CheatStone::FIREUP) && player.levelNum!=1)	// not in the overworld
+	{
+		player.hammers = 2;
+		player.hamSpeed -=HAMMER_UP_AMOUNT*2;
+	}
+	CheckForAllSecrets();
+	player.movedSinceSave = 1;	// you haven't saved yet, so you have 'moved since save'
 }
 
 void ExitPlayer(void)
@@ -132,72 +189,85 @@ void ResetPlayerLevels(void)
 {
 	int i,j;
 
-	for(i=0;i<6;i++)
-		for(j=0;j<MAX_MAPS;j++)
-			player.levelPassed[i][j]=0;
+	for (i = 0; i < 6; i++)
+		for (j = 0; j < MAX_MAPS; j++)
+			ResetLevelPassedFlags(i, j, false);
 
 	player.templePuzzleDone=0;
-	player.lunacyKey[3]=0;
+	player.bobbyDoorOpen=0;
 	player.vaultOpened=0;
 }
 
 byte PlayerHasSword(void)
 {
-	return(player.keychain[0] && player.keychain[1] && player.keychain[2] && player.keychain[3]);
+	return(player.swordPiece[0] && player.swordPiece[1] && player.swordPiece[2] && player.swordPiece[3]);
+}
+
+static bool LoadOldGame(byte which)
+{
+	if (which < 5)
+	{
+		if (auto f = AppdataOpen("mystic.sav"))
+		{
+			static_assert(sizeof(player_t) == 624);
+			SDL_SeekIO(f, sizeof(player_t) * which, SDL_IO_SEEK_SET);
+			SDL_ReadIO(f, &player, sizeof(player_t));
+			player.difficulty = Difficulty::CLASSIC;
+			return true;
+		}
+	}
+	return false;
 }
 
 void PlayerLoadGame(byte which)
 {
-	FILE *f;
-
-	f=AppdataOpen("mystic.sav","rb");
-	if(!f)
+	char s[32];
+	ham_sprintf(s, "mystic%d.sav", which+1);
+	if (auto f = AppdataOpen(s))
+	{
+		SDL_ReadIO(f,&player,sizeof(player_t));
+	}
+	else if (!LoadOldGame(which))
 	{
 		InitPlayer(INIT_GAME,0,0);
 	}
-	else
-	{
-		fseek(f,sizeof(player_t)*which,SEEK_SET);
-		fread(&player,sizeof(player_t),1,f);
-		fclose(f);
-		VolumeSong(player.musicSettings);
-	}
+
 	player.prevMoney=player.money;
 	player.prevExp=player.experience;
 	player.prevLevel=player.level;
+	player.prevBigMoney = player.bigMoney;
+	opt.lastSaveSlotUsed = which;
+	if (which < 245)
+		player.lastLegitSaveSlot = which;
 }
 
 void PlayerSaveGame(byte which)
 {
-	FILE *f;
-	player_t p[5];
-	int i;
+	char s[32];
 
 	player.prevMoney=player.money;
-	f=AppdataOpen("mystic.sav","rb");
-	if(!f)
-	{
-		memset(p,0,sizeof(player_t)*5);	// make an empty player
-		for(i=0;i<6;i++)
-		{
-			p[0].totalCompletion[i]=100;
-			p[1].totalCompletion[i]=100;
-			p[2].totalCompletion[i]=100;
-			p[3].totalCompletion[i]=100;
-			p[4].totalCompletion[i]=100;
-		}
-		f=AppdataOpen("mystic.sav","wb");
-		fwrite(p,sizeof(player_t),5,f);
-		fclose(f);
-		f=AppdataOpen("mystic.sav","rb");
-	}
-	fread(p,sizeof(player_t),5,f);
-	fclose(f);
-	memcpy(&p[which],&player,sizeof(player_t));
-	f=AppdataOpen("mystic.sav","wb");
-	fwrite(p,sizeof(player_t),5,f);
-	fclose(f);
+	player.prevBigMoney = player.bigMoney;
+	ham_sprintf(s, "mystic%d.sav", which+1);
+	auto f=AppdataOpen_Write(s);
+	player.saveVersion = SAVE_VERSION;
+	player.saveCode[0] = 'K';
+	player.saveCode[1] = 'I';
+	player.saveCode[2] = 'D';
+	player.saveCode[3] = '\0';
+	SDL_WriteIO(f,&player,sizeof(player_t));
+	f.reset();
 	AppdataSync();
+}
+
+void AutoSave()
+{
+	// Overwrite BK5 with BK4, BK4 with BK3, BK3 with BK2, BK2 with BK1.
+	Vfs()->rename("mystic249.sav", "mystic250.sav");
+	Vfs()->rename("mystic248.sav", "mystic249.sav");
+	Vfs()->rename("mystic247.sav", "mystic248.sav");
+	Vfs()->rename("mystic246.sav", "mystic247.sav");
+	// Save to BK1.
+	PlayerSaveGame(245); // mystic246.sav
 }
 
 void SetPlayerSpeed(void)
@@ -266,11 +336,6 @@ void SetPlayerDefense(void)
 	}
 }
 
-void PlayerSetWorldWorth(byte world,int amt)
-{
-	player.totalCompletion[world]=amt;
-}
-
 void PlayerRenderInterface(MGLDraw *mgl)
 {
 	int b;
@@ -283,36 +348,51 @@ void PlayerRenderInterface(MGLDraw *mgl)
 					player.weapon,player.ammo,player.hamSpeed,mgl);
 }
 
-void SetCustomName(const char *name)
+int CalcGamePercent(const player_t* p)
 {
-	strncpy(player.customName,name,32);
-}
-
-char *GetCustomName(void)
-{
-	return player.customName;
-}
-
-float PlayerGetPercent(byte world)
-{
-	if(player.totalCompletion[world]==0)
-		return 1.0;
-	else
-		return (float)player.complete[world]/(float)player.totalCompletion[world];
-}
-
-float PlayerGetGamePercent(void)
-{
-	int i,amt,total;
-
-	amt=0;
-	total=0;
-	for(i=0;i<5;i++)
+	int runes=0, spells=0, swords=0, fairies=0;
+	int skillPts = 0, runePouches = 0;
+	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
+		if (p->runes[i] > RUNE_EMPTY)
+			runes++;
+	for (int i = 0; i < 10; i++)
+		spells += p->spell[i];
+	for (int i = 0; i < 16; i++)
 	{
-		total+=player.totalCompletion[i];
-		amt+=player.complete[i];
+		if (p->haveFairy & (1 << i))
+		{
+			fairies++;
+			if (!(p->chaseFairy & (1 << i)))
+				fairies++;
+		}
 	}
-	return (float)amt/(float)total;
+	skillPts = p->skillPts;
+	for (int i = 0; i < MAX_SKILLS; i++)
+		skillPts += p->skill[i];
+	if (skillPts > 65) skillPts = 65;	// the extra skill points in madcap are above and beyond
+
+	swords = p->swordPiece[0] + p->swordPiece[1] + p->swordPiece[2] + p->swordPiece[3];
+	runePouches = p->runePouches;
+	int totalNeeded = 24 + // runes
+		19 + // spells
+		4 + // swords
+		32 + // fairies (2x, one for the bell, one for the fairy)
+		5 +	// rune pouches
+		65;	// skill points
+	if (p->difficulty == Difficulty::CLASSIC || p->difficulty == Difficulty::BRUTAL_CLASSIC || p->difficulty==Difficulty::VERY_CLASSIC)
+	{	// classic has no runes
+		totalNeeded -= 24+65+5;
+		skillPts = 0;
+		runePouches = 0;
+		runes = 0;
+		if (p->difficulty == Difficulty::VERY_CLASSIC)
+		{
+			fairies = 0;
+			totalNeeded -= 32;
+		}
+	}
+
+	return (runes + spells + swords + fairies+skillPts+runePouches)*100 / totalNeeded;
 }
 
 byte PlayerShield(void)
@@ -337,37 +417,34 @@ byte PlayerIsPoisoned(void)
 
 void PoisonPlayer(byte amt)
 {
-	if(player.poison+amt>30*2)
-		player.poison=30*2;
-	else
-		player.poison+=amt;
+	if (player.life > 0 && player.shield == 0)
+	{
+		if (player.poison + amt > 30 * 2)
+			player.poison = 30 * 2;
+		else
+			player.poison += amt;
+	}
 }
 
 void PlayerResetScore(void)
 {
-	if(!Challenging())
+	if(!Challenging() && ClassicMode())
 	{
-		player.score=player.prevScore;
 		player.level=player.prevLevel;
 		player.experience=player.prevExp;
 		player.money=player.prevMoney;
+		player.bigMoney = player.prevBigMoney;
 	}
-}
-
-byte PlayerPassedLevel(byte world,byte map)
-{
-	return player.levelPassed[world][map];
 }
 
 void PlayerWinLevel(byte w,byte l,byte isSecret)
 {
-	if(!player.levelPassed[w][l])
+	if(!PlayerPassedLevel(w, l))
 	{
-		player.complete[w]+=100;	// get some percentage points
 		if(!isSecret)
 			player.levelsPassed++;	// secret levels aren't counted in this (it's for triggering specials)
+		(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_PASSED;
 	}
-	player.levelPassed[w][l]=1;
 }
 
 byte GetPlayerWorld(void)
@@ -385,12 +462,9 @@ byte PlayerLevelsPassed(void)
 	return player.levelsPassed;
 }
 
-byte KeyChainAllCheck(void)
+byte SwordAllCheck(void)
 {
-	if(player.keychain[0]==1 &&
-		player.keychain[1]==1 &&
-		player.keychain[2]==1 &&
-		player.keychain[3]==1)
+	if(PlayerHasSword())
 	{
 		player.staff=4;	// max out the staff, so you can't buy new staves
 		player.spell[9]=1;
@@ -402,151 +476,96 @@ byte KeyChainAllCheck(void)
 	return 0;
 }
 
-byte PlayerHasSpell(void)
+bool PlayerHasTier2Spell(void)
 {
-	int i;
-
-	switch(player.worldNum*50+player.levelNum)
-	{
-		case 11:
-		case 111:
-			i=0;	// energy barrage
-			break;
-		case 2:
-		case 156:
-			i=1;	// dragon's flame
-			break;
-		case 3:
-		case 157:
-			i=2;	// Seeker bolt
-			break;
-		case 4:
-		case 106:
-			i=3;	// ice blast
-			break;
-		case 52:
-		case 113:
-			i=4;	// inferno
-			break;
-		case 56:
-		case 159:
-			i=5;	// summon
-			break;
-		case 61:
-		case 160:
-			i=6;	// stoneskin
-			break;
-		case 55:
-		case 116:
-			i=7;	// berserk
-			break;
-		case 53:
-		case 109:
-			i=8;	// healing
-			break;
-		case 10:
-			i=9;	// armageddon
-			break;
-	}
-
-	if(player.gotSpell[i+10*(player.worldNum>1)])
-		return 1;
-	/*
-	if(player.worldNum<2 && player.spell[i]>=1)
-		return 1;
-	if(player.spell[i]>=2)
-		return 1;
-	*/
-	return 0;
+	for (int i = 0; i < 10; i++)
+		if (player.spell[i] == 2)
+			return true;
+	return false;
 }
 
-byte SpellBookForThisLevel(byte level,byte chapter)
+byte SpellBookForThisLevel(byte level, byte chapter)
 {
-	byte i;
-
-	i=255;
-	switch(player.worldNum*50+player.levelNum)
+	switch ((chapter + 1) * 100 + level)
 	{
-		case 11:
-		case 111:
-			i=0;	// energy barrage
-			break;
-		case 2:
-		case 156:
-			i=1;	// dragon's flame
-			break;
-		case 3:
-		case 157:
-			i=2;	// Seeker bolt
-			break;
-		case 4:
-		case 106:
-			i=3;	// ice blast
-			break;
-		case 52:
-		case 113:
-			i=4;	// inferno
-			break;
-		case 56:
-		case 159:
-			i=5;	// summon
-			break;
-		case 61:
-		case 160:
-			i=6;	// stoneskin
-			break;
-		case 55:
-		case 116:
-			i=7;	// berserk
-			break;
-		case 53:
-		case 109:
-			i=8;	// healing
-			break;
-		case 1000:
-			i=9;	// armageddon
-			break;
+		case 1'11:		// Ch1 (Classic) Magical Wisdom
+		case 1'21:		// Ch1 (Modern) Beginnerton
+			return 0;	// -> Energy Barrage
+		case 3'11:		// Ch3 The Ballroom
+			return 0;	// -> Energy Storm
+		case 1'02:		// Ch1 Mushy Hollow
+			return 1;	// -> Dragon's Flame
+		case 4'06:		// Ch4 Toasty Caverns
+			return 1;	// -> Liquefy
+		case 1'03:		// Ch1 Grassy Knoll
+			return 2;	// -> Seeker Bolt
+		case 4'07:		// Ch4 The Mines
+			return VeryClassicMode() ? 4 : 2;	// -> Seeker Swarm normally, Hyper Inferno in 1999 mode
+		case 1'04:		// Ch1 Just a Puddle
+			return 3;	// -> Ice Blast
+		case 3'06:		// Ch3 The Gatehouse
+			return 3;	// -> Ice Beam
+		case 2'02:		// Ch2 Creepy Creek
+			return 4;	// -> Inferno
+		case 3'13:		// Ch3 The Guest Chambers
+			return VeryClassicMode() ? 2 : 4;	// -> Hyper Inferno normally, Seeker Swarm in 1999 mode
+		case 2'06:		// Ch2 Spider's Lair
+			return 5;	// -> Summon Ptero
+		case 4'09:		// Ch4 The Caves Of Obnoxiousness
+			return 5;	// -> Summon Golem
+		case 2'11:		// Ch2 Among the Hedges
+			return 6;	// -> Stoneskin
+		case 4'10:		// Ch4 Bats! Bats! Bats!
+			return 6;	// -> Steelskin
+		case 2'05:		// Ch2 Abandoned Village
+			return 7;	// -> Berserk
+		case 3'16:		// Ch3 The Vault
+			return 7;	// -> Insane Rage
+		case 2'03:		// Ch2 Mush-Aid
+			return 8;	// -> Healing
+		case 3'09:		// Ch3 The Library
+			return 8;	// -> Life
 	}
-	return i;
+	return 255;
 }
 
-byte FairyForThisLevel(word lvl)
+byte FairyForThisLevel(byte level, byte chapter)
 {
-	switch(lvl)
+	switch((chapter + 1) * 100 + level)
 	{
-		case 12:
+		case 1'12:
+		case 1'21:
 			return 1;	// grabby is in the hut in beginnerton
-		case 15:
+		case 1'15:
 			return 2;	// runny is in The Docks
-		case 16:
+		case 1'16:
 			return 3;	// casty is in Plants Gone Wild
-		case 17:
+		case 1'17:
 			return 4;	// blocky is in Trick Shot Challenge
-		case 50+13:
+		case 2'13:
 			return 5;	// vampy is in hidden temple
-		case 50+14:
+		case 2'14:
 			return 6;	// smashy is in lost in the woods
-		case 50+15:
+		case 2'15:
 			return 7;	// cheapy is in log ride
-		case 50+16:
+		case 2'16:
 			return 8;	// toughy is in temple of kings
-		case 50*2+17:
+		case 3'17:
 			return 9;	// richey is in twisty passages
-		case 50*2+18:
+		case 3'18:
 			return 10;	// smarty is in the peeping bomb level
-		case 50*2+19:
+		case 3'19:
 			return 11;	// healey is in whack-a-zoid
-		case 50*2+20:
+		case 3'20:
 			return 12;	// savey is in the sewers
-		case 50*3+12:
+		case 4'12:
 			return 13;	// shooty is in red river rafting
-		case 50*3+13:
+		case 4'13:
 			return 14; 	// haggly is in smashball
-		case 50*3+14:
+		case 4'14:
 			return 15;	// scary is in puzzling caverns
-		case 50*3+15:
+		case 4'15:
 			return 16;	// mighty is in gastro-pods
-
 	}
 	return 0;
 }
@@ -557,26 +576,51 @@ void AddChaseFairy(void)
 
 	if(Challenging())	// in challenge mode, you get the fairy immediately, no chasing
 	{
-		player.haveFairy|=(1<<((FairyForThisLevel(player.worldNum*50+player.levelNum))-1));
+		player.haveFairy|=(1<<(FairyForThisLevel(player.levelNum, player.worldNum)-1));
 		return;
 	}
-	for(i=0;i<4;i++)
-	{
-		if(player.chaseFairy[i]==FairyForThisLevel(player.worldNum*50+player.levelNum))
-			player.chaseFairy[i]=0;
-	}
-
-	for(i=0;i<4;i++)
-		if(player.chaseFairy[i]==0)
-		{
-			player.chaseFairy[i]=FairyForThisLevel(player.worldNum*50+player.levelNum);
-			break;
-		}
+	player.chaseFairy |= (1<<(FairyForThisLevel(player.levelNum, player.worldNum)-1));
 }
 
 void CheckForAllSecrets(void)
 {
 	int i;
+
+	// if you got here, you have every piece of the sword
+	if(PlayerHasSword())
+		EarnAchieve(Achievement::GETSWORD);
+	if (!ClassicMode())
+	{
+		int maxRunes = 0;
+		for (i = 0; i < (int)Rune::NUM_RUNES; i++)
+			if ((player.runes[i] & RUNE_MASK) == RUNE_RANK3)
+				maxRunes++;
+		if (maxRunes == (int)Rune::NUM_RUNES)
+			EarnAchieve(Achievement::MAX_RUNES);
+	}
+
+	if (!VeryClassicMode())
+	{
+		if ((player.haveFairy & 65535) != 65535)
+			return;
+		// if you got here, then you have every fairy
+		EarnAchieve(Achievement::ALL_FAIRIES);
+	}
+
+	if (!PlayerHasSword())
+		return;
+	if (!ClassicMode())
+	{
+		byte runes = 0;
+		for (int j = 0; j < 4; j++)
+			for (i = 0; i < MAX_MAPS; i++)
+				if (GotRuneInLevel(j, i))
+					runes++;
+		if (runes < 24)
+			return;	// gotta get all the runes
+		if (player.runePouches < 5)
+			return;	// need all the rune pouches
+	}
 
 	for(i=0;i<9;i++)
 		if(player.gotSpell[i]==0)
@@ -584,14 +628,8 @@ void CheckForAllSecrets(void)
 	for(i=10;i<19;i++)
 		if(player.gotSpell[i]==0)
 			return;
-	if((player.haveFairy&65535)!=65535)
-		return;
-	for(i=0;i<4;i++)
-		if(player.keychain[i]==0)
-			return;
 
 	// got em all!
-
 	if(opt.challenge==0)
 	{
 		InitSpeech(24);
@@ -603,6 +641,9 @@ byte PlayerHasAllSecrets(byte chapter)
 {
 	byte spells[4][5]={{0,1,2,3,255},{4,5,6,7,8},{0,3,4,7,8},{1,2,5,6,255}};
 	int i;
+
+	if (VeryClassicMode())
+		return 0;	// no stick monsters in very classic
 
 	for(i=0;i<5;i++)
 	{
@@ -616,21 +657,71 @@ byte PlayerHasAllSecrets(byte chapter)
 			return 0;
 	}
 
-	return (player.keychain[chapter]);	// it all hinges on this item now!
+	if (!ClassicMode())
+	{
+		byte runes = 0;
+		for (i = 0; i < MAX_MAPS; i++)
+			if (GotRuneInLevel(chapter, i))
+				runes++;
+		if (runes < 6) return 0;
+	}
+
+	return (player.swordPiece[chapter]);	// it all hinges on this item now!
 }
 
 byte PlayerGetItem(byte itm,int x,int y)
 {
-	int cx,cy;
 	int i;
 
-	GetCamera(&cx,&cy);
-	cx<<=FIXSHIFT;
-	cy<<=FIXSHIFT;
 	if(itm<ITM_LETTERM || itm>ITM_LETTERC)
 		ChallengeEvent(CE_GET,itm);
 	switch(itm)
 	{
+		case ITM_GRIMBLEWEED:
+			if (player.puzzleVar[0] < 99)
+				player.puzzleVar[0]++;
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			MakeNormalSound(SND_BUSHOUCH);
+			return 0;
+			break;
+		case ITM_TOADSTOOL:
+			if (player.puzzleVar[2] < 99)
+				player.puzzleVar[2]++;
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			MakeNormalSound(SND_BUSHOUCH);
+			return 0;
+			break;
+		case ITM_RUNEPOUCH:
+			GetRunePouchInLevel();
+			MakeNormalSound(SND_LOONYKEY);
+			if (!ClassicMode() && player.runePouches<5)
+				player.runePouches++;
+			else
+				GainMoney(100);
+			NewMessage("RUNE POUCH GET!", 75);
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			return 0;
+			break;
+		case ITM_SKILLSHARD:
+			GetSkillShardInLevel();
+			if (!ClassicMode())
+			{
+				if (Challenging())
+					player.skillPts += 2;
+				else
+					player.skillPts++;
+			}
+			else
+				GainMoney(100);
+			MakeNormalSound(SND_INVINCCHEAT);
+			NewMessage("A SKILL SHARD!", 75);
+			FloaterParticles(x, y, 1, 10, 1, 8);
+			return 0;
+			break;
+		case ITM_SILENTRUNE:
+			PickUpRune();
+			return 0;
+			break;
 		case ITM_CHLGCRYSTAL:
 			chlgCrystals--;
 			if(chlgCrystals==0)
@@ -645,13 +736,17 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_HAMMERUP:
-			if(player.hammers<5)
+			if (player.hammers < 5)
+			{
 				player.hammers++;
-			MakeNormalSound(SND_HAMMERUP);
-			NewMessage("ENERGY ORB!",75);
-			FloaterParticles(x,y,5,32,-1,16);
-			FloaterParticles(x,y,5,10,1,16);
-			return 0;
+				MakeNormalSound(SND_HAMMERUP);
+				NewMessage("ENERGY ORB!", 75);
+				FloaterParticles(x, y, 5, 32, -1, 16);
+				FloaterParticles(x, y, 5, 10, 1, 16);
+				return 0;
+			}
+			else
+				return 1;	// can't pick it up if already at max
 			break;
 		case ITM_PANTS:
 			if(player.hamSpeed>0)
@@ -699,6 +794,7 @@ byte PlayerGetItem(byte itm,int x,int y)
 				player.gotSpell[i]=1;
 			else
 				player.gotSpell[i+10]=1;
+			GetSpellInLevel();
 
 			FloaterParticles(x,y,1,32,-1,16);
 			FloaterParticles(x,y,5,10,2,16);
@@ -708,39 +804,59 @@ byte PlayerGetItem(byte itm,int x,int y)
 			return 0;
 			break;
 		case ITM_COIN:
-			if(player.money<50000)
-				player.money++;
+			GainMoney(1);
 			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
 			FloaterParticles(x,y,5,24,0,4);
 			return 0;
 			break;
 		case ITM_BIGCOIN:
-			if(player.money+10<50000)
-				player.money+=10;
-			else
-				player.money=50000;
-			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
-			MakeSound(SND_MONEY,x,y,SND_CUTOFF,500);
+			GainMoney(10);
+			MakeSound(SND_BIGCOIN,x,y,SND_CUTOFF,500);
 			FloaterParticles(x,y,5,24,0,4);
 			FloaterParticles(x,y,5,32,0,4);
 			return 0;
 			break;
+		case ITM_DIAMOND:
+			GainMoney(100);
+			MakeSound(SND_DIAMOND, x, y, SND_CUTOFF, 500);
+			FloaterParticles(x, y, 5, 24, 0, 4);
+			FloaterParticles(x, y, 5, 32, 0, 4);
+			return 0;
+			break;
+		case ITM_MONEYBAG:
+			GainMoney(25);
+			MakeSound(SND_MONEYBAG, x, y, SND_CUTOFF, 500);
+			FloaterParticles(x, y, 5, 24, 0, 4);
+			FloaterParticles(x, y, 5, 32, 0, 4);
+			return 0;
+			break;
 		case ITM_HEALTHPOT:
-			if(player.life==player.maxLife)
-				return 1;	// can't pick it up if fully healed
+			if (player.life == player.maxLife && !VeryClassicMode())
+			{
+				if(ClassicMode() || SkillValue(SKILL_POTIONS)==0 || player.mana==player.maxMana)
+					return 1;	// can't pick it up if fully healed. If you have potion skill, you can pick it up as long as your mana isn't full
+			}
 			MakeNormalSound(SND_LOONYKEY);
 			NewMessage("Life Potion!",75);
 			PlayerHeal(40);
+			if (!ClassicMode())
+			{
+				player.mana += SkillValue(SKILL_POTIONS);
+				if (player.mana > player.maxMana)
+					player.mana = player.maxMana;
+			}
 			//ExplodeParticles2(PART_SLIME,x,y,MGL_randoml(FIXAMT*20),10,6);
 			FloaterParticles(x,y,1,24,0,8);
 			return 0;
 			break;
 		case ITM_MANAPOT:
-			if(player.mana==player.maxMana)
+			if(player.mana==player.maxMana && !VeryClassicMode())
 				return 1;	// can't pick it up if fully magicked
 			MakeNormalSound(SND_FOOD);
 			NewMessage("Mana Restore Potion!",75);
 			player.mana+=25;
+			if (!ClassicMode())
+				player.mana += SkillValue(SKILL_POTIONS);
 			if(player.mana>player.maxMana)
 				player.mana=player.maxMana;
 			ManaParticles(x,y);
@@ -789,10 +905,11 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,3,24,0,8);
 			return 0;
 			break;
-		case ITM_KEYCH1:
+		case ITM_SWORD1:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[0]=1;
-			if(!KeyChainAllCheck())
+			player.swordPiece[0]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -800,12 +917,14 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
+			SwordAllCheck();
 			return 0;
 			break;
-		case ITM_KEYCH2:
+		case ITM_SWORD2:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[1]=1;
-			if(!KeyChainAllCheck())
+			player.swordPiece[1]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -813,12 +932,14 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
+			SwordAllCheck();
 			return 0;
 			break;
-		case ITM_KEYCH3:
+		case ITM_SWORD3:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[2]=1;
-			if(!KeyChainAllCheck())
+			player.swordPiece[2]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -826,12 +947,14 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
+			SwordAllCheck();
 			return 0;
 			break;
-		case ITM_KEYCH4:
+		case ITM_SWORD4:
 			MakeNormalSound(SND_GETKEYCHAIN);
-			player.keychain[3]=1;
-			if(!KeyChainAllCheck())
+			player.swordPiece[3]=1;
+			GetSwordInLevel();
+			if(!PlayerHasSword())
 				NewMessage("A piece of the Armageddon Sword!",75);
 			playerGlow=127;
 			FloaterParticles(x,y,5,32,-1,16);
@@ -839,19 +962,11 @@ byte PlayerGetItem(byte itm,int x,int y)
 			FloaterParticles(x,y,5,64,-3,16);
 			FloaterParticles(x,y,5,1,4,16);
 			CheckForAllSecrets();
-			return 0;
-			break;
-		case ITM_LOONYKEY:
-			MakeNormalSound(SND_LOONYKEY);
-			if(player.worldNum<4)
-			{
-				player.lunacyKey[player.worldNum]=1;
-				//ShowVictoryAnim(player.worldNum);
-			}
-			SendMessageToGame(MSG_WINLEVEL,1);	// win upon getting the key
+			SwordAllCheck();
 			return 0;
 			break;
 		case ITM_FAIRYBELL:
+			GetFairyBellInLevel();
 			MakeNormalSound(SND_FAIRYGET);
 			AddChaseFairy();
 			NewMessage("The bell awakens a fairy!",75);
@@ -903,25 +1018,80 @@ byte PlayerPushMore(void)
 		return 0;
 }
 
-byte PlayerHasLunacyKey(byte w)
-{
-	return player.lunacyKey[w];
-}
-
 void PlayerLoseKey(byte w)
 {
 	if(player.keys[w])
 		player.keys[w]--;
 }
 
-byte PlayerKeyChain(byte w)
+byte PlayerHasSwordPiece(byte w)
 {
-	return player.keychain[w];
+	return player.swordPiece[w];
 }
 
 byte PlayerKeys(byte w)
 {
 	return player.keys[w];
+}
+
+void PlayerUpdateLife(void)
+{
+	byte formerMaxLife = player.maxLife;
+	byte formerMaxMana = player.maxMana;
+	// classic, gain life and mana with levels
+	if (player.difficulty == Difficulty::CLASSIC || player.difficulty==Difficulty::BRUTAL_CLASSIC || player.difficulty==Difficulty::VERY_CLASSIC)
+	{
+		player.maxLife = 14 + player.level;
+		player.maxMana = 14 + player.level;
+	}
+	// modern, gain life and mana from skills
+	else if(player.difficulty==Difficulty::MODERN || player.difficulty==Difficulty::BRUTAL_MODERN)
+	{
+		player.maxLife = 14+player.skill[SKILL_LIFE]*10;
+		player.maxMana = 14+player.skill[SKILL_MANA]*10;
+	}
+	if (player.gear & GEAR_HEART)
+		player.maxLife *= 2;
+	if (player.gear & GEAR_MOON)
+		player.maxMana *= 2;
+	int lifeDiff = player.maxLife - formerMaxLife;
+	int manaDiff = player.maxMana - formerMaxMana;
+	if (GetGoodguy())
+	{
+		if (lifeDiff > 0)
+			GetGoodguy()->hp += lifeDiff;
+		if (GetGoodguy()->hp > player.maxLife)
+			GetGoodguy()->hp = player.maxLife;
+		SetPlayerHP(GetGoodguy()->hp);
+	}
+	if (manaDiff > 0)
+		player.mana += manaDiff;
+	if (player.mana > player.maxMana)
+		player.mana = player.maxMana;
+}
+
+void PlayerLevelUp(int y)
+{
+	if (player.level == MAX_PLAYERLEVEL)
+		return;
+
+	AddParticle(GetGoodguy()->x, GetGoodguy()->y, FIXAMT * 20 + y * FIXAMT * 10, 0, 0, 0, 60, PART_LVLUP, 0);
+	MakeNormalSound(SND_LEVELUP);
+	player.experience -= player.needExp;
+	player.level++;
+	if (!ClassicMode())
+		player.skillPts++;
+	PlayerUpdateLife();
+	if (VeryClassicMode())
+		player.needExp = player.level * 100;
+	else
+		player.needExp = player.level * player.level * 10 + player.level * 10;
+	if (player.level == MAX_PLAYERLEVEL)
+	{
+		EarnAchieve(Achievement::LEVEL50);
+		player.needExp = 0;
+		player.experience = 0;
+	}
 }
 
 void PlayerGetPoints(int amt)
@@ -935,46 +1105,31 @@ void PlayerGetPoints(int amt)
 	if(player.fairyOn==FAIRY_SMARTY)
 		amt=amt*5/4;
 
-	if(player.nightmare)
-		amt=amt*5;	// 5x XP in nightmare mode
+	if (player.nightmare)
+		amt = amt * 5;	// 5x XP in nightmare mode
+	else if (BrutalMode())
+		amt = amt * 2;	// 2x XP in brutal mode
 
 	ChallengeEvent(CE_POINTS,amt);
 	player.score+=amt;
-	if(player.level<50)// && player.levelPassed[player.worldNum][player.levelNum]==0)
+	if(player.level<50)
 	{
 		player.experience+=amt;
 		y=0;
 		while(player.experience>=player.needExp)
 		{
-			AddParticle(GetGoodguy()->x,GetGoodguy()->y,FIXAMT*20+y*FIXAMT*10,0,0,0,60,PART_LVLUP,0);
-			MakeNormalSound(SND_LEVELUP);
+			PlayerLevelUp(y);
 			y++;
-			player.experience-=player.needExp;
-			player.level++;
-			player.maxLife=14+player.level;
-			if(player.gear&GEAR_HEART)
-				player.maxLife*=2;
-			player.maxMana=14+player.level;
-			if(player.gear&GEAR_MOON)
-				player.maxMana*=2;
-			player.needExp=player.level*player.level*10+player.level*10;
-			if(player.level==50)
-			{
-				player.needExp=0;
-				player.experience=0;
+			if (player.level == MAX_PLAYERLEVEL)
 				break;
-			}
 		}
 	}
-	else
+	else if(!VeryClassicMode())
 	{
 		if(amt<5)
 			amt=5;
 		amt/=5;
-		if(player.money+amt<=50000)
-			player.money+=amt;	// get money!
-		else
-			player.money=50000;
+		GainMoney(amt);
 	}
 }
 
@@ -988,16 +1143,6 @@ void SetPlayerGlow(byte v)
 	playerGlow=v;
 }
 
-byte PlayerGetMusicSettings(void)
-{
-	return opt.musicVol;
-}
-
-void PlayerSetMusicSettings(byte m)
-{
-	player.musicSettings=MUSIC_OFF;
-}
-
 void PlayerThrowHammer(Guy *me)
 {
 	if(player.fairyOn==FAIRY_CHEAPY)
@@ -1007,17 +1152,25 @@ void PlayerThrowHammer(Guy *me)
 		return;	// no fireballs allowed
 	}
 
+	if (player.worldNum == 3 && player.levelNum == 19 && player.puzzleVar[0] == HORK_NOFIREBALLS)
+	{
+		player.reload = player.hamSpeed + 2;
+		BlowSmoke(me->x + Cosine(me->facing * 32) * 32, me->y + Sine(me->facing * 32) * 32, FIXAMT * 20, FIXAMT / 2);
+		return;	// no fireballs allowed
+	}
+
 	if(player.fairyOn==FAIRY_SMASHY)
 	{
 		if(player.mana>0)
 			player.mana--;
 	}
+
 	ChallengeEvent(CE_SHOOT,player.hammers);
-	if(PlayerHasSword())
-		SkullLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
+	HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags,(PlayerHasSword() && !player.disableSword));
+	if (!ClassicMode() && RuneValue(Rune::SHOTGUN) > 0)
+		player.reload = player.hamSpeed * 2 + 4;
 	else
-		HammerLaunch(me->x,me->y,me->facing,player.hammers,player.hammerFlags);
-	player.reload=player.hamSpeed+2;
+		player.reload = player.hamSpeed + 2;
 }
 
 void PlayerHeal(byte amt)
@@ -1033,6 +1186,32 @@ void PlayerHeal(byte amt)
 		player.life=player.maxLife;
 }
 
+void PlayerHealWithSpell(byte amt)
+{
+	if (player.life == 0)
+		return;
+
+	HealGoodguy(amt);
+
+	if (player.life + amt < player.maxLife)
+		player.life += amt;
+	else
+	{
+		amt -= (player.maxLife - player.life);
+		player.life = player.maxLife;
+		if (!ClassicMode())
+		{
+			byte limit = (byte)RuneValue(Rune::HEAL);
+			if (limit > 0)
+			{
+				player.barrier += amt;
+				if (player.barrier > limit)
+					player.barrier = limit;
+			}
+		}
+	}
+}
+
 byte GetTportClock(void)
 {
 	return tportclock;
@@ -1043,29 +1222,29 @@ void SetTportClock(byte tp)
 	tportclock=tp;
 }
 
-void DoPlayerFacing(byte c,Guy *me)
+void DoPlayerFacing(Guy *me)
 {
-	if(c&CONTROL_UP)
+	if(ButtonHeld(CONTROL_UP))
 	{
 		me->facing=6;
-		if(c&CONTROL_LF)
+		if(ButtonHeld(CONTROL_LF))
 			me->facing=5;
-		else if(c&CONTROL_RT)
+		else if(ButtonHeld(CONTROL_RT))
 			me->facing=7;
 	}
-	else if(c&CONTROL_DN)
+	else if(ButtonHeld(CONTROL_DN))
 	{
 		me->facing=2;
-		if(c&CONTROL_LF)
+		if(ButtonHeld(CONTROL_LF))
 			me->facing=3;
-		else if(c&CONTROL_RT)
+		else if(ButtonHeld(CONTROL_RT))
 			me->facing=1;
 	}
 	else
 	{
-		if(c&CONTROL_LF)
+		if(ButtonHeld(CONTROL_LF))
 			me->facing=4;
-		else if(c&CONTROL_RT)
+		else if(ButtonHeld(CONTROL_RT))
 			me->facing=0;
 	}
 }
@@ -1076,19 +1255,56 @@ void ArmageddonUpdate(Map *map)
 
 	if(armageddon>0)
 	{
+		if (!ClassicMode() && SkillValue(SKILL_MANAGETTIN) > 0)
+			player.mana = player.maxMana;
+
 		x=GetGoodguy()->x;
 		y=GetGoodguy()->y;
 		armageddon--;
 		Armageddon(map,x,y);
 		ShakeScreen(10);
+		if (!ClassicMode() && armageddon == 0 && SkillValue(SKILL_MANAGETTIN) > 0)
+			player.mana = 0;
+	}
+}
+
+void BeginCast(Guy *me,byte spell)
+{
+	if (me->action!=ACTION_BUSY && player.levelNum!=1 && player.wpnReload == 0 && player.spell[player.curSpell])	// pushed spell button
+	{
+		me->action = ACTION_BUSY;
+		if (player.curSpell < 4)
+			me->seq = ANIM_A2;
+		else
+			me->seq = ANIM_A1;
+		me->frm = 0;
+		me->frmTimer = 0;
+		me->frmAdvance = 200;
+		player.boredom = 0;
+		player.casting = spell;	// so if you switch the active spell, it still casts this one
+		ResetCastCounter();
 	}
 }
 
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 {
-	byte c;
 	int i,j;
 	Guy *g;
+	byte wannaCast = 255;
+
+	for (int i = 0; i < 10; i++)
+	{
+		if (ButtonHeld(1 << (CTL_ID_QC_1 + i)))	// have a spell key held down
+		{
+			if (player.spell[i])
+			{
+				if (opt.quickCast == QUICKCAST_SELECTONLY || opt.quickCast == QUICKCAST_CASTANDSELECT)
+					player.curSpell = i;
+				if (opt.quickCast == QUICKCAST_CASTANDSELECT || opt.quickCast == QUICKCAST_CASTONLY)
+					wannaCast = (byte)i;
+			}
+		}
+	}
 
 	if(compassBigClock<30*20)
 		compassBigClock++;
@@ -1118,6 +1334,22 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				if(brainX!=255)
 					CompassTrail(me->mapx,me->mapy,brainX,brainY);
 			}
+		}
+	}
+
+	if (!ClassicMode() && player.storedFlames > 0)
+	{
+		player.storedFlames--;
+		FireBullet(me->x, me->y, me->facing, BLT_FLAME);
+		if (SkillValue(SKILL_FLAMEON) > 0 && Random(10) < SkillValue(SKILL_FLAMEON))	// up to 50% chance of a double flame as skill goes up
+			FireBullet(me->x, me->y, me->facing, BLT_FLAME);
+
+		player.flameCounter++;
+		if (RuneValue(Rune::FLAME3) > 0 && player.flameCounter >= (int)RuneValue(Rune::FLAME3))
+		{
+			player.flameCounter = 0;
+			FireBullet(me->x, me->y, (me->facing + 2) & 7, BLT_FLAME);
+			FireBullet(me->x, me->y, (me->facing + 6) & 7, BLT_FLAME);
 		}
 	}
 
@@ -1154,9 +1386,9 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	if(vampyClock>30*3 && player.fairyOn==FAIRY_HEALEY && player.life<player.maxLife/2 && player.life>0 && player.levelNum!=1)	// not on the hub level
 	{
 		vampyClock=0;
-		if(player.money>3)
+		if(CanAffordMoney(3))
 		{
-			player.money-=3;
+			GainMoney(-3);
 			player.life+=3;
 			GetGoodguy()->hp+=3;
 			ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),6,6);
@@ -1170,6 +1402,11 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 
 	if(player.life>0)
 	{
+		if((player.rechargeClock%2) && (CheatStoneOn(CheatStone::STAMANA)))
+		{
+			if (player.mana < player.maxMana)
+				player.mana++;
+		}
 		if(player.rechargeClock>0)
 			player.rechargeClock--;
 		else
@@ -1182,16 +1419,76 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 				if(player.mana<player.maxMana)
 					player.mana++;
 			}
+			if (!ClassicMode() && RuneValue(Rune::MANA))
+			{
+				manaRuneValue++;
+				if (manaRuneValue >= (int)RuneValue(Rune::MANA))
+				{
+					manaRuneValue -= (int)RuneValue(Rune::MANA);
+					if (player.mana < player.maxMana)
+						player.mana++;
+				}
+			}
 		}
 	}
-
-	if(player.berserk)
+	if (!ClassicMode())
 	{
-		byte frame = GetMonsterFrameNum(MONS_BOUAPHA,me->seq,me->frm,me->facing);
-		if (frame != 254)
-			TrailMe(me->x, me->y, frame);
-		player.berserk--;
+		if (player.ectoClock > 0)
+			player.ectoClock--;
+		else
+		{
+			player.ectoClock = 20;
+			if (player.ectoplasm > 0)
+				player.ectoplasm--;
+		}
+		if(SkillValue(SKILL_RESTORATION))
+			restorationBuffer += 1.0f / 90.0f;	// 1 life every 3 seconds
+		if (RuneValue(Rune::RECOVER))
+			restorationBuffer += 1.0f / (RuneValue(Rune::RECOVER) * 30);	// 1 life every N seconds from recover
+
+		if (restorationBuffer >= 1)
+		{
+			byte amt = (byte)floor(restorationBuffer);
+			PlayerHeal((byte)amt);
+			restorationBuffer-= (float)amt;
+		}
+
+		float maxPerTick = SkillValue(SKILL_RESTORATION) / 30.0f;	// at max, you can heal the heal/s from your healing spell
+
+		float amt;
+		if (spellRestorationBuffer > maxPerTick)
+			amt = maxPerTick;
+		else
+			amt = spellRestorationBuffer;
+		spellRestorationBuffer -= amt;
+		spellRestorationOutput += amt;
+		if (spellRestorationOutput >= 1)
+		{
+			byte amt = (byte)floor(spellRestorationOutput);
+			PlayerHealWithSpell((byte)amt);
+			spellRestorationOutput -= (float)amt;
+		}
 	}
+	if (player.summonDmgBoost)
+		player.summonDmgBoost--;
+	if (player.taunted)
+		player.taunted--;
+	if (player.parry > 0)
+		player.parry--;
+
+	if (player.berserk)
+	{
+		byte frame = GetMonsterFrameNum(MONS_BOUAPHA, me->seq, me->frm, me->facing);
+		if (frame != 254)
+			TrailMe(me->x, me->y, me->z, frame);
+		player.berserk--;
+		player.cumulativeBerserk++;
+		if (player.cumulativeBerserk >= 60 * 30 * 2)	// 1 minute = 2 minutes, because berserk double-updates you
+			EarnAchieve(Achievement::BERSERK);
+	}
+	else
+		player.cumulativeBerserk = 0;
+
 	if(player.stoneskin)
 		player.stoneskin--;
 
@@ -1258,18 +1555,22 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		else if(me->seq==ANIM_DIE)	// so it doesn't do this if you're drowning
 			MakeSound(SND_BOUAPHADIE,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
 	}
+	if (me->ouch2 == 4)
+	{
+		MakeSound(SND_DEFLECT, me->x, me->y, SND_CUTOFF | SND_ONE, 2000);
+	}
 
 	// triggering stuff
 	if(me->action==ACTION_BUSY)
 	{
 		// throw hammer if need be, use item if need be
-		if(me->seq==ANIM_ATTACK && me->frm==6 && player.reload==0 && player.hammers>0 && (player.gear&GEAR_SOCKS)==0)
+		if(me->seq==ANIM_ATTACK && me->frm==6 && player.reload==0 && player.hammers>0 && ((player.gear&GEAR_SOCKS)==0 || player.disableMoveNShoot))
 			PlayerThrowHammer(me);
 		if(me->seq==ANIM_ATTACK && me->frm==7 && (player.gear&GEAR_SOCKS)==0)
 			me->reload-=2;
-		if(me->seq==ANIM_A1 && me->frm==2 && player.wpnReload==0)
+		if(me->seq==ANIM_A1 && me->frm==2 && player.wpnReload==0 && player.casting!=255)
 			CastSpell(me);
-		if(me->seq==ANIM_A2 && me->frm==4 && player.wpnReload==0)
+		if(me->seq==ANIM_A2 && me->frm==4 && player.wpnReload==0 && player.casting!=255)
 			CastSpell(me);
 
 		if(me->seq==ANIM_A3)
@@ -1296,9 +1597,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	// not busy, let's see if you want to do something
-	c=GetControls();
-
-	DoPlayerFacing(c,me);
+	DoPlayerFacing(me);
 
 	if(player.levelNum==1)
 	{
@@ -1309,17 +1608,98 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 	}
 
 	// shooty provides backup shots
-	if((c&CONTROL_B1) && player.hammers>0 && player.fairyOn==FAIRY_SHOOTY && fairyReload==0)
+	if(ButtonHeld(CONTROL_B1) && player.hammers>0 && player.fairyOn == FAIRY_SHOOTY && fairyReload == 0)
 	{
 		fairyReload=15;
 		FairyDoThing(1);
 	}
 
-	if((c&CONTROL_B1) && player.reload==0)	// pushed hammer throw button
+	// super cool execute move
+	if (!ClassicMode() && SkillValue(SKILL_MURDALIZE) > 0 && me->action != ACTION_BUSY &&
+		((ButtonTapped(CONTROL_B3) && ButtonHeld(CONTROL_B4)) ||
+			(ButtonTapped(CONTROL_B4) && ButtonHeld(CONTROL_B3)))) // you hit both
 	{
-		if(player.gear&GEAR_SOCKS)
+		int x, y;
+		x = me->x + Cosine(me->facing * 32) * 30;
+		y = me->y + Sine(me->facing * 32) * 30;
+		word id = FindMurdalizeGuy(x >> FIXSHIFT, y >> FIXSHIFT, MURDALIZE_RANGE);
+		if (id != 65535) // there is somebody in the target spot
 		{
-			if(!(c&(CONTROL_LF|CONTROL_RT|CONTROL_UP|CONTROL_DN)))
+			byte frame = GetMonsterFrameNum(MONS_BOUAPHA, me->seq, me->frm, me->facing);
+			if (frame != 254)
+				TrailMe(me->x, me->y, me->z, frame);
+			me->action = ACTION_BUSY;
+			me->seq = ANIM_A1;
+			me->frm = 0;
+			me->frmTimer = 0;
+			me->frmAdvance = 200;
+			float a = atan2f(GetGuy(id)->y - me->y, GetGuy(id)->x - me->x) * 128.0f / 3.14159f;
+			if (a < 0)
+				a += 256;
+			me->facing = (a + 16) / 32;
+			if (me->facing > 7) me->facing -= 8;
+			me->dx = Cosine((int)a) * 10;
+			me->dy = Sine((int)a) * 10;
+			me->z = FIXAMT * HALFHEI;	// drop from the sky with the meteor!
+			me->dz = -FIXAMT * 20;
+			player.berserk = 20;
+			player.casting = 255;
+			player.boredom = 0;
+			player.mana += 5;
+			if (player.mana > player.maxMana)
+				player.mana = player.maxMana;
+			GetGuy(id)->GetShot(0, 0, 1000000, CurrentMap(), world);
+			FireBullet(GetGuy(id)->x, GetGuy(id)->y, 0, BLT_COMETBOOM2);
+			MakeSound(SND_FLAMEGO, x, y, SND_CUTOFF, 100);
+		}
+	}
+	else if (ButtonTapped(CONTROL_B4))
+	{
+
+		j = 0;
+		for (i = 0; i < 10; i++)
+			if (player.spell[i] == 0)
+				j++;
+
+		if (j < 10)
+		{
+			player.curSpell++;
+			if (player.curSpell == 10)
+				player.curSpell = 0;
+			while (player.spell[player.curSpell] == 0)
+			{
+				player.curSpell++;
+				if (player.curSpell == 10)
+					player.curSpell = 0;
+			}
+		}
+	}
+	else if (ButtonTapped(CONTROL_B3))
+	{
+		j = 0;
+		for (i = 0; i < 10; i++)
+			if (player.spell[i] == 0)
+				j++;
+
+		if (j < 10)
+		{
+			player.curSpell--;
+			if (player.curSpell == 255)
+				player.curSpell = 9;
+			while (player.spell[player.curSpell] == 0)
+			{
+				player.curSpell--;
+				if (player.curSpell == 255)
+					player.curSpell = 9;
+			}
+		}
+	}
+
+	if(ButtonHeld(CONTROL_B1) && player.reload==0)	// pushed hammer throw button
+	{
+		if((player.gear&GEAR_SOCKS) && !player.disableMoveNShoot)
+		{
+			if(!ButtonHeld(CONTROL_LF|CONTROL_RT|CONTROL_UP|CONTROL_DN))
 			{
 				me->seq=ANIM_ATTACK;	// even if unarmed
 				me->frm=0;
@@ -1329,7 +1709,7 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 			}
 			if(player.hammers>0)
 				PlayerThrowHammer(me);
-			player.reload=player.hamSpeed+6;//-(4-(player.hamSpeed>>2));
+			player.reload=player.hamSpeed+6;
 		}
 		else
 		{
@@ -1343,43 +1723,41 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		player.boredom=0;
 		return;
 	}
-	if(player.levelNum==1 && player.wpnReload==1 && (c&CONTROL_B2) && player.haveFairy>0 && GetGameMode()==GAMEMODE_PLAY)
+	if(player.levelNum==1 && ButtonTapped(CONTROL_B2) && player.haveFairy>0 && GetGameMode() == GAMEMODE_PLAY)
 	{
-		player.wpnReload=15;
 		SendMessageToGame(MSG_GOTOMAP,51);
 	}
 
-	if((c&CONTROL_B2) && player.wpnReload==0 && player.spell[player.curSpell])	// pushed spell button
+	if (ButtonHeld(CONTROL_B2))
+		wannaCast = player.curSpell;
+
+	if(wannaCast!=255 && player.wpnReload == 0 && player.spell[wannaCast])	// pushed spell button
 	{
-		me->action=ACTION_BUSY;
-		if(player.curSpell<4)
-			me->seq=ANIM_A2;
-		else
-			me->seq=ANIM_A1;
-		me->frm=0;
-		me->frmTimer=0;
-		me->frmAdvance=200;
-		player.boredom=0;
-		player.casting=player.curSpell;	// so if you switch the active spell, it still casts this one
+		BeginCast(me,wannaCast);
 		return;
 	}
 
 	// if you are moving indeed
-	if(c&(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT))
+	if(ButtonHeld(CONTROL_UP|CONTROL_DN|CONTROL_LF|CONTROL_RT))
 	{
 		if(me->parent)	// drift the raft
 		{
-			if(c&CONTROL_LF)
+			if(ButtonHeld(CONTROL_LF))
 				me->parent->dx-=FIXAMT/6;
-			if(c&CONTROL_RT)
+			if(ButtonHeld(CONTROL_RT))
 				me->parent->dx+=FIXAMT/6;
 			Clamp(&me->parent->dx,FIXAMT*3);
 		}
 
-		if(player.berserk && player.spell[7]==2)	// insane rage leaves a flame trail
+		if(player.berserk && player.spell[SPL_BERSERK]==2 && !player.downgradeSpell[SPL_BERSERK])	// insane rage leaves a flame trail
 		{
-			if((player.berserk&3)==0)
-				FireExactBullet(me->x,me->y,0,0,0,0,0,20,(byte)MGL_random(256),BLT_LIQUIFY);
+			if ((player.berserk & 3) == 0)
+			{
+				byte dur = 20;
+				if (!ClassicMode() && RuneValue(Rune::BERSERK2) > 0)
+					dur = (byte)(20.0f * RuneValue(Rune::BERSERK2) / 100.0f);
+				FireExactBullet(me->x, me->y, 0, 0, 0, 0, 0, dur, (byte)MGL_random(256), BLT_LIQUIFY3);
+			}
 		}
 
 		if(!(world->terrain[mapTile->floor].flags&TF_ICE))
@@ -1442,69 +1820,32 @@ void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world)
 		}
 	}
 
-	c=GetTaps();
-	if(c&CONTROL_B4)
+	if (player.levelNum == 19 && player.worldNum == 1 && me->action != ACTION_BUSY &&
+		((ButtonTapped(CONTROL_B3) && ButtonHeld(CONTROL_B4)) ||
+			(ButtonTapped(CONTROL_B4) && ButtonHeld(CONTROL_B3)))) // you hit both, so drop a trap
 	{
-		j=0;
-		for(i=0;i<10;i++)
-			if(player.spell[i]==0)
-				j++;
-
-		if(j<10)
+		if (player.hammers == 0)
 		{
-			player.curSpell++;
-			if(player.curSpell==10)
-				player.curSpell=0;
-			while(player.spell[player.curSpell]==0)
-			{
-				player.curSpell++;
-				if(player.curSpell==10)
-					player.curSpell=0;
-			}
+			MakeNormalSound(SND_FAILSPELL);
+			NewMessage("I'm out of Energy Orbs!", 30);
+		}
+		else
+		{
+			FireBullet(me->x, me->y, 0, BLT_GHOSTTRAP);
+			player.hammers--;
+			MakeNormalSound(SND_INCAGEN);
 		}
 	}
-	if(c&CONTROL_B3)
-	{
-		j=0;
-		for(i=0;i<10;i++)
-			if(player.spell[i]==0)
-				j++;
-
-		if(j<10)
-		{
-			player.curSpell--;
-			if(player.curSpell==255)
-				player.curSpell=9;
-			while(player.spell[player.curSpell]==0)
-			{
-				player.curSpell--;
-				if(player.curSpell==255)
-					player.curSpell=9;
-			}
-		}
-	}
-
-	/*
-	// boredom handler
-	if(me->action==ACTION_IDLE)
-	{
-		player.boredom++;
-		if(player.boredom>200+MGL_random(3200))
-		{
-			MakeSound(SND_BOUAPHABORED,me->x,me->y,SND_CUTOFF|SND_ONE,2000);
-			me->seq=ANIM_A2;
-			me->frm=0;
-			me->frmTimer=0;
-			me->frmAdvance=64;
-			player.boredom=0;
-		}
-	}
-	*/
 }
 
 void BeginArmageddon(void)
 {
 	armageddon=30*10;
+}
+
+bool ArmageddonIsUnderway(void)
+{
+	return (armageddon > 0);
 }
 
 byte GetVampyClock(void)
@@ -1522,3 +1863,187 @@ int GetChallengeCrystals(void)
 	return chlgCrystals;
 }
 
+bool BrutalMode(void)
+{
+	return player.difficulty == Difficulty::BRUTAL_CLASSIC || player.difficulty == Difficulty::BRUTAL_MODERN;
+}
+
+bool ClassicMode(void)
+{
+	return player.difficulty == Difficulty::BRUTAL_CLASSIC || player.difficulty == Difficulty::CLASSIC || player.difficulty == Difficulty::VERY_CLASSIC;
+}
+
+bool VeryClassicMode()
+{
+	return player.difficulty == Difficulty::VERY_CLASSIC;
+}
+
+const char* DifficultySuffix(Difficulty diff)
+{
+	switch (diff)
+	{
+		case Difficulty::CLASSIC:
+			return " [C]";
+		case Difficulty::MODERN:
+			return " [M]";
+		case Difficulty::BRUTAL_CLASSIC:
+			return " [BC]";
+		case Difficulty::BRUTAL_MODERN:
+			return " [BM]";
+		case Difficulty::VERY_CLASSIC:
+			return " [99]";
+		default:
+			return "";
+	}
+}
+
+void GainMoney(int amt)
+{
+	int total = player.money + player.bigMoney * 65536;
+	total += amt;
+	total = std::max(0, total);
+	total = std::min(total, VeryClassicMode() ? 65535 : 9999999);
+	player.money = (word)(total % 65536);
+	player.bigMoney = (word)(total / 65536);
+}
+
+bool CanAffordMoney(int amt)
+{
+	int total = player.money + player.bigMoney * 65536;
+
+	return (total >= amt);
+}
+
+int TotalMoney(void)
+{
+	return player.money + player.bigMoney * 65536;
+}
+
+void GetRuneInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTRUNE;
+}
+
+void GetFairyBellInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTFAIRY;
+}
+
+void GetSwordInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTSWORD;
+}
+
+void GetSpellInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTSPELL;
+}
+
+void GetRunePouchInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTRUNEPOUCH;
+}
+
+void GetSkillShardInLevel(void)
+{
+	(*GetLevelPassedFlag(player.worldNum, player.levelNum)) |= LP_GOTSKILLSHARD;
+}
+
+bool GotSkillShardInLevel(byte world, byte level)
+{
+	return (*GetLevelPassedFlag(world, level)) & LP_GOTSKILLSHARD;
+}
+
+bool GotRunePouchInLevel(byte world, byte level)
+{
+	return (*GetLevelPassedFlag(world, level)) & LP_GOTRUNEPOUCH;
+}
+
+bool GotRuneInLevel(byte world,byte level)
+{
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTRUNE;
+}
+
+bool GotFairyBellInLevel(byte world, byte level)
+{
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTFAIRY;
+}
+
+bool GotSpellInLevel(byte world, byte level)
+{
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTSPELL;
+}
+
+bool GotSwordInLevel(byte world, byte level)
+{
+	return (*GetLevelPassedFlag(world,level)) & LP_GOTSWORD;
+}
+
+byte PlayerPassedLevel(byte world, byte map)
+{
+	return map != 50 && ((*GetLevelPassedFlag(world,map)) & LP_PASSED);
+}
+
+byte* GetLevelPassedFlag(int chapter, int level)
+{
+	if (level < MAX_MAPS - 6)
+		return &player.levelPassed[chapter][level];
+	else
+		return &player.levelPassed2[chapter][level - (MAX_MAPS - 6)];
+}
+
+void ResetLevelPassedFlags(int chapter, int level, bool resetAll)
+{
+	if (!resetAll)
+		(*GetLevelPassedFlag(chapter, level)) &= (~(LP_PASSED|LP_GOTSKILLSHARD));	// we reset skill shards as well
+	else
+		(*GetLevelPassedFlag(chapter, level)) = 0;
+}
+
+void PickUpRune(void)
+{
+	GetRuneInLevel();
+	if (ClassicMode())
+	{
+		NewMessage("I'm gonna pawn this sucker!", 75);
+		GainMoney(20);
+		MakeNormalSound(SND_MONEY);
+		return;
+	}
+	playerGlow = 64;
+	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 32, -1, 8);
+	FloaterParticles(GetGoodguy()->x, GetGoodguy()->y, 1, 10, 1, 8);
+	MakeNormalSound(SND_ALLCHLGCRYSTAL);
+	byte num = Random((int)Rune::NUM_RUNES);
+	byte started = num;
+	while (1)
+	{
+		if (player.runes[num] == RUNE_EMPTY)
+			break;
+		num++;
+		if (num >= (byte)Rune::NUM_RUNES)
+			num = 0;
+		if (num == started) // there were no ungotten runes
+		{
+			NewMessage("The rune fades into the mists!", 75);
+			return;
+		}
+	}
+	char s[64];
+	sprintf(s, "%s Rune obtained!", RuneName((Rune)num));
+	player.runes[(int)num] = RUNE_ASLEEP;
+	NewMessage(s, 75);
+	CheckForAllSecrets();
+}
+
+byte HighestWorldReached(void)
+{
+	byte world = 0;
+	if (PlayerPassedLevel(0, 14))
+		world++;
+	if (PlayerPassedLevel(1, 12))
+		world++;
+	if (PlayerPassedLevel(2, 15))
+		world++;
+	return world;
+}

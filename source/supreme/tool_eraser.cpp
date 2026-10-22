@@ -17,32 +17,34 @@ EraserTool::~EraserTool(void)
 
 void EraserTool::Update(int msx,int msy)
 {
-	if(msx<380 || msy<400 || msx>639 || msy>479)
+	MGLDraw* mgl = GetDisplayMGL();
+
+	if(msx<mgl->GetWidth()-260 || msy<mgl->GetHeight()-80 || msx>=mgl->GetWidth() || msy>=mgl->GetHeight())
 		return;
 
 	if(GetDisplayMGL()->MouseTap())
 	{
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()+16))
 		{
 			brush++;
 			if(brush>13)
 				brush=0;
 		}
-		if(PointInRect(msx,msy,520,402,520+100,402+14))
+		if(PointInRect(msx,msy, mgl->GetWidth()-120, mgl->GetHeight()-78+15*0, mgl->GetWidth()-120+100, mgl->GetHeight()-78+15*0+14))
 			eraseFlag^=EF_ITEM;
-		if(PointInRect(msx,msy,520,417,520+100,417+14))
+		if(PointInRect(msx,msy, mgl->GetWidth()-120, mgl->GetHeight()-78+15*1, mgl->GetWidth()-120+100, mgl->GetHeight()-78+15*1+14))
 			eraseFlag^=EF_BADGUY;
-		if(PointInRect(msx,msy,520,432,520+100,432+14))
+		if(PointInRect(msx,msy, mgl->GetWidth()-120, mgl->GetHeight()-78+15*2, mgl->GetWidth()-120+100, mgl->GetHeight()-78+15*2+14))
 			eraseFlag^=EF_SPECIAL;
-		if(PointInRect(msx,msy,520,447,520+100,447+14))
+		if(PointInRect(msx,msy, mgl->GetWidth()-120, mgl->GetHeight()-78+15*3, mgl->GetWidth()-120+100, mgl->GetHeight()-78+15*3+14))
 			eraseFlag^=EF_WALL;
-		if(PointInRect(msx,msy,520,462,520+100,462+14))
+		if(PointInRect(msx,msy, mgl->GetWidth()-120, mgl->GetHeight()-78+15*4, mgl->GetWidth()-120+100, mgl->GetHeight()-78+15*4+14))
 			eraseFlag^=EF_LIGHT;
 	}
 
 	if(GetDisplayMGL()->RMouseTap())
 	{
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush--;
 			if(brush>13)
@@ -53,46 +55,50 @@ void EraserTool::Update(int msx,int msy)
 
 void EraserTool::Render(int msx,int msy)
 {
+	MGLDraw* mgl = GetDisplayMGL();
+
 	int minusBrush,plusBrush;
 
-
-	if(PointInRect(msx,msy,520,402,520+100,402+14))
-		RenderCheckbox(1,520,402,CHECK_ON*((eraseFlag&EF_ITEM)!=0),"Items",GetDisplayMGL());
+	if(PointInRect(msx,msy,mgl->GetWidth()-120,mgl->GetHeight()-78+15*0,mgl->GetWidth()-120+100,mgl->GetHeight()-78+15*0+14))
+		RenderCheckbox(1,mgl->GetWidth()-120,mgl->GetHeight()-78+15*0,CHECK_ON*((eraseFlag&EF_ITEM)!=0),"Items",GetDisplayMGL());
 	else
-		RenderCheckbox(0,520,402,CHECK_ON*((eraseFlag&EF_ITEM)!=0),"Items",GetDisplayMGL());
+		RenderCheckbox(0,mgl->GetWidth()-120,mgl->GetHeight()-78+15*0,CHECK_ON*((eraseFlag&EF_ITEM)!=0),"Items",GetDisplayMGL());
 
-	if(PointInRect(msx,msy,520,417,520+100,417+14))
-		RenderCheckbox(1,520,417,CHECK_ON*((eraseFlag&EF_BADGUY)!=0),"Badguys",GetDisplayMGL());
+	if(PointInRect(msx,msy,mgl->GetWidth()-120,mgl->GetHeight()-78+15*1,mgl->GetWidth()-120+100,mgl->GetHeight()-78+15*1+14))
+		RenderCheckbox(1,mgl->GetWidth()-120,mgl->GetHeight()-78+15*1,CHECK_ON*((eraseFlag&EF_BADGUY)!=0),"Badguys",GetDisplayMGL());
 	else
-		RenderCheckbox(0,520,417,CHECK_ON*((eraseFlag&EF_BADGUY)!=0),"Badguys",GetDisplayMGL());
+		RenderCheckbox(0,mgl->GetWidth()-120,mgl->GetHeight()-78+15*1,CHECK_ON*((eraseFlag&EF_BADGUY)!=0),"Badguys",GetDisplayMGL());
 
-	if(PointInRect(msx,msy,520,432,520+100,432+14))
-		RenderCheckbox(1,520,432,CHECK_ON*((eraseFlag&EF_SPECIAL)!=0),"Specials",GetDisplayMGL());
+	if(PointInRect(msx,msy,mgl->GetWidth()-120,mgl->GetHeight()-78+15*2,mgl->GetWidth()-120+100,mgl->GetHeight()-78+15*2+14))
+		RenderCheckbox(1,mgl->GetWidth()-120,mgl->GetHeight()-78+15*2,CHECK_ON*((eraseFlag&EF_SPECIAL)!=0),"Specials",GetDisplayMGL());
 	else
-		RenderCheckbox(0,520,432,CHECK_ON*((eraseFlag&EF_SPECIAL)!=0),"Specials",GetDisplayMGL());
+		RenderCheckbox(0,mgl->GetWidth()-120,mgl->GetHeight()-78+15*2,CHECK_ON*((eraseFlag&EF_SPECIAL)!=0),"Specials",GetDisplayMGL());
 
-	if(PointInRect(msx,msy,520,447,520+100,447+14))
-		RenderCheckbox(1,520,447,CHECK_ON*((eraseFlag&EF_WALL)!=0),"Walls",GetDisplayMGL());
+	if(PointInRect(msx,msy,mgl->GetWidth()-120,mgl->GetHeight()-78+15*3,mgl->GetWidth()-120+100,mgl->GetHeight()-78+15*3+14))
+		RenderCheckbox(1,mgl->GetWidth()-120,mgl->GetHeight()-78+15*3,CHECK_ON*((eraseFlag&EF_WALL)!=0),"Walls",GetDisplayMGL());
 	else
-		RenderCheckbox(0,520,447,CHECK_ON*((eraseFlag&EF_WALL)!=0),"Walls",GetDisplayMGL());
+		RenderCheckbox(0,mgl->GetWidth()-120,mgl->GetHeight()-78+15*3,CHECK_ON*((eraseFlag&EF_WALL)!=0),"Walls",GetDisplayMGL());
 
-	if(PointInRect(msx,msy,520,462,520+100,462+14))
-		RenderCheckbox(1,520,462,CHECK_ON*((eraseFlag&EF_LIGHT)!=0),"Light",GetDisplayMGL());
+	if(PointInRect(msx,msy,mgl->GetWidth()-120,mgl->GetHeight()-78+15*4,mgl->GetWidth()-120+100,mgl->GetHeight()-78+15*4+14))
+		RenderCheckbox(1,mgl->GetWidth()-120,mgl->GetHeight()-78+15*4,CHECK_ON*((eraseFlag&EF_LIGHT)!=0),"Light",GetDisplayMGL());
 	else
-		RenderCheckbox(0,520,462,CHECK_ON*((eraseFlag&EF_LIGHT)!=0),"Light",GetDisplayMGL());
+		RenderCheckbox(0,mgl->GetWidth()-120,mgl->GetHeight()-78+15*4,CHECK_ON*((eraseFlag&EF_LIGHT)!=0),"Light",GetDisplayMGL());
 
 	// brush size
 	minusBrush=brush;
 	plusBrush=brush+1;
 
-	if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
-		DrawFillBox(397-15,442-15,397+16,442+16,8+32*1);
-	DrawBox(397-15,442-15,397+16,442+16,31);
-	DrawFillBox(397-(minusBrush),
-				442-(minusBrush),
-				397+(plusBrush),
-				442+(plusBrush),24);
-	Print(397-15,442-26,"Brush",0,1);
+	if(PointInRect(msx,msy,mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
+		DrawFillBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 8+32*1);
+	DrawBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 31);
+	DrawFillBox(
+		mgl->GetWidth()-243-(minusBrush),
+		mgl->GetHeight()-38-(minusBrush),
+		mgl->GetWidth()-243+(plusBrush),
+		mgl->GetHeight()-38+(plusBrush),
+		24
+	);
+	Print(mgl->GetWidth()-243-15, mgl->GetHeight()-38-26, "Brush", 0, 1);
 }
 
 void EraserTool::SetInk(void)
@@ -112,31 +118,27 @@ void EraserTool::PlopOne(int x,int y)
 
 	m=EditorGetMap();
 
-	if(x>=0 && y>=0 && x<m->width && y<m->height && m->map[x+y*m->width].select)
+	if (mapTile_t *target = m->TryGetTile(x, y); target && target->select)
 	{
 		if(eraseFlag&EF_LIGHT)
-			m->map[x+y*m->width].light=0;
+			target->light=0;
 		if(eraseFlag&EF_WALL)
-			m->map[x+y*m->width].wall=0;
+			target->wall=0;
 		if(eraseFlag&EF_ITEM)
-			m->map[x+y*m->width].item=0;
+			target->item=0;
 		if(eraseFlag&EF_BADGUY)
 		{
-			int i;
-
-			for(i=0;i<MAX_MAPMONS;i++)
-				if((m->badguy[i].type) && (m->badguy[i].x==x) && (m->badguy[i].y==y))
-					m->badguy[i].type=0;
+			for (mapBadguy_t &guy : m->badguy)
+				if(guy.type && guy.x==x && guy.y==y)
+					guy.type=0;
 		}
 		if(eraseFlag&EF_SPECIAL)
 		{
-			int i;
-
-			for(i=0;i<MAX_SPECIAL;i++)
+			for (special_t &special : m->special)
 			{
-				if(m->special[i].x==x && m->special[i].y==y)
+				if(special.x==x && special.y==y)
 				{
-					m->special[i].x=255;
+					special.x=255;
 				}
 			}
 		}
@@ -145,19 +147,15 @@ void EraserTool::PlopOne(int x,int y)
 
 void EraserTool::Plop(void)
 {
-	Map *m;
-	int x,y;
-	int i,j,minusBrush,plusBrush;
-
-	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
+	auto [x, y] = EditorGetTileXY();
+	Map *m = EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
+		for(int j=y-minusBrush;j<=y+plusBrush;j++)
+			for(int i=x-minusBrush;i<=x+plusBrush;i++)
 				PlopOne(i,j);
 
 		MakeNormalSound(SND_MENUCLICK);
@@ -169,30 +167,26 @@ void EraserTool::Plop(void)
 
 void EraserTool::ShowTarget(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-	int tileX,tileY;
-	int tileX2,tileY2,minusBrush,plusBrush;
-
 	col=255-col;
-	GetCamera(&cx,&cy);
 
-	EditorGetTileXY(&tileX,&tileY);
+	auto [cx, cy] = GetCamera();
+	auto [tileX, tileY] = EditorGetTileXY();
 
-	minusBrush=brush/2;
-	plusBrush=(brush+1)/2;
+	int minusBrush=brush/2;
+	int plusBrush=(brush+1)/2;
 
-	tileX2=tileX+plusBrush;
-	tileY2=tileY+plusBrush;
+	int tileX2=tileX+plusBrush;
+	int tileY2=tileY+plusBrush;
 
 	tileX-=minusBrush;
 	tileY-=minusBrush;
 
-	x1=tileX*TILE_WIDTH-(cx-320);
-	y1=tileY*TILE_HEIGHT-(cy-240);
+	int x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+	int y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
-	x2=tileX2*TILE_WIDTH-(cx-320)+TILE_WIDTH-1;
-	y2=tileY2*TILE_HEIGHT-(cy-240)+TILE_HEIGHT-1;
+	int x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
+	int y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y1,col);
 	DrawBox(x1,y2,x2,y2,col);

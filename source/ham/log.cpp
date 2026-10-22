@@ -3,54 +3,98 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include <SDL_platform.h>
+#include <SDL3/SDL_platform.h>
+#include <SDL3/SDL_log.h>
 
 #ifdef __ANDROID__
 	#include <android/log.h>
 #endif
 
+static SDL_LogOutputFunction original = nullptr;
+static void* originalUserdata = nullptr;
 static bool errorLogAttempted = false;
-static FILE* errorLog = nullptr;
+static owned::SDL_IOStream errorLog = nullptr;
+static std::string buffer;
 
-void LogDebug(const char* fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-#ifdef __ANDROID__
-	__android_log_vprint(ANDROID_LOG_DEBUG, "HamSandwich", fmt, args);
-#else
-	vprintf(fmt, args);
-	printf("\n");
-#endif
-	va_end(args);
+static const char *priorityPrefixes[] = {
+    "",
+	"TRACE: ",
+    "VERBOSE: ",
+    "DEBUG: ",
+    "INFO: ",
+    "WARN: ",
+    "ERROR: ",
+    "CRITICAL: ",
+};
+static_assert(std::size(priorityPrefixes) == SDL_LOG_PRIORITY_COUNT);
+
+static const char *categoryPrefixes[] = {
+	"",
+	"(error) ",
+	"(assert) ",
+	"(system) ",
+	"(audio) ",
+	"(video) ",
+	"(render) ",
+	"(input) ",
+	"(test) ",
+	"(gpu) ",
+	"(10) ",
+	"(11) ",
+	"(12) ",
+	"(13) ",
+	"(14) ",
+	"(15) ",
+	"(16) ",
+	"(17) ",
+	"(18) ",
+};
+static_assert(std::size(categoryPrefixes) == SDL_LOG_CATEGORY_CUSTOM);
+
+static void HamLogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
+{
+	(void)userdata;
+	original(originalUserdata, category, priority, message);
+
+	if ((size_t)category < std::size(categoryPrefixes))
+	{
+		buffer.append(categoryPrefixes[category]);
+	}
+	if (priority < std::size(priorityPrefixes))
+	{
+		buffer.append(priorityPrefixes[priority]);
+	}
+	buffer.append(message);
+	buffer.append("\n");
+	if (errorLog)
+	{
+		buffer.erase(0, SDL_WriteIO(errorLog, buffer.data(), buffer.size()));
+		SDL_FlushIO(errorLog);
+		AppdataSync();
+	}
 }
 
-void LogError(const char* fmt, ...) {
-	if (!errorLogAttempted) {
-		errorLogAttempted = true;
-		errorLog = AppdataOpen("error.log", "wt");
-	}
-
-	va_list args;
-	va_start(args, fmt);
-
-	if (errorLog) {
-		va_list dup;
-		va_copy(dup, args);
-		vfprintf(errorLog, fmt, dup);
-		fprintf(errorLog, "\n");
-		va_end(dup);
-	}
-
-#ifdef __ANDROID__
-	__android_log_vprint(ANDROID_LOG_ERROR, "HamSandwich", fmt, args);
-#else
-	vprintf(fmt, args);
-	printf("\n");
+void LogInit()
+{
+	if (!original)
+	{
+#ifndef NDEBUG
+		// Set a hint rather than priority directly so that SDL_LOGGING environment variable takes priority.
+		SDL_SetHint(SDL_HINT_LOGGING, "app=debug");
 #endif
-	va_end(args);
+		SDL_GetLogOutputFunction(&original, &originalUserdata);
+		SDL_SetLogOutputFunction(HamLogOutput, nullptr);
+	}
 
-	if (errorLog) {
-		fflush(errorLog);
-		AppdataSync();
+	if (!errorLogAttempted && AppdataIsInit())
+	{
+		errorLogAttempted = true;
+		errorLog = AppdataOpen_Write("error.log");
+		if (errorLog && !buffer.empty())
+		{
+			buffer.erase(0, SDL_WriteIO(errorLog, buffer.data(), buffer.size()));
+			SDL_FlushIO(errorLog);
+			AppdataSync();
+		}
 	}
 }

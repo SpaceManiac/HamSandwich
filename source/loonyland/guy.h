@@ -11,7 +11,7 @@
 #define ACTION_IDLE	0
 #define ACTION_BUSY 1
 
-class Guy
+class Guy final
 {
 	public:
 		Guy(void);
@@ -21,12 +21,11 @@ class Guy
 		void EditorUpdate(Map *map);
 		void Render(byte light);
 		byte CanWalk(int xx,int yy,Map *map,world_t *world);
-		void NextFrame(void);
-		void SeqFinished(void);
+		void NextFrame(Map *map);
+		void SeqFinished(Map *map);
 		void MonsterControl(Map *map,world_t *world);
 		byte CoconutBonk(int xx,int yy,Guy *him);
 		byte AttackCheck(byte size,int xx,int yy,Guy *him);
-		void AttackThem(void);
 		void GetShot(int dx,int dy,byte damage,Map *map,world_t *world);
 		void CalculateRect(void);
 		byte IsActive(Map *map);
@@ -99,8 +98,8 @@ void ShiftGuys(char dx,char dy,Map *map);
 void RaiseSkellies(void);
 byte DyingSkellies(void);
 void CameraOnPlayer(byte sum);
-void LoadGuys(FILE *f);
-void SaveGuys(FILE *f);
+void LoadGuys(SDL_IOStream *f);
+void SaveGuys(SDL_IOStream *f);
 void PrepGuys(Map *map);
 void KillAllMonsters(byte type);
 void Shock(Map *map,world_t *world,byte type,int x,int y,byte liteup);

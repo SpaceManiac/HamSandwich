@@ -1,14 +1,22 @@
 #include "display.h"
+#include <algorithm>
 #include "particle.h"
 #include "jamulfmv.h"
 #include "game.h"
 #include "title.h"
+#include <string>
+#include "options.h"
+
+static constexpr int DISPLAY_XBORDER = 300;
+static constexpr int DISPLAY_YBORDER = 300;
 
 mfont_t  *gameFont[3]={NULL,NULL,NULL};
 MGLDraw  *mgl=NULL;
 
-int scrx=320,scry=240,scrdx=0,scrdy=0;
-int rscrx=320<<FIXSHIFT,rscry=240<<FIXSHIFT;
+int scrx=HALFWID,scry=HALFHEI,scrdx=0,scrdy=0;
+int rscrx=HALFWID*FIXAMT,rscry=HALFHEI*FIXAMT;
+int lookOfsX=0, lookOfsY = 0;
+short lookAngle = -1;
 
 byte shakeTimer=0;
 
@@ -16,6 +24,7 @@ DisplayList *dispList;
 static byte gammaCorrection=0;
 
 static char cursor[] = "}";
+byte* iconBMP;
 
 MGLDraw *GetDisplayMGL(void)
 {
@@ -124,11 +133,10 @@ TASK(void) ShowVictoryAnim(byte world)
 			ReplaySong();
 			break;
 		case 11:
-			//PlaySong(SONG_INTRO);
 			StopSong();
-			MakeNormalSound(SONG_INTRO);
+			MakeNormalSound(opt.classicMusic?SONG_INTRO:NEWSNG_INTRO);
 			AWAIT FLI_play("graphics/Intro.flc",0,60,mgl);
-			JamulSoundStop(SONG_INTRO);
+			JamulSoundStop(opt.classicMusic?SONG_INTRO:NEWSNG_INTRO);
 			if (CurrentSong())
 				ReplaySong();
 			break;
@@ -172,6 +180,9 @@ void PutCamera(int x,int y)
 	rscry=y;
 	scrdx=0;
 	scrdy=0;
+	lookOfsX = 0;
+	lookOfsY = 0;
+	lookAngle=-1;
 
 	scrx=(rscrx>>FIXSHIFT);
 	scry=(rscry>>FIXSHIFT);
@@ -181,20 +192,48 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 {
 	int desiredX,desiredY;
 
-	desiredX=((x<<FIXSHIFT)+Cosine(facing)*80)>>FIXSHIFT;
-	desiredY=((y<<FIXSHIFT)+Sine(facing)*60)>>FIXSHIFT;
+	desiredX = x;
+	desiredY = y;
+	if (0)//ClassicMode())
+	{
+		lookAngle = facing;
+	}
+	else
+	{
+		if (GetGoodguy() && GetGoodguy()->parent != nullptr)
+			facing = 64;	// just look down if riding a log
+		lookAngle = facing;
+	}
+
+	int desLookX, desLookY;
+	if (lookAngle == -1)
+	{
+		desLookX = 0;
+		desLookY = 0;
+	}
+	else
+	{
+		desLookX = Cosine(lookAngle) * 160;
+		desLookY = Sine(lookAngle) * 120;
+	}
+
+	lookOfsX = (lookOfsX * 3 + desLookX) / 4;
+	lookOfsY = (lookOfsY * 3 + desLookY) / 4;
+
+	desiredX = x + (lookOfsX>>FIXSHIFT);
+	desiredY = y + (lookOfsY>>FIXSHIFT);
 
 	rscrx+=scrdx;
 	rscry+=scrdy;
 
-	if(rscrx<320<<FIXSHIFT)
-		rscrx=320<<FIXSHIFT;
-	if(rscrx>((map->width*TILE_WIDTH-320)<<FIXSHIFT))
-		rscrx=(map->width*TILE_WIDTH-320)<<FIXSHIFT;
-	if(rscry<(240-TILE_HEIGHT)<<FIXSHIFT)
-		rscry=(240-TILE_HEIGHT)<<FIXSHIFT;
-	if(rscry>((map->height*TILE_HEIGHT-240)<<FIXSHIFT))
-		rscry=(map->height*TILE_HEIGHT-240)<<FIXSHIFT;
+	if(rscrx<HALFWID*FIXAMT)
+		rscrx=HALFWID*FIXAMT;
+	if(rscrx>((map->width*TILE_WIDTH-HALFWID)*FIXAMT))
+		rscrx=(map->width*TILE_WIDTH-HALFWID)*FIXAMT;
+	if(rscry<(HALFHEI-TILE_HEIGHT)*FIXAMT)
+		rscry=(HALFHEI-TILE_HEIGHT)*FIXAMT;
+	if(rscry>((map->height*TILE_HEIGHT-HALFHEI)*FIXAMT))
+		rscry=(map->height*TILE_HEIGHT-HALFHEI)*FIXAMT;
 
 	if(scrx>desiredX+20)
 		scrdx=-((scrx-(desiredX+20))*FIXAMT/16);
@@ -205,8 +244,8 @@ void UpdateCamera(int x,int y,byte facing,Map *map)
 	if(scry<desiredY-20)
 		scrdy=(((desiredY-20)-scry)*FIXAMT/16);
 
-	Dampen(&scrdx,1<<FIXSHIFT);
-	Dampen(&scrdy,1<<FIXSHIFT);
+	Dampen(&scrdx,1*FIXAMT);
+	Dampen(&scrdy,1*FIXAMT);
 
 	scrx=(rscrx>>FIXSHIFT);
 	scry=(rscry>>FIXSHIFT);
@@ -264,11 +303,49 @@ void CenterPrint(int midx,int y,const char *s,char bright,byte font)
 	}
 }
 
+void RightPrint(int x, int y, const char* s, char bright, byte font)
+{
+	if (font == 0)
+	{
+		x -=FontStrLen(s, gameFont[0]);
+		FontPrintStringBright(x, y, s, gameFont[0], bright);
+	}
+	else
+	{
+		x -=FontStrLen(s, gameFont[font]);
+		if (bright == 0)
+			FontPrintString(x, y, s, gameFont[font]);
+		else
+			FontPrintStringSolid(x, y, s, gameFont[font], 0);
+	}
+}
+
+void CenterPrintItalics(int midx, int y, const char* s, char bright, byte font)
+{
+	int x;
+
+	x = midx - FontStrLen(s, gameFont[font]) / 2;
+	FontPrintStringItalicsBright(x, y, s, gameFont[font],bright);
+}
+
+void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression, char bright, byte font)
+{
+	int x;
+
+	x = midx - FontStrLen(s, gameFont[font]) * (int)compression/200;
+
+	for (char ch : s)
+	{
+		FontPrintCharBright(x, y, ch, bright, gameFont[font]);
+		x += (CharWidth(ch, gameFont[font]) + gameFont[font]->gapSize)*compression/100;
+	}
+}
+
 void CenterPrintGlow(int y,const char *s,byte font)
 {
 	int x;
 
-	x=320-FontStrLen(s,gameFont[font])/2;
+	x=HALFWID-FontStrLen(s,gameFont[font])/2;
 	FontPrintStringGlow(x,y,s,gameFont[font]);
 }
 
@@ -296,17 +373,17 @@ void RenderItAll(world_t *world,Map *map,byte flags)
 	if(shakeTimer)
 	{
 		shakeTimer--;
-		scrx-=2+MGL_random(5);
-		scry-=2+MGL_random(5);
+		scrx+=2-MGL_random(5);
+		scry+=2-MGL_random(5);
 	}
 	map->Render(world,scrx,scry,flags);
 
-	scrx-=320;
-	scry-=240;
+	scrx-=HALFWID;
+	scry-=HALFHEI;
 	dispList->Render();
 	dispList->ClearList();
-	scrx+=320;
-	scry+=240;
+	scrx+=HALFWID;
+	scry+=HALFHEI;
 }
 
 void SprDraw(int x,int y,int z,byte hue,char bright,sprite_t *spr,byte flags)
@@ -336,93 +413,54 @@ void ParticleDraw(int x,int y,int z,byte color,byte size,byte flags)
 //---------------------------------------------------------------------------------------
 // from here on out it's class DISPLAYLIST
 
-DisplayList::DisplayList(void)
+DisplayList::DisplayList()
+	: nextfree(0)
 {
 	ClearList();
 }
 
-DisplayList::~DisplayList(void)
+bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *spr,byte flags)
 {
-	// nothin
-}
-
-int DisplayList::GetOpenSlot(void)
-{
-	int i;
-
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
+	if (nextfree >= MAX_DISPLAY_OBJS)
 	{
-		if(dispObj[i].flags==0)
-			return i;
+		return false;
 	}
 
-	return -1;
-}
-
-void DisplayList::HookIn(int me)
-{
-	int i;
-
-	if(head==-1)
+	SDL_Rect rect;
+	if (!spr || spr == (sprite_t*)1 || (flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE)))
 	{
-		head=me;
-		dispObj[me].prev=-1;
-		dispObj[me].next=-1;
-		return;
+		// Use generic boundaries: center point +/- 300px.
+		rect.x = x - DISPLAY_XBORDER;
+		rect.y = y - DISPLAY_YBORDER;
+		rect.w = DISPLAY_XBORDER * 2;
+		rect.h = DISPLAY_YBORDER * 2;
+	}
+	else if (flags & DISPLAY_SHADOW)
+	{
+		// Use precise shadow sprite boundaries.
+		rect.x = x - spr->ofsx - spr->height/2;
+		rect.y = y - spr->ofsy/2 - std::clamp(z, -DISPLAY_YBORDER, DISPLAY_YBORDER);
+		rect.w = spr->height/2 + spr->width;
+		rect.h = spr->height/2;
 	}
 	else
 	{
-		// shadows go on the head of the list always, drawn before anything else
-		// (and the order of shadows doesn't matter, of course)
-		if(dispObj[me].flags&DISPLAY_SHADOW)
-		{
-			dispObj[me].next=head;
-			dispObj[head].prev=me;
-			dispObj[me].prev=-1;
-			head=me;
-			return;
-		}
-
-		i=head;
-		while(i!=-1)
-		{
-			if((!(dispObj[i].flags&DISPLAY_SHADOW)) &&
-				(dispObj[i].y>dispObj[me].y || (dispObj[i].y==dispObj[me].y && dispObj[i].z>dispObj[me].z)))
-			{
-				dispObj[me].prev=dispObj[i].prev;
-				dispObj[me].next=i;
-				if(dispObj[me].prev!=-1)
-					dispObj[dispObj[me].prev].next=me;
-				dispObj[i].prev=me;
-				if(head==i)
-					head=me;
-				return;
-			}
-			if(dispObj[i].next==-1)
-			{
-				dispObj[i].next=me;
-				dispObj[me].prev=i;
-				dispObj[me].next=-1;
-				return;
-			}
-			i=dispObj[i].next;
-		}
-		return; // this would be bad, but hopefully can't occur
+		// Use precise sprite boundaries.
+		rect.x = x - spr->ofsx;
+		rect.y = y - spr->ofsy-z;
+		rect.w = spr->width;
+		rect.h = spr->height;
 	}
-}
-
-bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *spr,byte flags)
-{
-	int i;
-
-	if((x-scrx+320)<-DISPLAY_XBORDER || (x-scrx+320)>640+DISPLAY_XBORDER ||
-	   (y-scry+240)<-DISPLAY_YBORDER || (y-scry+240)>480+DISPLAY_YBORDER)
+	// If the rect is totally offscreen, don't add it to the display list.
+	SDL_Rect screenRect = { scrx - mgl->GetWidth()/2, scry - mgl->GetHeight()/2, mgl->GetWidth(), mgl->GetHeight() };
+	SDL_Rect intersection;
+	if (!SDL_GetRectIntersection(&rect, &screenRect, &intersection))
+	{
 		return true;
+	}
 
-	i=GetOpenSlot();
-	if(i==-1)
-		return false;
-
+	// Actually insert.
+	int i = nextfree++;
 	dispObj[i].hue=hue;
 	dispObj[i].bright=bright;
 	dispObj[i].flags=flags;
@@ -431,32 +469,42 @@ bool DisplayList::DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *sp
 	dispObj[i].y=y;
 	dispObj[i].z=z;
 	if(dispObj[i].flags&(DISPLAY_WALLTILE|DISPLAY_ROOFTILE))
-		memcpy(dispObj[i].light,dispObj[i].spr,9);
-	HookIn(i);
+		memcpy(dispObj[i].light,(const char*)dispObj[i].spr,9);
 	return true;
 }
 
-void DisplayList::ClearList(void)
+void DisplayList::ClearList()
 {
-	int i;
-
-	for(i=0;i<MAX_DISPLAY_OBJS;i++)
-	{
-		dispObj[i].prev=-1;
-		dispObj[i].next=-1;
-		dispObj[i].flags=0;
-	}
-	head=-1;
-	nextfree=0;
+	nextfree = 0;
 }
 
-void DisplayList::Render(void)
+bool operator<(const DisplayObj& lhs, const DisplayObj& rhs)
 {
-	int i;
+	if ((lhs.flags & DISPLAY_SHADOW) != (rhs.flags & DISPLAY_SHADOW))
+	{
+		// shadows go on the head of the list always, drawn before anything else
+		// (and the order of shadows doesn't matter, of course)
+		return (lhs.flags & DISPLAY_SHADOW) > (rhs.flags & DISPLAY_SHADOW);
+	}
+	else if (lhs.y != rhs.y)
+	{
+		return lhs.y < rhs.y;
+	}
+	else if (lhs.z != rhs.z)
+	{
+		return lhs.z < rhs.z;
+	}
+	else
+	{
+		return false;
+	}
+}
 
-	i=head;
+void DisplayList::Render()
+{
+	std::stable_sort(&dispObj[0], &dispObj[nextfree]);
 
-	while(i!=-1)
+	for(int i = 0; i < nextfree; ++i)
 	{
 		if((dispObj[i].flags&DISPLAY_DRAWME) && (dispObj[i].spr))
 		{
@@ -517,7 +565,6 @@ void DisplayList::Render(void)
 				}
 			}
 		}
-		i=dispObj[i].next;
 	}
 }
 
@@ -528,10 +575,10 @@ void DrawBox(int x,int y,int x2,int y2,byte c)
 
 void DrawDebugBox(int x,int y,int x2,int y2)
 {
-	x-=scrx-320;
-	y-=scry-240;
-	x2-=scrx-320;
-	y2-=scry-240;
+	x-=scrx-HALFWID;
+	y-=scry-HALFHEI;
+	x2-=scrx-HALFWID;
+	y2-=scry-HALFHEI;
 	mgl->Box(x,y,x2,y2,255);
 	//mgl->Flip();
 }
@@ -539,4 +586,101 @@ void DrawDebugBox(int x,int y,int x2,int y2)
 void DrawFillBox(int x,int y,int x2,int y2,byte c)
 {
 	mgl->FillBox(x,y,x2,y2,c);
+}
+
+
+void InitIcons(void)
+{
+	iconBMP = (byte*)malloc(640 * 480);
+	if (iconBMP)
+	{
+		GetDisplayMGL()->LoadBMP("graphics/icons.bmp");
+		memcpy(iconBMP, GetDisplayMGL()->GetScreen(), 640 * 480);
+	}
+}
+
+void BlitIcon(byte icon, int x, int y, byte color, char bright)
+{
+	int start = (icon % 20) * 32 + (icon / 20) * 32 * 640;
+	for (int j = 0; j < 32; j++)
+		for (int i = 0; i < 32; i++)
+		{
+			if (x + i >= 0 && y + j >= 0 && x + i < SCRWID && y + j < SCRHEI)
+			{
+				byte b = (iconBMP[start + i + j * 640] % 32);
+				if (b != 0)
+				{
+					if (bright<0 && -bright>b)
+						b = 0;
+					else if (bright > 0 && b + bright > 31)
+						b = 31;
+					else
+						b += bright;
+					b += 32 * color;
+					GetDisplayMGL()->GetScreen()[(x + i) + (y + j) * SCRWID] = b;
+				}
+			}
+		}
+}
+
+void BlitIconBit(int srcx, int srcy, int srcx2, int srcy2, int x, int y, byte color, char bright)
+{
+	for (int j = srcy; j <= srcy2; j++)
+		for (int i = srcx; i <= srcx2; i++)
+		{
+			if (i >= 0 && j >= 0 && i < SCRWID && j < SCRHEI &&
+				(x + i - srcx) >= 0 && (x + i - srcx) < SCRWID && (y + j - srcy) >= 0 && (y + j - srcy) < SCRHEI)
+			{
+				byte b = iconBMP[i + j * 640];
+				if (b != 0)
+				{
+					byte b2 = (b & (~31));
+					b = (b & 31);
+					if (bright<0 && -bright>b)
+						b = 0;
+					else if (bright > 0 && b + bright > 31)
+						b = 31;
+					else
+						b += bright;
+					if (color != 255)
+						b2 = color * 32;
+					GetDisplayMGL()->GetScreen()[(x + i - srcx) + (y + j - srcy) * SCRWID] = b + b2;
+				}
+			}
+		}
+}
+
+void BlitIconGlow(byte icon, int x, int y, char bright)
+{
+	int start = (icon % 20) * 32 + (icon / 20) * 32 * 640;
+	for (int j = 0; j < 32; j++)
+		for (int i = 0; i < 32; i++)
+		{
+			if (x + i >= 0 && y + j >= 0 && x + i < SCRWID && y + j < SCRHEI)
+			{
+				byte b = (iconBMP[start + i + j * 640] & 31);
+				if (b != 0)
+				{
+					byte b2 = GetDisplayMGL()->GetScreen()[(x + i) + (y + j) * SCRWID];
+					byte col = (b2 & (~31));
+					b2 = (b2 & 31);
+					if (bright<0 && -bright>b)
+						b = 0;
+					else if (bright > 0 && b + bright > 31)
+						b = 31;
+					else
+						b += bright;
+					if (b2 + b > 31)
+						b2 = 31;
+					else
+						b2 += b;
+					GetDisplayMGL()->GetScreen()[(x + i) + (y + j) * SCRWID] = col + b2;
+				}
+			}
+		}
+}
+
+void ExitIcons(void)
+{
+	free(iconBMP);
 }

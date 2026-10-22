@@ -797,7 +797,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_GASBLAST:
-			if(b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,me->dx,me->dy,0,map,world))
+			if((b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,24,me->dx,me->dy,0,map,world)))
 			{
 				// 3 hearts/seconds of poison please
 				if(b==2)
@@ -870,7 +870,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_ICE:
 		case BLT_ICE2:
-			if(i=FreezeVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,me->target,128,map,world))
+			if((i=FreezeVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,12,me->dx,me->dy,me->target,128,map,world)))
 			{
 				me->target=i;
 				if(player.wpnLevel>0 && me->type!=BLT_ICE2)
@@ -935,7 +935,7 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_SWAMPGAS:
 		case BLT_SWAMPGAS2:
-			if(b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,10,me->dx,me->dy,0,map,world))
+			if((b=FindGoodVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,10,me->dx,me->dy,0,map,world)))
 			{
 				// 1 hearts/seconds of poison please
 				if(b==2)
@@ -2217,7 +2217,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 			switch(me->target)
 			{
 				case 0:
-					SetNoSaving(1);
+					SetNoSaving(true);
 					ShakeScreen(10);
 					// lighting up around the edges
 					if(me->timer==20)
@@ -2233,7 +2233,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					}
 					break;
 				case 1:
-					SetNoSaving(1);
+					SetNoSaving(true);
 					ShakeScreen(10);
 					// shooting into the center
 					if(me->timer==20)
@@ -2250,7 +2250,7 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 					}
 					break;
 				case 2:
-					SetNoSaving(0);
+					SetNoSaving(false);
 					// removing the zappers
 					if(me->timer==20)
 					{
@@ -2884,7 +2884,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type)
 			break;
 		case BLT_AURA:
 			me->anim=0;
-			me->timer=32;
+			me->timer=33;
 			me->z=0;
 			me->dx=0;
 			me->dy=0;
@@ -3272,7 +3272,7 @@ void FireBulletZ(int x,int y,int z,byte facing,byte type)
 // this is used for the Megabeam to ensure that all the laser bits stay lined up nicely
 void FireBulletAfter(int x,int y,byte facing,byte type,bullet_t *thisone)
 {
-	int i,j,start;
+	int i,j,start=MAX_BULLETS;
 
 	for(j=0;j<MAX_BULLETS;j++)
 		if(&bullet[j]==thisone)

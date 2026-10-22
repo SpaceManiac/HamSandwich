@@ -121,17 +121,10 @@ void ExitNameEntry(void)
 
 byte CheckForExistingName(const char *name)
 {
-	FILE *f;
 	char s[64];
 
 	sprintf(s,"profiles/%s.prf",name);
-	f=AppdataOpen(s,"rb");
-	if(f)
-	{
-		fclose(f);
-		return 1;
-	}
-	return 0;
+	return AppdataOpen(s) != nullptr;
 }
 
 byte UpdateNameEntry(int *lastTime,MGLDraw *mgl)
@@ -308,6 +301,10 @@ TASK(void) NameEntry(MGLDraw *mgl,byte makeNew)
 	}
 
 	ExitNameEntry();
+	if(FirstTime() && done == 255)
+	{
+		exit(0);
+	}
 	if(makeNew && done != 255)
 	{
 		FreeProfile();

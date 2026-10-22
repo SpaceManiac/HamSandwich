@@ -29,6 +29,7 @@
 #define GAMEMODE_SHOP  3
 #define GAMEMODE_SPEECH 4
 #define GAMEMODE_FAIRY	5
+#define GAMEMODE_FARLEY 6
 
 // these are the messages you can send to the game
 #define MSG_NONE	  0
@@ -36,7 +37,6 @@
 #define MSG_WINLEVEL  2
 #define MSG_RESET	  3
 #define MSG_LOADGAME  4
-#define MSG_WINGAME	  5
 #define MSG_BATTLE	  6
 #define MSG_SHOWANIM  7
 
@@ -50,10 +50,11 @@
 #define LEVEL_LOADING 4
 #define LEVEL_SHOP	  5
 #define LEVEL_FAIRY	  6
+#define LEVEL_FARLEY  7
 
 // these are world outcomes
 #define WORLD_ABORT 5
-#define WORLD_WIN	6
+//#define WORLD_WIN	6
 #define WORLD_PLAYING 7
 #define WORLD_LOAD	8
 #define WORLD_QUITGAME 9
@@ -69,11 +70,10 @@ void LunaticExit(void);
 byte InitLevel(byte map);
 void ExitLevel(void);
 
-byte GameStartup(void);
-
-void EnterStatusScreen(void);
+void PauseGame(void);
 void EnterPictureDisplay(void);
 void EnterSpeechMode(void);
+void EnterFarleyMode(void);
 
 TASK(byte) LunaticRun(int *lastTime);
 TASK(void) LunaticDraw(void);
@@ -82,14 +82,11 @@ TASK(byte) PlayALevel(byte map);
 
 TASK(byte) LunaticWorld(byte world);
 TASK(byte) LunaticGame(MGLDraw *mgl,byte load);
-void TrainingGame(MGLDraw *mgl);
 
+bool GameIsPaused(void);
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);
 
-void SetGameIdle(bool b);
-byte GetGameIdle(void);
-void GameIdle(void);
 byte BattleMode(void);
 byte WonTheBattle(void);
 Map *CurrentMap(void);

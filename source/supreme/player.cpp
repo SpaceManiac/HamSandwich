@@ -49,7 +49,9 @@ void InitPlayer(byte level,const char *fname)
 {
 	int i;
 
-	strcpy(player.worldName,fname);
+	if (fname != player.worldName)  // Genuine pointer check to avoid self-overwriting.
+		strcpy(player.worldName, fname);
+
 	player.worldProg=GetWorldProgress(player.worldName);
 
 	player.levelNum=level;
@@ -79,7 +81,7 @@ void InitPlayer(byte level,const char *fname)
 	player.ammo=0;
 	player.reload=10;
 	player.wpnReload=10;
-	player.hammerFlags=0;
+	player.hammerFlags={};
 	player.life=128;
 	player.shield=0;
 	playerGlow=0;
@@ -149,7 +151,7 @@ void PoisonVictim(Guy *me,byte amt)
 {
 	if(me==goodguy && player.shield)
 		return;	// can't be poisoned when invulnerable
-	if(me==goodguy && profile.difficulty==0)
+	if(me==goodguy && profile.difficulty==DIFFICULTY_NORMAL)
 	{
 		amt/=2;
 		if(amt==0)
@@ -163,21 +165,28 @@ void PoisonVictim(Guy *me,byte amt)
 
 void PlayerWinLevel(byte isSecret)
 {
-	PrintToLog("PlayerWinLevel",0);
+	LogVerbose("PlayerWinLevel");
 	player.levelProg->flags|=LF_PASSED;
 	if(curMap->numCandles==0)
 		player.levelProg->flags|=LF_CANDLES;	// get candle credit if there aren't any
 
-	PrintToLog("StoreWorldResults",0);
+	LogVerbose("StoreWorldResults");
 	StoreWorldResults(player.worldProg,&curWorld);
-	PrintToLog("TryHighScore",0);
+	LogVerbose("TryHighScore");
 	if(!player.cheated)
-		player.gotRecords=TryHighScore();
+	{
+		player.gotRecords = TryHighScore();
+		// Steam Leaderboard uploads are deferred until you quit the world in
+		// order to stay under Steam's 10 uploads per 10 minutes rate limit.
+		// NB: marks for upload even if you got local 2nd place...
+		if (player.gotRecords)
+			player.pendingLeaderboardUpload = true;
+	}
 	else
 		player.gotRecords=0;
-	PrintToLog("GoalWinLevel",0);
+	LogVerbose("GoalWinLevel");
 	GoalWinLevel();
-	PrintToLog("SaveProfile",0);
+	LogVerbose("SaveProfile");
 	SaveProfile();
 }
 
@@ -211,13 +220,12 @@ int WeaponMaxAmmo(byte wpn)
 
 byte PlayerGetWeapon(byte wpn,int x,int y)
 {
-	int cx,cy;
-
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 	cx<<=FIXSHIFT;
 	cy<<=FIXSHIFT;
 
-	if(player.weapon && wpn!=player.weapon && profile.progress.wpnLock)
+	bool wpnLock = bool(profile.progress.wpnLock) ^ bool(GetControls() & CONTROL_B3);
+	if(player.weapon && wpn!=player.weapon && wpnLock)
 		return 0;	// can't pick up weapons while armed!
 
 	if((player.weapon==WPN_PWRARMOR || player.weapon==WPN_MINISUB) && (wpn!=player.weapon))
@@ -260,7 +268,7 @@ byte PlayerGetWeapon(byte wpn,int x,int y)
 	return 1;
 }
 
-byte PlayerPowerup(char powerup)
+byte PlayerPowerup(int powerup)
 {
 	if(powerup>0)
 	{
@@ -614,7 +622,7 @@ void PlayerThrowHammer(Guy *me)
 
 void PlayerHeal(byte amt)
 {
-	if(profile.difficulty==0)
+	if(profile.difficulty==DIFFICULTY_NORMAL)
 	{
 		if(amt>127)
 			amt=255;
@@ -1984,4 +1992,36 @@ void PutPlayerAtStart(Guy *g)
 		g->y=(pStartY*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT;
 		PutCamera(g->x,g->y);
 	}
+}
+
+static const char wpnName[][32] = {
+	"None",
+	"Missiles",
+	"AK-8087",
+	"Bombs",
+	"Flamethrower",
+	"Power Armor",
+	"Big Axe",
+	"Lightning Rod",
+	"Spears",
+	"Machete",
+	"Mines",
+	"Turrets",
+	"Mind Control Ray",
+	"Reflect Shield",
+	"Jetpack",
+	"Swapgun",
+	"Torch",
+	"Scanner",
+	"Mini-Sub",
+	"Freeze Ray",
+	"Stopwatch",
+};
+static_assert(std::size(wpnName) == MAX_WEAPONS, "Must give new weapon a name");
+
+const char* GetWeaponName(byte weapon)
+{
+	if (weapon < MAX_WEAPONS)
+		return wpnName[weapon];
+	return "???";
 }

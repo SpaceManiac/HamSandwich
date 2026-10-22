@@ -229,14 +229,14 @@ void PoisonVictim(Guy *me,byte amt)
 
 void PlayerWinLevel(byte isSecret)
 {
-	PrintToLog("PlayerWinLevel",0);
+	LogVerbose("PlayerWinLevel");
 	player.levelProg->flags|=LF_PASSED;
 	if(curMap->numCandles==0)
 		player.levelProg->flags|=LF_CANDLES;	// get candle credit if there aren't any
 
-	PrintToLog("StoreWorldResults",0);
+	LogVerbose("StoreWorldResults");
 	StoreWorldResults(player.worldProg,&curWorld);
-	PrintToLog("SaveProfile",0);
+	LogVerbose("SaveProfile");
 	SaveProfile();
 }
 
@@ -720,9 +720,9 @@ void PlayerFireWeapon(Guy *me)
 	if(player.life==0)
 		return;	// no shooting when you're dead
 
-	if(player.weapon==WPN_NONE && player.wpnReload==0)
+	if(player.weapon==WPN_NONE)
 	{
-		if(player.ammo>=10)
+		if(player.wpnReload == 0 && player.ammo>=10)
 		{
 			MakeNormalSound(SND_FISHCAST);
 			player.ammo-=10;
@@ -1436,7 +1436,7 @@ void PlayerGetWeaponXP(byte wpn,word amt)
 		amt*=2;
 
 	wpn--;
-	if(wpn<0 || wpn>5)
+	if(wpn>5)
 		return;
 
 	if(player.weaponLvl[wpn]==0)

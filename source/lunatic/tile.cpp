@@ -1,5 +1,6 @@
 #include "tile.h"
 #include "options.h"
+#include "recolor.h"
 
 tile_t tiles[NUMTILES];
 MGLDraw *tileMGL;
@@ -34,23 +35,17 @@ void SetTiles(byte *scrn)
 	}
 }
 
-void SaveTiles(FILE *f)
+void SaveTiles(SDL_IOStream *f)
 {
-	fwrite(tiles, NUMTILES, sizeof (tile_t), f);
+	SDL_WriteIO(f, tiles, NUMTILES * sizeof (tile_t));
 }
 
-void LoadTiles(FILE *f)
+void LoadTiles(SDL_IOStream *f)
 {
-	fread(tiles, NUMTILES, sizeof (tile_t), f);
+	SDL_ReadIO(f, tiles, NUMTILES * sizeof (tile_t));
 }
 
 // --- RENDERING!
-// Helper shenanigans for C stuff, see jamulspr.cpp
-extern byte SprModifyColor(byte color, byte hue);
-extern byte SprGetColor(byte color);
-extern byte SprModifyLight(byte color, char bright);
-extern byte SprModifyGhost(byte src, byte dst, char bright);
-extern byte SprModifyGlow(byte src, byte dst, char bright);
 
 byte ModifyDiscoColor(byte color, byte disco)
 {
@@ -579,7 +574,7 @@ void RenderFloorTileFancy(int x, int y, int t, byte shadow, char *theLight)
 
 	if (!opt.smoothLight)
 	{
-		if (shadow == 1 || shadow == 2)
+		if (shadow == 1 || shadow == 2 || shadow == 6)
 			RenderFloorTileShadow(x, y, t, theLight[4]);
 		else
 			RenderFloorTile(x, y, t, theLight[4]);

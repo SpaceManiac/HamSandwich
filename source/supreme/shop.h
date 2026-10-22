@@ -2,6 +2,7 @@
 #define SHOP_H
 
 #include "mgldraw.h"
+#include "bitflags.h"
 
 #define SHOP_LOCKERS	0
 #define SHOP_SPOOKY		1
@@ -47,18 +48,28 @@
 #define MAJOR_ARCADE	8
 #define MAJOR_BESTIARY	9
 
-// playables
-#define PLAY_BOUAPHA	0
-#define PLAY_HAPPY		1
-#define PLAY_LUNATIC	2
-#define PLAY_SHROOM		3
-#define PLAY_LUNACHIK	4
-#define PLAY_MECHA		5
+// Playable characters. SERIALIZED in profile, specials, and leaderboards.
+enum : byte
+{
+	PLAY_BOUAPHA  = 0,
+	PLAY_HAPPY    = 1,
+	PLAY_LUNATIC  = 2,
+	PLAY_SHROOM   = 3,
+	PLAY_LUNACHIK = 4,
+	PLAY_MECHA    = 5,
+
+	MAX_PLAYAS // End marker. Add new items above this.
+};
+const char* GetPlayableCharacterName(int playAs);
 
 // shop item flags (used in the player progress file)
-#define SIF_AVAILABLE	1
-#define SIF_BOUGHT		2
-#define SIF_ACTIVE		4	// for locker items that can be toggled, is it on or off?
+enum ShopItemFlags : byte
+{
+	SIF_AVAILABLE = 1 << 0,
+	SIF_BOUGHT    = 1 << 1,
+	SIF_ACTIVE    = 1 << 2, // for locker items that can be toggled, is it on or off?
+};
+BITFLAGS(ShopItemFlags)
 
 // modes you can buy in lockers
 #define MODE_DISCO		0
@@ -69,21 +80,16 @@
 #define MODE_MANIC		5
 #define MODE_TEENY		6
 
-typedef struct shopItem_t
-{
-	byte shop;
-	word cost;
-	byte type;
-	byte item;	// which # of the items of "type" it is
-} shopItem_t;
-
 class Map;
 
-byte CanPlayWorld(const char *fname);
-byte ItemPurchased(byte type,byte num);
-byte AllOfTypePurchased(byte type);
-byte AllPurchased(void);
-byte AllLockersOpen(void);
+bool CanPlayWorld(const char *fname);
+bool ItemPurchased(byte type,byte num);
+bool AllOfTypePurchased(byte type);
+byte NumOfTypePurchased(byte type);
+bool AllPurchased(void);
+byte NumPurchased();
+bool AllLockersOpen(void);
+byte NumLockersOpen();
 
 byte ShopItemNumber(byte type,byte num);
 void SetupShops(Map *map);

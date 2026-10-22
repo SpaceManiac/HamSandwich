@@ -7,42 +7,58 @@
 #include "editor.h"
 
 // the different tools
-#define TOOL_FLOOR  0
-#define TOOL_WALL	1
-#define TOOL_ITEM	2
-#define TOOL_BADGUY 3
-#define TOOL_LIGHT	4
-#define TOOL_SPECIAL 5
-#define TOOL_SELECT 6
-#define TOOL_ERASER 7
-#define NUM_TOOLS	8
+enum : byte
+{
+	TOOL_FLOOR,
+	TOOL_WALL,
+	TOOL_ITEM,
+	TOOL_BADGUY,
+	TOOL_LIGHT,
+	TOOL_SPECIAL,
+	TOOL_SELECT,
+	TOOL_ERASER,
 
-#define MENU_FILE	0
-#define MENU_WORLD  1
-#define MENU_TEST	2
-#define MENU_LEVEL	3
-#define MENU_DISPLAY 4
-#define MENU_TILES	5
-#define MENU_ITEMS	6
-#define MENU_SOUND  7
-#define MENU_EXIT	8
-#define NUM_MENUS	9
+	NUM_TOOLS
+};
+
+enum : byte
+{
+	MENU_FILE,
+	MENU_WORLD,
+	MENU_TEST,
+	MENU_LEVEL,
+	MENU_DISPLAY,
+	MENU_TILES,
+	MENU_ITEMS,
+	MENU_SOUND,
+	MENU_JSPEDIT,
+	MENU_EXIT,
+
+	NUM_MENUS
+};
 
 // ways to plop
-#define PLOP_NORMAL		0
-#define PLOP_RANDOM		1
-#define PLOP_CYCLE		2
-#define PLOP_RANDOM2	3
-#define PLOP_CYCLE2		4
-#define PLOP_MODES		5
+enum : byte
+{
+	PLOP_NORMAL,
+	PLOP_RANDOM,
+	PLOP_CYCLE,
+	PLOP_RANDOM2,
+	PLOP_CYCLE2,
+
+	PLOP_MODES
+};
 
 // Tool Doings (what is the tool doing right now)
-#define TD_PICKTOOL		0	// selecting from the pop up menu of tools
-#define TD_PLOPPING		1	// cursor is held, plopping down tool
-#define TD_USING		2	// nothing special going on
-#define TD_PICKINK		3	// selecting an 'ink' for the tool
-#define TD_PICKMENU		4	// picking a menu from the list
-#define TD_ERASING		5	// rightclick is held, erasing
+enum : byte
+{
+	TD_PICKTOOL,  // selecting from the pop up menu of tools
+	TD_PLOPPING,  // cursor is held, plopping down tool
+	TD_USING,     // nothing special going on
+	TD_PICKINK,   // selecting an 'ink' for the tool
+	TD_PICKMENU,  // picking a menu from the list
+	TD_ERASING,   // rightclick is held, erasing
+};
 
 class Tool
 {

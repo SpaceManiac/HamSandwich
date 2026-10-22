@@ -9,7 +9,6 @@
 #include "cossin.h"
 #include "sound.h"
 #include "particle.h"
-#pragma pack(1)
 
 // bullet traits
 #define BF_HITEVIL	(1)
@@ -91,7 +90,7 @@ typedef struct bulletDef_t
 	byte spawnMethod;	// how to spawn, above
 	byte spawnCount;	// number of them to spawn
 	byte spawnRate;		// delay before spawning again (0=just do it once)
-	byte spawnDmg;		// damage of spawned projectiles
+	short spawnDmg;		// damage of spawned projectiles
 	// particles
 	byte partDelay;
 	byte partType;
@@ -182,6 +181,7 @@ typedef struct bulletDef_t
 #define FF_HELPER  64	// if you have a helper bat or not
 #define FF_HELPERHERE 128	// is the helper bat present?
 
+#pragma pack(push, 1)
 typedef struct bullet_t
 {
 	int x,y,z;
@@ -207,6 +207,8 @@ typedef struct bullet_t
 	word bSpawnTimer;
 	byte bounces,pierces;
 } bullet_t;
+static_assert(sizeof(bullet_t) == 57);
+#pragma pack(pop)
 
 extern bulletDef_t bulDef[BLT_TYPES];
 extern byte bulletHittingType;
@@ -231,7 +233,7 @@ byte NotBeingDrained(int who);
 void RenderBullet(bullet_t *me);
 byte EatItem(int x,int y);
 
-void LoadBullets(FILE *f);
-void SaveBullets(FILE *f);
+void LoadBullets(SDL_IOStream *f);
+void SaveBullets(SDL_IOStream *f);
 
 #endif

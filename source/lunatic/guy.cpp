@@ -646,11 +646,11 @@ void Guy::MonsterControl(Map *map, world_t *world)
 	if (!target) return;
 
 	monsterAi_t ai = MonsterAi(type);
-	if (ai == NULL) {
-		LogDebug("null AI on %s", MonsterName(type));
+	if (!ai)
+	{
+		LogError("null AI on %s", MonsterName(type));
 		return;
 	}
-
 	ai(this, map, world, target);
 }
 
@@ -1933,16 +1933,14 @@ byte SwapMe(int x, int y, byte size, Map *map)
 
 void MonsterTally(void)
 {
-#ifdef LOG
-	int i;
+	if (!IsLogPriority(SDL_LOG_PRIORITY_VERBOSE))
+		return;
 
-	for (i = 0; i < maxGuys; i++)
+	for (int i = 0; i < maxGuys; i++)
 	{
 		if (guys[i]->type)
 		{
-			fprintf(logFile, "GUY %d: Type %d:%s", i, guys[i]->type, MonsterName(guys[i]->type));
+			LogVerbose("GUY %d: Type %d:%s", i, guys[i]->type, MonsterName(guys[i]->type));
 		}
 	}
-	fflush(logFile);
-#endif
 }

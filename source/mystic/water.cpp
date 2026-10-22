@@ -3,13 +3,18 @@
 #include "player.h"
 #include "options.h"
 
-#define WATER_WIDTH	(256)
-#define WATER_HEIGHT (256)
+#define WATER_WIDTH	(512)
+#define WATER_HEIGHT (512)
 #define WATERFIX (32)
 #define WATERDAMPEN (31)
 
+#define WATERBMP_WIDTH (256)
+#define WATERBMP_HEIGHT (256)
+
 short *water1,*water2;
-static byte *waterbkgd,scroll;
+static byte* waterbkgd;
+int scroll;
+int blorpX, blorpY, blorpTime;
 
 void InitWater(void)
 {
@@ -36,7 +41,7 @@ void InitWater(void)
 	{
 		water1[i]=0;
 		water2[i]=0;
-		waterbkgd[i]=src[(i%WATER_WIDTH)+(i/WATER_WIDTH)*width];
+		waterbkgd[i] = 32*3+5;// src[(i % WATER_WIDTH) + (i / WATER_WIDTH) * width];
 	}
 }
 
@@ -49,23 +54,26 @@ void ExitWater(void)
 void SetupWater(void)
 {
 	byte *src;
-	int width,i;
+	int width,i,j;
 
 	if((player.worldNum==1 && player.levelNum==15) ||
-		(player.worldNum==2 && player.levelNum==20) ||
-		(player.worldNum==3 && player.levelNum==12))
+		(player.worldNum==2 && player.levelNum==20))
 		GetDisplayMGL()->LoadBMP("graphics/rapid.bmp");
+	else if(player.worldNum == 3 && player.levelNum == 12)
+		GetDisplayMGL()->LoadBMP("graphics/water3.bmp");
 	else
 		GetDisplayMGL()->LoadBMP("graphics/water.bmp");
 
 	width=GetDisplayMGL()->GetWidth();
 	src=GetDisplayMGL()->GetScreen();
-	for(i=0;i<WATER_WIDTH*WATER_HEIGHT;i++)
+	for(j=0;j<WATER_HEIGHT;j++)
+		for(i=0;i<WATER_WIDTH;i++)
 	{
-		water1[i]=0;
-		water2[i]=0;
-		waterbkgd[i]=src[(i%WATER_WIDTH)+(i/WATER_WIDTH)*width];
+		water1[i+j*WATER_WIDTH]=0;
+		water2[i+j*WATER_WIDTH]=0;
+		waterbkgd[i+j*WATER_WIDTH]=src[(i%WATERBMP_WIDTH)+(j%WATERBMP_HEIGHT)*width];
 	}
+	blorpTime = 0;
 }
 
 inline short GetWaterBit(int x,int y)
@@ -96,39 +104,47 @@ inline byte GetWaterBkgdBit(int x,int y)
 	return waterbkgd[x+y*WATER_WIDTH];
 }
 
+byte flip = 0;
+
 void UpdateWater(void)
 {
-	int i,j;
-	short *tmp;
+	int i, j;
+	short* tmp;
 
-	if((player.worldNum==1 && player.levelNum==15) ||
-		(player.worldNum==2 && player.levelNum==20) ||
-		(player.worldNum==3 && player.levelNum==12))
+	if ((player.worldNum == 1 && player.levelNum == 15) ||
+		(player.worldNum == 2 && player.levelNum == 20) ||
+		(player.worldNum == 3 && player.levelNum == 12))
+	{
 		scroll--;
+		blorpY--;
+	}
+	if (scroll < 0)
+		scroll += WATER_HEIGHT;
 
-	if(!opt.waterFX)
+	if (!opt.waterFX)
 		return;
 
-	if((player.worldNum==1 && player.levelNum==15) ||
-		(player.worldNum==2 && player.levelNum==20) ||
-		(player.worldNum==3 && player.levelNum==12))
+	if ((player.worldNum == 1 && player.levelNum == 15) ||
+		(player.worldNum == 2 && player.levelNum == 20) ||
+		(player.worldNum == 3 && player.levelNum == 12))
 	{
-		for(i=0;i<40;i++)
-			WaterBlop((byte)MGL_random(256),(byte)MGL_random(256),(byte)MGL_random(32));
+		for (i = 0; i < 40; i++)
+			WaterBlop(MGL_random(WATER_WIDTH), MGL_random(WATER_HEIGHT), (byte)MGL_random(WATER_WIDTH / 8));
 	}
 	else
-		WaterBlop((byte)MGL_random(256),(byte)MGL_random(256),(byte)MGL_random(128));
+		WaterBlop(MGL_random(WATER_WIDTH), MGL_random(WATER_HEIGHT), (byte)MGL_random(WATER_WIDTH / 2));
 
-	for(i=0;i<WATER_WIDTH;i++)
-		for(j=0;j<WATER_HEIGHT;j++)
+	int neighborDiv = 2;
+	int dampen = WATERDAMPEN;
+	for (i = 0; i < WATER_WIDTH; i++)
+		for (j = 0; j < WATER_HEIGHT; j++)
 		{
-			water2[i+j*WATER_WIDTH]=(GetWaterBit(i-1,j)+GetWaterBit(i+1,j)+GetWaterBit(i,j-1)+GetWaterBit(i,j+1))/2-water2[i+j*WATER_WIDTH];
-			water2[i+j*WATER_WIDTH]=water2[i+j*WATER_WIDTH]*WATERDAMPEN/WATERFIX;
+			water2[i + j * WATER_WIDTH] = (GetWaterBit(i - 1, j) + GetWaterBit(i + 1, j) + GetWaterBit(i, j - 1) + GetWaterBit(i, j + 1)) / neighborDiv - water2[i + j * WATER_WIDTH];
+			water2[i + j * WATER_WIDTH] = water2[i + j * WATER_WIDTH] * dampen / WATERFIX;
 		}
-
-	tmp=water1;
-	water1=water2;
-	water2=tmp;	// swap the pointers
+	tmp = water1;
+	water1 = water2;
+	water2 = tmp;	// swap the pointers	
 }
 
 byte WaterPixel(int x,int y)
@@ -144,6 +160,8 @@ byte WaterPixel(int x,int y)
 	y/=2;
 
 	y+=scroll;
+	if (y < 0)
+		y += WATER_HEIGHT;
 
 	x=x%WATER_WIDTH;
 	y=y%WATER_HEIGHT;
@@ -152,30 +170,53 @@ byte WaterPixel(int x,int y)
 	yofs=GetWaterBit(x,y-1)-GetWaterBit(x,y+1);
 
 	s=GetWaterBkgdBit(x+xofs/WATERFIX,y+yofs/WATERFIX)&31;
-	s+=xofs/WATERFIX;	// shade it
-
-    if(s<0)
-		s=0;
-	if(s>31)
-		s=31;
-
-	if(player.levelNum==20 && player.worldNum==2)
+	
+	if (player.worldNum < 3)
 	{
-		if(s-6<0)
+		s += xofs / WATERFIX;	// shade it
+
+		if (s < 0)
+			s = 0;
+		if (s > 31)
+			s = 31;
+	}
+	else
+	{
+		s += xofs / (WATERFIX*2);	// shade it
+		s += 4;
+		if (s < 0) s = 0;
+		if (s > 31) s = 31;
+	}
+
+	if (player.levelNum == 20 && player.worldNum == 2)
+	{
+		if (s - 6 < 0)
 			return 0;
 		else
-			return (byte)s+32*1-6;
+			return (byte)s + 32 * 1 - 6;
 	}
-	else if(player.levelNum==22 && player.worldNum==2)
+	else if (player.levelNum == 22 && player.worldNum == 2)
 	{
-		return (byte)s+32*6;
+		return (byte)s + 32 * 6;
 	}
-	else if(player.worldNum==3)
+	else if (player.worldNum == 3)
 	{
-		if(s+3>31)
+		if (s + 3 > 31)
 			return 31;
 		else
-			return (byte)s+32*4+3;
+			return (byte)s + 32 * 4;
+	}
+	else if (player.worldNum == 0)
+	{
+		if (player.levelNum == 20 || (player.levelNum==1 && (GetGoodguy() && GetGoodguy()->x < 38 * FIXAMT * TILE_WIDTH && GetGoodguy()->y>29 * FIXAMT * TILE_HEIGHT)))
+		{
+			if (s < 4)
+				return (byte)0 + 32*5;
+			else
+				return (byte)s - 4 + 32*5;
+		}
+		else
+			return (byte)s + 32 * 3;
 	}
 	else
 		return (byte)s+32*3;
@@ -189,17 +230,19 @@ void WaterRipple(int x,int y,short amt)
 		return;
 
 	GetCamera(&camx,&camy);
-	if((x-camx+320)<0 || (x-camx+320)>640 ||
-	   (y-camy+240)<0 || (y-camy+240)>480)
+	if((x-camx+HALFWID)<0 || (x-camx+HALFWID)>SCRWID ||
+	   (y-camy+HALFHEI)<0 || (y-camy+HALFHEI)>SCRHEI*2)
 		return;
 
-	x+=320;
-	y+=240;
+	x+=HALFWID;
+	y+=HALFHEI;
 
 	x/=2;
 	y/=2;
 
 	y+=scroll;
+	if (y < 0)
+		y += WATER_HEIGHT;
 
 //	x=x-camx;
 //	y=y-camy;
@@ -235,7 +278,7 @@ void WaterRipple(int x,int y,short amt)
 	water2[x+y*WATER_WIDTH]+=amt/2;
 }
 
-void WaterBlop(byte x,byte y,byte width)
+void WaterBlop(int x,int y,int width)
 {
 	int i,x2;
 	short s;
@@ -249,7 +292,7 @@ void WaterBlop(byte x,byte y,byte width)
 		x2=i;
 		if(x2>WATER_WIDTH)
 			x2-=WATER_WIDTH;
-		water2[((byte)(x2))+((byte)(y))*WATER_WIDTH]+=s;
+		water2[(x2%WATER_WIDTH)+(y%WATER_HEIGHT)*WATER_WIDTH]+=s;
 		if((i-x)<width/2)
 			s+=WATERFIX*3/4;
 		else if(s>1)

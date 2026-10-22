@@ -147,18 +147,18 @@ void InfSurvMonsters(int level,Map *map,world_t *world)
 	byte myType;
 	int i;
 
-	DBG("ISM");
+	LogVerbose("ISM");
 	amount=level-level/4+Random(level/2+1);
 	if(amount<1)
 		amount=1;
 
-	DBG("ISM2");
+	LogVerbose("ISM2");
 	while(amount>0)
 	{
-		DBG("ISM3A");
+		LogVerbose("ISM3A");
 		myType=(byte)Random(NUM_MONSTERS);
 
-		DBG("ISM3W");
+		LogVerbose("ISM3W");
 		if(MonsterLevel(myType)>amount)
 			continue;
 
@@ -178,16 +178,16 @@ void InfSurvMonsters(int level,Map *map,world_t *world)
 		if(myType==0)
 			continue;
 
-		DBG("ISM3Q");
+		LogVerbose("ISM3Q");
 		amount-=MonsterLevel(myType);
 		x=Random(map->width);
 		y=Random(map->height);
-		DBG("ISM3B");
+		LogVerbose("ISM3B");
 		if(level>240)
 			if(Random(480)<(dword)(level-240))
 				myType=MONS_STICKWITCH;
 		SurprisePlace(myType,0,x,y,map,world);
-		DBG("ISM3C");
+		LogVerbose("ISM3C");
 	}
 }
 

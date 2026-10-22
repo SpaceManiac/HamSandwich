@@ -1,10 +1,11 @@
 #include "particle.h"
+#include <memory>
 #include "bullet.h"
 #include "monster.h"
 #include "options.h"
 
-Particle **particleList;
-int		maxParticles;
+static std::unique_ptr<Particle[]> particleList;
+static int maxParticles;
 static int snowCount=0;
 
 Particle::Particle(void)
@@ -309,23 +310,14 @@ bool Particle::Alive(void)
 
 void InitParticles(int max)
 {
-	int i;
-
-	maxParticles=max;
-
-	particleList=(Particle **)malloc(sizeof(Particle *)*maxParticles);
-	for(i=0;i<maxParticles;i++)
-		particleList[i]=new Particle();
+	particleList = std::make_unique<Particle[]>(max);
+	maxParticles = max;
 }
 
 void ExitParticles(void)
 {
-	int i;
-
-	for(i=0;i<maxParticles;i++)
-		delete particleList[i];
-
-	free(particleList);
+	maxParticles = 0;
+	particleList.reset();
 }
 
 void UpdateParticles(Map *map)
@@ -334,7 +326,7 @@ void UpdateParticles(Map *map)
 
 	snowCount=0;
 	for(i=0;i<maxParticles;i++)
-		particleList[i]->Update(map);
+		particleList[i].Update(map);
 }
 
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size)
@@ -637,35 +629,35 @@ void RenderParticles(void)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(particleList[i]->Alive())
+		if(particleList[i].Alive())
 		{
-			if(particleList[i]->type==PART_LIGHTNING)
-				LightningDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-								particleList[i]->dx>>FIXSHIFT,particleList[i]->dy>>FIXSHIFT,
-								particleList[i]->color,(char)particleList[i]->size);
-			else if(particleList[i]->type==PART_CIRCLE)
-				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,(byte)Random(particleList[i]->size+1),
+			if(particleList[i].type==PART_LIGHTNING)
+				LightningDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+								particleList[i].dx>>FIXSHIFT,particleList[i].dy>>FIXSHIFT,
+								particleList[i].color,(char)particleList[i].size);
+			else if(particleList[i].type==PART_CIRCLE)
+				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,(byte)Random(particleList[i].size+1),
 							 DISPLAY_DRAWME|DISPLAY_CIRCLEPART);
-			else if(particleList[i]->type==PART_RING)
-				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size,
+			else if(particleList[i].type==PART_RING)
+				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size,
 							 DISPLAY_DRAWME|DISPLAY_RINGPART);
-			else if(particleList[i]->type==PART_FIRE || particleList[i]->type==PART_COLDFIRE)
+			else if(particleList[i].type==PART_FIRE || particleList[i].type==PART_COLDFIRE)
 			{
 				if(opt.cheats[CH_FROGWPN])
 				{
-					RenderItem(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-						particleList[i]->z>>FIXSHIFT,ITM_FROGDOLL,0,0);
+					RenderItem(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+						particleList[i].z>>FIXSHIFT,ITM_FROGDOLL,0,0);
 				}
 				else
-					ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size/4,
+					ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size/4,
 							 DISPLAY_DRAWME|DISPLAY_CIRCLEPART|DISPLAY_GLOW);
 			}
 			else
-				ParticleDraw(particleList[i]->x>>FIXSHIFT,particleList[i]->y>>FIXSHIFT,
-							 particleList[i]->z>>FIXSHIFT,particleList[i]->color,particleList[i]->size,
+				ParticleDraw(particleList[i].x>>FIXSHIFT,particleList[i].y>>FIXSHIFT,
+							 particleList[i].z>>FIXSHIFT,particleList[i].color,particleList[i].size,
 							 DISPLAY_DRAWME|DISPLAY_PARTICLE);
 		}
 	}
@@ -676,18 +668,18 @@ void MakeCircleParticle(int x,int y, int z,byte size)
 	int i;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->life=size/2;
-			particleList[i]->size=size;
-			particleList[i]->color=255;
-			particleList[i]->type=PART_CIRCLE;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].life=size/2;
+			particleList[i].size=size;
+			particleList[i].color=255;
+			particleList[i].type=PART_CIRCLE;
 			break;
 		}
 	}
@@ -698,18 +690,18 @@ void MakeCircleParticle2(int x,int y, int z,byte size)
 	int i;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x;
-			particleList[i]->y=y;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->life=size/4+2;
-			particleList[i]->size=size;
-			particleList[i]->color=255;
-			particleList[i]->type=PART_CIRCLE;
+			particleList[i].x=x;
+			particleList[i].y=y;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].life=size/4+2;
+			particleList[i].size=size;
+			particleList[i].color=255;
+			particleList[i].type=PART_CIRCLE;
 			break;
 		}
 	}
@@ -722,19 +714,19 @@ void MakeRingParticle(int x,int y, int z,byte size,byte cnt)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 			ang=(byte)Random(256);
-			particleList[i]->x=x+Cosine(ang)*size;
-			particleList[i]->y=y+Sine(ang)*size;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=Random(FIXAMT*2);
-			particleList[i]->color=191;
-			particleList[i]->life=10+(byte)Random(30);
-			particleList[i]->size=8*4+(byte)Random(4*4);
-			particleList[i]->type=PART_FIRE;
+			particleList[i].x=x+Cosine(ang)*size;
+			particleList[i].y=y+Sine(ang)*size;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=Random(FIXAMT*2);
+			particleList[i].color=191;
+			particleList[i].life=10+(byte)Random(30);
+			particleList[i].size=8*4+(byte)Random(4*4);
+			particleList[i].type=PART_FIRE;
 			cnt--;
 			if(!cnt)
 				break;
@@ -750,18 +742,18 @@ void MakeColdRingParticle(int x,int y, int z,byte size)
 	ang=0;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x+Cosine(ang)*size;
-			particleList[i]->y=y+Sine(ang)*size;
-			particleList[i]->z=z;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=Random(FIXAMT*2);
-			particleList[i]->color=31;
-			particleList[i]->life=10+Random(30);
-			particleList[i]->size=8*4+(byte)Random(4*4);
-			particleList[i]->type=PART_COLDFIRE;
+			particleList[i].x=x+Cosine(ang)*size;
+			particleList[i].y=y+Sine(ang)*size;
+			particleList[i].z=z;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=Random(FIXAMT*2);
+			particleList[i].color=31;
+			particleList[i].life=10+Random(30);
+			particleList[i].size=8*4+(byte)Random(4*4);
+			particleList[i].type=PART_COLDFIRE;
 			ang++;
 			if(!ang)
 				break;
@@ -775,14 +767,14 @@ void GlassShatter(int x,int y,int x2,int y2,int z,byte amt)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=(x+Random(x2-x));
-			particleList[i]->y=(y+Random(y2-y));
-			particleList[i]->z=z;
-			particleList[i]->GoRandom(PART_GLASS,(x+Random(x2-x)),(y+Random(y2-y)),
+			particleList[i].x=(x+Random(x2-x));
+			particleList[i].y=(y+Random(y2-y));
+			particleList[i].z=z;
+			particleList[i].GoRandom(PART_GLASS,(x+Random(x2-x)),(y+Random(y2-y)),
 					Random(10*FIXAMT),20);
-			particleList[i]->color=(byte)Random(8)*32+16;
+			particleList[i].color=(byte)Random(8)*32+16;
 			if(!(--amt))
 				break;
 		}
@@ -808,9 +800,9 @@ void SpurtParticles(byte type,bool left,int x,int y,int z,byte angle,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->Go(type,x,y,z,angle,force);
+			particleList[i].Go(type,x,y,z,angle,force);
 			if(!--amt)
 				break;
 		}
@@ -825,9 +817,9 @@ void ExplodeParticles(byte type,int x,int y,int z,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandom(type,x,y,z,force);
+			particleList[i].GoRandom(type,x,y,z,force);
 			if(!--amt)
 				break;
 		}
@@ -843,9 +835,9 @@ void ExplodeParticles2(byte type,int x,int y,int z,byte num,byte force)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoRandom(type,x,y,z,force);
+			particleList[i].GoRandom(type,x,y,z,force);
 			if(!--num)
 				break;
 		}
@@ -866,19 +858,19 @@ void MakeItSnow(Map *map)
 	cy-=240;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 
-			particleList[i]->x=(Random(640)+cx)<<FIXSHIFT;
-			particleList[i]->y=(Random(480)+cy)<<FIXSHIFT;
-			particleList[i]->z=(300+Random(300))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=50+Random(50);
-			particleList[i]->type=PART_SNOW;
-			particleList[i]->color=31;
+			particleList[i].x=(Random(640)+cx)<<FIXSHIFT;
+			particleList[i].y=(Random(480)+cy)<<FIXSHIFT;
+			particleList[i].z=(300+Random(300))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=50+Random(50);
+			particleList[i].type=PART_SNOW;
+			particleList[i].color=31;
 			break;
 		}
 	}
@@ -890,18 +882,18 @@ void SpecialSnow(int x,int y)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
 
-			particleList[i]->x=x-FIXAMT*10+Random(FIXAMT*20);
-			particleList[i]->y=y-FIXAMT*10+Random(FIXAMT*20);
-			particleList[i]->z=(50+Random(20))<<FIXSHIFT;
-			particleList[i]->dx=0;
-			particleList[i]->dy=0;
-			particleList[i]->dz=0;
-			particleList[i]->size=2;
-			particleList[i]->life=20+Random(30);
-			particleList[i]->type=PART_SNOW;
+			particleList[i].x=x-FIXAMT*10+Random(FIXAMT*20);
+			particleList[i].y=y-FIXAMT*10+Random(FIXAMT*20);
+			particleList[i].z=(50+Random(20))<<FIXSHIFT;
+			particleList[i].dx=0;
+			particleList[i].dy=0;
+			particleList[i].dz=0;
+			particleList[i].size=2;
+			particleList[i].life=20+Random(30);
+			particleList[i].type=PART_SNOW;
 			break;
 		}
 	}
@@ -913,9 +905,9 @@ void LightningBolt(int x,int y,int x2,int y2)
 
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->GoLightning(x,y,x2,y2);
+			particleList[i].GoLightning(x,y,x2,y2);
 			break;
 		}
 	}
@@ -929,18 +921,18 @@ void Burn(int x,int y,int z)
 	num=(byte)Random(8)+1;
 	for(i=0;i<maxParticles;i++)
 	{
-		if(!particleList[i]->Alive())
+		if(!particleList[i].Alive())
 		{
-			particleList[i]->x=x-FIXAMT*2+Random(FIXAMT*4);
-			particleList[i]->y=y;
-			particleList[i]->z=z-FIXAMT*2+Random(FIXAMT*4);
-			particleList[i]->dx=-FIXAMT*2+Random(FIXAMT*4);
-			particleList[i]->dy=0;
-			particleList[i]->dz=Random(FIXAMT*2);
-			particleList[i]->color=191;
-			particleList[i]->life=10+Random(30);
-			particleList[i]->size=8*4+(byte)Random(4*4);
-			particleList[i]->type=PART_FIRE;
+			particleList[i].x=x-FIXAMT*2+Random(FIXAMT*4);
+			particleList[i].y=y;
+			particleList[i].z=z-FIXAMT*2+Random(FIXAMT*4);
+			particleList[i].dx=-FIXAMT*2+Random(FIXAMT*4);
+			particleList[i].dy=0;
+			particleList[i].dz=Random(FIXAMT*2);
+			particleList[i].color=191;
+			particleList[i].life=10+Random(30);
+			particleList[i].size=8*4+(byte)Random(4*4);
+			particleList[i].type=PART_FIRE;
 			if(--num==0)
 				break;
 		}

@@ -1,66 +1,75 @@
 #ifndef JAMULSPR_H
 #define JAMULSPR_H
 
-#include "jamultypes.h"
 #include <stdio.h>
+#include <vector>
+#include <memory>
+#include "jamultypes.h"
+#include "recolor.h"
 
-typedef struct SDL_RWops SDL_RWops;
+typedef struct SDL_IOStream SDL_IOStream;
 
 class MGLDraw;
 
-class sprite_t
+class HAM_API sprite_t
 {
+	sprite_t(const sprite_t &) = delete;
+	void operator=(const sprite_t &) = delete;
 public:
 	sprite_t();
-	sprite_t(byte *info);
+	explicit sprite_t(const byte *info) noexcept;
 
-	~sprite_t();
+	sprite_t(sprite_t &&) noexcept = default;
+	sprite_t &operator=(sprite_t &&) noexcept = default;
 
-	bool LoadData(SDL_RWops *f);
-	bool SaveData(FILE *f);
-	void GetHeader(byte *buffer);
-	void Draw(int x, int y, MGLDraw *mgl);
+	bool LoadData(SDL_IOStream *f);
+	bool SaveData(SDL_IOStream *f) const;
+	void GetHeader(byte *buffer) const;
 
-	void DrawBright(int x, int y, MGLDraw *mgl, char bright);
-	void DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright);
-	void DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright);
-	void DrawGhost(int x, int y, MGLDraw *mgl, char bright);
-	void DrawGlow(int x, int y, MGLDraw *mgl, char bright);
-	void DrawC(int x, int y, MGLDraw *mgl);
-
+	void Draw(int x, int y, MGLDraw *mgl) const;
+	void DrawBright(int x, int y, MGLDraw *mgl, char bright) const;
+	void DrawColored(int x, int y, MGLDraw *mgl, byte color, char bright) const;
+	void DrawOffColor(int x, int y, MGLDraw *mgl, byte fromColor, byte toColor, char bright) const;
+	void DrawGhost(int x, int y, MGLDraw *mgl, char bright) const;
+	void DrawGhostBright(int x, int y, MGLDraw *mgl, char bright) const;
+	void DrawGlow(int x, int y, MGLDraw *mgl, char bright) const;
+	void Draw(int x, int y, MGLDraw *mgl, Recolor recolor) const;
 	// this makes half-height tilted black shadows (they darken by 4)
-	void DrawShadow(int x, int y, MGLDraw *mgl);
-	void GetCoords(int x, int y, int *rx, int *ry, int *rx2, int *ry2);
+	void DrawShadow(int x, int y, MGLDraw *mgl) const;
+
+	void GetCoords(int x, int y, int *rx, int *ry, int *rx2, int *ry2) const;
 
 	word width;
 	word height;
 	int16_t ofsx;
 	int16_t ofsy;
 protected:
-	dword size;
-	byte *data;
+	std::vector<byte> data;
 };
 
-class sprite_set_t
+class HAM_API sprite_set_t
 {
+	sprite_set_t(const sprite_set_t &) = delete;
+	void operator=(const sprite_set_t &) = delete;
 public:
 	sprite_set_t();
-	sprite_set_t(const char *fname);
+	explicit sprite_set_t(const char *fname);
 
-	~sprite_set_t();
+	sprite_set_t(sprite_set_t &&) noexcept = default;
+	sprite_set_t &operator=(sprite_set_t &&) noexcept = default;
 
-	bool Save(const char *fname);
+	bool Save(const char *fname) const;
 	bool Load(const char *fname);
-	sprite_t *GetSprite(int which);
-	word GetCount();
+	sprite_t* GetSprite(int which);
+	const sprite_t* GetSprite(int which) const;
+	word GetCount() const;
 protected:
-	void Free();
-
-	word count;
-	sprite_t **spr;
+	std::vector<sprite_t> spr;
 };
 
-void NewComputerSpriteFix(const char *fname);
-void SetSpriteConstraints(int x, int y, int x2, int y2);
+HAM_API void NewComputerSpriteFix(const char *fname);
+// x2 and y2 are inclusive.
+HAM_API void SetSpriteConstraints(int x, int y, int x2, int y2);
+HAM_API void ClearSpriteConstraints();
 
 #endif

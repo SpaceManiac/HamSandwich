@@ -4,19 +4,31 @@
 #include "options.h"
 #include "challenge.h"
 #include "appdata.h"
+#include "spell.h"
+#include "skills.h"
+#include "runes.h"
+#include "string_extras.h"
 
 #define SUBMODE_NONE	 0
 #define SUBMODE_SLOTPICK 1
+#define SUBMODE_SKILLS	 2
+#define SUBMODE_QOL		 3
+#define SUBMODE_RUNES	 4
 
 byte cursor=0;
-static byte subcursor=0;
+static byte subcursor=0, saveCursor=0, effCursor=0;
 static char lastKey=0;
 byte subMode;
 static byte giveUp=0;	// which text should be shown for "Give Up"
 int pauseX=-250,subX=-250;
+
+constexpr int NUM_SAVES = 250;
+int saveOffset = 0;  // 0, 5, 10, ...
 byte saveLevel[5],saveNightmare[5];
 byte saveChapter[5];
-byte saveHour[5],saveMin[5];
+byte saveHour[5],saveMin[5],savePct[5];
+Difficulty saveDiff[5];
+
 static byte armaBrt=0;
 
 void ResetPauseMenu(void)
@@ -28,113 +40,552 @@ void ResetPauseMenu(void)
 
 void SetSubCursor(byte s)
 {
-	subcursor=s;
+	saveCursor = s % 5;
+	saveOffset = (s / 5) * 5;
+}
+
+void PrintPauseOption(int y, byte curSpot, const char* s)
+{
+	if(cursor==curSpot)
+		PrintBright(pauseX + 10+2, y+2, s, -31, 2);
+	PrintBrightGlow(pauseX + 10, y, s, -16 + (cursor == curSpot) * 16, 2);
 }
 
 void RenderPauseMenu(void)
 {
+	char onoff[6][8] = { "Off","I","II","III","IV","V" };
 	if(pauseX==-250)
 		return;
+
+	if(Challenging())
+		PauseChallengeRender(pauseX);
 
 	RenderPlayerGear(440-pauseX*2,armaBrt);
 
 	GetShopSpr(34)->Draw(pauseX,230,GetDisplayMGL());
-	PrintBrightGlow(pauseX+10,240,"Cancel",-16+(cursor==0)*16,0);
-	if(!Challenging())
+	if (ClassicMode())
 	{
-		PrintBrightGlow(pauseX+10,280,"Load",-16+(cursor==1)*16,0);
-	}
-	if(giveUp==0)
-		PrintBrightGlow(pauseX+10,320,"Save",-16+(cursor==2)*16,0);
-	else if(giveUp==2)	// random battle
-		PrintBrightGlow(pauseX+10,320,"Run Away",-16+(cursor==2)*16,0);
-	else 	// regular level
-		PrintBrightGlow(pauseX+10,320,"Give Up",-16+(cursor==2)*16,0);
+		PrintBrightGlow(pauseX + 10, 240, "Cancel", -16 + (cursor == 0) * 16, 0);
+		if (!Challenging())
+		{
+			PrintBrightGlow(pauseX + 10, 280, "Load", -16 + (cursor == 1) * 16, 0);
+		}
+		if (giveUp == 0)
+			PrintBrightGlow(pauseX + 10, 320, "Save", -16 + (cursor == 2) * 16, 0);
+		else if (giveUp == 2)	// random battle
+			PrintBrightGlow(pauseX + 10, 320, "Run Away", -16 + (cursor == 2) * 16, 0);
+		else 	// regular level
+			PrintBrightGlow(pauseX + 10, 320, "Give Up", -16 + (cursor == 2) * 16, 0);
 
-	PrintBrightGlow(pauseX+10,360,"Music:",-16+(cursor==4)*16,0);
-	if(opt.musicVol==0)
-		PrintBrightGlow(pauseX+10+160,360,"Off",-16+(cursor==4)*16,0);
-	else if(opt.musicVol==1)
-		PrintBrightGlow(pauseX+10+160,360,"I",-16+(cursor==4)*16,0);
-	else if(opt.musicVol==2)
-		PrintBrightGlow(pauseX+10+160,360,"II",-16+(cursor==4)*16,0);
-	else if(opt.musicVol==3)
-		PrintBrightGlow(pauseX+10+160,360,"III",-16+(cursor==4)*16,0);
-	PrintBrightGlow(pauseX+10,400,"Quit Game",-16+(cursor==5)*16,0);
-	RenderSlotPickMenu();
+		PrintBrightGlow(pauseX + 10, 360, "Music:", -16 + (cursor == 3) * 16, 0);
+		PrintBrightGlow(pauseX + 10 + 160, 360, onoff[opt.musicVol], -16 + (cursor == 3) * 16, 0);
+		PrintBrightGlow(pauseX + 10, 400, "Quit Game", -16 + (cursor == 4) * 16, 0);
+		RenderSlotPickMenu();
+	}
+	else // modern menu
+	{
+		int hgt = 23;
+		PrintPauseOption(240, 0, "Cancel");
+		char s[32];
+		sprintf(s, "Skills (%d)", player.skillPts);
+		PrintPauseOption(240 + hgt * 1, 1, s);
+		PrintPauseOption(240 + hgt * 2, 2, "Runes");
+		if(!Challenging())
+			PrintPauseOption(240 + hgt * 3, 3, "Load");
+
+		if (giveUp == 0)
+			PrintPauseOption(240 + hgt * 4, 4, "Save");
+		else if (giveUp == 2)	// random battle
+			PrintPauseOption(240 + hgt * 4, 4, "Run Away");
+		else 	// regular level
+			PrintPauseOption(240 + hgt * 4, 4, "Give Up");
+
+		sprintf(s, "Sound: %s", onoff[opt.soundVol]);
+		PrintPauseOption(240 + hgt * 5, 5, s);
+		sprintf(s, "Music: %s", onoff[opt.musicVol]);
+		PrintPauseOption(240 + hgt * 6, 6, s);
+		PrintPauseOption(240 + hgt * 7, 7, "Weird Settings");
+		PrintPauseOption(240 + hgt * 8, 8, "Quit Game");
+
+		RenderSlotPickMenu();
+		if(subMode==SUBMODE_SKILLS)
+			RenderSkillMenu();
+		if (subMode == SUBMODE_QOL)
+			RenderWeirdMenu();
+		if (subMode == SUBMODE_RUNES)
+			RenderRuneMenu();
+	}
 }
 
 void RenderSlotPickMenu(void)
 {
 	int i;
-	char s[32];
+	char s[64];
 
 	GetShopSpr(34)->Draw(subX,40,GetDisplayMGL());
 
 	for(i=0;i<5;i++)
 	{
-		s[0]='1'+i;
-		s[1]='\0';
-		if(subcursor==i)
+		if (saveOffset == 245)
 		{
-			PrintBrightGlow(subX+10,50+i*40,s,0,0);
+			sprintf(s, "%d", i + 1);
+			PrintBrightGlow(subX + 200 + 35 + 15 - 8 - GetStrLength(s,0) - GetStrLength("BK", 2), 50 + i * 40, "BK", -16 + (saveCursor == i) * 16, 2);
+			sprintf(s, "  %d", i + 1);
+		}
+		else
+		{
+			sprintf(s, "%d", saveOffset + i + 1);
+		}
+		//FontPrintStringSolid(subX + 200 + 35 + 15 - 5 - GetStrLength(s, 0),50+i*40,s,gameFont[0],174);
+		PrintBrightGlow(subX + 200 + 35 + 15 - 5 - GetStrLength(s, 0),50+i*40,s,-16+(saveCursor==i)*16,0);
+
+		if(saveCursor==i)
+		{
 			if(saveChapter[i]==0 || saveLevel[i]==0)
 			{
-				PrintBrightGlow(subX+40,50+i*40,"Empty Slot",0,2);
+				PrintBrightGlow(subX+10,50+i*40,"Empty Slot",0,2);
 			}
 			else
 			{
-				if(!saveNightmare[i])
-					sprintf(s,"Chapter %d",saveChapter[i]);
-				else
-					sprintf(s,"Chapter %d!!!",saveChapter[i]);
-				PrintBrightGlow(subX+40,50+i*40,s,0,2);
-				sprintf(s,"%02d:%02d  Lvl: %02d",saveHour[i],saveMin[i],saveLevel[i]);
-				PrintBrightGlow(subX+40,50+i*40+20,s,0,2);
+				auto dest = ham_sprintf(s, "Chapter %d", saveChapter[i]);
+				if(saveNightmare[i])
+					dest = ham_strcpy(dest, "!!!");
+				dest = ham_strcpy(dest, DifficultySuffix(saveDiff[i]));
+				PrintBrightGlow(subX+10,50+i*40,s,0,2);
+
+				sprintf(s,"%02d:%02d L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
+				PrintBrightGlow(subX+10,50+i*40+20,s,0,2);
 			}
 		}
 		else
 		{
-			PrintBright(subX+10,50+i*40,s,-32,0);
 			if(saveChapter[i]==0 || saveLevel[i]==0)
 			{
-				PrintBright(subX+40,50+i*40,"Empty Slot",-32,2);
+				PrintBright(subX+10,50+i*40,"Empty Slot",-32,2);
 			}
 			else
 			{
-				if(!saveNightmare[i])
-					sprintf(s,"Chapter %d",saveChapter[i]);
-				else
-					sprintf(s,"Chapter %d!!!",saveChapter[i]);
-				PrintBright(subX+40,50+i*40,s,-32,2);
-				sprintf(s,"%02d:%02d  Lvl: %02d",saveHour[i],saveMin[i],saveLevel[i]);
-				PrintBright(subX+40,50+i*40+20,s,-32,2);
+				auto dest = ham_sprintf(s, "Chapter %d", saveChapter[i]);
+				if(saveNightmare[i])
+					dest = ham_strcpy(dest, "!!!");
+				dest = ham_strcpy(dest, DifficultySuffix(saveDiff[i]));
+				PrintBright(subX+10,50+i*40,s,-32,2);
+
+				sprintf(s,"%02d:%02d L%02d %d%%",saveHour[i],saveMin[i],saveLevel[i],savePct[i]);
+				PrintBright(subX+10,50+i*40+20,s,-32,2);
 			}
 		}
 	}
 }
 
-void HandlePauseKeyPresses(MGLDraw *mgl)
+void RenderSkillBox(int x, int y, int x2, int y2, byte outC, byte inC)
 {
-	char k;
-
-	k=mgl->LastKeyPressed();
-	if(k)
-		lastKey=k;
+	DrawBox(x + 1, y, x2 - 1, y2, outC);
+	DrawBox(x, y+1, x2, y2-1, outC);
+	DrawFillBox(x + 1, y + 1, x2 - 1, y2 - 1, inC);
 }
 
-float CalcTotalPercent(player_t *p)
+void RenderSkillMenu(void)
 {
-	int i,amt,total;
+	int i;
+	char s[32];
 
-	amt=0;
-	total=0;
-	for(i=0;i<1;i++)
+	RenderSkillBox(SCRWID / 2, 30, SCRWID - 2, SCRHEI - 30, 5*32+20, 5*32+8);
+	RenderSkillBox(SCRWID / 2 + 2, 30 + 2, SCRWID - 2 - 2, SCRHEI - 30 - 2, 5*32+16, 5*32+8);
+
+	PrintBrightGlow(SCRWID / 2 + 15, 32, "Mystic Skills",0,0);
+	int x, y;
+	int spacing = 50;
+	x = SCRWID / 2 + SCRWID / 4 - spacing*3+5;
+	y = 70;
+
+	for (int j = 0; j < 6; j++)
 	{
-		total+=p->totalCompletion[i];
-		amt+=p->complete[i];
+		for (int i = 0; i < 6; i++)
+		{
+			if (skillList[i + j * 6].spellReq != 255 && player.spell[skillList[i + j * 6].spellReq] == 0)
+			{
+				if (subcursor == i + j * 6)
+				{
+					RenderSkillBox(x-2, y-2, x + 41, y + 41, 32 * 5 + 31, 32*5+8);
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 3);
+					BlitIconGlow(36, x + 4, y + 4, 0);
+
+					DescribeSkill(i + j * 6, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+				}
+				else
+				{
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, 0);
+					BlitIconGlow(36, x + 4, y + 4, -15);
+				}
+			}
+			else
+			{
+				if (subcursor == i + j * 6)
+				{
+					RenderSkillBox(x - 2, y - 2, x + 41, y + 41, 32 * 7 + 31, 32 * 7 + 8);
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 31, 32 * 7 + 3 + player.skill[i + j * 6] * 2);
+					BlitIconGlow(i + j * 6, x + 4, y + 4, 0);
+
+					DescribeSkill(i + j * 6, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+				}
+				else
+				{
+					RenderSkillBox(x, y, x + 39, y + 39, 32 * 5 + 16, player.skill[i + j * 6] ? 32 * 7 + player.skill[i + j * 6] * 2 : 0);
+					BlitIconGlow(i + j * 6, x + 4, y + 4, -15);
+				}
+				for (int k = 0; k < 5; k++)
+				{
+					int hgt = abs(2 - k) * 2;
+					if (k == 2) hgt = 1;
+					RenderSkillBox(x + 1 + k * 8, y + 39 - hgt, x + 1 + k * 8 + 5, y + 39 - hgt + 5, 32 * 5 + 16 + 15 * (subcursor == i + j * 6), 32 * 7 + 3 + (player.skill[i + j * 6] > k) * (10 + 8 * (subcursor == i + j * 6)));
+				}
+			}
+
+			x += spacing;
+		}
+		x = SCRWID / 2 + SCRWID / 4 - spacing * 3+5;
+		y += spacing;
 	}
-	return (float)amt/(float)total;
+
+	sprintf(s, "Points: %02d", player.skillPts);
+	PrintBrightGlow(SCRWID - 80, SCRHEI - 35 - 75, s, 31, 1);
+
+	//if (giveUp == 0)	// only in the overworld
+	{
+		// reset skills
+		if (subcursor == 36)
+			RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 60, SCRWID - 10, SCRHEI - 35 - 40, 32 * 5 + 31, 32 * 5 + 10);
+		else
+			RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 60, SCRWID - 10, SCRHEI - 35 - 40, 32 * 5 + 16, 32 * 5 + 6);
+		PrintBrightGlow(SCRWID - 80 + 4 + 6, SCRHEI - 35 - 60, "Reset", (subcursor == 36) * (giveUp?12:31), 2);
+		if (subcursor == 36)
+		{
+			if (giveUp == 0)
+			{
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 3, "Press Fire to reset all skills", 0, 1);
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 4, "and recover the points spent.", 0, 1);
+			}
+			else
+			{
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 3, "You must be in the Overworld", 0, 1);
+				PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 20 + 12 * 4, "to reset your skills.", 0, 1);
+			}
+		}
+	}
+
+	// exit
+	if (subcursor == 37)
+		RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 35, SCRWID - 10, SCRHEI - 35 - 15, 32 * 5 + 31, 32 * 5 + 10);
+	else
+		RenderSkillBox(SCRWID - 80, SCRHEI - 35 - 35, SCRWID - 10, SCRHEI - 35 - 15, 32 * 5 + 16, 32 * 5 + 6);
+	PrintBrightGlow(SCRWID - 80 + 4+12, SCRHEI - 35 - 35, "Exit", (subcursor == 37) * 31, 2);
+}
+
+void RenderRuneMenu(void)
+{
+	int i;
+	char s[32];
+
+	RenderSkillBox(SCRWID / 2, 30, SCRWID - 2, SCRHEI - 30, 5 * 32 + 20, 5 * 32 + 8);
+	RenderSkillBox(SCRWID / 2 + 2, 30 + 2, SCRWID - 2 - 2, SCRHEI - 30 - 2, 5 * 32 + 16, 5 * 32 + 8);
+
+	PrintBrightGlow(SCRWID / 2 + 15, 32, "Mystic Runes", 0, 0);
+	int x, y;
+	int spacing = 50;
+	x = SCRWID / 2 + SCRWID / 4 - spacing * 3 + 5;
+	y = 70;
+
+	for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
+	{
+		if (RuneLevel((Rune)i) ==RUNE_EMPTY)
+		{
+			if (subcursor == i)
+			{
+				BlitIcon(40+(i%4), x + 4, y + 4 - 2, 0, -31);
+				DescribeRune((Rune)i, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+			}
+			else
+			{
+				BlitIcon(40 + (i % 4), x + 4, y + 4, 0, -31);
+			}
+		}
+		else
+		{
+			byte rank = RuneLevel((Rune)i);
+			byte equipped = RuneEquipped((Rune)i);
+			byte glow = (byte)abs(Cosine((byte)(armaBrt+i*4)) * 8 >> FIXSHIFT);
+			byte col = 0;
+			if(rank==RUNE_RANK1)
+				col = 1;
+			if (rank == RUNE_RANK2)
+				col = 5;
+			else if (rank == RUNE_RANK3)
+				col = 6;
+
+			byte stones = 1;
+			if (rank == RUNE_RANK2)
+				stones = 3;
+			else if (rank == RUNE_RANK3)
+				stones = 6;
+
+			if(equipped)
+				BlitIconBit(601,441,640,480, x+2, y+2 - 2*(subcursor==i), col, glow);
+			if (rank >= RUNE_RANK1)
+			{
+				for (byte j = 0; j < stones; j++)
+				{
+					byte a = (armaBrt+i*4) * (1 + (stones == 3) + (stones == 6)) + j * (256 / stones);
+
+					int srcx, srcy;
+					srcx = 16 * (j % 3);
+					srcy = 480 - 16;
+					if(Sine(a)<0)
+						BlitIconBit(srcx, srcy, srcx + 15, srcy + 15, x + 20 - 8 + (Cosine(a) * 20 >> FIXSHIFT), y + 20 - 8 + (Sine(a) * 12 >> FIXSHIFT), equipped*col, glow*equipped - 6 * (subcursor != i));
+				}
+			}
+			if (subcursor == i)
+			{
+				BlitIcon(40 + (i % 4), x + 4, y + 4-2, 0, 0);
+
+				DescribeRune((Rune)i, SCRWID / 2 + 10, SCRHEI - 30 - 85);
+			}
+			else
+			{
+				BlitIcon(40 + (i % 4), x + 4, y + 4, 0, -6);
+			}
+
+			BlitIcon(100+i, x + 4, y + 4 - 2*(subcursor==i), col, -(col==0)*8+((col!=0)*glow) - 6 * (subcursor != i));
+			if (rank >= RUNE_RANK1)
+			{
+				for (byte j = 0; j < stones; j++)
+				{
+					byte a = (armaBrt+i*4)*(1+(stones==3)+(stones==6)) + j * (256 / stones);
+
+					int srcx, srcy;
+					srcx = 16 * (j % 3);
+					srcy = 480 - 16;
+					if(Sine(a)>=0)
+						BlitIconBit(srcx, srcy, srcx+15, srcy+15, x + 20-8 + (Cosine(a) * 20 >> FIXSHIFT), y + 20-8 + (Sine(a) * 12 >> FIXSHIFT),equipped*col, equipped*glow - 6 * (subcursor != i));
+				}
+			}
+		}
+
+		// put the selection marker
+		if (subcursor == i)
+			BlitIconBit(558, 437, 558 + 41, 437 + 42, x, y-2, 255, 0);
+
+		x += spacing;
+		if (x > SCRWID - spacing)
+		{
+			x= SCRWID / 2 + SCRWID / 4 - spacing * 3 + 5;
+			y += spacing;
+		}
+	}
+	sprintf(s, "%d/%d Runes equipped", RunesEquipped(), player.runePouches);
+	PrintBrightGlow(HALFWID+HALFWID/2-GetStrLength(s,2)/2, y, s, 0, 2);
+	if (subcursor != 37)	// directions for your selected rune
+	{
+		byte rank = RuneLevel((Rune)subcursor);
+		byte equipped = RuneEquipped((Rune)subcursor);
+		byte cost = 0;
+
+		y += 25;
+		if (rank == RUNE_EMPTY || rank==RUNE_RANK3)
+			s[0] = '\0';
+		else if (rank == RUNE_ASLEEP)
+		{
+			cost = 10;
+			strcpy(s, "Awaken");
+		}
+		else if (rank == RUNE_RANK1)
+		{
+			cost = 20;
+			strcpy(s, "Upgrade");
+		}
+		else if (rank == RUNE_RANK2)
+		{
+			cost = 30;
+			strcpy(s, "Upgrade");
+		}
+		char s2[40];
+		if (player.runeStones < cost)
+		{
+			sprintf(s2, "Need %d more Runestones", cost - player.runeStones);
+			PrintBrightGlow(HALFWID + HALFWID / 2 - GetStrLength(s2, 1) / 2, y, s2, 0, 1);
+		}
+		else if(cost>0)
+		{
+			sprintf(s2, "%s (%d  ):", s,cost);
+			x = HALFWID + HALFWID / 2 - GetStrLength(s2, 1);
+			GetItemSprite(280)->Draw(HALFWID + HALFWID / 2 - 18, y+8, GetDisplayMGL());
+			PrintBrightGlow(x, y, s2, 0, 1);
+			x = HALFWID + HALFWID / 2 + 5;
+			Print(x, y, "Space", 0, 1);
+			x += GetStrLength("Space", 1) + 4;
+			Print(x, y, "/", 0, 1);
+			x += 10;
+			RenderGamepadButton(x, y - 3, SDL_GAMEPAD_BUTTON_EAST);
+		}
+
+		if (rank >= RUNE_RANK1)	// can be equipped
+		{
+			y += 15;
+			if (equipped)
+			{
+				sprintf(s2, "Unequip:");
+				x = HALFWID + HALFWID / 2 - GetStrLength(s2, 1);
+				PrintBrightGlow(x, y, s2, 0, 1);
+				x = HALFWID + HALFWID / 2 + 5;
+				Print(x, y, "Enter", 0, 1);
+				x += GetStrLength("Enter", 1) + 4;
+				Print(x, y, "/", 0, 1);
+				x += 10;
+				RenderGamepadButton(x, y - 3, SDL_GAMEPAD_BUTTON_SOUTH);
+			}
+			else
+			{
+				if (RunesEquipped() >= player.runePouches)
+				{
+					sprintf(s2, "Maximum runes equipped!");
+					PrintBrightGlow(HALFWID + HALFWID / 2-GetStrLength(s2,1)/2, y, s2, 0, 1);
+				}
+				else
+				{
+					sprintf(s2, "Equip:");
+					x = HALFWID + HALFWID / 2 - GetStrLength(s2, 1);
+					PrintBrightGlow(x, y, s2, 0, 1);
+					x = HALFWID + HALFWID / 2 + 5;
+					Print(x, y, "Enter", 0, 1);
+					x += GetStrLength("Enter", 1) + 4;
+					Print(x, y, "/", 0, 1);
+					x += 10;
+					RenderGamepadButton(x, y - 3, SDL_GAMEPAD_BUTTON_SOUTH);
+				}
+			}
+		}
+	}
+	sprintf(s, "%02d", player.runeStones);
+	int len=GetStrLength(s, 1);
+	BlitIconBit(2, 467, 13, 477, SCRWID - 10 - len - 14, SCRHEI - 30 - 55, 255, 0);
+	PrintBrightGlow(SCRWID - 10-len, SCRHEI - 30 - 55, s, 31, 1);
+
+	// exit
+	if (subcursor == 37)
+	{
+		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 31, 32 * 5 + 10);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85, "Find Silent Runes hidden in the", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85+ 14, "world. Press Cast to awaken", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*2, "and upgrade them with", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14*3, "Runestones. Press Fire to equip", 0, 1);
+		PrintBrightGlow(SCRWID / 2 + 10, SCRHEI - 30 - 85 + 14 * 4, "Awakened Runes.", 0, 1);
+	}
+	else
+		RenderSkillBox(SCRWID - 80, SCRHEI - 30 - 35, SCRWID - 10, SCRHEI - 30 - 15, 32 * 5 + 16, 32 * 5 + 6);
+	PrintBrightGlow(SCRWID - 80 + 4 + 12, SCRHEI - 30 - 35, "Exit", (subcursor == 37) * 31, 2);
+}
+
+void RenderWeirdOption(int x, int y, const char* txt, bool on, byte cursorOn,bool active)
+{
+	if (!active)
+	{
+		char txt2[32];
+		strcpy(txt2, txt);
+		int len = strlen(txt2);
+		for (int i = 0; i < len; i++)
+			txt2[i] = (rand() % 2) ? '?' : ' ';
+		PrintBrightGlow(x, y, txt2, -16+32 * cursorOn, 2);
+		return;
+	}
+	PrintBrightGlow(x, y, txt, -16+32 * cursorOn, 2);
+	if(on)
+		PrintBrightGlow(x+200, y, "On", -16+32 * cursorOn, 2);
+	else
+		PrintBrightGlow(x+200, y, "Off", -16+32 * cursorOn, 2);
+}
+
+void RenderWeirdOption2(int x, int y, const char* txt, byte on, byte cursorOn, bool active)
+{
+	if (!active)
+	{
+		char txt2[32];
+		strcpy(txt2, txt);
+		int len = strlen(txt2);
+		for (int i = 0; i < len; i++)
+			txt2[i] = (rand() % 2) ? '?' : ' ';
+		PrintBrightGlow(x, y, txt2, -16 + 32 * cursorOn, 2);
+		return;
+	}
+	PrintBrightGlow(x, y, txt, -16 + 32 * cursorOn, 2);
+	if (on==QUICKCAST_CASTANDSELECT)
+		PrintBrightGlow(x + 200, y, "Both", -16 + 32 * cursorOn, 2);
+	else if(on==QUICKCAST_CASTONLY)
+		PrintBrightGlow(x + 200, y, "Cast", -16 + 32 * cursorOn, 2);
+	else if (on == QUICKCAST_SELECTONLY)
+		PrintBrightGlow(x + 200, y, "Select", -16 + 32 * cursorOn, 2);
+}
+
+void RenderWeirdMenu(void)
+{
+	int i;
+	char s[32];
+
+	RenderSkillBox(SCRWID / 2, 30, SCRWID - 2, SCRHEI - 30, 5 * 32 + 20, 5 * 32 + 8);
+	RenderSkillBox(SCRWID / 2 + 2, 30 + 2, SCRWID - 2 - 2, SCRHEI - 30 - 2, 5 * 32 + 16, 5 * 32 + 8);
+
+	PrintBrightGlow(SCRWID / 2 + 20, 32, "Weird Stuff", 0, 0);
+	int x, y;
+	x = SCRWID / 2 + 15;
+	y = 75;
+
+	RenderWeirdOption(x, y, "Dmg Numbers:", !player.disableDmgNumbers, (subcursor == 0),true);
+	RenderWeirdOption(x, y + 20, "Shootin' Socks:", !player.disableMoveNShoot, (subcursor == 1), (player.gear & GEAR_SOCKS));
+	RenderWeirdOption(x, y + 40, "Pointy Hat:", !player.disableThorns, (subcursor == 2), (player.gear & GEAR_POINTY));
+	RenderWeirdOption(x, y + 60, "Energy Storm:", !player.downgradeSpell[SPL_ENERGY], (subcursor == 3), player.spell[SPL_ENERGY]==2);
+	RenderWeirdOption(x, y + 80, "Liquify:", !player.downgradeSpell[SPL_FLAME], (subcursor == 4), player.spell[SPL_FLAME]==2);
+	RenderWeirdOption(x, y + 100, "Seeker Swarm:", !player.downgradeSpell[SPL_SEEKER], (subcursor == 5), player.spell[SPL_SEEKER] == 2);
+	RenderWeirdOption(x, y + 120, "Ice Beam:", !player.downgradeSpell[SPL_ICE], (subcursor == 6), player.spell[SPL_ICE] == 2);
+	RenderWeirdOption(x, y + 140, "Hyper Inferno:", !player.downgradeSpell[SPL_INFERNO], (subcursor == 7), player.spell[SPL_INFERNO] == 2);
+	RenderWeirdOption(x, y + 160, "Summon Golem:", !player.downgradeSpell[SPL_SUMMON], (subcursor == 8), player.spell[SPL_SUMMON] == 2);
+	RenderWeirdOption(x, y + 180, "Steelskin:", !player.downgradeSpell[SPL_ARMOR], (subcursor == 9), player.spell[SPL_ARMOR] == 2);
+	RenderWeirdOption(x, y + 200, "Insane Rage:", !player.downgradeSpell[SPL_BERSERK], (subcursor == 10), player.spell[SPL_BERSERK] == 2);
+	RenderWeirdOption(x, y + 220, "Life Spell:", !player.downgradeSpell[SPL_HEAL], (subcursor == 11), player.spell[SPL_HEAL] == 2);
+	RenderWeirdOption(x, y + 240, "Sword Skulls:", !player.disableSword, (subcursor == 12), PlayerHasSword());
+	RenderWeirdOption(x, y + 260, "Orb Compass:", !player.disableOrbRadar, (subcursor == 13), (player.gear & GEAR_COMPASS));
+	RenderWeirdOption2(x, y + 280, "Quick Cast:", opt.quickCast, (subcursor == 14), true);
+	RenderWeirdOption(x, y + 300, "Skill Pt Alert:", !player.disableSkillWarning, (subcursor == 15), true);
+	PrintBrightGlow(x, y+320, "Exit", -16 + 32 * (subcursor==16), 2);
+
+	switch (subcursor)
+	{
+		case 1:
+			if (!(player.gear & GEAR_SOCKS))
+				PrintBrightGlow(x, SCRHEI - 50, "Buy Shootin' Socks to enable this option.", 0, 1);
+			break;
+		case 2:
+			if (!(player.gear & GEAR_POINTY))
+				PrintBrightGlow(x, SCRHEI - 50, "Buy the Pointy Hat to enable this option.", 0, 1);
+			break;
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		case 9:
+		case 10:
+		case 11:
+			if (player.spell[subcursor-3]<2)
+				PrintBrightGlow(x, SCRHEI - 50, "Find an advanced spell for this option.", 0, 1);
+			break;
+		case 12:
+			if (!PlayerHasSword())
+				PrintBrightGlow(x, SCRHEI - 50, "You'll need something special for this!", 0, 1);
+			break;
+		case 13:
+			PrintBrightGlow(x, SCRHEI - 50, "A shortcut to the Quick Cast setting.", 0, 1);
+			break;
+	}
 }
 
 void SetGiveUpText(byte gu)
@@ -142,43 +593,67 @@ void SetGiveUpText(byte gu)
 	giveUp=gu;
 }
 
+static void GetSaves()
+{
+	// Clear list
+	for (int i = 0; i < 5; i++)
+	{
+		saveLevel[i] = 0;
+		saveChapter[i] = 0;
+		saveHour[i] = 0;
+		saveMin[i] = 0;
+		saveNightmare[i] = 0;
+		saveDiff[i] = Difficulty::UNUSED;
+		savePct[i] = 0;
+	}
+
+	// Use pre-Enchanted mystic.sav if it exists
+	if (saveOffset == 0)
+	{
+		if (auto f = AppdataOpen("mystic.sav"))
+		{
+			for (int i = 0; i < 5; i++)
+			{
+				player_t p;
+				static_assert(sizeof(player_t) == 624);
+				SDL_ReadIO(f, &p, sizeof(player_t));
+				saveLevel[i] = p.level;
+				saveChapter[i] = p.worldNum + 1;
+				saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
+				saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
+				saveNightmare[i] = p.nightmare;
+				saveDiff[i] = Difficulty::CLASSIC;
+				savePct[i] = CalcGamePercent(&p);
+			}
+		}
+	}
+
+	// But prefer new mysticN.sav
+	for (int i = 0; i < 5; i++)
+	{
+		char s[32];
+		ham_sprintf(s, "mystic%d.sav", saveOffset + i + 1);
+		if (auto f = AppdataOpen(s))
+		{
+			player_t p;
+			SDL_ReadIO(f, &p, sizeof(player_t));
+			saveLevel[i] = p.level;
+			saveChapter[i] = p.worldNum + 1;
+			saveHour[i] = (byte)(p.gameClock / (30 * 60 * 60));
+			saveMin[i] = (byte)((p.gameClock / (30 * 60)) % 60);
+			saveNightmare[i] = p.nightmare;
+			saveDiff[i] = p.difficulty;
+			savePct[i] = CalcGamePercent(&p);
+			f.reset();
+		}
+	}
+}
+
 void InitPauseMenu(void)
 {
-	FILE *f;
-	player_t p;
-	int i;
-
 	lastKey=0;
 	subMode=0;
 
-	f=AppdataOpen("mystic.sav","rb");
-	if(!f)
-	{
-		for(i=0;i<5;i++)
-		{
-			saveLevel[i]=0;
-			saveChapter[i]=0;
-			saveHour[i]=0;
-			saveMin[i]=0;
-		}
-	}
-	else
-	{
-		for(i=0;i<5;i++)
-		{
-			fread(&p,sizeof(player_t),1,f);
-			saveLevel[i]=p.level;
-			saveChapter[i]=p.worldNum+1;
-			saveHour[i]=(byte)(p.gameClock/(30*60*60));
-			saveMin[i]=(byte)((p.gameClock/(30*60))%60);
-			if(p.nightmare)
-				saveNightmare[i]=1;
-			else
-				saveNightmare[i]=0;
-		}
-
-		fclose(f);
-	}
 	MakeNormalSound(SND_PAUSE);
 	if(cursor==4 && (!giveUp))
 		cursor=0;
@@ -197,17 +672,13 @@ void UpdateUnPausedMenu(void)
 		subX-=25;
 }
 
-byte UpdatePauseMenu(MGLDraw *mgl)
+PauseResult UpdatePauseMenu(MGLDraw *mgl)
 {
-	byte c;
-	static byte oldc=0;
-	static byte reptCounter=0;
-
 	armaBrt++;
 	if(pauseX<0)
 		pauseX+=25;
 
-	if(subMode!=SUBMODE_NONE)
+	if(subMode==SUBMODE_SLOTPICK)
 	{
 		if(subX<0)
 			subX+=25;
@@ -218,125 +689,495 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 			subX-=25;
 	}
 
-	c=GetControls();
-
-	reptCounter++;
-	if((!oldc) || (reptCounter>10))
-		reptCounter=0;
-
+	byte maxCursor = 4 + (!ClassicMode()) * 4;
+	byte loadSpot = 1 + (!ClassicMode())*2;
 	if(subMode==SUBMODE_NONE)	// not in any submenu
 	{
-		if((c&CONTROL_UP) && (!reptCounter))
+		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			cursor--;
 			if(cursor==255)
-				cursor=5;
-			if(cursor==3)
-				cursor=2;
-			if(Challenging() && cursor==1)
-				cursor=0;
+				cursor=maxCursor;
+			if(Challenging() && cursor==loadSpot)
+				cursor=loadSpot-1;
 
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if((c&CONTROL_DN) && (!reptCounter))
+		if(AutoRepeatTapped(CONTROL_DN))
 		{
 			cursor++;
-			if(cursor==6)
+			if(cursor>maxCursor)
 				cursor=0;
-			if(cursor==3)
-				cursor=4;
-			if(Challenging() && cursor==1)
-				cursor=2;
+			if(Challenging() && cursor==loadSpot)
+				cursor=loadSpot+1;
 
 			MakeNormalSound(SND_MENUCLICK);
 		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
+		effCursor = cursor;
+		if (!ClassicMode())
+		{
+			byte conversions[] = { 0,5,8,1,2,6,3,7,4 };
+			// convert the cursor position into the classic equivalent if there is one, a new slot if not
+			effCursor = conversions[cursor];
+		}
+
+		if(ButtonTapped(CONTROL_B1))
 		{
 			MakeNormalSound(SND_MENUSELECT);
-			switch(cursor)
+
+			switch(effCursor)
 			{
 				case 0: // cancel
-					return 0;
+					LockOutControl(CONTROL_B1, true);
+					return PauseResult::Resume;
 				case 1:	// Load
+					saveOffset = (opt.lastSaveSlotUsed/5)*5;	// even if it's a backup, we're gonna point you to the actual last place we saved
+					saveCursor = opt.lastSaveSlotUsed-saveOffset;
+					GetSaves();
+
 					subMode=SUBMODE_SLOTPICK;
 					break;
 				case 2: // Save
 					if(giveUp)
-						return 2;
+						return PauseResult::GiveUp;
 					else
-						subMode=SUBMODE_SLOTPICK;
+					{
+						saveOffset = (player.lastLegitSaveSlot / 5) * 5;	// if you saved into a backup, we still want to suggest your last legit save slot for saving
+						saveCursor = player.lastLegitSaveSlot - saveOffset;
+						GetSaves();
+						subMode = SUBMODE_SLOTPICK;
+					}
 					break;
-				case 4:	// music
-					opt.musicVol++;
-					if(opt.musicVol>3)
-						opt.musicVol=0;
+				case 3:	// music
+					opt.musicVol--;
+					if(opt.musicVol>5)
+						opt.musicVol=5;
 					if(opt.musicVol==0)
 						StopSong();
 					else
 						VolumeSong(opt.musicVol);
-					if(opt.musicVol==1)
+					if(opt.musicVol==5)
 						ReplaySong();
 					break;
-				case 5:	// quit game
-					return 3;
+				case 4:	// quit game
+					return PauseResult::Quit;
+				case 5:	// skills
+					subMode = SUBMODE_SKILLS;
+					subcursor = 0;
+					break;
+				case 6:	// sound
+					opt.soundVol--;
+					if (opt.soundVol > 5)
+						opt.soundVol = 5;
+					VolumeSound(opt.soundVol);
+					MakeNormalSound(SND_GOATSHOOT);
+					break;
+				case 7:	// weird settings
+					subMode = SUBMODE_QOL;
+					subcursor = 0;
+					MakeNormalSound(SND_BERSERK);
+					break;
+				case 8:	// runes
+					subMode = SUBMODE_RUNES;
+					subcursor = 0;
+					break;
 			}
 		}
 	}
 	else if(subMode==SUBMODE_SLOTPICK)
 	{
-		if((c&CONTROL_UP) && (!reptCounter))
+		if(AutoRepeatTapped(CONTROL_UP))
 		{
 			MakeNormalSound(SND_MENUCLICK);
-			subcursor--;
-			if(subcursor==255)
-				subcursor=4;
-		}
-		if((c&CONTROL_DN) && (!reptCounter))
-		{
-			MakeNormalSound(SND_MENUCLICK);
-			subcursor++;
-			if(subcursor==5)
-				subcursor=0;
-		}
-		if(((c&CONTROL_B1) && (!(oldc&CONTROL_B1))) ||
-		   ((c&CONTROL_B2) && (!(oldc&CONTROL_B2))))
-		{
-			if(cursor==1)	// Load
+			saveCursor--;
+			if(saveCursor==255)
 			{
-				if(saveLevel[subcursor]==0 || saveChapter[subcursor]==0)
+				saveCursor=4;
+				saveOffset = (saveOffset + NUM_SAVES - 5) % NUM_SAVES;
+				GetSaves();
+			}
+		}
+		if(AutoRepeatTapped(CONTROL_DN))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			saveCursor++;
+			if(saveCursor==5)
+			{
+				saveCursor=0;
+				saveOffset = (saveOffset + 5) % NUM_SAVES;
+				GetSaves();
+			}
+		}
+		if (AutoRepeatTapped(CONTROL_LF) || AutoRepeatTapped(CONTROL_B3))
+		{
+			saveOffset = (saveOffset + NUM_SAVES - 5) % NUM_SAVES;
+			GetSaves();
+		}
+		if (AutoRepeatTapped(CONTROL_RT) || AutoRepeatTapped(CONTROL_B4))
+		{
+			saveOffset = (saveOffset + 5) % NUM_SAVES;
+			GetSaves();
+		}
+		if (ButtonTapped(CONTROL_B2))
+		{
+			MakeNormalSound(SND_MENUSELECT);
+			subMode = SUBMODE_NONE;
+		}
+		if(ButtonTapped(CONTROL_B1))
+		{
+			if(effCursor==1)	// Load
+			{
+				if(saveLevel[saveCursor]==0 || saveChapter[saveCursor]==0)
 				{
 					MakeNormalSound(SND_ACIDSPLAT);
 				}
 				else
 				{
 					SendMessageToGame(MSG_LOADGAME,0);
-					PlayerLoadGame(subcursor);
+					PlayerLoadGame(saveOffset + saveCursor);
 					MakeNormalSound(SND_LOADGAME);
 					subMode=SUBMODE_NONE;
-					return 0;
+					LockOutControl(CONTROL_B1, true);
+					return PauseResult::Resume;
 				}
 			}
-			else if(cursor==2)	// Save
+			else if(effCursor==2)	// Save
 			{
-				PlayerSaveGame(subcursor);
-				MakeNormalSound(SND_SAVEGAME);
-				subMode=SUBMODE_NONE;
-				return 0;
+				if(saveOffset >= 245)
+				{
+					MakeNormalSound(SND_ACIDSPLAT);
+				}
+				else
+				{
+					PlayerSaveGame(saveOffset + saveCursor);
+					MakeNormalSound(SND_SAVEGAME);
+					subMode=SUBMODE_NONE;
+					opt.lastSaveSlotUsed = saveOffset + saveCursor;
+					player.lastLegitSaveSlot = opt.lastSaveSlotUsed;
+					player.movedSinceSave = 0;
+					return PauseResult::Resume;
+				}
 			}
 		}
 	}
-	oldc=c;
+	else if (subMode == SUBMODE_QOL)
+	{
+		if (AutoRepeatTapped(CONTROL_UP))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			subcursor--;
+			if (subcursor == 255)
+				subcursor = 16;
+		}
+		if (AutoRepeatTapped(CONTROL_DN))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			subcursor++;
+			if (subcursor > 16)
+				subcursor = 0;
+		}
+		if (ButtonTapped(CONTROL_B2))
+		{
+			MakeNormalSound(SND_MENUSELECT);
+			subMode = SUBMODE_NONE;
+		}
+		if (ButtonTapped(CONTROL_B1))
+		{
+			switch (subcursor)
+			{
+				case 0:
+					MakeNormalSound(SND_MENUSELECT);
+					player.disableDmgNumbers = 1 - player.disableDmgNumbers;
+					break;
+				case 1:
+					if (player.gear & GEAR_SOCKS)
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.disableMoveNShoot = 1 - player.disableMoveNShoot;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+					break;
+				case 2:
+					if (player.gear & GEAR_POINTY)
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.disableThorns = 1 - player.disableThorns;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+					break;
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+				case 8:
+				case 9:
+				case 10:
+				case 11:
+					if (player.spell[subcursor - 3] == 2)
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.downgradeSpell[subcursor - 3] = 1 - player.downgradeSpell[subcursor - 3];
+						if (subcursor - 3 == 6 && player.downgradeSpell[subcursor - 3] == 0)	// you are disabling the downgrade for steelskin. Need to turn off your stoneskin if this is the case, because it's super cheating
+							player.stoneskin = 0;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+					break;
+				case 12:
+					if (PlayerHasSword())
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.disableSword = 1 - player.disableSword;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+					break;
+				case 13:
+					if (player.gear & GEAR_COMPASS)
+					{
+						MakeNormalSound(SND_MENUSELECT);
+						player.disableOrbRadar = 1 - player.disableOrbRadar;
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+					break;
+				case 14:
+					MakeNormalSound(SND_MENUSELECT);
+					opt.quickCast++;
+					if (opt.quickCast > QUICKCAST_CASTONLY)
+						opt.quickCast = QUICKCAST_SELECTONLY;
+					break;
+				case 15:
+					MakeNormalSound(SND_MENUSELECT);
+					player.disableSkillWarning = 1-player.disableSkillWarning;
+					break;
+				case 16:
+					MakeNormalSound(SND_MENUSELECT);
+					subMode = SUBMODE_NONE;
+					break;
+			}
+		}
+	}
+	else if (subMode == SUBMODE_SKILLS)
+	{
+		if (AutoRepeatTapped(CONTROL_UP))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			if (subcursor < 6)
+				subcursor = 37;	// the exit button
+			else if (subcursor == 37)
+				subcursor--;
+			else if (subcursor == 36)
+				subcursor = 35;
+			else
+				subcursor-=6;
+			//if (giveUp != 0 && subcursor == 36)
+				//subcursor = 35;
+		}
+		if (AutoRepeatTapped(CONTROL_DN))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			if (subcursor == 37)
+				subcursor = 0;
+			else if (subcursor == 36)
+				subcursor++;
+			else if (subcursor >= 30)
+				subcursor=36;
+			else
+				subcursor+=6;
+			if (giveUp != 0 && subcursor == 36)
+				subcursor = 37;
+		}
+		if (AutoRepeatTapped(CONTROL_LF))
+		{
+			if (subcursor < 36)	// not the two bottom buttons
+			{
+				MakeNormalSound(SND_MENUCLICK);
+				if ((subcursor % 6) == 0)
+					subcursor += 5;
+				else
+					subcursor--;
+			}
+		}
+		if (AutoRepeatTapped(CONTROL_RT))
+		{
+			if (subcursor < 36)
+			{
+				MakeNormalSound(SND_MENUCLICK);
+				if ((subcursor % 6) == 5)
+					subcursor -= 5;
+				else
+					subcursor++;
+			}
+		}
+		if (ButtonTapped(CONTROL_B1))
+		{
+			if (subcursor == 36)
+			{
+				if (giveUp == 0)
+				{
+					// reset skills
+					ResetSkills();
+					MakeNormalSound(SND_BOBBYSPIN);
+				}
+				else
+				{
+					MakeNormalSound(SND_UNAVAILABLE);
+				}
+			}
+			else if (subcursor == 37)
+			{
+				MakeNormalSound(SND_MENUSELECT);
+				subMode = SUBMODE_NONE;
+			}
+			else // a skill
+			{
+				if (player.skillPts > 0 && player.skill[subcursor] < MAX_SKILL_LVL && (skillList[subcursor].spellReq == 255 || player.spell[skillList[subcursor].spellReq] > 0))
+				{
+					MakeNormalSound(SND_GETBRAIN);
+					player.skill[subcursor]++;
+					player.skillPts--;
+					PlayerUpdateLife();
+					byte maxed = 0;
+					for (int i = 0; i < MAX_SKILLS; i++)
+						if (player.skill[i] == MAX_SKILL_LVL)
+							maxed++;
+					if (maxed == MAX_SKILLS)
+						EarnAchieve(Achievement::SKILLS);
+				}
+				else
+					MakeNormalSound(SND_UNAVAILABLE);
+			}
+		}
+	}
+	else if (subMode == SUBMODE_RUNES)
+	{
+		if (AutoRepeatTapped(CONTROL_UP))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			if (subcursor < 6)
+				subcursor = 37;	// the exit button
+			else if (subcursor == 37)
+				subcursor=(int)Rune::NUM_RUNES-1;
+			else
+				subcursor -= 6;
+		}
+		if (AutoRepeatTapped(CONTROL_DN))
+		{
+			MakeNormalSound(SND_MENUCLICK);
+			if (subcursor == 37)
+				subcursor = 0;
+			else if (subcursor >= (int)Rune::NUM_RUNES-6)
+				subcursor = 37;
+			else
+				subcursor += 6;
+		}
+		if (AutoRepeatTapped(CONTROL_LF))
+		{
+			if (subcursor < 37)
+			{
+				MakeNormalSound(SND_MENUCLICK);
+				if ((subcursor % 6) == 0)
+					subcursor += 5;
+				else
+					subcursor--;
+			}
+		}
+		if (AutoRepeatTapped(CONTROL_RT))
+		{
+			if (subcursor < 37)
+			{
+				MakeNormalSound(SND_MENUCLICK);
+				if ((subcursor % 6) == 5)
+					subcursor -= 5;
+				else
+					subcursor++;
+			}
+		}
+		if (ButtonTapped(CONTROL_B1))
+		{
+			if (subcursor == 37)
+			{
+				MakeNormalSound(SND_MENUSELECT);
+				subMode = SUBMODE_NONE;
+			}
+			else // a rune
+			{
+				if(RuneLevel((Rune)subcursor)==RUNE_EMPTY || RuneLevel((Rune)subcursor)==RUNE_ASLEEP)
+					MakeNormalSound(SND_UNAVAILABLE);
+				else
+				{
+					if (RuneEquipped((Rune)subcursor))
+					{
+						player.runes[subcursor] &= (~RUNE_EQUIPPED);
+						MakeNormalSound(SND_MENUSELECT);
+					}
+					else
+					{
+						if (RunesEquipped() >= player.runePouches)
+							MakeNormalSound(SND_UNAVAILABLE);
+						else
+						{
+							player.runes[subcursor] |= RUNE_EQUIPPED;
+							MakeNormalSound(SND_MENUSELECT);
+						}
+					}
+				}
+			}
+		}
+		if (ButtonTapped(CONTROL_B2))
+		{
+			if (subcursor == 37)
+			{
+				MakeNormalSound(SND_MENUSELECT);
+				subMode = SUBMODE_NONE;
+			}
+			else // a rune
+			{
+				if (RuneLevel((Rune)subcursor) == RUNE_EMPTY || RuneLevel((Rune)subcursor) == RUNE_RANK3)
+					MakeNormalSound(SND_UNAVAILABLE);
+				else
+				{
+					word price = 10;
+					if (RuneLevel((Rune)subcursor) == RUNE_RANK1)
+						price = 20;
+					else if (RuneLevel((Rune)subcursor) == RUNE_RANK2)
+						price = 30;
+					if (player.runeStones >= price)
+					{
+						player.runes[subcursor]++;
+						byte maxRunes = 0;
+						for (int i = 0; i < (int)Rune::NUM_RUNES; i++)
+							if ((player.runes[i]&RUNE_MASK) == RUNE_RANK3)
+								maxRunes++;
+						if (maxRunes == (int)Rune::NUM_RUNES)
+							EarnAchieve(Achievement::MAX_RUNES);
 
-	HandlePauseKeyPresses(mgl);
-	if(lastKey==27)	// hit ESC to exit pause menu
+						player.runeStones -= price;
+						MakeNormalSound(SND_FOOD);
+					}
+					else
+						MakeNormalSound(SND_UNAVAILABLE);
+				}
+			}
+		}
+	}
+
+	if(ButtonTapped(CONTROL_ESCAPE) || (ButtonTapped(CONTROL_B2) && subMode!=SUBMODE_RUNES))
 	{
 		MakeNormalSound(SND_MENUSELECT);
-		if(subMode==SUBMODE_NONE)
-			return 0;
+		if (subMode == SUBMODE_NONE)
+		{
+			LockOutControl(CONTROL_B2|CONTROL_ESCAPE, true);
+			return PauseResult::Resume;
+		}
 		else
 			subMode=SUBMODE_NONE;
 		lastKey=0;
 	}
-	return 1;
+
+	return PauseResult::Pause;
 }

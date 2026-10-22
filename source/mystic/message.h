@@ -14,6 +14,8 @@ typedef struct message_t
 	char msg[32];
 } message_t;
 
+void InitSpeechSystem(void);
+
 void InitMessage(void);
 void NewMessage(const char *txt,int time);
 void NewBigMessage(const char *txt,int time);
@@ -21,9 +23,19 @@ void UpdateMessage(void);
 void RenderMessage(void);
 void NoRepeatNewMessage(const char *txt,int time);
 
+void InitFarley(void);
+byte UpdateFarley(MGLDraw *mgl);
+void RenderFarley(void);
+byte FarleyWorldChoice(void);
+void OutlineFarleySprite(word spr, int x, int y, char bright);
+void OutlineFarleySprite2(word spr, int x, int y, char bright, byte color, char actualBright);
 
 void InitSpeech(byte spc);
 byte UpdateSpeech(MGLDraw *mgl);
 void RenderSpeech(void);
+void FinishSpeech(void);
+
+void RenderBasicControls(void);
+void RenderSpellControls(void);
 
 #endif

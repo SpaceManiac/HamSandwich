@@ -16,15 +16,15 @@
 #define ITM_COIN	 9
 #define ITM_FLAME	 10
 #define ITM_BRAIN	 11
-#define ITM_KEYCH1	 12
-#define ITM_KEYCH2	 13
-#define ITM_KEYCH3	 14
-#define ITM_KEYCH4	 15
+#define ITM_SWORD1	 12
+#define ITM_SWORD2	 13
+#define ITM_SWORD3	 14
+#define ITM_SWORD4	 15
 #define ITM_KEY		 16
 #define ITM_KEYR     17
 #define ITM_KEYG	 18
 #define ITM_KEYB	 19
-#define ITM_LOONYKEY 20
+#define ITM_TOADSTOOL 20
 #define ITM_FAIRYBELL 21
 #define ITM_LETTERM  22
 #define ITM_LETTERY	 23
@@ -33,19 +33,29 @@
 #define ITM_LETTERI  26
 #define ITM_LETTERC	 27
 #define ITM_CHLGCRYSTAL 28
+#define ITM_SILENTRUNE 29
 
 #define ITM_SMLROCKS 30
 #define ITM_HOLETREE 31
-#define ITM_IGLOO	 32
+#define ITM_GRIMBLEWEED 32
+#define ITM_RUNEPOUCH 33
+#define ITM_SKILLSHARD 34
+#define ITM_CATTAIL	 35
+#define ITM_MONEYBAG 36
+#define ITM_DIAMOND 37
+#define ITM_STEW	38
 
-#define ITM_BOX		 50
+// no longer walkable
+#define ITM_UNUSED	 50
 #define ITM_STUMP	 51
 #define ITM_BUSH	 52
 #define ITM_BIGROCKS 53
 #define ITM_POST	 54
 #define ITM_CHAIR1	 55
 #define ITM_CHAIR2   56
+#define ITM_BUSH2	 57
 
+// no longer shoot-through-able
 #define ITM_SKLDOOR	 69
 #define ITM_TREE	 70
 #define ITM_DOOR1	 71
@@ -61,8 +71,14 @@
 #define ITM_HUT	     81
 #define ITM_SHOP     82
 #define ITM_TARGET	 83
-
-#define MAX_ITMS	 84
+#define ITM_LAVAROCK 84
+#define ITM_BURNEDTREE 85
+#define ITM_CAULDRON 86
+#define ITM_BIGROCK2 87
+#define ITM_TREE2	 88
+#define ITM_DEADTREE 89
+#define ITM_DEADTREE2 90
+#define MAX_ITMS	 91
 
 // these defines are 1 greater than the highest item of that type
 // (that is, items 1 - X-1 are things the player can pick up, and items

@@ -1,6 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include <string_view>
 #include "mgldraw.h"
 #include "jamulspr.h"
 #include "jamulfont.h"
@@ -13,9 +14,6 @@
    list and camera, so everything is drawn in sorted order (or not drawn). */
 
 #define MAX_DISPLAY_OBJS 1024
-
-#define DISPLAY_XBORDER 256
-#define DISPLAY_YBORDER 256
 
 //display object flags
 #define DISPLAY_DRAWME		1
@@ -31,34 +29,29 @@
 #define DISPLAY_OFFCOLOR	1024
 #define DISPLAY_RINGPART	2048	// ring particle
 
-typedef struct displayObj_t
+struct DisplayObj
 {
-	int x,y,z,z2;
 	sprite_t *spr;
+	int x,y,z,z2;
+	word flags;
 	word hue;
 	int bright;
-	word flags;
-	int prev,next;
 	char light[9];
-} displayObj_t;
+};
+bool operator<(const DisplayObj& lhs, const DisplayObj& rhs);
 
 class DisplayList
 {
 	public:
-		DisplayList(void);
-		~DisplayList(void);
+		DisplayList();
 
 		bool DrawSprite(int x,int y,int z,int z2,word hue,int bright,sprite_t *spr,word flags);
-		void ClearList(void);
-		void Render(void);
+		void ClearList();
+		void Render();
+
 	private:
-
-		void HookIn(int me);
-		int GetOpenSlot(void);
-
-
-		displayObj_t dispObj[MAX_DISPLAY_OBJS];
-		int head,nextfree;
+		int nextfree;
+		DisplayObj dispObj[MAX_DISPLAY_OBJS];
 };
 
 bool InitDisplay(MGLDraw *mainmgl);
@@ -77,6 +70,7 @@ void CenterPrint(int x,int y,const char *s,char bright,byte font);
 void RightPrint(int x,int y,const char *s,char bright,byte font);
 void PrintColor(int x,int y,const char *s,byte color,char bright,byte font);
 void PrintGlow(int x,int y,const char *s,char bright,byte font);
+void PrintGlowRect(int x, int y, int x2, int y2, std::string_view s, int height, char bright, byte font);
 void CenterPrintGlow(int x,int y,const char *s,char bright,byte font);
 void CenterPrintColor(int x,int y,const char *s,byte color,char bright,byte font);
 void RightPrintColor(int x,int y,const char *s,byte color,char bright,byte font);

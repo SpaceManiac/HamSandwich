@@ -1,4 +1,5 @@
 #include "itemedit.h"
+#include <stdlib.h>
 #include "dialogbits.h"
 #include "filedialog.h"
 #include "items.h"
@@ -9,7 +10,7 @@
 #include "terrainedit.h"
 #include "vars.h"
 #include "edithelp.h"
-#include <stdlib.h>
+#include "player.h"
 
 #define IMODE_NORMAL	0	// doing nothing
 #define IMODE_SELECT	1	// selecting an item (for instance to define what item this one becomes)
@@ -50,12 +51,36 @@
 #define ID_RARITY	607
 #define ID_PICKSPR	608
 
-static word flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP,IF_BUBBLES};
-static dword themes[]={IT_PICKUP,IT_DECOR,IT_OBSTACLE,IT_BULLETPROOF,IT_DOOR,IT_TREE,IT_ROCK,
-				  IT_CRATE,IT_SIGN,IT_WEAPON,IT_POWERUP,IT_KEY,IT_COLLECT,IT_FOOD,IT_ENTRANCE,
-				  IT_CHAIR,IT_CUSTOM};
-static word trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBUMP,ITR_CHOP,
+static const ItemThemes themes[]={
+	IT_PICKUP,IT_DECOR,IT_OBSTACLE,IT_BULLETPROOF,IT_DOOR,IT_TREE,IT_ROCK,
+	IT_CRATE,IT_SIGN,IT_WEAPON,IT_POWERUP,IT_KEY,IT_COLLECT,IT_FOOD,IT_ENTRANCE,
+	IT_CHAIR,IT_CUSTOM};
+static const char * const themeNames[] = {
+	"Pick-Ups",
+	"Decorations",
+	"Obstacles",
+	"Bulletproof",
+	"Doors",
+	"Vegetation",
+	"Rocks",
+	"Crates, Etc.",
+	"Signs",
+	"Weapons",
+	"Power-Ups",
+	"Keys",
+	"Collectibles",
+	"Food",
+	"Entrances",
+	"Chairs",
+	"Extras",
+};
+static constexpr int NUM_THEMES = std::min(std::size(themes), std::size(themeNames));
+
+static const ItemFlags flags[]={IF_SHADOW,IF_GLOW,IF_SOLID,IF_BULLETPROOF,IF_PICKUP,IF_LOONYCOLOR,IF_TILE,IF_USERJSP,IF_BUBBLES};
+static const ItemTriggers trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBUMP,ITR_CHOP,
 				  ITR_MINECART,ITR_ALWAYS};
+
+static constexpr int ITEMS_PER_PAGE = 20;
 
 #define IEBTN_NONE	0
 #define IEBTN_NUM	1	// numerical
@@ -70,16 +95,16 @@ static word trigs[]={ITR_GET,ITR_SHOOT,ITR_PLAYERBUMP,ITR_ENEMYBUMP,ITR_FRIENDBU
 #define IEBTN_VAR	   10	// choose a variable (right click toggles G or V, left click cycles num)
 #define IEBTN_DIR	   11	// choose a direction
 
-typedef struct itemEff_t
+struct itemEff_t
 {
 	char name[32];
 	char btnTxt[32];
 	int buttonMin;
 	int buttonMax;
 	byte buttonType;
-} itemEff_t;
+};
 
-static itemEff_t itemEff[]={
+static const itemEff_t itemEff[]={
 	{"No Effect","",0,0,IEBTN_NONE},
 	{"Explode into particles","Color",0,7,IEBTN_COLOR},
 	{"Heal/Harm Target","Amount",-9999,9999,IEBTN_NUM},
@@ -111,45 +136,7 @@ static itemEff_t itemEff[]={
 	{"Move","Direction",0,3,IEBTN_DIR},
 };
 
-static char pwrUpName[MAX_POWERUP][32]={
-	"",
-	"Reverse Hammer",
-	"Reflect Hammer",
-	"Energy Shield",
-	"Garlic",
-	"Speed Up",
-	"Invisibility",
-	"Infinite Ammo",
-	"Reload Weapon",
-	"Hammer Enhance",
-	"Poison",
-};
-
-static char wpnName[MAX_WEAPONS][32]={
-	"None",
-	"Missiles",
-	"AK-8087",
-	"Bombs",
-	"Flamethrower",
-	"Power Armor",
-	"Big Axe",
-	"Lightning Rod",
-	"Spears",
-	"Machete",
-	"Mines",
-	"Turrets",
-	"Mind Control Ray",
-	"Reflect Shield",
-	"Jetpack",
-	"Swapgun",
-	"Torch",
-	"Scanner",
-	"Mini-Sub",
-	"Freeze Ray",
-	"Stopwatch",
-};
-
-static char colorName[8][16]={
+static const char colorName[8][16]={
 	"Grey",
 	"Green",
 	"Brown",
@@ -160,21 +147,21 @@ static char colorName[8][16]={
 	"Aqua",
 };
 
-static char keyColorName[4][16]={
+static const char keyColorName[4][16]={
 	"Yellow",
 	"Red",
 	"Green",
 	"Blue",
 };
 
-static char keychainName[4][16]={
+static const char keychainName[4][16]={
 	"Pumpkin",
 	"Hammer",
 	"Rocket",
 	"Squash",
 };
 
-static char directionName[4][16]={
+static const char directionName[4][16]={
 	"Right",
 	"Down",
 	"Left",
@@ -184,13 +171,15 @@ static char directionName[4][16]={
 static byte itemList[256];
 static word itemsInList,itemStart=0,itemsShown;
 static byte justPicking;
-static byte mode,curTheme;
+static byte mode;
+static ItemThemes curTheme = IT_PICKUP;
 static world_t *world;
 static byte curItem;
 static byte backColor;
 static byte realClick;
 
-static byte saveCurTheme=0,saveCurItem=1,rememberMode,helpRemember;
+static ItemThemes saveCurTheme = IT_PICKUP;
+static byte saveCurItem=1,rememberMode,helpRemember;
 static word saveItemStart=0;
 
 static byte canDrag=1;
@@ -256,6 +245,10 @@ static void FlagClick(int id)
 				MakeNormalSound(SND_TURRETBZZT);
 				GetItem(curItem)->flags&=(~IF_USERJSP);
 				SetButtonState(id,CHECK_OFF);
+
+				helpRemember = mode;
+				InitEditHelp(HELP_ITEMJSP);
+				mode = IMODE_HELP;
 			}
 			else
 			{
@@ -305,7 +298,7 @@ static void NewClick(int id)
 	{
 		MakeNormalSound(SND_MENUSELECT);
 		curItem=i;
-		curTheme=16;
+		curTheme=IT_CUSTOM;
 		MakeItemList();
 		ItemSetFlags();
 	}
@@ -326,10 +319,9 @@ static void CopyClick(int id)
 		memcpy(GetItem(i),GetItem(curItem),sizeof(item_t));
 		GetItem(i)->theme=IT_CUSTOM;	// copy everything but the theme
 		sprintf(s,"Copy of %s",GetItem(curItem)->name);
-		strncpy(GetItem(i)->name,s,31);
-		GetItem(i)->name[31]='\0';
+		SDL_strlcpy(GetItem(i)->name, s, sizeof(GetItem(i)->name));
 		curItem=i;
-		curTheme=16;
+		curTheme=IT_CUSTOM;
 		MakeItemList();
 		ItemSetFlags();
 	}
@@ -401,7 +393,6 @@ static void MoreItemsClick(int id)
 		itemStart=0;
 
 	ClearButtons(ID_PICKITEM,ID_PICKITEM+50);
-	ClearButtons(ID_MOREITEMS,ID_MOREITEMS);
 
 	// now make buttons for the first N, which is however many fit on the screen
 	pos=100;
@@ -414,7 +405,11 @@ static void MoreItemsClick(int id)
 		if(pos>480-30)
 			break;
 	}
-	MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,pos,156,16,"More Items...",MoreItemsClick);
+
+	ClearButtons(ID_MOREITEMS, ID_MOREITEMS);
+	char buf[32];
+	ham_sprintf(buf, "More Items %d/%d", itemStart / ITEMS_PER_PAGE + 1, (itemsInList - 1) / ITEMS_PER_PAGE + 1);
+	MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,100 + 18 * ITEMS_PER_PAGE,156,16,buf,MoreItemsClick);
 }
 
 static void MakeItemList(void)
@@ -430,7 +425,7 @@ static void MakeItemList(void)
 	// get all items which match this theme
 	for(i=0;i<NumItems();i++)
 	{
-		if(GetItem(i)->theme&themes[curTheme])
+		if(GetItem(i)->theme && (GetItem(i)->theme & curTheme) == curTheme)
 		{
 			itemList[pos]=i;
 			itemsInList=pos+1;
@@ -469,15 +464,33 @@ static void MakeItemList(void)
 			break;
 	}
 	if(itemStart>0 || pos>480-30)
-		MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,pos,156,16,"More Items...",MoreItemsClick);
+	{
+		char buf[32];
+		ham_sprintf(buf, "More Items %d/%d", itemStart / ITEMS_PER_PAGE + 1, (itemsInList - 1) / ITEMS_PER_PAGE + 1);
+		MakeButton(BTN_NORMAL,ID_MOREITEMS,0,2,100+18*ITEMS_PER_PAGE,156,16,buf,MoreItemsClick);
+	}
+}
+
+static void SetThemeRadio()
+{
+	for (int i = 0; i < NUM_THEMES; ++i)
+		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : bool(curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
 }
 
 static void PickThemeClick(int id)
 {
-	RadioOn(id,ID_PICKTHEME,ID_PICKTHEME+50);
-	curTheme=id-ID_PICKTHEME;
-	itemStart=0;
+	curTheme = themes[id-ID_PICKTHEME];
+	itemStart = 0;
 	MakeItemList();
+	SetThemeRadio();
+}
+
+static void PickThemeRightClick(int id)
+{
+	curTheme ^= themes[id-ID_PICKTHEME];
+	itemStart = 0;
+	MakeItemList();
+	SetThemeRadio();
 }
 
 static void NameClick(int id)
@@ -564,7 +577,7 @@ static void ItemEditSetupButtons(void)
 	else
 		MakeButton(BTN_NORMAL,ID_EXIT,0,480,460,158,14,"Exit Item Editor",ExitClick);
 
-	RadioOn(ID_PICKTHEME+curTheme,ID_PICKTHEME,ID_PICKTHEME+50);
+	SetThemeRadio();
 }
 
 static void EffectClick(int id)
@@ -744,7 +757,7 @@ static void SoundClick(int id)
 
 static void SetupEffect(void)
 {
-	itemEff_t *ie;
+	const itemEff_t *ie;
 	char s[64];
 
 	ie=&itemEff[GetItem(curItem)->effect];
@@ -783,7 +796,7 @@ static void SetupEffect(void)
 		case IEBTN_WEAPON:
 			// choose a weapon
 			MakeButton(BTN_NORMAL,ID_ITEMEFFMOD,0,174,132+17*16,80,15,itemEff[GetItem(curItem)->effect].btnTxt,EffModClick);
-			MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,wpnName[GetItem(curItem)->effectAmt],NULL);
+			MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,GetWeaponName(GetItem(curItem)->effectAmt),NULL);
 			break;
 		case IEBTN_COLOR:
 			// choose a color
@@ -807,10 +820,10 @@ static void SetupEffect(void)
 			// choose from the powerup list
 			MakeButton(BTN_NORMAL,ID_ITEMEFFMOD,0,174,132+17*16,80,15,itemEff[GetItem(curItem)->effect].btnTxt,EffModClick);
 			if(GetItem(curItem)->effectAmt>0)
-				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,pwrUpName[GetItem(curItem)->effectAmt],NULL);
+				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,GetPowerupName(GetItem(curItem)->effectAmt),NULL);
 			else
 			{
-				sprintf(s,"Remove %s",pwrUpName[-GetItem(curItem)->effectAmt]);
+				sprintf(s,"Remove %s",GetPowerupName(-GetItem(curItem)->effectAmt));
 				MakeButton(BTN_STATIC,ID_NAME2,0,256,132+17*16,80,15,s,NULL);
 			}
 			break;
@@ -917,7 +930,7 @@ void ItemEdit_Init(byte modeFrom,world_t *wrld,byte picking)
 	if(curItem>=NumItems())
 	{
 		curItem=ITM_HAMMERUP;
-		curTheme=0;
+		curTheme={};
 	}
 	backColor=1;
 	realClick=0;
@@ -955,6 +968,9 @@ void ItemEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 				CheckButtonCallback(mouseX,mouseY,ID_ITEMEFFMOD,EffModRightClick);
 				if(!(GetItem(curItem)->flags&IF_TILE))
 					CheckButtonCallback(mouseX,mouseY,ID_PICKSPR,SpriteRightClick);
+
+				for(i = 0; i < NUM_THEMES; ++i)
+					CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick);
 			}
 
 			wasInRect=0;
@@ -1002,7 +1018,12 @@ void ItemEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 				}
 				CheckButton(mouseX,mouseY,ID_EXIT);
 				CheckButton(mouseX,mouseY,ID_MOREITEMS);
+			}
 
+			if (mgl->RMouseTap())
+			{
+				for(i = 0; i < NUM_THEMES; ++i)
+					CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick);
 			}
 			break;
 		case IMODE_NAME:
@@ -1135,7 +1156,7 @@ void ItemEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	// the sprite and its position
 	SetSpriteConstraints(481,201,637,357);
 	InstaRenderItem(560,280,curItem,0,mgl);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 	mgl->Box(560-TILE_WIDTH/2,280-TILE_HEIGHT/2,560+TILE_WIDTH/2-1,280+TILE_HEIGHT/2-1,32*backColor+18);
 
 	// misc. lines and the background behind the buttons
@@ -1190,6 +1211,9 @@ void ItemEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 void ItemEditHelp(void)
 {
+	if (mode == IMODE_HELP)
+		return;
+
 	helpRemember=mode;
 	if(mode==IMODE_SELECT)
 		InitEditHelp(HELP_ITEMPICK);

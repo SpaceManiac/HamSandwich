@@ -2,7 +2,6 @@
 #define WATER_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 void InitWater(void);
 void ExitWater(void);

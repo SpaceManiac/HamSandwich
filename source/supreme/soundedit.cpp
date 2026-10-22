@@ -24,15 +24,35 @@
 #define ID_PICKTHEME	50
 #define ID_SOUNDS	100
 
-static byte mode,curTheme,rememberMode;
+static byte mode,rememberMode;
 static world_t *world;
 static word curSound;
 static byte helpRemember;
 
-static dword themes[]={ST_INTFACE,ST_PLAYER,ST_MONSTER,ST_EFFECT,ST_VOCAL,ST_CUSTOM};
+static const SoundThemes themes[] = {
+	{},
+	ST_INTFACE,
+	ST_PLAYER,
+	ST_MONSTER,
+	ST_EFFECT,
+	ST_VOCAL,
+	ST_CUSTOM,
+};
+static const char * const themeNames[] = {
+	"All Sounds",
+	"Interface Sounds",
+	"Player Sounds",
+	"Monster Sounds",
+	"Sound Effects",
+	"Vocals",
+	"Custom Sounds",
+};
+static constexpr int NUM_THEMES = std::min(std::size(themes), std::size(themeNames));
+static SoundThemes curTheme;
 
 static word sndList[512];
 static word sndsInList,sndStart,sndsShown;
+static constexpr int SOUNDS_PER_PAGE = 77;
 
 static void MakeSoundList(void);
 
@@ -57,7 +77,7 @@ static void NewClick(int id)
 		return;
 
 	mode=SNDMODE_LOAD;
-	InitFileDialog("user",".wav",FM_LOAD|FM_EXIT,"");
+	InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_SOUNDS,"");
 	MakeNormalSound(SND_MENUSELECT);
 }
 
@@ -78,7 +98,7 @@ static void ReloadClick(int id)
 	if(curSound>=CUSTOM_SND_START)
 	{
 		mode=SNDMODE_RELOAD;
-		InitFileDialog("user",".wav",FM_LOAD|FM_EXIT,"");
+		InitFileDialog("user",nullptr,FM_LOAD|FM_EXIT|FM_SOUNDS,"");
 		MakeNormalSound(SND_MENUSELECT);
 	}
 }
@@ -106,7 +126,7 @@ static void SoundRightClick(int id)
 	int s;
 	s=sndList[sndStart+(id-ID_SOUNDS)];
 	JamulSoundPurge();
-	MakeNormalCustomSound(s);
+	MakeNormalSound(s);
 }
 
 static void MoreSoundsClick(int id)
@@ -119,7 +139,6 @@ static void MoreSoundsClick(int id)
 		sndStart=0;
 
 	ClearButtons(ID_SOUNDS,ID_SOUNDS+200);
-	ClearButtons(ID_MORESNDS,ID_MORESNDS);
 
 	// now make buttons for the first N, which is however many fit on the screen
 	x=163;
@@ -138,7 +157,11 @@ static void MoreSoundsClick(int id)
 			y=6;
 		}
 	}
-	MakeButton(BTN_NORMAL,ID_MORESNDS,0,x,y,156,16,"More Sounds...",MoreSoundsClick);
+
+	ClearButtons(ID_MORESNDS,ID_MORESNDS);
+	char buf[32];
+	ham_sprintf(buf, "More Sounds %d/%d", sndStart / SOUNDS_PER_PAGE + 1, (sndsInList - 1) / SOUNDS_PER_PAGE + 1);
+	MakeButton(BTN_NORMAL,ID_MORESNDS,0,481,456,156,16,buf,MoreSoundsClick);
 }
 
 static void MakeSoundList(void)
@@ -155,7 +178,8 @@ static void MakeSoundList(void)
 	// get all sounds which match this theme
 	for(i=0;i<GetNumSounds();i++)
 	{
-		if(GetSoundInfo(i)->theme&themes[curTheme])
+		dword sndTheme = GetSoundInfo(i)->theme;
+		if(sndTheme && (sndTheme & curTheme) == curTheme)
 		{
 			sndList[pos]=i;
 			sndsInList=pos+1;
@@ -186,15 +210,18 @@ static void MakeSoundList(void)
 	sndsShown=0;
 	for(i=0;i<sndsInList-sndStart;i++)
 	{
+		if(x>640-160 && y>480-30)
+		{
+			char buf[32];
+			ham_sprintf(buf, "More Sounds %d/%d", sndStart / SOUNDS_PER_PAGE + 1, (sndsInList - 1) / SOUNDS_PER_PAGE + 1);
+			MakeButton(BTN_NORMAL,ID_MORESNDS,0,481,456,156,16,buf,MoreSoundsClick);
+			break;
+		}
+
 		MakeButton(BTN_RADIO,ID_SOUNDS+i,(sndList[i+sndStart]==curSound)*CHECK_ON,x,y,156,16,GetSoundInfo(sndList[i+sndStart])->name,PickSoundClick);
 		sndsShown++;
 		y+=18;
-		if(x>640-160 && y>480-30)
-		{
-			MakeButton(BTN_NORMAL,ID_MORESNDS,0,x,y,156,16,"More Sounds...",MoreSoundsClick);
-			break;
-		}
-		else if(y>480-16)
+		if(y>480-16)
 		{
 			x+=159;
 			y=6;
@@ -202,10 +229,23 @@ static void MakeSoundList(void)
 	}
 }
 
+static void SetThemeRadio()
+{
+	for (int i = 0; i < NUM_THEMES; ++i)
+		SetButtonState(ID_PICKTHEME + i, (themes[i] == 0 ? curTheme == 0 : bool(curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
+}
+
 static void PickThemeClick(int id)
 {
-	RadioOn(id,ID_PICKTHEME,ID_PICKTHEME+20);
-	curTheme=id-ID_PICKTHEME;
+	curTheme = themes[id - ID_PICKTHEME];
+	SetThemeRadio();
+	MakeSoundList();
+}
+
+static void PickThemeRightClick(int id)
+{
+	curTheme ^= themes[id - ID_PICKTHEME];
+	SetThemeRadio();
 	MakeSoundList();
 }
 
@@ -214,12 +254,8 @@ static void SoundEditSetupButtons(void)
 	ClearButtons();
 
 	// theme selection
-	MakeButton(BTN_RADIO,ID_PICKTHEME+0,0,2,2+18*0,156,16,"Interface Sounds",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+1,0,2,2+18*1,156,16,"Player Sounds",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+2,0,2,2+18*2,156,16,"Monster Sounds",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+3,0,2,2+18*3,156,16,"Sound Effects",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+4,0,2,2+18*4,156,16,"Vocals",PickThemeClick);
-	MakeButton(BTN_RADIO,ID_PICKTHEME+5,0,2,2+18*5,156,16,"Custom Sounds",PickThemeClick);
+	for (int i = 0; i < NUM_THEMES; ++i)
+		MakeButton(BTN_RADIO, ID_PICKTHEME+i, 0, 2, 2+18*i, 156, 16, themeNames[i], PickThemeClick);
 
 	// delete, move, and exit
 	if(mode!=SNDMODE_SELECT)
@@ -239,11 +275,11 @@ void SoundEdit_Init(world_t *wrld)
 	world=wrld;
 	mode=SNDMODE_NORMAL;
 	curSound=0;
-	RadioOn(ID_PICKTHEME+0,ID_PICKTHEME,ID_PICKTHEME+20);
-	curTheme=0;
-	MakeSoundList();
+	curTheme=ST_INTFACE;
 	rememberMode=EDITMODE_EDIT;
 	SoundEditSetupButtons();
+	SetThemeRadio();
+	MakeSoundList();
 }
 
 void SoundEdit_InitPicker(byte modeFrom,world_t *wrld)
@@ -252,10 +288,10 @@ void SoundEdit_InitPicker(byte modeFrom,world_t *wrld)
 	GetDisplayMGL()->MouseTap();
 	world=wrld;
 	mode=SNDMODE_SELECT;
-	SoundEditSetupButtons();
 	curSound=0;
-	RadioOn(ID_PICKTHEME+0,ID_PICKTHEME,ID_PICKTHEME+20);
-	curTheme=0;
+	curTheme=ST_INTFACE;
+	SoundEditSetupButtons();
+	SetThemeRadio();
 	MakeSoundList();
 }
 
@@ -278,6 +314,10 @@ void SoundEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 
 			if(mgl->RMouseTap())
 			{
+				for(i = 0; i < NUM_THEMES; ++i)
+					if (CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick))
+						break;
+
 				for(i=0;i<sndsInList;i++)
 					if(CheckButtonCallback(mouseX,mouseY,ID_SOUNDS+i,SoundRightClick))
 						break;
@@ -291,6 +331,10 @@ void SoundEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 
 			if(mgl->RMouseTap())
 			{
+				for(i = 0; i < NUM_THEMES; ++i)
+					if (CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick))
+						break;
+
 				for(i=0;i<sndsInList;i++)
 					if(CheckButtonCallback(mouseX,mouseY,ID_SOUNDS+i,SoundRightClick))
 						break;
@@ -307,9 +351,9 @@ void SoundEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 					{
 						if(AddCustomSound(GetFilename("user/")))
 						{
-							curTheme=5;
+							curTheme=ST_CUSTOM;
 							curSound=GetNumCustomSounds()+CUSTOM_SND_START-1;
-							RadioOn(curTheme+ID_PICKTHEME,ID_PICKTHEME,ID_PICKTHEME+20);
+							SetThemeRadio();
 							MakeSoundList();
 						}
 					}
@@ -434,8 +478,34 @@ void SoundEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 	{
 		case SNDMODE_NORMAL:
 		case SNDMODE_SELECT:
+		{
+			int x=163;
+			int y=6;
+			for(int i=0;i<sndsInList-sndStart;i++)
+			{
+				int num = sndList[i + sndStart];
+				if (num >= CUSTOM_SND_START)
+				{
+					std::span<const byte> data = GetCustomSound(num - CUSTOM_SND_START);
+					if (!data.empty() && data[0] == 'O')
+					{
+						DrawFillBox(x,y,x+156,y+16,3+32*3);
+					}
+				}
+
+				y+=18;
+				if(x>640-160 && y>480-30)
+					break;
+				else if(y>480-16)
+				{
+					x+=159;
+					y=6;
+				}
+			}
+
 			RenderButtons(mouseX,mouseY,mgl);
 			break;
+		}
 		case SNDMODE_LOAD:
 		case SNDMODE_RELOAD:
 			RenderButtons(-1,-1,mgl);	// prevent buttons from lighting up!

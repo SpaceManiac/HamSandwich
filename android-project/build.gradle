@@ -1,0 +1,92 @@
+// Basic Gradle setup.
+buildscript {
+	repositories {
+		mavenCentral()
+		google()
+	}
+
+	dependencies {
+		classpath 'com.android.tools.build:gradle:7.4.0'
+	}
+}
+
+allprojects {
+	repositories {
+		mavenCentral()
+		google()
+	}
+}
+
+buildDir = "../build/android/${project.name}"
+subprojects {
+	buildDir = "../../build/android/${project.name}"
+}
+
+// The HamSandwich Android app itself.
+apply plugin: 'com.android.application'
+
+dependencies {
+	implementation 'androidx.appcompat:appcompat:1.4.1'
+	implementation 'com.google.android.material:material:1.5.0'
+	implementation 'com.google.android.gms:play-services-basement:18.0.1'
+}
+
+android {
+	// Modify this line to distinguish your app from the upstream.
+	// Example: 'io.github.YourUsername.hamsandwich'
+	namespace 'com.platymuus.hamsandwich'
+
+	ndkVersion "24.0.8215888"
+	compileSdkVersion 33
+
+	defaultConfig {
+		applicationId = namespace
+		minSdk 16
+		targetSdkVersion 33
+		externalNativeBuild.cmake.arguments "-DANDROID_STL=c++_shared"
+	}
+
+	externalNativeBuild.cmake {
+		version '3.25.1'
+		path '../CMakeLists.txt'
+		buildStagingDirectory "${buildDir}.staging"
+	}
+
+	sourceSets.main {
+		// Include SDL3 Java sources as well.
+		java.srcDir '../external/SDL3/android-project/app/src/main/java'
+		// Include Android-specific assets.
+		assets.srcDir "../assets/android"
+		// Our CMake build puts assets to embed in the .apk here at build time.
+		assets.srcDir "${buildDir}/intermediates/cxx/hamsandwich-assets"
+	}
+
+	// Self-sign release APKs.
+	if (System.getenv('ANDROID_KEYSTORE')) {
+		signingConfigs {
+			release {
+				storeFile file(System.getenv('ANDROID_KEYSTORE'))
+				keyAlias "hamsandwich"
+				storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+				keyPassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+
+				v1SigningEnabled true
+				v2SigningEnabled true
+			}
+		}
+		buildTypes {
+			release {
+				signingConfig signingConfigs.release
+			}
+		}
+	}
+}
+
+// Merging assets depends on building first.
+tasks.configureEach { task ->
+	if (task.name == 'mergeDebugAssets') {
+		task.dependsOn ':android-project:buildCMakeDebug'
+	} else if (task.name == 'mergeReleaseAssets') {
+		task.dependsOn ':android-project:buildCMakeRelWithDebInfo'
+	}
+}

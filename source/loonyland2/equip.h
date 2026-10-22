@@ -2,7 +2,6 @@
 #define EQUIP_H
 
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define MAX_EQUIP		(60)
 
@@ -111,6 +110,7 @@
 #define EM_ARTEND	(78)
 #define MAX_EQMAGIC	 (79)
 #endif
+
 typedef struct equip_t
 {
 	byte count;	// how many of this same one do you have?

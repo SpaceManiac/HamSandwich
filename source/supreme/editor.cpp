@@ -4,6 +4,7 @@
 #include "itemedit.h"
 #include "soundedit.h"
 #include "monsteredit.h"
+#include "bulletedit.h"
 #include "specialedit.h"
 #include "tool.h"
 #include "edithelp.h"
@@ -13,40 +14,46 @@
 #include "worldstitch.h"
 #include "levelscan.h"
 #include "appdata.h"
+#include "exportdialog.h"
+#include "steam.h"
 
-#define PLOPRATE	5
+byte editing = 0;
 
-static char lastKey=0;
+namespace
+{
+	char lastKey = 0;
 
-static MGLDraw *editmgl;
+	MGLDraw *editmgl;
 
-static world_t	world;
-static Map		*editorMap;
-static byte		curMapNum;
-static int	   mouseX,mouseY,mouseZ;
-static int	   tileX,tileY;
-static int	rectX1,rectX2,rectY1,rectY2;
-static int  pickerWid,pickerHei;
+	world_t world;
+	Map *editorMap;
+	byte curMapNum;
+	int mouseX,mouseY,mouseZ;
+	int tileX,tileY;
+	int rectX1,rectX2,rectY1,rectY2;
+	int pickerWid,pickerHei;
 
-static dword gameStartTime,updFrameCount;
-static word  numRunsToMakeUp;
+	dword gameStartTime,updFrameCount;
+	word numRunsToMakeUp;
 
-static byte viewMenu,editMenu;
+	byte viewMenu, editMenu;
 
-static byte musicPlaying;
+	byte musicPlaying;
+	MapRenderFlags displayFlags;
 
-static byte displayFlags;
-byte editing=0;
+	byte editMode = EDITMODE_EDIT;
 
-static int lastPick;
+	int lastPick;
 
-byte editMode=EDITMODE_EDIT;
+	byte zoom = 1;
+
+	dword oldGamepad = ~0;
+}
 
 byte InitEditor(void)
 {
-	int i;
-
 	NewWorld(&world,editmgl);
+	SetCurrentTilegfx(&world.tilegfx);
 	editorMap=world.map[0];
 	curMapNum=0;
 
@@ -61,40 +68,15 @@ byte InitEditor(void)
 	musicPlaying=0;
 	lastKey=0;
 	InitPlayer(0,"TEST");
+
 	// modify monsters for the editor
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly Rvs");
-	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly Rvs");
-	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball Rvs");
-	strcpy(MonsterName(MONS_PUFFYFISH2),"Puffyfish Rvs");
-	strcpy(MonsterName(MONS_GENERATOR1),"Generator-1s");
-	strcpy(MonsterName(MONS_GENERATOR2),"Generator-5s");
-	strcpy(MonsterName(MONS_GENERATOR3),"Generator-15s");
-	strcpy(MonsterName(MONS_GENERATOR4),"Generator-30s");
-	strcpy(MonsterName(MONS_FRIENDLY2),"Buddy Bunny:Determined");
-	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny:Follow");
-	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark: Chest");
-	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid Underwater");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch Fast");
-	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid Underwater");
-	strcpy(MonsterName(MONS_PARKED2),"Parked Car2");
-	strcpy(MonsterName(MONS_TRAFFIC),"Traffic: Clockwise");
-	strcpy(MonsterName(MONS_TRAFFIC2),"Traffic: Counterclockwise");
-	strcpy(MonsterName(MONS_PATROLLR),"Patrol Mumble Horiz.");
-	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble Vert.");
-	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol Horiz.");
-	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol Vert.");
-
-	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
-	{
-		MonsterAnim(i,0)[0]=0;
-	}
-
 	ChangeOffColor(MONS_SHARK,2,4);
 	ChangeOffColor(MONS_SNKYSHRK2,2,4);
 
 	editmgl->MouseTap();
 	editmgl->RMouseTap();
 	editmgl->LastKeyPressed();
+	oldGamepad = ~0;
 
 	viewMenu=0;
 	editMenu=1;
@@ -102,19 +84,26 @@ byte InitEditor(void)
 	editMode=EDITMODE_HELP;
 	InitEditHelp(HELP_BASIC);
 
-	displayFlags=MAP_SHOWWALLS|MAP_SHOWLIGHTS|MAP_SHOWBADGUYS|
-			MAP_SHOWSPECIALS|MAP_SHOWPICKUPS|MAP_SHOWOTHERITEMS;
+	displayFlags =
+		MAP_SHOWWALLS |
+		MAP_SHOWLIGHTS |
+		MAP_SHOWBADGUYS |
+		MAP_SHOWSPECIALS |
+		MAP_SHOWPICKUPS |
+		MAP_SHOWOTHERITEMS |
+		(zoom == 1 ? MapRenderFlags{} : MAP_ZOOMOUT);
 
 	InitSpecials(world.map[0]->special);
 	StopSong();
 	SetPlayerStart(-1,-1);
+	InitStars();
+
+	Steam()->SetPresenceEditor();
 	return 1;
 }
 
 void ExitEditor(void)
 {
-	int i;
-
 	ExitFileDialog();
 	ToolExit();
 
@@ -123,122 +112,90 @@ void ExitEditor(void)
 	// change monsters back to normal
 	ChangeOffColor(MONS_SHARK,255,255);
 	ChangeOffColor(MONS_SNKYSHRK2,255,255);
-	strcpy(MonsterName(MONS_ROLLER2),"Roly Poly");
-	strcpy(MonsterName(MONS_ROLLER4),"Rumbly Tumbly");
-	strcpy(MonsterName(MONS_SNOWBALL2),"Snowball");
-	strcpy(MonsterName(MONS_GENERATOR1),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR2),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR3),"Generator");
-	strcpy(MonsterName(MONS_GENERATOR4),"Generator");
-	strcpy(MonsterName(MONS_FRIENDLY2),"Buddy Bunny");
-	strcpy(MonsterName(MONS_FOLLOWBUNNY),"Buddy Bunny");
-	strcpy(MonsterName(MONS_SNKYSHRK2),"Sneaky Shark");
-	strcpy(MonsterName(MONS_UNDERZOID),"Aquazoid");
-	strcpy(MonsterName(MONS_PATCH2),"Pumpkin Patch");
-	strcpy(MonsterName(MONS_UNDERMAGMA),"Magmazoid");
-	strcpy(MonsterName(MONS_PARKED2),"Parked Car");
-	strcpy(MonsterName(MONS_TRAFFIC),"Traffic");
-	strcpy(MonsterName(MONS_TRAFFIC2),"Traffic");
-	strcpy(MonsterName(MONS_PATROLLR),"Patrol Mumble");
-	strcpy(MonsterName(MONS_PATROLUD),"Patrol Mumble");
-	strcpy(MonsterName(MONS_DPATROLLR),"Death Patrol");
-	strcpy(MonsterName(MONS_DPATROLUD),"Death Patrol");
 
-	for(i=MONS_SUCKER1;i<=MONS_BLOWER4;i++)
-	{
-		MonsterAnim(i,0)[0]=254;
-	}
 	StopSong();
 	ExitGuys();
 	FreeWorld(&world);
 	PurgeMonsterSprites();
 	editing=0;
+
+	editmgl->ResizeBuffer(SCRWID, SCRHEI);
+
+	Steam()->SetPresenceNone();
 }
 
 void Delete(int x,int y)
 {
-	int i;
-
-	if(x<0 || x>editorMap->width-1 || y<0 || y>editorMap->height-1)
+	mapTile_t *tile = editorMap->TryGetTile(x, y);
+	if (!tile)
 		return;
 
-	for(i=0;i<MAX_MAPMONS;i++)
-		if((editorMap->badguy[i].type) && (editorMap->badguy[i].x==x) && (editorMap->badguy[i].y==y))
-		{
-			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
-				   editorMap->badguy[i].type);
-			editorMap->badguy[i].type=0;
-		}
-	editorMap->GetTile(x,y)->item=0;
+	tile->item=0;
 
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x==x && editorMap->special[i].y==y)
+	for (mapBadguy_t &guy : editorMap->badguy)
+		if(guy.type && guy.x==x && guy.y==y)
 		{
-			memset(&editorMap->special[i],0,sizeof(special_t));
-			editorMap->special[i].x=255;
+			DeleteGuy(
+				(x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
+				(y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				guy.type
+			);
+			guy.type=0;
+		}
+
+	for (special_t &special : editorMap->special)
+		if(special.x==x && special.y==y)
+		{
+			memset(&special,0,sizeof(special_t));
+			special.x=255;
 		}
 }
 
 void BackupWorld(const char *name)
 {
 	char inName[128],outName[128];
-	FILE *inF,*outF;
 	int bytes;
-	byte *data;
 
 	sprintf(inName,"worlds/%s",name);
 	sprintf(outName,"worlds/backup_save.dlw");
 
-	inF=AssetOpen(inName,"rb");
+	auto inF = AppdataOpen(inName);
 	if(!inF)
 		return;	// the source didn't exist, so nothing to back up
-	outF=AssetOpen(outName,"wb");
+	auto outF = AppdataOpen_Write(outName);
 	if(!outF)
-	{
-		fclose(inF);
 		return;	// was unable to open the file for writing for some reason
-	}
-	data=(byte *)malloc(sizeof(byte)*1024);
-	if(!data)
+
+	byte data[8 * 1024];
+	while(true)
 	{
-		fclose(inF);
-		fclose(outF);
-		return;	// couldn't allocate that lousy bit of memory!
-	}
-	while(1)
-	{
-		bytes=fread(data,sizeof(byte),1024,inF);
-		if(bytes>0)
-			fwrite(data,sizeof(byte),bytes,outF);
-		if(bytes<1024)
+		bytes = SDL_ReadIO(inF, data, std::size(data));
+		if (bytes <= 0)
 			break;
+		SDL_WriteIO(outF, data, bytes);
 	}
-	free(data);
-	fclose(inF);
-	fclose(outF);
+	outF.reset();
+	inF.reset();
 	AppdataSync();
 }
 
 TASK(void) UpdateMouse(void)
 {
-	int cx,cy;
-
 	editmgl->GetMouse(&mouseX,&mouseY);
 
 	if(mouseX<0)
 		mouseX=0;
 	if(mouseY<0)
 		mouseY=0;
-	if(mouseX>639)
-		mouseX=639;
-	if(mouseY>479)
-		mouseY=479;
+	if(mouseX>=editmgl->GetWidth())
+		mouseX=editmgl->GetWidth()-1;
+	if(mouseY>=editmgl->GetHeight())
+		mouseY=editmgl->GetHeight()-1;
 
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 
-	tileX=(mouseX+cx-320);
-	tileY=(mouseY+cy-240);
+	tileX=(mouseX+cx - editmgl->GetWidth()/2);
+	tileY=(mouseY+cy - editmgl->GetHeight()/2);
 
 	if(tileX<0)
 		tileX=tileX/TILE_WIDTH-1;
@@ -252,39 +209,53 @@ TASK(void) UpdateMouse(void)
 	int scroll = editmgl->mouse_z - mouseZ;
 	mouseZ = editmgl->mouse_z;
 
-	if(mouseX==0)
+	// Mouse scrolling, but exclude fullscreen modes.
+	switch (editMode)
 	{
-		cx-=8;
-		if(cx<0)
-			cx=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseX==639)
-	{
-		cx+=8;
-		if(cx>editorMap->width*TILE_WIDTH)
-			cx=editorMap->width*TILE_WIDTH;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==0)
-	{
-		cy-=8;
-		if(cy<0)
-			cy=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==479)
-	{
-		cy+=8;
-		if(cy>editorMap->height*TILE_HEIGHT)
-			cy=editorMap->height*TILE_HEIGHT;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+		case EDITMODE_TERRAIN:
+		case EDITMODE_SPECIAL:
+		case EDITMODE_ITEM:
+		case EDITMODE_SOUND:
+		case EDITMODE_PICKENEMY:
+		case EDITMODE_PICKBULLET:
+			break;
+		default:
+			if(mouseX==0)
+			{
+				cx -= 8 * zoom;
+				if(cx<0)
+					cx=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseX==editmgl->GetWidth()-1)
+			{
+				cx += 8 * zoom;
+				if(cx>editorMap->width*TILE_WIDTH)
+					cx=editorMap->width*TILE_WIDTH;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==0)
+			{
+				cy -= 8 * zoom;
+				if(cy<0)
+					cy=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==editmgl->GetHeight()-1)
+			{
+				cy += 8 * zoom;
+				if(cy>editorMap->height*TILE_HEIGHT)
+					cy=editorMap->height*TILE_HEIGHT;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			break;
 	}
 
+	// The mode itself.
 	switch(editMode)
 	{
 		case EDITMODE_TERRAIN:
-			TerrainEdit_Update(mouseX,mouseY,editmgl);
+			TerrainEdit_Update(mouseX,mouseY,scroll,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
 			SpecialEdit_Update(mouseX,mouseY,scroll,editmgl);
@@ -297,6 +268,9 @@ TASK(void) UpdateMouse(void)
 			break;
 		case EDITMODE_PICKENEMY:
 			MonsterEdit_Update(mouseX,mouseY,editmgl);
+			break;
+		case EDITMODE_PICKBULLET:
+			BulletEdit_Update(mouseX, mouseY, editmgl);
 			break;
 		case EDITMODE_EDIT:
 			if(!viewMenu || !editMenu || (ToolDoing()!=TD_USING) || (viewMenu && ViewDialogClick(mouseX,mouseY)))
@@ -355,9 +329,11 @@ TASK(void) UpdateMouse(void)
 						editMode=EDITMODE_EDIT;
 					break;
 				case FM_SAVE:
+				case FM_SAVEPACK:
+					editMode = EDITMODE_EDIT;
 					if(GetFilename("")[0])	// don't do any of this if the filename is blank!
 					{
-						if(strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".dlw"))
+						if(strlen(GetFilename(""))<4 || strcmp(&GetFilename("")[strlen(GetFilename(""))-4],".dlw"))
 						{
 							AddDLWToFilename();
 						}
@@ -367,10 +343,15 @@ TASK(void) UpdateMouse(void)
 						SaveWorld(&world,GetFilename("worlds/"));
 						EditorSelectMap(curMapNum);
 						PutCamera(cx*FIXAMT,cy*FIXAMT);
+
+						if (FileDialogCommand() == FM_SAVEPACK)
+						{
+							InitExportDialog(&world, GetFilename("worlds/"));
+							editMode = EDITMODE_EXPORT;
+						}
 					}
 					else
 						MakeNormalSound(SND_TURRETBZZT);
-					editMode=EDITMODE_EDIT;
 					break;
 				case FM_EXIT:
 					editMode=EDITMODE_EDIT;
@@ -486,6 +467,13 @@ TASK(void) UpdateMouse(void)
 				SetSpecialRect(rectX1,rectY1,rectX2,rectY2);
 			}
 			break;
+		case EDITMODE_EXPORT:
+			if(editmgl->MouseTap())
+				if (!ExportDialogClick(mouseX,mouseY))
+					SetEditMode(EDITMODE_EDIT);
+			if(scroll)
+				ExportDialogScroll(scroll);
+			break;
 	}
 }
 
@@ -526,94 +514,78 @@ TASK(byte) EditorRun(int *lastTime)
 
 void ShowSpecials(void)
 {
-	int i;
-	int sx,sy;
-	char s[8];
-
 	if(!(displayFlags&MAP_SHOWSPECIALS))
 		return;
 
-	GetCamera(&sx,&sy);
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x!=255)
+	auto [sx, sy] = GetCamera();
+	for (int i=0;i<MAX_SPECIAL;i++)
+	{
+		const special_t &special = editorMap->special[i];
+		if (special.x!=255)
 		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+240-1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2-1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+240+1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2+1,
 				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  editorMap->special[i].y*TILE_HEIGHT-sy+240,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  special.y*TILE_HEIGHT-sy+editmgl->GetHeight()/2,
 				  "Spcl",0,1);
+
+			char s[8];
 			sprintf(s,"%03d",i);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240-1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2-1,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2-1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240+1,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2+1,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2+1,
 				  s,-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  editorMap->special[i].y*TILE_HEIGHT+12-sy+240,
+			Print(special.x*TILE_WIDTH+2-sx+editmgl->GetWidth()/2,
+				  special.y*TILE_HEIGHT+12-sy+editmgl->GetHeight()/2,
 				  s,0,1);
 		}
+	}
 }
 
-void ShowSpecials2(void)
-{
-	int i;
-	int sx,sy;
-
-	if(!(displayFlags&MAP_SHOWSPECIALS))
-		return;
-
-	GetCamera(&sx,&sy);
-	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].x!=255)
-		{
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320-1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240-1,
-				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320+1,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240+1,
-				  "Spcl",-32,1);
-			Print(editorMap->special[i].x*TILE_WIDTH+2-sx+320,
-				  editorMap->special[i].y*TILE_HEIGHT+6-sy+240,
-				  "Spcl",0,1);
-		}
-}
 void EditorShowRect(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-
 	col=255-col;
 
-	x1=rectX1;
-	x2=rectX2;
-	y1=rectY1;
-	y2=rectY2;
+	int x1=rectX1;
+	int x2=rectX2;
+	int y1=rectY1;
+	int y2=rectY2;
 	if(x1>x2)
 	{
-		cx=x1;
-		x1=x2;
-		x2=cx;
+		std::swap(x1, x2);
 	}
 	if(y1>y2)
 	{
-		cy=y1;
-		y1=y2;
-		y2=cy;
+		std::swap(y1, y2);
 	}
-	GetCamera(&cx,&cy);
+	auto [cx, cy] = GetCamera();
 
-	x1=x1*TILE_WIDTH-(cx-320);
-	y1=y1*TILE_HEIGHT-(cy-240);
+	x1=x1*TILE_WIDTH-(cx-editmgl->GetWidth()/2);
+	y1=y1*TILE_HEIGHT-(cy-editmgl->GetHeight()/2);
 
-	x2=x2*TILE_WIDTH-(cx-320)+TILE_WIDTH-1;
-	y2=y2*TILE_HEIGHT-(cy-240)+TILE_HEIGHT-1;
+	x2=x2*TILE_WIDTH-(cx-editmgl->GetWidth()/2)+TILE_WIDTH-1;
+	y2=y2*TILE_HEIGHT-(cy-editmgl->GetHeight()/2)+TILE_HEIGHT-1;
 
 	DrawBox(x1,y1,x2,y2,col);
+}
+
+static void ApplyZoom()
+{
+	if (zoom == 1)
+	{
+		editmgl->ResizeBuffer(SCRWID, SCRHEI);
+	}
+	else
+	{
+		editmgl->ResizeBuffer(SCRWID * zoom * 4 / 3, SCRHEI * zoom, /*clamp*/ true);
+	}
 }
 
 void EditorDraw(void)
@@ -623,6 +595,7 @@ void EditorDraw(void)
 	switch(editMode)
 	{
 		case EDITMODE_EDIT:
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -634,20 +607,22 @@ void EditorDraw(void)
 				RenderViewDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_PICKSPOT:
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
-			Print(3,466,"Click on a location!",-32,1);
-			Print(1,464,"Click on a location!",-32,1);
-			Print(2,465,"Click on a location!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click on a location!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click on a location!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click on a location!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKSPOT2:
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -657,43 +632,46 @@ void EditorDraw(void)
 			rectX2=tileX+pickerWid;
 			rectY2=tileY+pickerHei;
 			EditorShowRect();
-			Print(3,466,"Click on a location!",-32,1);
-			Print(1,464,"Click on a location!",-32,1);
-			Print(2,465,"Click on a location!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click on a location!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click on a location!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click on a location!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT:
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			ToolShowTarget();
-			Print(3,466,"Click a corner of your rectangle!",-32,1);
-			Print(1,464,"Click a corner of your rectangle!",-32,1);
-			Print(2,465,"Click a corner of your rectangle!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click a corner of your rectangle!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click a corner of your rectangle!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click a corner of your rectangle!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_PICKRSPOT2:
+			ApplyZoom();
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			EditorShowRect();
-			Print(3,466,"Click the other corner of your rectangle!",-32,1);
-			Print(1,464,"Click the other corner of your rectangle!",-32,1);
-			Print(2,465,"Click the other corner of your rectangle!",0,1);
+			Print(3,editmgl->GetHeight()-480+466,"Click the other corner of your rectangle!",-32,1);
+			Print(1,editmgl->GetHeight()-480+464,"Click the other corner of your rectangle!",-32,1);
+			Print(2,editmgl->GetHeight()-480+465,"Click the other corner of your rectangle!",0,1);
 			sprintf(s,"(%03d,%03d)",tileX,tileY);
-			Print(580,466,s,-32,1);
-			Print(578,464,s,-32,1);
-			Print(579,465,s,0,1);
+			Print(editmgl->GetWidth()-640+580,editmgl->GetHeight()-480+466,s,-32,1);
+			Print(editmgl->GetWidth()-640+578,editmgl->GetHeight()-480+464,s,-32,1);
+			Print(editmgl->GetWidth()-640+579,editmgl->GetHeight()-480+465,s,0,1);
 			break;
 		case EDITMODE_HELP:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -706,21 +684,30 @@ void EditorDraw(void)
 			RenderEditHelp(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_TERRAIN:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			TerrainEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_ITEM:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			ItemEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			SpecialEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_SOUND:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			SoundEdit_Render(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_PICKENEMY:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			MonsterEdit_Render(mouseX,mouseY,editmgl);
 			break;
+		case EDITMODE_PICKBULLET:
+			BulletEdit_Render(mouseX, mouseY, editmgl);
+			break;
 		case EDITMODE_FILE:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -728,6 +715,7 @@ void EditorDraw(void)
 			RenderFileDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_EXIT:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -735,6 +723,7 @@ void EditorDraw(void)
 			RenderYesNoDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_MAPMENU:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
@@ -742,11 +731,20 @@ void EditorDraw(void)
 			RenderMapDialog(mouseX,mouseY,editmgl);
 			break;
 		case EDITMODE_LEVELMENU:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
 			if(displayFlags&MAP_SHOWBADGUYS)
 				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
 			RenderItAll(&world,editorMap,displayFlags);
 			ShowSpecials();
 			RenderLevelDialog(mouseX,mouseY,editmgl);
+			break;
+		case EDITMODE_EXPORT:
+			editmgl->ResizeBuffer(SCRWID, SCRHEI);
+			if(displayFlags&MAP_SHOWBADGUYS)
+				RenderGuys(displayFlags&MAP_SHOWLIGHTS);
+			RenderItAll(&world,editorMap,displayFlags);
+			ShowSpecials();
+			RenderExportDialog(editmgl, mouseX, mouseY);
 			break;
 	}
 
@@ -756,14 +754,13 @@ void EditorDraw(void)
 
 static TASK(void) HandleKeyPresses(void)
 {
-	char k;
-	byte s;
-	int x,y;
+	int x, y;
 
-	s=LastScanCode();
-	k=editmgl->LastKeyPressed();
+	byte s = LastScanCode();
+	char k = editmgl->LastKeyPressed();
 	if(k)
-		lastKey=k;
+		lastKey = k;
+	dword gamepad = GetGamepadButtons();
 
 	switch(s)
 	{
@@ -824,6 +821,9 @@ static TASK(void) HandleKeyPresses(void)
 		case SDL_SCANCODE_TAB:
 			editMenu=1-editMenu;
 			break;
+		case SDL_SCANCODE_F2:
+			ToggleDisplayFlag(MAP_ZOOMOUT);
+			break;
 	}
 
 	if(editMode==EDITMODE_EDIT)
@@ -833,7 +833,7 @@ static TASK(void) HandleKeyPresses(void)
 			case 'f':
 			case 'F':
 				editMode=EDITMODE_FILE;
-				InitFileDialog("worlds",".dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_ASKLOAD,ToolGetFilename());
+				InitFileDialog("worlds",".dlw",FM_NEW|FM_LOAD|FM_SAVE|FM_SAVEPACK|FM_ASKLOAD,ToolGetFilename());
 				break;
 			case 'M':
 				editMode=EDITMODE_FILE;
@@ -851,15 +851,17 @@ static TASK(void) HandleKeyPresses(void)
 				break;
 			case 't':
 			case 'T':
-				int cx,cy;
-				GetCamera(&cx,&cy);
+			{
+				auto [cx, cy] = GetCamera();
 				AWAIT TestLevel(EditorGetWorld(),EditorGetMapNum());
+				SetCurrentTilegfx(&world.tilegfx);
 				StopSong();
 				SetPlayerStart(-1,-1);
 				ExitPlayer();
 				AddMapGuys(EditorGetMap());
 				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
 				break;
+			}
 			case 'b':
 			case 'B':
 				ToolBrushUp();
@@ -869,9 +871,12 @@ static TASK(void) HandleKeyPresses(void)
 				ViewMenuOn();
 				break;
 			case 'C':
-				for(x=0;x<editorMap->width*editorMap->height;x++)
-					editorMap->map[x].light=editorMap->GetTile(tileX,tileY)->light;
+			{
+				int8_t light = editorMap->GetTile(tileX,tileY)->light;
+				for (mapTile_t& target : editorMap->Tiles())
+					target.light = light;
 				break;
+			}
 			case 8:
 				Delete(tileX,tileY);
 				break;
@@ -881,10 +886,8 @@ static TASK(void) HandleKeyPresses(void)
 				ToolSuckUp(tileX,tileY);
 				break;
 			case 'Q':
-				LogRequirements(&world);
-				SetStitchError("Saved world requirements list to req_files.txt.");
-				InitEditHelp(HELP_WORLDSTITCH);
-				editMode=EDITMODE_HELP;
+				InitExportDialog(&world, nullptr);
+				editMode = EDITMODE_EXPORT;
 				break;
 			case 'I':
 				if(!Scan_Level(&world,editorMap) || !Scan_Vars(&world))
@@ -915,6 +918,12 @@ static TASK(void) HandleKeyPresses(void)
 			case '8':
 				PickTool(k-'1');
 				break;
+		}
+
+		if ((gamepad & ~oldGamepad) & (1 << SDL_GAMEPAD_BUTTON_BACK))
+		{
+			InitYesNoDialog("Exit the editor?", "Yes", "No");
+			editMode = EDITMODE_EXIT;
 		}
 	}
 	else if(editMode==EDITMODE_PICKSPOT || editMode==EDITMODE_PICKRSPOT || editMode==EDITMODE_PICKRSPOT2 ||
@@ -949,6 +958,11 @@ static TASK(void) HandleKeyPresses(void)
 	}
 	else if(editMode==EDITMODE_EXIT)
 	{
+		if((gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_BACK)))
+		{
+			YesNoDialogKey('y');
+		}
+
 		if(k)
 		{
 			YesNoDialogKey(lastKey);
@@ -1004,14 +1018,28 @@ static TASK(void) HandleKeyPresses(void)
 		MonsterEdit_Key(lastKey);
 		lastKey=0;
 	}
+	else if (editMode == EDITMODE_PICKBULLET)
+	{
+		BulletEdit_Key(lastKey);
+		lastKey = 0;
+	}
 	else if(editMode==EDITMODE_HELP)
 	{
-		if(!EditHelpKey(lastKey))
+		if(!EditHelpKey(lastKey) || (gamepad & ~oldGamepad & (1 << SDL_GAMEPAD_BUTTON_BACK)))
 		{
 			ExitEditHelp();
 			SetEditMode(EDITMODE_EDIT);
 		}
+
 		lastKey=0;
+	}
+	else if (editMode == EDITMODE_EXPORT)
+	{
+		if (!ExportDialogKey(lastKey))
+		{
+			SetEditMode(EDITMODE_EDIT);
+		}
+		lastKey = 0;
 	}
 	else
 	{
@@ -1023,10 +1051,14 @@ static TASK(void) HandleKeyPresses(void)
 				break;
 		}
 	}
+
+	oldGamepad = gamepad;
 }
 
 void SetEditMode(byte m)
 {
+	if (editMode == EDITMODE_ITEM && m == EDITMODE_EDIT)
+		CalculateItemRenderExtents();
 	editMode=m;
 	if(editMode==EDITMODE_EDIT && viewMenu)
 		InitViewDialog();
@@ -1101,6 +1133,11 @@ void EditorGetTileXY(int *x,int *y)
 	*y=tileY;
 }
 
+std::pair<int, int> EditorGetTileXY()
+{
+	return {tileX, tileY};
+}
+
 Map *EditorGetMap(void)
 {
 	return editorMap;
@@ -1137,14 +1174,15 @@ void SetEditPickerRect(int wid,int hei)
 	pickerHei=hei;
 }
 
-byte GetDisplayFlags(void)
+word GetDisplayFlags(void)
 {
 	return displayFlags;
 }
 
-void ToggleDisplayFlag(byte f)
+void ToggleDisplayFlag(MapRenderFlags f)
 {
-	displayFlags^=f;
+	displayFlags ^= f;
+	zoom = (displayFlags & MAP_ZOOMOUT) ? 2 : 1;
 }
 
 void ViewMenuOff(void)

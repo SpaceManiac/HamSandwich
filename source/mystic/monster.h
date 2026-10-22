@@ -83,8 +83,17 @@
 #define MONS_STICKCORPSE 63
 #define MONS_STICKBAT	 64
 #define MONS_DANCER		65
-
-#define NUM_MONSTERS  66
+#define MONS_FARLEY	  66
+#define MONS_GLOOPYGUS 67
+#define MONS_FIREBAT	68
+#define MONS_BIGBAT2	69
+#define MONS_HUGEBAT2	70
+#define MONS_SWAMPWEED 71
+#define MONS_GHOSTSPITTER 72
+#define MONS_SPLITTER 73
+#define MONS_GHOST	74
+#define MONS_HORKBOX 75
+#define NUM_MONSTERS  76
 
 // the animations
 #define ANIM_IDLE	0
@@ -119,6 +128,8 @@
 #define MF_GOODGUY   16384	// non-evil
 #define MF_NOHIT	 32768	// shots go through it
 
+#define HORKBOX_RADIUS (220)
+
 typedef struct monsterType_t
 {
 	char name[32];
@@ -146,7 +157,7 @@ byte MonsterFrames(byte type);
 word MonsterHP(byte type);
 word MonsterPoints(byte type);
 char *MonsterName(byte type);
-void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char bright,byte mind1,byte ouch,word frozen);
+void MonsterDraw(int x,int y,int z,byte type,byte seq,byte frm,byte facing,char bright,byte mind1,byte ouch,byte ouch2,word frozen);
 void InstaRenderMonster(int x,int y,byte type,char bright,MGLDraw *mgl);
 void InstaRenderMonster2(int x,int y,byte type,byte seq,byte frm,byte facing,byte mind1,char bright,MGLDraw *mgl);
 sprite_t *GetMonsterSprite(byte type,byte seq,byte frm,byte facing);
@@ -155,20 +166,25 @@ void SetWaterwalk(word on);
 sprite_t *GetMonsterSprite2(byte type,byte frm);
 byte GetMonsterFrameNum(byte type,byte seq,byte frm,byte facing);
 void SetKidSprite(byte armageddon);
+bool IsABoss(byte type);
 
 void FaceGoodguy(Guy *me,Guy *goodguy);
 
 // ai functions for each monster type
+void AI_Ghost(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_GloopyGus(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Farley(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Overworld(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Ptero(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Bonehead(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Bat(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Spider(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_BigSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);
+void AI_GhostSpider(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Splitter(Guy* me, Map* map, world_t* world, Guy* goodguy);
 void AI_Zombie(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_EggSac(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_MamaSpider(Guy *me,Map *map,world_t *world,Guy *goodguy);
-void AI_Pygmy(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Serpent(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Shroomlord(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Microfish(Guy *me,Map *map,world_t *world,Guy *goodguy);
@@ -216,6 +232,8 @@ void AI_Snail(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Ball(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_OctoBoss(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_OctoTentacle(Guy *me,Map *map,world_t *world,Guy *goodguy);
+void AI_SwampWeed(Guy* me, Map* map, world_t* world, Guy* goodguy);
+void AI_Horkbox(Guy* me, Map* map, world_t* world, Guy* goodguy);
 // the goats
 void AI_Rammy(Guy *me,Map *map,world_t *world,Guy *goodguy);
 void AI_Hoppy(Guy *me,Map *map,world_t *world,Guy *goodguy);

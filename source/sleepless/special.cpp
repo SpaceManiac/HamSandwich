@@ -347,6 +347,7 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 		case EFF_MAKEBULLET:
 			strcpy(eff->text, "0");
 			eff->value2=1;
+			[[fallthrough]];
 		case EFF_CHANGEBULLET:
 			eff->value=BLT_NONE;
 			eff->value2=BLT_HAMMER;
@@ -357,14 +358,14 @@ void DefaultEffect(effect_t *eff,int x,int y,byte savetext)
 	}
 }
 
-void SaveSpecial(special_t *s,FILE *f)
+void SaveSpecial(special_t *s,SDL_IOStream *f)
 {
 	byte numTrig,numEff,b;
 	int i;
 
-	fwrite(&s->x,1,sizeof(byte),f);
-	fwrite(&s->y,1,sizeof(byte),f);
-	fwrite(&s->uses,1,sizeof(byte),f);
+	SDL_WriteIO(f,&s->x,1);
+	SDL_WriteIO(f,&s->y,1);
+	SDL_WriteIO(f,&s->uses,1);
 
 	numTrig=0;
 	numEff=0;
@@ -380,19 +381,19 @@ void SaveSpecial(special_t *s,FILE *f)
 			numEff=i+1;
 
 	b=numTrig+numEff*8;
-	fwrite(&b,1,sizeof(byte),f);	// write a combined number indicating #trigs & #effs
+	SDL_WriteIO(f,&b,1);	// write a combined number indicating #trigs & #effs
 
 	if(numTrig>0)
-		fwrite(s->trigger,numTrig,sizeof(trigger_t),f);
+		SDL_WriteIO(f,s->trigger,numTrig*sizeof(trigger_t));
 	if(numEff>0)
-		fwrite(s->effect,numEff,sizeof(effect_t),f);
+		SDL_WriteIO(f,s->effect,numEff*sizeof(effect_t));
 }
 
-void SaveSpecials(FILE *f)
+void SaveSpecials(SDL_IOStream *f)
 {
 	int i;
 
-	fwrite(&numSpecials,1,sizeof(byte),f);	// num specials
+	SDL_WriteIO(f,&numSpecials,1);	// num specials
 	if(numSpecials>0)
 	{
 		for(i=0;i<numSpecials;i++)
@@ -400,34 +401,34 @@ void SaveSpecials(FILE *f)
 	}
 }
 
-void LoadSpecial(special_t *s,FILE *f)
+void LoadSpecial(special_t *s,SDL_IOStream *f)
 {
 	byte numTrig,numEff,b;
 
 	memset(s,0,sizeof(special_t));
 
-	fread(&s->x,1,sizeof(byte),f);
-	fread(&s->y,1,sizeof(byte),f);
-	fread(&s->uses,1,sizeof(byte),f);
+	SDL_ReadIO(f,&s->x,1);
+	SDL_ReadIO(f,&s->y,1);
+	SDL_ReadIO(f,&s->uses,1);
 
-	fread(&b,1,sizeof(byte),f);	// read a combined number indicating #trigs & #effs
+	SDL_ReadIO(f,&b,1);	// read a combined number indicating #trigs & #effs
 
 	numTrig=b%8;
 	numEff=b/8;
 
 	if(numTrig>0)
-		fread(s->trigger,numTrig,sizeof(trigger_t),f);
+		SDL_ReadIO(f,s->trigger,numTrig*sizeof(trigger_t));
 	if(numEff>0)
-		fread(s->effect,numEff,sizeof(effect_t),f);
+		SDL_ReadIO(f,s->effect,numEff*sizeof(effect_t));
 }
 
-void LoadSpecials(FILE *f,special_t *list)
+void LoadSpecials(SDL_IOStream *f,special_t *list)
 {
 	int i;
 
 	InitSpecials(list);
 
-	fread(&numSpecials,1,sizeof(byte),f);	// num specials
+	SDL_ReadIO(f,&numSpecials,1);	// num specials
 	if(numSpecials>0)
 	{
 		for(i=0;i<numSpecials;i++)
@@ -1127,7 +1128,7 @@ byte TriggerYes(special_t *me,trigger_t *t,Map *map)
 			}
 			break;
 		case TRG_FLOOR:
-			if(t->x>=0 && t->y>=0 && t->x<map->width && t->y<map->height &&
+			if(t->x<map->width && t->y<map->height &&
 				map->GetTile(t->x,t->y)->floor==t->value)
 				answer=1;
 			break;
@@ -1493,44 +1494,36 @@ void SpecialEffect(special_t *me,Map *map)
 				}
 				break;
 			case EFF_SUMMON:
-				Guy *g;
-
-				if(MonsterFlags(me->effect[i].value,me->effect[i].value)&MF_FLYING)
-				{
-					g=AddGuy((me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					   (me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
-					   0*FIXAMT,me->effect[i].value,2);
-				}
-				else
-				{
-					g=AddGuy((me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
-					   (me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
-					   20*FIXAMT,me->effect[i].value,2);
-				}
+			{
+				Guy *g = AddGuy(
+					(me->effect[i].x*TILE_WIDTH+TILE_WIDTH/2)*FIXAMT,
+					(me->effect[i].y*TILE_HEIGHT+TILE_HEIGHT/2)*FIXAMT,
+					20*FIXAMT,
+					me->effect[i].value,
+					2
+				);
 				if(g)
 				{
-					byte b;
+					if (MonsterFlags(g->type, g->aiType) & MF_FLYING)
+						g->z = 0 * FIXAMT;
 
 					g->item=me->effect[i].value2;
 
-					if(g->aiType==MONS_SPHINX)
-						b=1;
-					else
-						b=0;
-
-					if(b)
+					bool isSphinx = g->aiType==MONS_SPHINX;
+					if(isSphinx)
 					{
 						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
 						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX|MF_ENEMYWALK|MF_FREEWALK);
 					}
 					TeleportGuy(g,me->effect[i].x,me->effect[i].y,map,(me->effect[i].flags&EF_NOFX));
-					if(b)
+					if(isSphinx)
 					{
 						SetMonsterFlags(MONS_SPHXARM1,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
 						SetMonsterFlags(MONS_SPHXARM2,MF_ONEFACE|MF_NOMOVE|MF_SPRITEBOX);
 					}
 				}
 				break;
+			}
 			case EFF_LIGHT:
 				if(!(me->effect[i].flags&EF_PERMLIGHT))
 					map->BrightTorch(me->effect[i].x,me->effect[i].y,me->effect[i].value,me->effect[i].value2);

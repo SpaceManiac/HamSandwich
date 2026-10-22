@@ -98,7 +98,7 @@ static float SizeMult(byte n)
 
 static byte FishEffect(byte n)
 {
-	if (IsCustomWorld() && CustomFishEffect(n) != -1)
+	if (IsCustomWorld() && CustomFishEffect(n) != UINT8_MAX)
 		return CustomFishEffect(n);
 	return n;
 }

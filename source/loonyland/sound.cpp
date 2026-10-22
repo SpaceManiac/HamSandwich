@@ -1,18 +1,14 @@
 #include "sound.h"
 #include "display.h"
 #include "options.h"
+#include "jamulsound.h"
 
-byte soundAvailable=0;
-int sndNum;
-
-void SoundSystemExists(void)
-{
-	soundAvailable=1;
-}
+static int sndNum;
 
 void InitSound(void)
 {
 	JamulSoundPurge();
+	KillSong();
 	sndNum=-1;
 }
 
@@ -26,7 +22,7 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	long pan,vol;
 	int cx,cy;
 
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 	if(!opt.sound)
 		return;
@@ -41,12 +37,12 @@ void MakeSound(int snd,int x,int y,int flags,int priority)
 	vol=-((x-cx)*(x-cx)+(y-cy)*(y-cy))/128;
 	if(vol<-5000)
 		return;	// too quiet to play
-	GoPlaySound(snd,pan,vol,(byte)flags,priority);
+	GoPlaySound(snd, pan * 127 / 640, vol * 255 / 5000, flags, priority);
 }
 
 void MakeNormalSound(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -60,7 +56,7 @@ void MakeNormalSound(int snd)
 
 void MakeNormalSound2(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -74,7 +70,7 @@ void MakeNormalSound2(int snd)
 
 void MakeSpaceSound(int snd,int priority)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -88,7 +84,7 @@ void MakeSpaceSound(int snd,int priority)
 
 void LoopingSound(int snd)
 {
-	if(!soundAvailable)
+	if(!SoundIsAvailable())
 		return;
 
 	if(!opt.sound)
@@ -97,37 +93,17 @@ void LoopingSound(int snd)
 	if(opt.cheats[CH_VINTAGE] && snd!=SND_ENTERMAP && snd!=SND_FILM)
 		return;
 
-	GoPlaySound(snd,0,0,SND_MAXPRIORITY|SND_CUTOFF|SND_ONE|SND_LOOPING,MAX_SNDPRIORITY);
+	if (sndNum == snd)
+		return;
+
+	char buf[32];
+	snprintf(buf, 32, "sound/snd%03d.wav", snd);
+	PlaySongFile(buf);
 	sndNum=snd;
 }
 
 void KillSong(void)
 {
-	if(sndNum!=-1)
-		JamulSoundStop(sndNum);
+	StopSong();
 	sndNum=-1;
-}
-
-bool ConfigSoundEnabled()
-{
-	return 1;
-}
-
-int ConfigNumSounds()
-{
-	return 32;
-}
-
-SDL_RWops* SoundLoadOverride(int which)
-{
-	return nullptr;
-}
-
-bool ConfigMusicEnabled()
-{
-	return false;  // We just use the sound system for music.
-}
-
-void ChooseNextSong()
-{
 }

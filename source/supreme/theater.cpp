@@ -5,14 +5,14 @@
 #include "dialogbits.h"
 #include "goal.h"
 
-typedef struct movie_t
+struct Movie
 {
 	char title[32];
 	char filename[16];
 	word sound;
-} movie_t;
+};
 
-movie_t movie[32]={
+static const Movie movie[32]={
 	{"Asylum Welcome Mat","asylumys.flc",SND_TZONE},
 	{"Asylum Unwelcome Mat","asylumno.flc",SND_TZONE},
 	{"Super Duper Zombie Defeated","asylum.flc",SND_VICTORY},
@@ -78,19 +78,34 @@ void ExitTheater(void)
 	delete bestSpr;
 }
 
-byte AllMoviesSeen(void)
+bool AllMoviesSeen(void)
 {
 	int i;
 
 	for(i=0;i<32;i++)
 	{
 		if(movie[i].filename[0]=='!')
-			return 1;
+			return true;
 		if(!profile.progress.movie[i])
-			return 0;
+			return false;
 	}
 
-	return 1;
+	return true;
+}
+
+byte NumMoviesSeen()
+{
+	int i, j = 0;
+
+	for(i=0;i<32;i++)
+	{
+		if(movie[i].filename[0]=='!')
+			break;
+		if(profile.progress.movie[i])
+			++j;
+	}
+
+	return j;
 }
 
 TASK(byte) UpdateTheater(int *lastTime,MGLDraw *mgl)
@@ -202,7 +217,7 @@ void RenderTheater(MGLDraw *mgl)
 	if(msy2>462)
 		msy2=462;
 	bestSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	oldmsx=msx;
 	oldmsy=msy;

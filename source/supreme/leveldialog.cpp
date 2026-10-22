@@ -46,24 +46,12 @@ static byte rClick;
 static byte mapNum,mode;
 static world_t *world;
 
-static word flagNum[]={MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
-				MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN};
-static char flagName[][16]={
-	"Snowing",
-	"Raining",
-	"Hub Level",
-	"Secret Level",
-	"Torch Lit",
-	"Lantern Lit",
-	"Star Background",
-	"Underwater",
-	"Underlava",
-	"Stealth",
-	"Wavy",
-	"Oxygen Meter",
+static const LevelFlags flagNum[]={
+	MAP_SNOWING,MAP_RAIN,MAP_HUB,MAP_SECRET,MAP_TORCHLIT,MAP_WELLLIT,
+	MAP_STARS,MAP_UNDERWATER,MAP_LAVA,MAP_STEALTH,MAP_WAVY,MAP_OXYGEN,
 };
 
-static byte *mapZoom;
+static byte mapZoom[MAX_MAPSIZE * MAX_MAPSIZE];
 static byte desiredWidth,desiredHeight;
 static sprite_set_t *levelSpr;
 
@@ -96,6 +84,8 @@ static void FlagClick(int id)
 		return;	// can't unhub level zero
 
 	world->map[mapNum]->flags^=flagNum[id-ID_FLAG];
+	if (flagNum[id-ID_FLAG] == MAP_STARS)
+		InitStars();
 	LevelDialogButtons();
 }
 
@@ -149,50 +139,55 @@ static void ItemDropClick(int id)
 	InitTextDialog("Enter chance for enemies to drop items:","",5);
 }
 
+static bool CountsDouble(int type)
+{
+	// Enemies that drop 1 baby on death count 2x, once for them and once for baby.
+	// Enemies with infinite babies are impossible to account for, so don't bother.
+	return type == MONS_ZOMBONI || type == MONS_COFFIN || type == MONS_DARKCOFFIN || type == MONS_XENOEGG;
+}
+
+static int BrainsForMonster(int type, int item)
+{
+	int result = 0, brainsPerBrain = BrainsGiven(ITM_BRAIN), brainsForItem = BrainsGiven(item);
+	if (type == MONS_ZOMBIE || type == MONS_ZOMBONI || type == MONS_MUTANT)
+		result += brainsPerBrain;
+	if (type == MONS_SUPERZOMBIE)
+		result += 2 * brainsPerBrain;
+	if (brainsForItem > 0 && type)
+		result += (CountsDouble(type) ? 2 : 1) * brainsForItem;
+	return result;
+}
+
 static void AutoBrainsClick(int id)
 {
 	// autocalc brains needed
-	int i,j;
-	Map *m;
-
-	m=world->map[mapNum];
+	Map *m = world->map[mapNum];
 	m->numBrains=0;
 
-	for(i=0;i<m->width*m->height;i++)
+	for (const mapTile_t &target : m->Tiles())
 	{
-		j=BrainsGiven(m->map[i].item);
-		if(j>0)
-			m->numBrains+=j;	// negative ones aren't counted
-	}
-	for(i=0;i<MAX_MAPMONS;i++)
-	{
-		if(m->badguy[i].type==MONS_ZOMBIE || m->badguy[i].type==MONS_ZOMBONI || m->badguy[i].type==MONS_MUTANT)
-			m->numBrains++;
-		if(m->badguy[i].type==MONS_SUPERZOMBIE)
-			m->numBrains+=2;
-		if(m->badguy[i].type && BrainsGiven(m->badguy[i].item)>0)
-			m->numBrains+=BrainsGiven(m->badguy[i].item);
+		// negative ones aren't counted
+		m->numBrains += std::max(0, BrainsGiven(target.item));
 	}
 
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const mapBadguy_t &badguy : m->badguy)
 	{
-		if(m->special[i].x!=255)
+		m->numBrains += BrainsForMonster(badguy.type, badguy.item);
+	}
+
+	for (const special_t &special : m->special)
+	{
+		if (special.x!=255)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &effect : special.effect)
 			{
-				if(m->special[i].effect[j].type==EFF_ITEM && BrainsGiven(m->special[i].effect[j].value)>0)
-					m->numBrains+=BrainsGiven(m->special[i].effect[j].value);
-				if(m->special[i].effect[j].type==EFF_MONSITEM && BrainsGiven(m->special[i].effect[j].value2)>0)
-					m->numBrains+=BrainsGiven(m->special[i].effect[j].value2);
-				if(m->special[i].effect[j].type==EFF_SUMMON)
+				if(effect.type==EFF_ITEM && BrainsGiven(effect.value)>0)
+					m->numBrains+=BrainsGiven(effect.value);
+				if(effect.type==EFF_MONSITEM && BrainsGiven(effect.value2)>0)
+					m->numBrains+=BrainsGiven(effect.value2);
+				if(effect.type==EFF_SUMMON)
 				{
-					if(BrainsGiven(m->special[i].effect[j].value2)>0)
-						m->numBrains+=BrainsGiven(m->special[i].effect[j].value2);
-					if(m->special[i].effect[j].value==MONS_ZOMBIE || m->special[i].effect[j].value==MONS_ZOMBONI ||
-						m->special[i].effect[j].value==MONS_MUTANT)
-						m->numBrains++;
-					if(m->special[i].effect[j].value==MONS_SUPERZOMBIE)
-						m->numBrains+=2;
+					m->numBrains += BrainsForMonster(effect.value, effect.value2);
 				}
 			}
 		}
@@ -204,36 +199,33 @@ static void AutoBrainsClick(int id)
 static void AutoCandlesClick(int id)
 {
 	// autocalc candles needed
-	int i,j;
-	Map *m;
-
-	m=world->map[mapNum];
+	Map *m = world->map[mapNum];
 	m->numCandles=0;
 
-	for(i=0;i<m->width*m->height;i++)
+	for (const mapTile_t &target : m->Tiles())
 	{
-		j=CandlesGiven(m->map[i].item);
-		if(j>0)
-			m->numCandles+=j;	// negative ones aren't counted
-	}
-	for(i=0;i<MAX_MAPMONS;i++)
-	{
-		if(m->badguy[i].type)
-			m->numCandles+=CandlesGiven(m->badguy[i].item);
+		// negative ones aren't counted
+		m->numCandles += std::max(CandlesGiven(target.item), 0);
 	}
 
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const mapBadguy_t &badguy : m->badguy)
 	{
-		if(m->special[i].x!=255)
+		if(badguy.type)
+			m->numCandles += (CountsDouble(badguy.type) ? 2 : 1) * CandlesGiven(badguy.item);
+	}
+
+	for (const special_t &special : m->special)
+	{
+		if (special.x!=255)
 		{
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &effect : special.effect)
 			{
-				if(m->special[i].effect[j].type==EFF_ITEM && CandlesGiven(m->special[i].effect[j].value)>0)
-					m->numCandles+=CandlesGiven(m->special[i].effect[j].value);
-				if(m->special[i].effect[j].type==EFF_MONSITEM && CandlesGiven(m->special[i].effect[j].value2)>0)
-					m->numCandles+=CandlesGiven(m->special[i].effect[j].value2);
-				if(m->special[i].effect[j].type==EFF_SUMMON && CandlesGiven(m->special[i].effect[j].value2)>0)
-					m->numCandles+=CandlesGiven(m->special[i].effect[j].value2);
+				if(effect.type==EFF_ITEM && CandlesGiven(effect.value)>0)
+					m->numCandles+=CandlesGiven(effect.value);
+				if(effect.type==EFF_MONSITEM && CandlesGiven(effect.value2)>0)
+					m->numCandles+=CandlesGiven(effect.value2);
+				if(effect.type==EFF_SUMMON && CandlesGiven(effect.value2)>0)
+					m->numCandles += (CountsDouble(effect.value) ? 2 : 1) * CandlesGiven(effect.value2);
 			}
 		}
 	}
@@ -246,7 +238,6 @@ static void SlideClick(int id)
 	int i,j;
 	int dx,dy,tx,ty;
 	Map *m;
-	mapTile_t t;
 
 	m=world->map[mapNum];
 
@@ -261,12 +252,12 @@ static void SlideClick(int id)
 		dx=-1;
 
 	// slide the monsters
-	for(i=0;i<MAX_MAPMONS;i++)
+	for (mapBadguy_t &guy : m->badguy)
 	{
-		if(m->badguy[i].type)
+		if(guy.type)
 		{
-			m->badguy[i].x=SlideCoord(m->badguy[i].x,dx,m->width);
-			m->badguy[i].y=SlideCoord(m->badguy[i].y,dy,m->height);
+			guy.x=SlideCoord(guy.x,dx,m->width);
+			guy.y=SlideCoord(guy.y,dy,m->height);
 		}
 	}
 
@@ -280,9 +271,7 @@ static void SlideClick(int id)
 				for(i=0;i<m->width-1+(dx==0);i++)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 			else if(dx>0)
@@ -290,9 +279,7 @@ static void SlideClick(int id)
 				for(i=m->width-1;i>0;i--)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 		}
@@ -307,9 +294,7 @@ static void SlideClick(int id)
 				for(i=0;i<m->width-1+(dx==0);i++)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 			else if(dx>0)
@@ -317,9 +302,7 @@ static void SlideClick(int id)
 				for(i=m->width-1;i>0;i--)
 				{
 					tx=SlideCoord(i,dx,m->width);
-					memcpy(&t,&m->map[i+j*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[i+j*m->width],&m->map[tx+ty*m->width],sizeof(mapTile_t));
-					memcpy(&m->map[tx+ty*m->width],&t,sizeof(mapTile_t));
+					std::swap(*m->GetTile(i, j), *m->GetTile(tx, ty));
 				}
 			}
 		}
@@ -347,7 +330,7 @@ void LevelDialogButtons(void)
 	for(i=0;i<NUM_LVL_FLAGS;i++)
 	{
 		MakeButton(BTN_CHECK,ID_FLAG+i,((world->map[mapNum]->flags&flagNum[i])!=0)*CHECK_ON,DLG_X+2,DLG_Y+66+16*i,
-			150,15,flagName[i],FlagClick);
+			150,15,MapFlagName(i),FlagClick);
 	}
 
 	MakeButton(BTN_NORMAL,ID_PREV,0,DLG_X2-104,DLG_Y+2,50,15,"Prev",PrevClick);
@@ -377,18 +360,7 @@ void LevelDialogButtons(void)
 
 byte ZoomTileColor(int x,int y)
 {
-	mapTile_t *m;
-	int i;
-
-	m=&world->map[mapNum]->map[x+y*world->map[mapNum]->width];
-
-	for(i=0;i<MAX_MAPMONS;i++)
-		if(world->map[mapNum]->badguy[i].type &&
-			world->map[mapNum]->badguy[i].x==x &&
-			world->map[mapNum]->badguy[i].y==y)
-		{
-			return (4*32)+20;	// red=badguy
-		}
+	mapTile_t *m = world->map[mapNum]->GetTile(x, y);
 
 	if(GetItem(m->item)->flags&IF_SOLID)
 	{
@@ -420,14 +392,20 @@ byte ZoomTileColor(int x,int y)
 
 void RenderZoomMap(void)
 {
-	int i,j;
-
 	memset(mapZoom,0,MAX_MAPSIZE*MAX_MAPSIZE);
-	for(i=0;i<world->map[mapNum]->width;i++)
+	for(int i=0;i<world->map[mapNum]->width;i++)
 	{
-		for(j=0;j<world->map[mapNum]->height;j++)
+		for(int j=0;j<world->map[mapNum]->height;j++)
 		{
 			mapZoom[i+j*MAX_MAPSIZE]=ZoomTileColor(i,j);
+		}
+	}
+
+	for (const mapBadguy_t &guy : world->map[mapNum]->badguy)
+	{
+		if(guy.type)
+		{
+			mapZoom[guy.x+guy.y*MAX_MAPSIZE]=(4*32)+20;	// red=badguy
 		}
 	}
 }
@@ -442,15 +420,23 @@ void InitLevelDialog(world_t *wrld,byte currentMap)
 
 	levelSpr=new sprite_set_t("graphics/pause.jsp");
 	LevelDialogButtons();
-	mapZoom=new byte[MAX_MAPSIZE*MAX_MAPSIZE];
 	RenderZoomMap();
 }
 
 void ExitLevelDialog(void)
 {
 	ClearButtons();
-	delete mapZoom;
 	delete levelSpr;
+}
+
+void RenderLevelDialogZoom(MGLDraw *mgl, world_t *world_, byte mapNum_)
+{
+	world = world_;
+	mapNum = mapNum_;
+	RenderZoomMap();
+	mgl->ResizeBuffer(world->map[mapNum]->width, world->map[mapNum]->height);
+	for (int y = 0; y < mgl->GetHeight(); ++y)
+		memcpy(mgl->GetScreen() + mgl->GetWidth() * y, &mapZoom[y * MAX_MAPSIZE], mgl->GetWidth());
 }
 
 void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
@@ -517,7 +503,6 @@ void RenderLevelDialog(int msx,int msy,MGLDraw *mgl)
 
 void LevelDialogYes(void)
 {
-	int i;
 	Map *m;
 	switch(asking)
 	{
@@ -528,12 +513,12 @@ void LevelDialogYes(void)
 			// resize the map as requested
 			if(!m->Resize(desiredWidth,desiredHeight))
 				return;	// couldn't resize it
-			for(i=0;i<MAX_MAPMONS;i++)
+			for (mapBadguy_t &guy : m->badguy)
 			{
-				if(m->badguy[i].type && (m->badguy[i].x>=m->width || m->badguy[i].y>=m->height))
-					m->badguy[i].type=0;	// remove excess badguys
+				if(guy.type && (guy.x>=m->width || guy.y>=m->height))
+					guy.type=0;	// remove excess badguys
 			}
-			for(i=0;i<MAX_SPECIAL;i++)
+			for(int i=0;i<MAX_SPECIAL;i++)
 			{
 				if(m->special[i].x!=255 && (m->special[i].x>=m->width || m->special[i].y>=m->height))
 				{
@@ -577,7 +562,7 @@ byte LevelDialogKey(char key)
 			FileDialogKey(key);
 			if(FileDialogCommand()==FM_LOAD)
 			{
-				strcpy(world->map[mapNum]->song,GetFilename(""));
+				ham_strcpy(world->map[mapNum]->song,GetFilename(""));
 				ExitFileDialog();
 				mode=LDMODE_NORMAL;
 				LevelDialogButtons();
@@ -750,7 +735,7 @@ byte LevelDialogClick(int msx,int msy)
 			FileDialogClick(msx,msy);
 			if(FileDialogCommand()==FM_LOAD)
 			{
-				strcpy(world->map[mapNum]->song,GetFilename(""));
+				ham_strcpy(world->map[mapNum]->song,GetFilename(""));
 				ExitFileDialog();
 				mode=LDMODE_NORMAL;
 				LevelDialogButtons();

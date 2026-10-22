@@ -1,0 +1,7 @@
+{
+	"cmake.cmakePath": "${workspaceFolder}/.vscode/container-cmake",
+	"cmake.debugConfig": {
+		"cwd": "${workspaceFolder}/build/install",
+		"args": ["window"]
+	}
+}

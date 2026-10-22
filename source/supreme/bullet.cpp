@@ -7,44 +7,44 @@
 #include "shop.h"
 #include "config.h"
 
-#define SPR_FLAME   0
-#define SPR_LASER   5
-#define SPR_HAMMER  21
-#define SPR_MISSILE 149
-#define SPR_SMOKE	165
-#define SPR_ACID	172
-#define SPR_BOMB	228
-#define SPR_ENERGY	236
-#define SPR_BOOM	238
-#define SPR_MEGABEAM 246
-#define SPR_SPORE	254
-#define SPR_SHROOM  258
-#define SPR_GRENADE 266
-#define SPR_YELBOOM 268
-#define SPR_SHOCKWAVE 273
-#define SPR_LILBOOM 277
-#define SPR_SNOWBALL 282
-#define SPR_BIGSNOW  283
-#define SPR_ICESPIKE 286
-#define SPR_ROCK	 290
-#define SPR_SPINE	 294
-#define SPR_BIGAXE	 310
-#define SPR_SPEAR	 318
-#define SPR_SLASH	 326
-#define SPR_MINE	 350
-#define SPR_STINKY	 355
-#define SPR_GREEN	 358
-#define SPR_ORBITER  359
-#define SPR_PAPER	 367
-#define SPR_BUBBLE	 375
-#define SPR_SCANSHOT 384
-#define SPR_SCANLOCK 387
+constexpr int SPR_FLAME     = 0;
+constexpr int SPR_LASER     = 5;
+constexpr int SPR_HAMMER    = 21;
+constexpr int SPR_MISSILE   = 149;
+constexpr int SPR_SMOKE     = 165;
+constexpr int SPR_ACID      = 172;
+constexpr int SPR_BOMB      = 228;
+constexpr int SPR_ENERGY    = 236;
+constexpr int SPR_BOOM      = 238;
+constexpr int SPR_MEGABEAM  = 246;
+constexpr int SPR_SPORE     = 254;
+constexpr int SPR_SHROOM    = 258;
+constexpr int SPR_GRENADE   = 266;
+constexpr int SPR_YELBOOM   = 268;
+constexpr int SPR_SHOCKWAVE = 273;
+constexpr int SPR_LILBOOM   = 277;
+constexpr int SPR_SNOWBALL  = 282;
+constexpr int SPR_BIGSNOW   = 283;
+constexpr int SPR_ICESPIKE  = 286;
+constexpr int SPR_ROCK      = 290;
+constexpr int SPR_SPINE     = 294;
+constexpr int SPR_BIGAXE    = 310;
+constexpr int SPR_SPEAR     = 318;
+constexpr int SPR_SLASH     = 326;
+constexpr int SPR_MINE      = 350;
+constexpr int SPR_STINKY    = 355;
+constexpr int SPR_GREEN     = 358;
+constexpr int SPR_ORBITER   = 359;
+constexpr int SPR_PAPER     = 367;
+constexpr int SPR_BUBBLE    = 375;
+constexpr int SPR_SCANSHOT  = 384;
+constexpr int SPR_SCANLOCK  = 387;
 
-bullet_t *bullet;
-sprite_set_t *bulletSpr;
-byte reflect=0;
-byte attackType;
-int activeBulDX,activeBulDY;
+static bullet_t *bullet;
+static sprite_set_t *bulletSpr;
+static byte reflect = 0;
+static byte attackType;
+static int activeBulDX, activeBulDY;
 
 void GetBulletDeltas(int *bdx,int *bdy)
 {
@@ -690,24 +690,24 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 	switch(me->type)
 	{
 		case BLT_SCANNER:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,me->friendly))
 			{
-				if(GetLastGuyHit()->aiType!=MONS_BOUAPHA)
+				if(victim->aiType!=MONS_BOUAPHA)
 				{
-					ScanGuy(GetLastGuyHit());
+					ScanGuy(victim);
 					me->type=BLT_SCANLOCK;
 					me->timer=60;
-					me->target=GetLastGuyHit()->ID;
+					me->target=victim->ID;
 				}
 			}
-			else if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,1-me->friendly))
+			else if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,16,0,0,0,map,world,1-me->friendly))
 			{
-				if(GetLastGuyHit()->aiType!=MONS_BOUAPHA)
+				if(victim->aiType!=MONS_BOUAPHA)
 				{
-					ScanGuy(GetLastGuyHit());
+					ScanGuy(victim);
 					me->type=BLT_SCANLOCK;
 					me->timer=60;
-					me->target=GetLastGuyHit()->ID;
+					me->target=victim->ID;
 				}
 			}
 			break;
@@ -736,7 +736,6 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 				MakeSound(SND_LIGHTNING,me->x,me->y,SND_CUTOFF,900);
 				for(i=0;i<player.hammers-1;i++)
 					FireBullet(me->x,me->y,0,BLT_LIGHTNING2,me->friendly);
-				me->type=BLT_NONE;
 			}
 			break;
 		case BLT_HAMMER:
@@ -831,10 +830,10 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_SPORE:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,4,me->dx/2,me->dy/2,1,map,world,me->friendly))
 			{
 
-				PoisonVictim(GetLastGuyHit(),30);
+				PoisonVictim(victim,30);
 				me->type=BLT_NONE;	// go away
 			}
 			break;
@@ -973,9 +972,9 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			break;
 		case BLT_FREEZE:
 		case BLT_FREEZE2:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
 			{
-				if(FreezeGuy(GetLastGuyHit()))
+				if(FreezeGuy(victim))
 				{
 					MakeSound(SND_FREEZE,me->x,me->y,SND_CUTOFF,1400);
 				}
@@ -983,9 +982,9 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			}
 			break;
 		case BLT_MINDWIPE:
-			if(FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
+			if(Guy *victim = FindVictim(me->x>>FIXSHIFT,me->y>>FIXSHIFT,8,me->dx,me->dy,0,map,world,me->friendly))
 			{
-				if(ControlMind(GetLastGuyHit()))
+				if(ControlMind(victim))
 				{
 					MakeSound(SND_ROBOBOUAPHAON,me->x,me->y,SND_CUTOFF,1400);
 				}
@@ -1046,7 +1045,6 @@ inline void BulletFaceGuy(bullet_t *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=-1;
-			diff=8-diff;
 		}
 		else
 			dir=1;
@@ -1057,7 +1055,6 @@ inline void BulletFaceGuy(bullet_t *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=1;
-			diff=8-diff;
 		}
 		else
 			dir=-1;
@@ -1084,7 +1081,6 @@ void UpdateBullet(bullet_t *me,Map *map,world_t *world)
 
 	activeBulDX=me->dx;
 	activeBulDY=me->dy;
-	b=0;
 
 	if(map->flags&MAP_UNDERWATER)
 	{
@@ -2020,6 +2016,12 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 
 	switch(me->type)
 	{
+		case BLT_SCANLOCK:
+			// In normal play, BLT_SCANNER just transmutes into this, but we
+			// want Summon Bullet to work sensibly.
+			me->timer=60;
+			me->target=65535;
+			break;
 		case BLT_SCANSHOT:
 			me->facing=Random(256);
 			me->dx=Cosine(me->facing)*4;
@@ -2027,6 +2029,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dz=0;
 			me->anim=0;
 			me->timer=60;
+			me->target=65535;
 			break;
 		case BLT_SCANNER:
 			me->dx=Cosine(facing*32)*16;
@@ -2087,8 +2090,8 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->anim=0;
 			me->timer=50;
 			me->z=FIXAMT*15;
-			me->dx=Cosine(me->facing*32)*14;
-			me->dy=Sine(me->facing*32)*14;
+			me->dx=Cosine(me->facing)*14;
+			me->dy=Sine(me->facing)*14;
 			me->dz=0;
 			break;
 		case BLT_EVILHAMMER:
@@ -2206,6 +2209,7 @@ void FireMe(bullet_t *me,int x,int y,byte facing,byte type,byte friendly)
 			me->dx=0;
 			me->dy=0;
 			me->dz=0;
+			me->target=65535;
 			MakeSound(SND_MEGABEAM,me->x,me->y,SND_CUTOFF,5000);
 			break;
 		case BLT_MEGABEAM1:
@@ -2573,7 +2577,7 @@ void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer
 		}
 }
 
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags)
+void HammerLaunch(int x,int y,byte facing,byte count,HammerFlags flags)
 {
 	byte angle,newfacing;
 	byte type,spd,face,timer;
@@ -2931,6 +2935,11 @@ void ChangeBullet(byte fx,int x,int y,int type,int newtype)
 
 }
 
+byte GetBulletAttackType(void)
+{
+	return attackType;
+}
+
 // TORPEDO, LASER
 static const byte bulletFacingType[] = {
 	0,  	// BLT_NONE    0
@@ -2986,18 +2995,83 @@ static const byte bulletFacingType[] = {
 	255,  	// BLT_FREEZE	50
 	0,  	// BLT_BUBBLEPOP 51	// a bubble that is popping, just visual effect
 	0,  	// BLT_LILBOOM2 52		// a harmless lilboom
-	7,  	// BLT_CHEESEHAMMER 53	// enhanced hammers
+	255,  	// BLT_CHEESEHAMMER 53	// enhanced hammers
 	255,  	// BLT_FREEZE2	54		// a freeze bullet that drops like acid bullets and splats
 	7,  	// BLT_LUNA	55		// lunachick's bullets
 	7,  	// BLT_LUNA2	56		// lunachick's bullets with wall-bounce power
 };
+static_assert(std::size(bulletFacingType) == NUM_BULLETS, "Must give new bullets a facing type");
 
 byte BulletFacingType(byte type)
 {
+	SDL_assert(type < NUM_BULLETS);
 	return bulletFacingType[type];
 }
 
-byte GetBulletAttackType(void)
+static const char bulletName[][20] = {
+	"Anything",
+	"Hammer",
+	"Bouncy Hammer",
+	"Missile",
+	"Flame",
+	"AK-8087 Shot",
+	"Acid",
+	"Cherry Bomb",
+	"Explosion",
+	"Red Bullet",
+	"Megabeam Source",
+	"Megabeam Part",
+	"Megabeam End",
+	"Evil Flame",
+	"Spore",
+	"Mushroom",
+	"Grenade",
+	"Grenade Boom",
+	"SDZ Shockwave",
+	"Missile Boom",
+	"Snowball",
+	"Big Snowball",
+	"Ice Spike",
+	"Rock",
+	"Cactus Spine",
+	"Evil Hammer",
+	"Power Shell",
+	"Big Axe",
+	"Lightning",
+	"Spear",
+	"Machete",
+	"Landmine",
+	"Evil Spear",
+	"Orbiter",
+	"Green Bullet",
+	"Ball Lightning",
+	"Zap Wand Shock",
+	"Mind Control",
+	"Reflect Shield",
+	"Swap Gun",
+	"Water Shot",
+	"Orbit Bomber",
+	"Harpoon",
+	"Scanner",
+	"Scanner Shot",
+	"Torpedo",
+	"Dirt Spike",
+	"Paper",
+	"Scanner Lock",
+	"Bubble",
+	"Freeze Ray",
+	"Bubble Pop",
+	"Harmless Boom",
+	"Cheese Hammer",
+	"Evil Freeze",
+	"Lunachick Ray",
+	"Bouncy Lunachick",
+};
+static_assert(std::size(bulletName) == NUM_BULLETS, "Must give new bullets a name");
+
+const char* BulletName(int type)
 {
-	return attackType;
+	if (type >= 0 && type < NUM_BULLETS)
+		return bulletName[type];
+	return "???";
 }

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\include\SDL3_mixer\SDL_mixer.h">
+      <Filter>Public Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SDL_mixer_internal.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\SDL_mixer_loader.h">
+      <Filter>Sources</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="x86">
+      <UniqueIdentifier>{54eeb851-ebbf-436f-a736-a0b710acb7a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="x64">
+      <UniqueIdentifier>{2e68f20d-bb6c-410f-bfb7-f513088d4f57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{8ec29020-3461-45b5-a964-2caa2257aa07}</UniqueIdentifier>
+      <Extensions>
+      </Extensions>
+    </Filter>
+    <Filter Include="Public Headers">
+      <UniqueIdentifier>{8bbeafe5-52e5-4259-8b07-2de45556c6b9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\src\version.rc">
+      <Filter>Sources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="external\optional\x64\libgme.dll">
+      <Filter>x64</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\libgme.dll">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\libogg-0.dll">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\libopus-0.dll">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\libopusfile-0.dll">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\libwavpack-1.dll">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\libxmp.dll">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\LICENSE.gme.txt">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\LICENSE.ogg-vorbis.txt">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\LICENSE.opus.txt">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\LICENSE.opusfile.txt">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\LICENSE.wavpack.txt">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x86\LICENSE.xmp.txt">
+      <Filter>x86</Filter>
+    </CustomBuild>
+    <CustomBuild Include="external\optional\x64\libxmp.dll" />
+    <CustomBuild Include="external\optional\x64\libogg-0.dll" />
+    <CustomBuild Include="external\optional\x64\libopus-0.dll" />
+    <CustomBuild Include="external\optional\x64\libopusfile-0.dll" />
+    <CustomBuild Include="external\optional\x64\libwavpack-1.dll" />
+    <CustomBuild Include="external\optional\x64\LICENSE.xmp.txt" />
+    <CustomBuild Include="external\optional\x64\LICENSE.ogg-vorbis.txt" />
+    <CustomBuild Include="external\optional\x64\LICENSE.opus.txt" />
+    <CustomBuild Include="external\optional\x64\LICENSE.opusfile.txt" />
+    <CustomBuild Include="external\optional\x64\LICENSE.wavpack.txt" />
+    <CustomBuild Include="external\optional\x64\LICENSE.gme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\decoder_aiff.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_au.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_drflac.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_drmp3.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_flac.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_fluidsynth.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_gme.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_mpg123.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_opus.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_raw.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_sinewave.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_stb_vorbis.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_timidity.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_voc.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_vorbis.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_wav.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_wavpack.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\decoder_xmp.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SDL_mixer.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SDL_mixer_metadata_tags.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\SDL_mixer_spatialization.c">
+      <Filter>Sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

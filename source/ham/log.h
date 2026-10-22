@@ -1,37 +1,18 @@
 #ifndef LOG_H
 #define LOG_H
 
-// Conditionals for warnings/analysis based on SDL_stdinc.h
-#ifdef __GNUC__
-#	ifdef __EMSCRIPTEN__
-#		define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( printf, fmtargnumber, fmtargnumber+1 )))
-#	else
-#		define PRINTF_FUNC( fmtargnumber ) __attribute__ (( format( gnu_printf, fmtargnumber, fmtargnumber+1 )))
-#	endif
-#else  // __GNUC__
-#	define PRINTF_FUNC( fmtargnumber )
-#endif  // __GNUC__
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1600)
-#	include <sal.h>
-#	define PRINTF_FMT _Printf_format_string_
-#else  // _MSC_VER
-#	define PRINTF_FMT
-#endif  // _MSC_VER
+#include "jamultypes.h"
+#include <SDL3/SDL_log.h>
 
 // Debug and error logging functions
-void LogDebug(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
-void LogError(PRINTF_FMT const char* fmt, ...) PRINTF_FUNC(1);
+HAM_API void LogInit();
+#define LogTrace(...) SDL_LogTrace(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
+#define LogVerbose(...) SDL_LogVerbose(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
+#define LogDebug(...) SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
+#define LogInfo SDL_Log
+#define LogWarn(...) SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
+#define LogError(...) SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__)
 
-#undef PRINTF_FUNC
-#undef PRINTF_FMT
-
-#ifdef LOG
-#	define DBG(X) LogDebug("%s", X)
-#	define PrintToLog(A, B) LogDebug("%s : %d", A, B)
-#else  // LOG
-#	define DBG(X)
-#	define PrintToLog(A, B)
-#endif  // LOG
+#define IsLogPriority(PRIORITY) (SDL_GetLogPriority(SDL_LOG_CATEGORY_APPLICATION) <= (PRIORITY))
 
 #endif  // LOG_H

@@ -9,7 +9,6 @@
 #include "mapdialog.h"
 #include "spcldialog.h"
 #include "tiledialog.h"
-#pragma pack(1)
 
 // the different plop modes
 #define PLOP_FLOOR  0

@@ -185,7 +185,7 @@ void Delete(int x,int y)
 	editorMap->GetTile(x,y)->item=0;
 
 	for(i=0;i<MAX_SPECIAL;i++)
-		if(editorMap->special[i].trigger && editorMap->special[i].x==x && editorMap->special[i].y==y)
+		if(editorMap->special[i].x==x && editorMap->special[i].y==y)
 		{
 			memset(&editorMap->special[i],0,sizeof(special_t));
 			editorMap->special[i].x=255;
@@ -195,40 +195,28 @@ void Delete(int x,int y)
 void BackupWorld(const char *name)
 {
 	char inName[128],outName[128];
-	FILE *inF,*outF;
 	int bytes;
-	byte *data;
 
 	sprintf(inName,"worlds/%s",name);
 	sprintf(outName,"worlds/backup_save.shw");
 
-	inF=AssetOpen(inName,"rb");
+	auto inF = AppdataOpen(inName);
 	if(!inF)
 		return;	// the source didn't exist, so nothing to back up
-	outF=AssetOpen(outName,"wb");
+	auto outF = AppdataOpen_Write(outName);
 	if(!outF)
-	{
-		fclose(inF);
 		return;	// was unable to open the file for writing for some reason
-	}
-	data=(byte *)malloc(sizeof(byte)*1024);
-	if(!data)
+
+	byte data[8 * 1024];
+	while(true)
 	{
-		fclose(inF);
-		fclose(outF);
-		return;	// couldn't allocate that lousy bit of memory!
-	}
-	while(1)
-	{
-		bytes=fread(data,sizeof(byte),1024,inF);
-		if(bytes>0)
-			fwrite(data,sizeof(byte),bytes,outF);
-		if(bytes<1024)
+		bytes = SDL_ReadIO(inF, data, std::size(data));
+		if(bytes <= 0)
 			break;
+		SDL_WriteIO(outF, data, bytes);
 	}
-	free(data);
-	fclose(inF);
-	fclose(outF);
+	outF.reset();
+	inF.reset();
 	AppdataSync();
 }
 
@@ -264,39 +252,52 @@ TASK(void) UpdateMouse(void)
 	int scroll = editmgl->mouse_z - mouseZ;
 	mouseZ = editmgl->mouse_z;
 
-	if(mouseX==0)
+	// Mouse scrolling, but exclude fullscreen modes.
+	switch (editMode)
 	{
-		cx-=8;
-		if(cx<0)
-			cx=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseX==639)
-	{
-		cx+=8;
-		if(cx>editorMap->width*TILE_WIDTH)
-			cx=editorMap->width*TILE_WIDTH;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==0)
-	{
-		cy-=8;
-		if(cy<0)
-			cy=0;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
-	}
-	if(mouseY==479)
-	{
-		cy+=8;
-		if(cy>editorMap->height*TILE_HEIGHT)
-			cy=editorMap->height*TILE_HEIGHT;
-		PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+		case EDITMODE_TERRAIN:
+		case EDITMODE_SPECIAL:
+		case EDITMODE_ITEM:
+		case EDITMODE_SOUND:
+		case EDITMODE_PICKENEMY:
+			break;
+		default:
+			if(mouseX==0)
+			{
+				cx-=8;
+				if(cx<0)
+					cx=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseX==639)
+			{
+				cx+=8;
+				if(cx>editorMap->width*TILE_WIDTH)
+					cx=editorMap->width*TILE_WIDTH;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==0)
+			{
+				cy-=8;
+				if(cy<0)
+					cy=0;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			if(mouseY==479)
+			{
+				cy+=8;
+				if(cy>editorMap->height*TILE_HEIGHT)
+					cy=editorMap->height*TILE_HEIGHT;
+				PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			}
+			break;
 	}
 
+	// The mode itself.
 	switch(editMode)
 	{
 		case EDITMODE_TERRAIN:
-			TerrainEdit_Update(mouseX,mouseY,editmgl);
+			TerrainEdit_Update(mouseX,mouseY,scroll,editmgl);
 			break;
 		case EDITMODE_SPECIAL:
 			SpecialEdit_Update(mouseX,mouseY,scroll,editmgl);
@@ -402,6 +403,8 @@ TASK(void) UpdateMouse(void)
 					editMode=EDITMODE_EDIT;
 				}
 			}
+			if (scroll)
+				MapDialogScroll(scroll);
 			break;
 		case EDITMODE_LEVELMENU:
 			if(editmgl->MouseTap())

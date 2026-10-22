@@ -80,28 +80,24 @@ void ExitPlayer(void)
 
 void PlayerLoadGame(byte which)
 {
-	FILE *f;
-
-	f = AppdataOpen("loony.sav", "rb");
+	auto f = AppdataOpen("loony.sav");
 	if (!f)
 	{
 		InitPlayer(INIT_GAME, 0, 0);
 	}
 	else
 	{
-		fseek(f, sizeof (player_t) * which, SEEK_SET);
-		fread(&player, sizeof (player_t), 1, f);
-		fclose(f);
+		SDL_SeekIO(f, sizeof (player_t) * which, SDL_IO_SEEK_SET);
+		SDL_ReadIO(f, &player, sizeof (player_t));
 	}
 }
 
 void PlayerSaveGame(byte which)
 {
-	FILE *f;
 	player_t p[3];
 	int i;
 
-	f = AppdataOpen("loony.sav", "rb");
+	auto f = AppdataOpen("loony.sav");
 	if (!f)
 	{
 		memset(p, 0, sizeof (player_t)*3); // make an empty player
@@ -111,17 +107,17 @@ void PlayerSaveGame(byte which)
 			p[1].totalCompletion[i] = 100;
 			p[2].totalCompletion[i] = 100;
 		}
-		f = AppdataOpen("loony.sav", "wb");
-		fwrite(p, sizeof (player_t), 3, f);
-		fclose(f);
-		f = AppdataOpen("loony.sav", "rb");
+		f = AppdataOpen_Write("loony.sav");
+		SDL_WriteIO(f, p, sizeof (player_t) * 3);
+		f.reset();
+		f = AppdataOpen("loony.sav");
 	}
-	fread(p, sizeof (player_t), 3, f);
-	fclose(f);
+	SDL_ReadIO(f, p, sizeof (player_t) * 3);
+	f.reset();
 	memcpy(&p[which], &player, sizeof (player_t));
-	f = AppdataOpen("loony.sav", "wb");
-	fwrite(p, sizeof (player_t), 3, f);
-	fclose(f);
+	f = AppdataOpen_Write("loony.sav");
+	SDL_WriteIO(f, p, sizeof (player_t) * 3);
+	f.reset();
 	AppdataSync();
 }
 

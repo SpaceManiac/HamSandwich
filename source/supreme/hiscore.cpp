@@ -1,20 +1,18 @@
 #include "hiscore.h"
-#include "map.h"
-#include "player.h"
 #include <time.h>
 #include <assert.h>
+#include "map.h"
+#include "player.h"
 #include "editor.h"
 #include "game.h"
 #include "config.h"
 #include "appdata.h"
-
-#if __linux__ || __EMSCRIPTEN__
-#include <unistd.h>
-#endif
+#include "steam.h"
+#include "string_extras.h"
 
 // ---------------- Encrypting scores into strings!
 
-static char ctab[]=
+static const char ctab[]=
 	"0123456789"	// 0-9
 	"abcdefghij"	// 10-19
 	"klmnopqrst"	// 20-29
@@ -246,8 +244,6 @@ void DecryptScore(score_t *s)
 
 void CryptoTest(void)
 {
-	FILE *f;
-
 	score_t test={
 		"Bobby2",100,0,1,12,10,74,511718,124958,0};
 	score_t test2;
@@ -255,15 +251,16 @@ void CryptoTest(void)
 	memcpy(&test2,&test,sizeof(score_t));
 
 	SetupCrypto(3574,858734,298437);
-	f=AppdataOpen("test.txt","wt");
+	auto f = AppdataOpen_Write("test.txt");
 	EncryptScore(&test);
-	fprintf(f,"Encrypted:\n%s\n\n",enc_score);
+	SDL_IOprintf(f.get(),"Encrypted:\n%s\n\n",enc_score);
 	DecryptScore(&test);
-	fprintf(f,"Decrypted:\n");
-	fprintf(f,"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
-	fprintf(f,"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
-	fclose(f);
+	SDL_IOprintf(f.get(),"Decrypted:\n");
+	SDL_IOprintf(f.get(),"name: %s\nchecksum: %u\n\n",test.name,test.scoreChecksum);
+	SDL_IOprintf(f.get(),"memcmp: %d\n",memcmp(&test,&test2,sizeof(score_t)));
 	ExitCrypto();
+	f.reset();
+	AppdataSync();
 }
 
 // --------------- CHECKSUMMING FUNCTIONS
@@ -283,9 +280,9 @@ void AddToSum(byte b)
 {
 	byte cipher;
 
-	cipher=(b^(r>>8));
-	r=(cipher+r)*c1+c2;
-	sum+=cipher;
+	cipher = (b ^ (r >> 8));
+	r = (word)((unsigned int)(cipher + r) * (unsigned int)c1 + (unsigned int)c2);
+	sum += cipher;
 }
 
 void AddToSum(word w)
@@ -294,7 +291,7 @@ void AddToSum(word w)
 	AddToSum((byte)(w&255));
 }
 
-void AddToSum(int i)
+void AddToSum(int32_t i)
 {
 	AddToSum((byte)((i>>24)&255));
 	AddToSum((byte)((i>>16)&255));
@@ -310,7 +307,7 @@ void AddToSum(dword i)
 	AddToSum((byte)(i&255));
 }
 
-void AddToSum(char *s)
+void AddToSum(const char *s)
 {
 	int i;
 
@@ -318,73 +315,74 @@ void AddToSum(char *s)
 		AddToSum((byte)s[i]);
 }
 
-dword ChecksumMap(Map *map)
+dword ChecksumMap(const Map *map)
 {
-	int i,j;
-
 	ResetChecksum();
 
 	AddToSum(map->name);
 
 	AddToSum(map->numBrains);
 	AddToSum(map->numCandles);
-	AddToSum(map->flags);
+	AddToSum((word)map->flags); static_assert(sizeof(map->flags) == sizeof(word));
 	AddToSum(map->width);
 	AddToSum(map->height);
 	AddToSum(map->itemDrops);
 
-	for(i=0;i<map->width*map->height;i++)
+	for (const mapTile_t &target : map->Tiles())
 	{
-		AddToSum(map->map[i].floor);
-		AddToSum(map->map[i].item);
-		AddToSum(map->map[i].wall);
-		AddToSum(map->map[i].light);
+		AddToSum(target.floor);
+		AddToSum(target.item);
+		AddToSum(target.wall);
+		AddToSum(target.light);
 	}
 
-	for(i=0;i<MAX_MAPMONS;i++)
+	for (const mapBadguy_t &badguy : map->badguy)
 	{
-		if(map->badguy[i].type)
+		if (badguy.type)
 		{
-			if (map->badguy[i].type > UINT8_MAX)
-				AddToSum(map->badguy[i].type);
+			if (badguy.type > UINT8_MAX)
+				AddToSum(badguy.type);
 			else
-				AddToSum((byte) map->badguy[i].type);
-			AddToSum(map->badguy[i].x);
-			AddToSum(map->badguy[i].y);
-			AddToSum(map->badguy[i].item);
+				AddToSum((byte)badguy.type);
+			AddToSum(badguy.x);
+			AddToSum(badguy.y);
+			AddToSum(badguy.item);
 		}
 	}
 
-	for(i=0;i<MAX_SPECIAL;i++)
+	for (const special_t &special : map->special)
 	{
-		if(map->special[i].x!=255)
+		if(special.x!=255)
 		{
-			AddToSum(map->special[i].x);
-			AddToSum(map->special[i].y);
+			AddToSum(special.x);
+			AddToSum(special.y);
 
-			for(j=0;j<NUM_TRIGGERS;j++)
+			for (const trigger_t &trigger : special.trigger)
 			{
-				if(map->special[i].trigger[j].type)
+				if(trigger.type)
 				{
-					AddToSum(map->special[i].trigger[j].type);
-					AddToSum(map->special[i].trigger[j].flags);
-					AddToSum(map->special[i].trigger[j].x);
-					AddToSum(map->special[i].trigger[j].y);
-					AddToSum(map->special[i].trigger[j].value);
-					AddToSum(map->special[i].trigger[j].value2);
+					AddToSum(trigger.type);
+					AddToSum((byte)trigger.flags); static_assert(sizeof(trigger.flags) == sizeof(byte));
+					AddToSum(trigger.x);
+					AddToSum(trigger.y);
+					AddToSum(trigger.value);
+					AddToSum(trigger.value2);
 				}
 			}
 
-			for(j=0;j<NUM_EFFECTS;j++)
+			for (const effect_t &effect : special.effect)
 			{
-				if(map->special[i].effect[j].type)
+				if(effect.type)
 				{
-					AddToSum(map->special[i].effect[j].type);
-					AddToSum(map->special[i].effect[j].flags);
-					AddToSum(map->special[i].effect[j].x);
-					AddToSum(map->special[i].effect[j].y);
-					AddToSum(map->special[i].effect[j].value);
-					AddToSum(map->special[i].effect[j].value2);
+					AddToSum(effect.type);
+					AddToSum((byte)effect.flags); static_assert(sizeof(effect.flags) == sizeof(byte));
+					AddToSum(effect.x);
+					AddToSum(effect.y);
+					if (effect.type == EFF_SOUND)
+						AddToSum(SoundToDescIndex(effect.value));
+					else
+						AddToSum(effect.value);
+					AddToSum(effect.value2);
 				}
 			}
 		}
@@ -514,7 +512,7 @@ void ExitHiScores(void)
 
 void SaveHiScoreFile(score_t *list,word num,const char *fname)
 {
-	FILE *f;
+	owned::SDL_IOStream f;
 	word i;
 
 	if(!config.hiscores)
@@ -522,27 +520,27 @@ void SaveHiScoreFile(score_t *list,word num,const char *fname)
 
 	if(num==0)
 	{
-		f=AppdataOpen(fname,"wb");
+		f=AppdataOpen_Write(fname);
 		if(!f)
 			return;
-		fwrite(&num,sizeof(word),1,f);
-		fclose(f);
+		SDL_WriteIO(f,&num,sizeof(word));
+		f.reset();
 		AppdataSync();
 		return;
 	}
-	f=AppdataOpen(fname,"wb");
+	f=AppdataOpen_Write(fname);
 	if(!f)
 		return;
-	fwrite(&num,sizeof(word),1,f);	// write out the number of scores
+	SDL_WriteIO(f,&num,sizeof(word));	// write out the number of scores
 
 	SetupCrypto(3574,858734,298437);
 	for(i=0;i<num;i++)			// write out each score, encrypted
 	{
 		EncryptScore(&list[i]);
-		fwrite(enc_score,sizeof(char),scoreLen,f);
+		SDL_WriteIO(f,enc_score,scoreLen);
 	}
 	ExitCrypto();
-	fclose(f);
+	f.reset();
 	AppdataSync();
 }
 
@@ -554,25 +552,21 @@ void SaveHiScores(void)
 
 void LoadHiScoresFile(void)
 {
-	FILE *f;
 	word i;
+
+	numScores=0;
+	if(hiScore)
+		free(hiScore);
+	hiScore=NULL;
 
 	if(!config.hiscores)
 		return;
 
-	f=AppdataOpen("hiscore.dat","rb");
+	auto f = AppdataOpen("hiscore.dat");
 	if(!f)
-	{
-		numScores=0;
-		if(hiScore)
-			free(hiScore);
-		hiScore=NULL;
 		return;
-	}
-	if(hiScore)
-		free(hiScore);
 
-	fread(&numScores,sizeof(word),1,f);	// read in the number of scores
+	SDL_ReadIO(f,&numScores,sizeof(word));	// read in the number of scores
 
 	if(numScores>0)
 	{
@@ -580,35 +574,30 @@ void LoadHiScoresFile(void)
 		SetupCrypto(3574,858734,298437);
 		for(i=0;i<numScores;i++)			// read in each score, encrypted
 		{
-			fread(enc_score,sizeof(char),scoreLen,f);
+			SDL_ReadIO(f,enc_score,scoreLen);
 			DecryptScore(&hiScore[i]);		// and decrypt!
 		}
 		ExitCrypto();
 	}
-	fclose(f);
 }
 
 void LoadHiTimesFile(void)
 {
-	FILE *f;
 	word i;
+
+	numTimes=0;
+	if(hiTime)
+		free(hiTime);
+	hiTime=NULL;
 
 	if(!config.hiscores)
 		return;
 
-	f=AppdataOpen("hitime.dat","rb");
+	auto f = AppdataOpen("hitime.dat");
 	if(!f)
-	{
-		numTimes=0;
-		if(hiTime)
-			free(hiTime);
-		hiTime=NULL;
 		return;
-	}
-	if(hiTime)
-		free(hiTime);
 
-	fread(&numTimes,sizeof(word),1,f);	// read in the number of scores
+	SDL_ReadIO(f,&numTimes,sizeof(word));	// read in the number of scores
 
 	if(numTimes>0)
 	{
@@ -616,12 +605,11 @@ void LoadHiTimesFile(void)
 		SetupCrypto(3574,858734,298437);
 		for(i=0;i<numTimes;i++)			// read in each score, encrypted
 		{
-			fread(enc_score,sizeof(char),scoreLen,f);
+			SDL_ReadIO(f,enc_score,scoreLen);
 			DecryptScore(&hiTime[i]);		// and decrypt!
 		}
 		ExitCrypto();
 	}
-	fclose(f);
 }
 
 void LoadHiScores(void)
@@ -686,7 +674,7 @@ void CreateScore(dword score,Map *map)
 	saved[3]=SCORE_NEW;
 }
 
-void GetHiScores(byte time,Map *map)
+void GetHiScores(byte time,const Map *map)
 {
 	int i,me,num;
 	score_t *list;
@@ -858,7 +846,7 @@ byte TryHighScore(void)
 {
 	byte gotRecords;
 	dword trueScore;
-	float destructBonus,diffBonus;
+	float destructBonus, diffBonus = 1.0f;
 
 	if(!config.hiscores)
 		return 0;
@@ -870,12 +858,13 @@ byte TryHighScore(void)
 	else
 		destructBonus=0.5f+((float)player.enemiesSlain/(float)player.totalEnemies);
 
-	if(profile.difficulty==0)
-		diffBonus=0.75f;
-	else if(profile.difficulty==1)
-		diffBonus=1.0f;
-	else
-		diffBonus=1.25f;
+	if (profile.difficulty == DIFFICULTY_NORMAL)
+		diffBonus = 0.75f;
+	else if (profile.difficulty == DIFFICULTY_HARD)
+		diffBonus = 1.0f;
+	else if (profile.difficulty == DIFFICULTY_LUNATIC)
+		diffBonus = 1.25f;
+	static_assert(MAX_DIFFICULTY == 3, "Must handle new difficulty here");
 
 	trueScore=player.score;
 	trueScore+=player.bestCombo*10;
@@ -900,7 +889,7 @@ byte TryHighScore(void)
 	return gotRecords;
 }
 
-byte GetTopScores(score_t *winners,Map *map)
+byte GetTopScores(score_t *winners,const Map *map)
 {
 	int i,cnt;
 
@@ -918,7 +907,7 @@ byte GetTopScores(score_t *winners,Map *map)
 	return cnt;
 }
 
-byte GetTopTimes(score_t *winners,Map *map)
+byte GetTopTimes(score_t *winners,const Map *map)
 {
 	int i,cnt;
 
@@ -989,17 +978,15 @@ void DeleteScores(Map *map)
 
 void EraseHighScores(world_t *world)
 {
-	int i;
-
 	if(!config.hiscores)
 		return;
 
 	if(!world)
 		return;
 
-	for(i=0;i<world->numMaps;i++)
+	for (Map *map : world->Maps())
 	{
-		DeleteScores(world->map[i]);
+		DeleteScores(map);
 	}
 	SaveHiScores();
 }

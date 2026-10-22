@@ -2,7 +2,6 @@
 #define LEVELDEF_H
 
 #include "winpch.h"
-#pragma pack(1)
 
 // the levels
 #define LVL_EISBURG		(0)
@@ -75,8 +74,6 @@
 // level flags
 #define LF_TOWN		(1)
 #define LF_ARENA	(2)	// Arena rules - enemies don't drop items, just money
-
-#pragma pack(1)
 
 typedef struct levelDef_t
 {

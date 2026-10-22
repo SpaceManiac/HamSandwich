@@ -1,61 +1,39 @@
 #!/bin/bash
-# ./run - build then run a project in the appropriate directory
 set -euo pipefail
 
-# Ensure all build-time dependencies are installed.
-./tools/build/install-deps.sh
-
-# Default settings
-project=
-toolset=gcc
-config=
-mode=debug
-platform=x86
-nobuild=
-tool=
-override_args=
-
-# MINGW64 and 64-bit Ubuntu prefer x86_64 automatically.
-if test "${MSYSTEM:-}" = "MINGW32"; then
-	platform=x86
-elif test "${MSYSTEM:-}" = "MINGW64"; then
-	platform=x86_64
-elif test "$(uname -m)" = "x86_64"; then
-	platform=x86_64
-fi
-
-# Helpers
+# Help
 show_help() {
-	load_run_config
 	echo "Usage: $0 [<setting=value>] <project> [-- <arguments>]"
-	echo "Available projects:"
-	echo "    ${exeprojects[*]}"
 	echo "Settings:"
-	echo "    toolset=        One of:  gcc  clang  emcc"
+	echo "    os=             One of:  windows  linux  macos  emscripten"
+	echo "    arch=           One of:  i686  x86_64  wasm32"
 	echo "    mode=           One of:  debug  release"
-	echo "    platform=       One of:  x86  x86_64"
-	echo "    config=         Set mode and platform together, ex: release_x86_64"
+	echo "    preset=         Set os, arch, and mode together, ex: windows-i686-release"
 	echo "    nobuild=1       Skip compiling before running."
 	echo "    tool=gdb        Start GDB prepared to debug the game."
 	echo "    tool=valgrind   Run the game under valgrind memory checker (slow)."
 	echo "    tool=callgrind  Run the game under callgrind profiler (slow)."
 	echo "    tool=two        Run two instances of the game at once."
+	echo "    tool=deck       Upload to and run on a Steam Deck over SSH. Linux only."
 }
 
-load_run_config() {
-	make --quiet toolset="$toolset" "build/$toolset/run-config.sh"
-	source "build/$toolset/run-config.sh"; declare exeprojects
-	# Only load the config once, even if we need it multiple times.
-	load_run_config() { :; }
-}
+# Default settings.
+project=launcher
+os=
+arch=
+mode=debug
+preset=
+nobuild=
+tool=
+override_args=
 
 # Read command-line arguments.
 while test $# -ne 0; do
-	ARG="$1"; shift
-	case "$ARG" in
+	arg="$1"; shift
+	case "$arg" in
 		# settings
-		toolset=* | config=* | mode=* | platform=* | nobuild=* | tool=*)
-			eval "$ARG"
+		project=* | os=* | arch=* | mode=* | preset=* | nobuild=* | tool=*)
+			declare "$arg"
 			;;
 		# show help on demand
 		--help)
@@ -73,12 +51,6 @@ while test $# -ne 0; do
 		"--release")
 			mode=release
 			;;
-		"--32")
-			platform=x86
-			;;
-		"--64")
-			platform=x86_64
-			;;
 		"--gdb")
 			tool=gdb
 			;;
@@ -91,11 +63,8 @@ while test $# -ne 0; do
 		"--nobuild")
 			nobuild=1
 			;;
-		"--clang")
-			toolset=clang
-			;;
 		"--web")
-			toolset=emcc
+			os=emscripten
 			;;
 		"--two")
 			tool=two
@@ -106,7 +75,7 @@ while test $# -ne 0; do
 			;;
 		# a setting without a variable name is $project
 		*)
-			project="$ARG"
+			project="$arg"
 			;;
 	esac
 done
@@ -116,65 +85,132 @@ if test -z "$project"; then
 	show_help; exit 1
 fi
 
-# Force some configurations if Emscripten is active.
-if test "$toolset" = "emcc"; then
-	tool=emrun
-	platform=x86
+# Fallback settings. Keep this in sync with `Makefile`!
+container=
+if test -z "$preset"; then
+	if test -z "$os"; then
+		# Detect OS and architecture.
+		case "$(uname -sm)" in
+			MSYS*|MINGW32*)
+				# Note: MSYS not actually supported, but `install-deps` & `make` will report that.
+				os=windows
+				arch=${arch:-i686}
+				;;
+			MINGW64*)
+				os=windows
+				arch=${arch:-x86_64}
+				;;
+			"Linux x86_64")
+				os=linux
+				container=./container
+				arch=${arch:-x86_64}
+				;;
+			"Darwin x86_64")
+				os=macos
+				arch=${arch:-x86_64}
+				;;
+			*)
+				echo "Unknown \`uname -sm\`: $(uname -sm)"
+				exit 1
+		esac
+	elif test -z "$arch"; then
+		# Use default architecture for chosen OS.
+		case "$os" in
+			windows)
+				arch=i686
+				;;
+			linux|macos)
+				arch=x86_64
+				;;
+			emscripten)
+				arch=wasm32
+				;;
+		esac
+	fi
+	preset="$os-$arch-$mode"
+fi
 
-	# If there's no Emscripten SDK active, then activate a private one.
-	if ! command -v em++ >/dev/null 2>&1; then
-		source ./tools/build/install-emsdk.sh
+tools/build/install-deps.sh
+if test -z "$tool" && test "$os" = "emscripten"; then
+	tool=emrun
+	source tools/emscripten/install-emsdk.sh
+fi
+
+debugext=
+if test "$os" = "windows"; then
+	debugext=".exe"
+else
+	MSYSTEM=
+fi
+
+# Default debug configuration
+debugdir="$PWD/build/install"
+cmakedir="$PWD/build/cmake-$preset${MSYSTEM:-}"
+debugcommand="$debugdir/$project$debugext"
+debugargs=()
+debugenvs=()
+
+if test "$os" = "emscripten"; then
+	debugdir="$PWD/build/webroot"
+	emrun="$PWD/external/emsdk/upstream/emscripten/emrun"
+	if ! test -f "$emrun"; then
+		emrun="$emrun.py"
 	fi
 fi
 
-# Build $config from $mode and $platform if needed.
-if test -z "$config"; then
-	config="${mode}_$platform"
-fi
-
-# Build the project.
+# Build and install
 if test -z "$nobuild"; then
-	make -j"$(nproc)" config="$config" toolset="$toolset" "$project"
+	if test "$os" = "emscripten"; then
+		# Web.
+		if test "$project" != "launcher"; then
+			# Single project: build and install just that project.
+			make preset="$preset" "$project"
+			cmake --install "$cmakedir" --component "$project"/web --config Debug
+			cmake --install "$cmakedir" --component generic/web --config Debug
+		else
+			# Otherwise, build and install everything.
+			make preset="$preset" install
+		fi
+	else
+		# Desktop.
+		case "$project" in
+			launcher)
+				# Launcher: build everything that isn't excluded, because that's
+				# what will be presented in the launcher UI.
+				$container make preset="$preset" install
+				;;
+			jfttool|jspedit|lunaticpal|mini_xxd)
+				# Tool: build just that project. Don't bother installing it.
+				$container make preset="$preset" "$project"
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
+				;;
+			*)
+				# Single game project: build the launcher and that project.
+				debugargs=("window")
+				$container make preset="$preset" "$project" launcher
+				# Install the launcher so that it can be used to download assets.
+				$container cmake --install "$cmakedir" --component Unspecified --config Debug
+				$container cmake --install "$cmakedir" --component generic/executables --config Debug
+				$container cmake --install "$cmakedir" --component launcher/executables --config Debug
+				$container cmake --install "$cmakedir" --component "$project"/executables --config Debug
+				;;
+		esac
+	fi
 fi
 
-# Migrate fully-extracted appdata to new appdata-only location as a fallback
-if test -d "build/game/$project"; then
-	./tools/build/migrate-appdata.sh "$project" "build/game/$project" "appdata/$project"
+# Handle ./run jfttool and lunaticpal which don't have CMake install scripts.
+if test "$os" != "emscripten" && ! test -f "$debugcommand"; then
+	# Run from build tree, but search install tree for libraries.
+	debugcommand="$cmakedir/source/$project/$project$debugext"
+	export LD_LIBRARY_PATH="$debugdir"
 fi
 
-# Now that the settings are known, load the debug config.
-load_run_config
-debug_configure; declare debugdir debugcommand debugargs debugenvs
-
-# Prompt to download installers if not already present.
-if test "$toolset" != "emcc"; then
-	handler() {
-		declare filename link sha256sum  # inputs
-		INSTDIR="build/installers"
-
-		show_header() {
-			echo "==== Installer required ===="
-			mkdir -p "$INSTDIR"
-			show_header() { :; }
-		}
-
-		while test ! -f "$INSTDIR/$filename"; do
-			show_header
-			echo "Please download '$filename' from the following page, and save it inside '$INSTDIR/':"
-			echo "    $link"
-			echo "Press Enter when finished, or Ctrl-C to cancel."
-			read -r
-		done
-		while ! sha256sum -c <<<"$sha256sum *$INSTDIR/$filename"; do
-			show_header
-			echo "That looks like the wrong file, please download '$filename' again:"
-			echo "    $link"
-			echo "Press Enter when finished, or Ctrl-C to cancel."
-			read -r
-		done
-	}
-	iterate_installers handler
+# Set symbolizer for sanitizers.
+if symbolizer=$(command -v llvm-symbolizer); then
+	export ASAN_SYMBOLIZER_PATH=$symbolizer
 fi
+export LSAN_OPTIONS=suppressions=$PWD/tools/lsan_suppressions.txt
 
 # Run the game executable or tool.
 mkdir -p "$debugdir"
@@ -187,7 +223,7 @@ if test "$override_args"; then
 fi
 case "$tool" in
 	gdb)
-		echo "==== Debugging $project ($config) ===="
+		echo "==== Debugging $project ($preset) ===="
 		# Catches "the runtime was asked to terminate in an usual way".
 		# If libc++ is dynamically linked, the breakpoint should be pending.
 		gdb -q \
@@ -197,25 +233,54 @@ case "$tool" in
 			--args "$debugcommand" "${debugargs[@]}"
 		;;
 	valgrind)
-		echo "==== Valgrinding $project ($config) ===="
+		echo "==== Valgrinding $project ($preset) ===="
 		valgrind "$debugcommand" "${debugargs[@]}"
 		;;
 	callgrind)
-		echo "==== Callgrinding $project ($config) ===="
+		echo "==== Callgrinding $project ($preset) ===="
 		valgrind --tool=callgrind "$debugcommand" "${debugargs[@]}"
 		;;
 	emrun)
-		echo "==== Hosting $project ($config) ===="
-		emrun --serve_after_close "index.html"
+		echo "==== Hosting $project ($preset) ===="
+		if test "$project" = "launcher"; then
+			"$emrun" --serve-after-close --serve-after-exit "$debugdir/index.html"
+		else
+			# TODO: Serve out of CMake dir, so non-installed projects work
+			"$emrun" --serve-after-close "$debugdir/$project.html"
+		fi
 		;;
 	two)
-		echo "==== Running $project ($config) ===="
+		echo "==== Running $project ($preset) ===="
 		"$debugcommand" "${debugargs[@]}" &
 		"$debugcommand" "${debugargs[@]}"
 		;;
+	deck)
+		# TODO: remove requirement that "SteamOS Devkit Client" has been set up
+		# TODO: allow configuring deck_addr
+		deck_addr=deck@steamdeck.local
+		deck_game=HamSandwich
+		echo "==== Uploading to $deck_addr:devkit-game/$deck_game ===="
+		deck_exe=${debugcommand##*/}
+		rsync -av --chmod=Du=rwx,Dgo=rx,Fu=rwx,Fog=rx -e "ssh -o StrictHostKeyChecking=no -i $HOME/.config/steamos-devkit/devkit_rsa" "$debugcommand" ./ "$deck_addr:/home/deck/devkit-game/$deck_game/"
+		# shellcheck disable=SC2087
+		ssh -o StrictHostKeyChecking=no -i ~/.config/steamos-devkit/devkit_rsa "$deck_addr" sh <<-EOD
+			set -eu
+			devkit-utils/steam-client-create-shortcut --parms '{"gameid": "$deck_game", "directory": "/home/deck/devkit-game/$deck_game", "argv": ["./$deck_exe"], "settings": {"steam_play": "0"}}'
+		EOD
+		# TODO: launch the game automatically
+		# data = parse ~/.local/share/Steam/userdata/$USERID/config/shortcuts.vdf
+		# appid = ((data['shortcuts']['N']['appid'] & 0xffffffff) << 32) | 0x02000000
+		# steam steam://rungameid/$appid
+		# TODO: tail -F a logfile or pipe to read console output
+		;;
 	"")
-		echo "==== Running $project ($config) ===="
-		"$debugcommand" "${debugargs[@]}"
+		if test -f "$debugcommand"; then
+			echo "==== Running $project ($preset) ===="
+			"$debugcommand" "${debugargs[@]}"
+		else
+			echo "$project: not a runnable target."
+			exit 1
+		fi
 		;;
 	*)
 		echo "$0: unknown tool: $tool"

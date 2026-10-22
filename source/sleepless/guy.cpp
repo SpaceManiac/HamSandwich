@@ -911,7 +911,7 @@ void Guy::Update(Map *map,world_t *world)
 			mind=1;	// know when you enter a space
 	}
 
-	if(mapx>=0 && mapy>=0 && mapx<map->width && mapy<map->height)
+	if(mapx<map->width && mapy<map->height)
 		bright=map->GetTile(mapx,mapy)->templight;
 	else
 		bright=-32;
@@ -953,7 +953,8 @@ void Guy::Render(byte light)
 
 	t=type;
 
-	if(fromColor!=255)
+	const bool recolor = fromColor!=255;
+	if(recolor)
 	{
 		oldFrom=GetMonsterType(t)->fromCol;
 		oldTo=GetMonsterType(t)->toCol;
@@ -963,7 +964,7 @@ void Guy::Render(byte light)
 	oldBrt=GetMonsterType(t)->brtChg;
 	GetMonsterType(t)->brtChg=brtChange;
 	MonsterDraw(x,y,z,type,aiType,seq,frm,facing,bright*(light>0),ouch,poison,frozen,NULL/*customSpr*/); // TODO: custom monster jsps
-	if(fromColor!=255)
+	if(recolor)
 	{
 		GetMonsterType(t)->fromCol=oldFrom;
 		GetMonsterType(t)->toCol=oldTo;
@@ -1118,6 +1119,7 @@ void Guy::GetShot(int dx,int dy,byte damage,Map *map,world_t *world)
 			player.ammo=0;
 		else
 			player.ammo-=damage;
+		realDam = 0;
 	}
 	else
 	{
@@ -3857,51 +3859,51 @@ byte BadguyRegions(int x,int y,int x2,int y2,int tx,int ty)
 	return 1;
 }
 
-static const dword NO_SUCH_GUY = 65535;
+static constexpr dword NO_SUCH_GUY = 65535;
 
-void SaveGuys(FILE *f)
+void SaveGuys(SDL_IOStream *f)
 {
 	int i;
 
-	fwrite(&maxGuys,sizeof(int),1,f);
+	SDL_WriteIO(f,&maxGuys,sizeof(int));
 
 	for(i=0;i<maxGuys;i++)
 	{
-		fwrite(&guys[i]->type,sizeof(byte),1,f);
+		SDL_WriteIO(f,&guys[i]->type,sizeof(byte));
 		if(guys[i]->type)
 		{
 			dword target = guys[i]->target ? guys[i]->target->ID : NO_SUCH_GUY;
 			dword parent = guys[i]->parent ? guys[i]->parent->ID : NO_SUCH_GUY;
 			// sizes should total to 136
-			fwrite(guys[i],offsetof(Guy, target),1,f);
-			fwrite(&target,4,1,f);
-			fwrite(&parent,4,1,f);
-			fwrite(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136);
+			SDL_WriteIO(f,guys[i],offsetof(Guy, target));
+			SDL_WriteIO(f,&target,4);
+			SDL_WriteIO(f,&parent,4);
+			SDL_WriteIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp));
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 		}
 	}
 }
 
-void LoadGuys(FILE *f)
+void LoadGuys(SDL_IOStream *f)
 {
 	int i;
 
 	ExitGuys();
-	fread(&maxGuys,sizeof(int),1,f);
+	SDL_ReadIO(f,&maxGuys,sizeof(int));
 	InitGuys(maxGuys);
 
 	for(i=0;i<maxGuys;i++)
 	{
-		fread(&guys[i]->type,sizeof(byte),1,f);
+		SDL_ReadIO(f,&guys[i]->type,sizeof(byte));
 		if(guys[i]->type)
 		{
 			dword target, parent;
 			// sizes should total to 136
-			fread(guys[i],offsetof(Guy, target),1,f);
-			fread(&target,4,1,f);
-			fread(&parent,4,1,f);
-			fread(&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp),1,f);
-			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136);
+			SDL_ReadIO(f,guys[i],offsetof(Guy, target));
+			SDL_ReadIO(f,&target,4);
+			SDL_ReadIO(f,&parent,4);
+			SDL_ReadIO(f,&guys[i]->hp,sizeof(Guy) - offsetof(Guy, hp));
+			static_assert(sizeof(Guy) - offsetof(Guy, hp) + offsetof(Guy, target) + 4 + 4 == 136, "save compatibility broken; adjust this assertion if you are sure");
 
 			if(target==NO_SUCH_GUY)
 				guys[i]->target=NULL;

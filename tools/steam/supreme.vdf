@@ -1,0 +1,48 @@
+"AppBuild"
+{
+	"AppID" "2547330"
+	"Desc" "Supreme With Cheese root Steam build script"
+
+	"ContentRoot" "../../build/dist/supreme/"
+	"BuildOutput" "../../build/steam-cache/"
+
+	"Depots"
+	{
+		"2547331"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-assets/*"
+				"DepotPath" "."
+				"Recursive" "1"
+			}
+		}
+		"2547332"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "supreme8/*"
+				"DepotPath" "installers/supreme8_install.exe/"
+				"Recursive" "1"
+			}
+		}
+		"2547333"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-windows/*"
+				"DepotPath" "."
+				"Recursive" "1"
+			}
+		}
+		"2547334"
+		{
+			"FileMapping"
+			{
+				"LocalPath" "steam-linux/*"
+				"DepotPath" "."
+				"Recursive" "1"
+			}
+		}
+	}
+}

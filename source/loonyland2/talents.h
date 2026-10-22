@@ -2,7 +2,6 @@
 #define TALENTS_H
 
 #include "winpch.h"
-#pragma pack(1)
 
 enum talentList {
 	// combat

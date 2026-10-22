@@ -1,0 +1,23 @@
+#!/bin/bash
+# Workaround for https://github.com/llvm/llvm-project/issues/94563
+set -euo pipefail
+new_args=()
+manifest=
+for arg in "$@"; do
+	case "$arg" in
+		"/manifest")
+			manifest=1
+			;;
+		"/out:"*)
+			manifest=
+			new_args+=("$arg")
+			;;
+		*)
+			if test "$manifest"; then
+				new_args+=("/manifest")
+			fi
+			new_args+=("$arg")
+			;;
+	esac
+done
+exec llvm-mt "${new_args[@]}"

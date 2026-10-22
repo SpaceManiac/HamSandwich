@@ -1,0 +1,95 @@
+// Common utilities for <game>/steam.cpp.
+// An inline rather than a normal header so that ham doesn't have to link
+// steamapi and infect games that don't actually have a Steam mode.
+
+#include <stdint.h>
+#include <memory>
+#include <SDL3/SDL.h>
+#include <steam/steam_api.h>
+
+// ------------------------------------------------------------------------
+// Leaderboard upload base
+class LeaderboardUploadJob
+{
+public:
+	// Always relevant.
+	int32_t score = 0;
+	// Only observed if the leaderboard is new.
+	ELeaderboardSortMethod sortMethod = k_ELeaderboardSortMethodDescending;
+	ELeaderboardDisplayType displayType = k_ELeaderboardDisplayTypeNumeric;
+	ELeaderboardUploadScoreMethod uploadScoreMethod = k_ELeaderboardUploadScoreMethodKeepBest;
+private:
+	int32_t extraData[k_cLeaderboardDetailsMax];
+	int extraDataCount = 0;
+
+	CCallResult<LeaderboardUploadJob, LeaderboardFindResult_t> findLeaderboardCall;
+	CCallResult<LeaderboardUploadJob, LeaderboardScoreUploaded_t> uploadScoreCall;
+
+public:
+	LeaderboardUploadJob() {}
+
+	// Try to add a detail. Returns false if you're out of space.
+	bool AddDetail(int32_t detail)
+	{
+		if (extraDataCount < k_cLeaderboardDetailsMax)
+		{
+			extraData[extraDataCount] = detail;
+			++extraDataCount;
+			return true;
+		}
+		return false;
+	}
+
+	static void Send(const char* leaderboardId, std::unique_ptr<LeaderboardUploadJob> job)
+	{
+		// std::unique_ptr type enforces that we can call .release() and `delete` it later.
+		job.release()->Send2(leaderboardId);
+	}
+
+private:
+	// Safety: `this` must be on the heap and this object is now responsible for `delete`ing itself.
+	void Send2(const char* leaderboardId)
+	{
+		LogDebug("FindOrCreateLeaderboard(%s)", leaderboardId);
+		findLeaderboardCall.Set(SteamUserStats()->FindOrCreateLeaderboard(
+			leaderboardId,
+			sortMethod,
+			displayType
+		), this, &LeaderboardUploadJob::FindLeaderboardCallback);
+	}
+
+	void FindLeaderboardCallback(LeaderboardFindResult_t* result, bool ioError)
+	{
+		if (!ioError && result->m_bLeaderboardFound && result->m_hSteamLeaderboard)
+		{
+			LogDebug("UploadLeaderboardScore(%llu, %d, ...[%d])",
+				result->m_hSteamLeaderboard, score, extraDataCount);
+			uploadScoreCall.Set(SteamUserStats()->UploadLeaderboardScore(
+				result->m_hSteamLeaderboard,
+				uploadScoreMethod,
+				score,
+				extraData,
+				extraDataCount
+			), this, &LeaderboardUploadJob::UploadScoreCallback);
+		}
+		else
+		{
+			LogError("FindOrCreateLeaderboard failed");
+			std::default_delete<LeaderboardUploadJob>()(this);
+		}
+	}
+
+	void UploadScoreCallback(LeaderboardScoreUploaded_t* result, bool ioError)
+	{
+		if (!ioError && result->m_bSuccess)
+		{
+			LogDebug("UploadLeaderboardScore OK: changed=%d, rank %d -> %d",
+				result->m_bScoreChanged, result->m_nGlobalRankPrevious, result->m_nGlobalRankNew);
+		}
+		else
+		{
+			LogError("UploadLeaderboardScore failed");
+		}
+		std::default_delete<LeaderboardUploadJob>()(this);
+	}
+};

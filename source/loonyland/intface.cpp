@@ -111,8 +111,8 @@ void AddRadarBlip(int x,int y,byte c,Map *map)
 {
 	int rx,ry;
 
-	rx=(x*128)/map->width;
-	ry=(y*128)/map->height;
+	rx = (x*128) / (map->width * TILE_WIDTH * FIXAMT);
+	ry = (y*128) / (map->height * TILE_HEIGHT * FIXAMT);
 
 	if(rx<0 || rx>127 || ry<0 || ry>127)
 		return;
@@ -452,7 +452,7 @@ void RenderInterface(MGLDraw *mgl)
 
 	if(player.worldNum!=WORLD_BOSSBASH)
 	{
-		if(player.timeLimit>0 && (player.clockRunning || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX)))
+		if(player.timeLimit>0 && (player.clockRunning || (player.worldNum!=WORLD_NORMAL && player.worldNum!=WORLD_REMIX && player.worldNum!=WORLD_RANDOMIZER)))
 		{
 			sprintf(s,"%d:%02d:%02d",player.timeLimit/(30*60),(player.timeLimit/(30))%60,((player.timeLimit*100)/30)%100);
 			Print(400,1,s,-32,0);
@@ -469,7 +469,7 @@ void RenderInterface(MGLDraw *mgl)
 	}
 
 	// display area name
-	if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX)
+	if(player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX|| player.worldNum==WORLD_RANDOMIZER)
 	{
 		if(opt.cheats[CH_CRYSTAL])
 		{
@@ -614,15 +614,15 @@ void RenderInterface(MGLDraw *mgl)
 	{
 		if(Random(10)==0)
 		{
-			intfaceSpr->GetSprite(18+Random(6))->DrawGhost(Random(640),Random(480),
+			intfaceSpr->GetSprite(18+Random(6))->DrawGhostBright(Random(640),Random(480),
 				mgl,-8+(byte)Random(17));
 			if(Random(10)==0)
 			{
-				intfaceSpr->GetSprite(18+Random(6))->DrawGhost(Random(640),Random(480),
+				intfaceSpr->GetSprite(18+Random(6))->DrawGhostBright(Random(640),Random(480),
 					mgl,-8+(byte)Random(17));
 				if(Random(10)==0)
 				{
-					intfaceSpr->GetSprite(18+Random(6))->DrawGhost(Random(640),Random(480),
+					intfaceSpr->GetSprite(18+Random(6))->DrawGhostBright(Random(640),Random(480),
 						mgl,-8+(byte)Random(17));
 				}
 			}

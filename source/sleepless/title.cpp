@@ -174,7 +174,7 @@ void MainMenuDisplay(MGLDraw *mgl)
 #ifdef DEMO
 	Print(350,170,"DEMO VERSION!",10,0);
 #endif
-#ifdef _DEBUG
+#ifndef NDEBUG
 	Print(300,170,"DEBUG VERSION!",10,0);
 #endif
 
@@ -512,6 +512,7 @@ TASK(byte) SpeedSplash(MGLDraw *mgl,const char *fname)
 		curpal[i].r=0;
 		curpal[i].g=0;
 		curpal[i].b=0;
+		curpal[i].a=255;
 	}
 	mgl->SetPalette(curpal);
 	mgl->RealizePalette();
@@ -626,6 +627,7 @@ TASK(void) SplashScreen(MGLDraw *mgl,const char *fname,int delay,byte sound)
 		curpal[i].r=0;
 		curpal[i].g=0;
 		curpal[i].b=0;
+		curpal[i].a=255;
 	}
 	mgl->SetPalette(curpal);
 	mgl->RealizePalette();

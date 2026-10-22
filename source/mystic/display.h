@@ -12,10 +12,7 @@
    don't have to pass the mgldraw object everywhere, and also handles the display
    list and camera, so everything is drawn in sorted order (or not drawn). */
 
-#define MAX_DISPLAY_OBJS 1024
-
-#define DISPLAY_XBORDER 300
-#define DISPLAY_YBORDER 300
+#define MAX_DISPLAY_OBJS 2048
 
 //display object flags
 #define DISPLAY_DRAWME		1
@@ -27,34 +24,29 @@
 #define DISPLAY_GLOW		64
 #define DISPLAY_TRANSTILE	128
 
-typedef struct displayObj_t
+struct DisplayObj
 {
-	int x,y,z;
 	sprite_t *spr;
+	int x,y,z;
+	byte flags;
 	word hue;
 	char bright;
-	byte flags;
-	int prev,next;
 	char light[9];
-} displayObj_t;
+};
+bool operator<(const DisplayObj& lhs, const DisplayObj &rhs);
 
 class DisplayList
 {
 	public:
-		DisplayList(void);
-		~DisplayList(void);
+		DisplayList();
 
 		bool DrawSprite(int x,int y,int z,word hue,char bright,sprite_t *spr,byte flags);
-		void ClearList(void);
-		void Render(void);
+		void ClearList();
+		void Render();
+
 	private:
-
-		void HookIn(int me);
-		int GetOpenSlot(void);
-
-
-		displayObj_t dispObj[MAX_DISPLAY_OBJS];
-		int head,nextfree;
+		int nextfree;
+		DisplayObj dispObj[MAX_DISPLAY_OBJS];
 };
 
 bool InitDisplay(MGLDraw *mainmgl);
@@ -70,7 +62,10 @@ void GetCamera(int *x,int *y);
 void UpdateCamera(int x,int y,byte facing,Map *map);
 void Print(int x,int y,const char *s,char bright,byte font);
 void CenterPrint(int midx,int y,const char *s,char bright,byte font);
+void CenterPrintItalics(int midx, int y, const char* s, char bright, byte font);
+void CenterPrintCompressed(int midx, int y, std::string_view s, byte compression, char bright, byte font);
 void PrintGlow(int x,int y,const char *s,byte font);
+void RightPrint(int x, int y, const char* s, char bright, byte font);
 void RightPrintGlow(int x,int y,const char *s,byte font);
 void CenterPrintGlow(int y,const char *s,byte font);
 void PrintBright(int x,int y,const char *s,char bright,byte font);
@@ -94,5 +89,11 @@ byte GetGamma(void);
 void SetGamma(byte g);
 
 void EndingMovie(int frm);
+
+void InitIcons(void);
+void BlitIcon(byte icon, int x, int y, byte color, char bright);
+void BlitIconGlow(byte icon, int x, int y, char bright);
+void BlitIconBit(int srcx, int srcy, int srcx2, int srcy2, int x, int y, byte color, char bright);
+void ExitIcons(void);
 
 #endif

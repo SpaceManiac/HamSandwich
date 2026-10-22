@@ -1042,10 +1042,9 @@ byte GameSlotPickerUpdate(MGLDraw *mgl, title_t *title)
 
 void InitGameSlotPicker(MGLDraw *mgl, title_t *title)
 {
-	FILE *f;
 	player_t p;
 
-	f = AppdataOpen("loony.sav", "rb");
+	auto f = AppdataOpen("loony.sav");
 	if (!f)
 	{
 		title->percent[0] = 0.0;
@@ -1054,13 +1053,13 @@ void InitGameSlotPicker(MGLDraw *mgl, title_t *title)
 	}
 	else
 	{
-		fread(&p, sizeof (player_t), 1, f);
+		SDL_ReadIO(f, &p, sizeof (player_t));
 		title->percent[0] = CalcTotalPercent(&p)*100;
-		fread(&p, sizeof (player_t), 1, f);
+		SDL_ReadIO(f, &p, sizeof (player_t));
 		title->percent[1] = CalcTotalPercent(&p)*100;
-		fread(&p, sizeof (player_t), 1, f);
+		SDL_ReadIO(f, &p, sizeof (player_t));
 		title->percent[2] = CalcTotalPercent(&p)*100;
-		fclose(f);
+		f.reset();
 	}
 	mgl->LastKeyPressed();
 	oldc = CONTROL_B1 | CONTROL_B2;
@@ -1233,6 +1232,7 @@ TASK(byte) SpeedSplash(MGLDraw *mgl, const char *fname)
 		curpal[i].r = 0;
 		curpal[i].g = 0;
 		curpal[i].b = 0;
+		curpal[i].a = 255;
 	}
 	mgl->SetPalette(curpal);
 
@@ -1346,6 +1346,7 @@ TASK(void) SplashScreen(MGLDraw *mgl, const char *fname, int delay, byte sound)
 		curpal[i].r = 0;
 		curpal[i].g = 0;
 		curpal[i].b = 0;
+		curpal[i].a = 255;
 	}
 	mgl->SetPalette(curpal);
 

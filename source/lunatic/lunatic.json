@@ -1,0 +1,22 @@
+{
+	"title": "Dr. Lunatic",
+	"registry_key": "Lunatic",
+	"installers": [
+		{
+			"filename": "lunatic_install.exe",
+			"kind": "nsis",
+			"sha256sum": "b8013176ea8050db20a2b170a5273d5287ccde4b4923affb7c610bda89326c84",
+			"link": "https://hamumu.itch.io/dr-lunatic",
+			"file_id": 710473,
+			"description": "Base assets for Dr. Lunatic"
+		},
+		{
+			"filename": "all_drl_worlds.zip",
+			"kind": "zip",
+			"sha256sum": "76c60a90fb611111e1d4bd9fcd317131aadd286b20e25ac88737943601563bad",
+			"link": "https://wombat.platymuus.com/hamsandwich/worlds/all_drl_worlds.zip",
+			"description": "All classic Dr. Lunatic worlds (2007)",
+			"optional": true
+		}
+	]
+}

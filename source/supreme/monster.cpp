@@ -13,7 +13,7 @@
  -MT_ANIMAL	 -MT_HUMAN		 -MT_URBAN		-MT_AQUATIC	 -MT_UNDERSEA
  -MT_FLYING  -MT_HIGHTECH	 -MT_BITS
 */
-extern monsterType_t monsType[NUM_MONSTERS]; // see monsterlist.cpp
+extern MonsterType monsType[NUM_MONSTERS]; // see monsterlist.cpp
 
 void InitMonsters(void)
 {
@@ -56,11 +56,6 @@ void ExitMonsters(void)
 	}
 }
 
-monsterType_t *GetMonsterType(dword type)
-{
-	return &monsType[type];
-}
-
 void ChangeOffColor(dword type,byte from,byte to)
 {
 	monsType[type].fromCol=from;
@@ -88,12 +83,12 @@ byte MonsterSize(dword type)
 	return monsType[type].size;
 }
 
-byte *MonsterAnim(dword type,byte anim)
+const byte *MonsterAnim(dword type,byte anim)
 {
 	return monsType[type].anim[anim];
 }
 
-word MonsterFlags(dword type,byte aiType)
+MonsterFlags_ MonsterFlags(dword type,dword aiType)
 {
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].flags;
@@ -102,7 +97,7 @@ word MonsterFlags(dword type,byte aiType)
 	return monsType[type].flags;
 }
 
-byte MonsterFrames(dword type,byte aiType)
+byte MonsterFrames(dword type,dword aiType)
 {
 	if(aiType==MONS_BOUAPHA && player.weapon==WPN_PWRARMOR)
 		return monsType[MONS_PWRBOUAPHA].framesPerDir;
@@ -121,31 +116,85 @@ word MonsterHP(dword type)
 	return monsType[type].hp;
 }
 
-char *MonsterName(short type)
+const char *MonsterName(short type)
 {
-	static char tmp[16];
-
-	if(type==MONS_ANYBODY)
-		strcpy(tmp,"Anybody");
-	else if(type==MONS_GOODGUY)
-		strcpy(tmp,"Goodguy");
-	else if(type==MONS_BADGUY)
-		strcpy(tmp,"Badguy");
-	else if(type==MONS_NONPLAYER)
-		strcpy(tmp,"Non-player");
-	else if(type==MONS_PLAYER)
-		strcpy(tmp,"Player");
-	else if(type==MONS_TAGGED)
-		strcpy(tmp,"Tagged");
-	else
-		return monsType[type].name;
-
-	return tmp;
+	// These special monster IDs used in specials have hardcoded names.
+	switch (type)
+	{
+	case MONS_ANYBODY:
+		return "Anybody";
+	case MONS_GOODGUY:
+		return "Goodguy";
+	case MONS_BADGUY:
+		return "Badguy";
+	case MONS_NONPLAYER:
+		return "Non-player";
+	case MONS_PLAYER:
+		return "Player";
+	case MONS_TAGGED:
+		return "Tagged";
+	}
+	// These monsters have different names in the editor.
+	if (editing)
+	{
+		switch (type)
+		{
+		case MONS_ROLLER2:
+			return "Roly Poly Rvs";
+		case MONS_ROLLER4:
+			return "Rumbly Tumbly Rvs";
+		case MONS_SNOWBALL2:
+			return "Snowball Rvs";
+		case MONS_PUFFYFISH2:
+			return "Puffyfish Rvs";
+		case MONS_GENERATOR1:
+			return "Generator-1s";
+		case MONS_GENERATOR2:
+			return "Generator-5s";
+		case MONS_GENERATOR3:
+			return "Generator-15s";
+		case MONS_GENERATOR4:
+			return "Generator-30s";
+		case MONS_FRIENDLY2:
+			return "Buddy Bunny:Determined";
+		case MONS_FOLLOWBUNNY:
+			return "Buddy Bunny:Follow";
+		case MONS_SNKYSHRK2:
+			return "Sneaky Shark: Chest";
+		case MONS_UNDERZOID:
+			return "Aquazoid Underwater";
+		case MONS_PATCH2:
+			return "Pumpkin Patch Fast";
+		case MONS_UNDERMAGMA:
+			return "Magmazoid Underwater";
+		case MONS_PARKED2:
+			return "Parked Car2";
+		case MONS_TRAFFIC:
+			return "Traffic: Clockwise";
+		case MONS_TRAFFIC2:
+			return "Traffic: Counterclockwise";
+		case MONS_PATROLLR:
+			return "Patrol Mumble Horiz.";
+		case MONS_PATROLUD:
+			return "Patrol Mumble Vert.";
+		case MONS_DPATROLLR:
+			return "Death Patrol Horiz.";
+		case MONS_DPATROLUD:
+			return "Death Patrol Vert.";
+		}
+	}
+	// Otherwise the monster name is in its type definition.
+	return monsType[type].name;
 }
 
-void SetMonsterFlags(dword type,word flags)
+Monster_AIFunc MonsterAI(dword type)
 {
-	monsType[type].flags=flags;
+	return monsType[type].AI;
+}
+
+int8_t MonsterBrightnessChange(dword type)
+{
+	return monsType[type].brtChg;
 }
 
 void LoadMySprite(dword type)
@@ -174,7 +223,7 @@ void LoadMySprite(dword type)
 	}
 }
 
-sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
+const sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 {
 	int v;
 
@@ -204,7 +253,7 @@ sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 
 	v=monsType[type].anim[seq][frm];
 
-	if(v==254)
+	if(v==FRAME_INVIS)
 		return NULL;	// 254 means no sprite for this frame
 
 	if(!(monsType[type].flags&MF_ONEFACE))
@@ -224,36 +273,19 @@ sprite_t *GetMonsterSprite(dword type,byte seq,byte frm,byte facing)
 	return monsType[type].spr->GetSprite(v);
 }
 
-void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byte facing,char bright,byte ouch,byte poison,byte frozen,sprite_set_t* set)
+void MonsterDraw(
+	int x, int y, int z,
+	dword type, bool isBouapha,
+	byte seq, byte frm, byte facing,
+	char bright,
+	byte ouch, byte poison, byte frozen,
+	byte fromCol, byte toCol, uint8_t brtChg,
+	const sprite_set_t* set
+)
 {
-	sprite_t *curSpr;
+	const sprite_t *curSpr;
 	int v;
-	byte shld,isBouapha;
-
-	if(aiType==MONS_BOUAPHA)
-	{
-		if(player.weapon==WPN_PWRARMOR)
-			type=MONS_PWRBOUAPHA;
-		else if(player.weapon==WPN_MINISUB)
-			type=MONS_MINISUB;
-		else if(type==MONS_BOUAPHA)
-		{
-			if(player.playAs==PLAY_LUNATIC)
-				type=MONS_DRL;
-			else if(player.playAs==PLAY_HAPPY)
-				type=MONS_STICKMAN;
-			else if(player.playAs==PLAY_MECHA)
-				type=MONS_PLAYMECHA;
-			else if(player.playAs==PLAY_SHROOM)
-				type=MONS_PLAYSHROOM;
-			else if(player.playAs==PLAY_LUNACHIK)
-				type=MONS_LUNACHICK;
-		}
-
-		isBouapha=1;
-	}
-	else
-		isBouapha=0;
+	byte shld;
 
 	// load if not loaded
 	LoadMySprite(type);
@@ -263,7 +295,11 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 
 	v=monsType[type].anim[seq][frm];
 
-	if(v==254 || v==255)
+	// Suckers and Blowers are visible in the editor.
+	if (type >= MONS_SUCKER1 && type <= MONS_BLOWER4 && editing && seq == ANIM_IDLE && frm == 0)
+		v = 0;
+
+	if(v==FRAME_INVIS || v==FRAME_END)
 		return;	// don't draw this frame
 
 	if(!(monsType[type].flags&MF_ONEFACE))
@@ -338,18 +374,23 @@ void MonsterDraw(int x,int y,int z,dword type,dword aiType,byte seq,byte frm,byt
 			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,1,bright,curSpr,DISPLAY_DRAWME);
 		else if(!(monsType[type].flags&(MF_GHOST|MF_GLOW)))
 		{
-			if(monsType[type].fromCol==255)
-				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME);
+			if (fromCol == 255)
+			{
+				fromCol = monsType[type].fromCol;
+				toCol = monsType[type].toCol;
+			}
+			if (fromCol == 255)
+				SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+brtChg,curSpr,DISPLAY_DRAWME);
 			else
 			{
-				SprDrawOff(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,monsType[type].fromCol,monsType[type].toCol,
-					bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME);
+				SprDrawOff(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,fromCol,toCol,
+					bright+brtChg,curSpr,DISPLAY_DRAWME);
 			}
 		}
 		else if(monsType[type].flags&MF_GHOST)
-			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GHOST);
 		else if(monsType[type].flags&MF_GLOW)
-			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+monsType[type].brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
+			SprDraw(x>>FIXSHIFT,y>>FIXSHIFT,z>>FIXSHIFT,255,bright+brtChg,curSpr,DISPLAY_DRAWME|DISPLAY_GLOW);
 	}
 	else
 	{
@@ -374,6 +415,10 @@ void InstaRenderMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 	v=monsType[type].anim[ANIM_IDLE][0];
 	if(!(monsType[type].flags&MF_ONEFACE))
 		v+=2*monsType[type].framesPerDir;
+
+	// Suckers and Blowers are visible in the editor.
+	if (type >= MONS_SUCKER1 && type <= MONS_BLOWER4 && editing /* seq == ANIM_IDLE && frame == 0 are implied */)
+		v = 0;
 
 	curSpr=monsType[type].spr->GetSprite(v);
 	if(!curSpr)
@@ -407,7 +452,7 @@ int InstaRenderScannedMonster(int x,int y,dword type,char bright,MGLDraw *mgl)
 	return curSpr->height;
 }
 
-dword MonsterTheme(dword type)
+MonsterThemes MonsterTheme(dword type)
 {
 	return monsType[type].theme;
 }
@@ -415,7 +460,7 @@ dword MonsterTheme(dword type)
 // AI auxiliary functions to make it simple
 //---------------------------------------------
 
-inline void FaceGoodguy(Guy *me,Guy *goodguy)
+void FaceGoodguy(Guy *me,Guy *goodguy)
 {
 	if(goodguy->x<me->x-FIXAMT*16)
 	{
@@ -451,7 +496,7 @@ int RangeToTarget(Guy *me,Guy *goodguy)
 
 // this version doesn't insta-face, it rotates toward the right facing, and it has much
 // more leeway than the 16 pixels of the other (it's for bigger creatures)
-inline void FaceGoodguy2(Guy *me,Guy *goodguy)
+void FaceGoodguy2(Guy *me,Guy *goodguy)
 {
 	int desired;
 	int diff,dir;
@@ -491,7 +536,6 @@ inline void FaceGoodguy2(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=-1;
-			diff=8-diff;
 		}
 		else
 			dir=1;
@@ -502,7 +546,6 @@ inline void FaceGoodguy2(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=1;
-			diff=8-diff;
 		}
 		else
 			dir=-1;
@@ -510,7 +553,7 @@ inline void FaceGoodguy2(Guy *me,Guy *goodguy)
 	me->facing=(me->facing+dir)&7;
 }
 
-inline void FaceGoodguy3(Guy *me,Guy *goodguy)
+void FaceGoodguy3(Guy *me,Guy *goodguy)
 {
 	int desired;
 	int diff,dir;
@@ -556,7 +599,6 @@ inline void FaceGoodguy3(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=-1;
-			diff=8-diff;
 		}
 		else
 			dir=1;
@@ -567,7 +609,6 @@ inline void FaceGoodguy3(Guy *me,Guy *goodguy)
 		if(diff>4)
 		{
 			dir=1;
-			diff=8-diff;
 		}
 		else
 			dir=-1;
@@ -636,11 +677,3 @@ void FlailLock(Guy *me)
 		me->facing=(parentangle+dir*2)&15;
 	}
 }
-
-// here be the AIs for each monster type
-//--------------------------------------------------------------------------------------
-
-#include "monsterai1.inc"
-#include "monsterai2.inc"
-#include "monsterai3.inc"
-#include "monsterai4.inc"

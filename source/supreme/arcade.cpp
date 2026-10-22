@@ -3,6 +3,7 @@
 #include "dialogbits.h"
 #include "spacegame.h"
 #include "racer.h"
+#include "steam.h"
 
 #include "goal.h"
 
@@ -27,15 +28,15 @@ static byte guyPic[]=
 	47,00,00,00,47,
 };
 
-typedef struct caveBul_t
+struct caveBul_t
 {
 	int x,y;
 	int dx,dy;
 	byte type;
 	byte clock;
-} caveBul_t;
+};
 
-typedef struct caveGuy_t
+struct caveGuy_t
 {
 	int x,y;
 	int dx,dy;
@@ -45,7 +46,7 @@ typedef struct caveGuy_t
 	byte mind;
 	byte reload;
 	byte stand;
-} caveGuy_t;
+};
 
 static byte oldc;
 static byte *map;
@@ -212,6 +213,7 @@ byte CaveDie(void)
 		GetTaps();
 		coinsEarned=score/3000;
 		profile.progress.totalCoins+=coinsEarned;
+		Steam()->UploadArcadeScore("arcade/dig_man_iv", score);
 	}
 	NewCaveLevel();
 	return 1;
@@ -635,7 +637,6 @@ void AntTurnTo(byte desired,caveGuy_t *me)
 		if(diff>128)
 		{
 			dir=-1;
-			diff=256-diff;
 		}
 		else
 			dir=1;
@@ -646,7 +647,6 @@ void AntTurnTo(byte desired,caveGuy_t *me)
 		if(diff>128)
 		{
 			dir=1;
-			diff=256-diff;
 		}
 		else
 			dir=-1;
@@ -1466,7 +1466,7 @@ void RenderArcade(MGLDraw *mgl)
 	if(msy2>462)
 		msy2=462;
 	plSpr->GetSprite(0)->DrawBright(msx2,msy2,mgl,msBright/2);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 }
 
 TASK(void) Arcade(MGLDraw *mgl, byte gm)

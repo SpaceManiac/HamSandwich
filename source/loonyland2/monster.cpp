@@ -899,14 +899,7 @@ void InitMonsters(void)
 
 void ExitMonsters(void)
 {
-	int i;
-
-	for(i=1;i<NUM_MONSTERS;i++)
-	{
-		if(monsType[i].spr)
-			delete monsType[i].spr;
-		monsType[i].spr=NULL;
-	}
+	PurgeMonsterSprites();
 }
 
 void PurgeMonsterSprites(void)
@@ -1505,4 +1498,4 @@ byte IsBoss(byte type)
 		return 0;
 }
 
-#include "monster_ai.inc"
+#include "monster_ai.inl"

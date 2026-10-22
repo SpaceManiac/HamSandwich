@@ -7,22 +7,22 @@
 #include "progress.h"
 #include "game.h"
 
-#define MAX_POINTS	(1024)
-#define MAX_NETGUYS	(64)
+constexpr int MAX_POINTS = 1024;
+constexpr int MAX_NETGUYS = 64;
 
-typedef struct netpt_t
+struct netpt_t
 {
 	word x,y;
-} netpt_t;
+};
 
-typedef struct netguy_t
+struct netguy_t
 {
 	int x,y;
 	int dx,dy;
-} netguy_t;
+};
 
 static word numPts;
-static netpt_t *points;
+static netpt_t points[MAX_POINTS];
 static byte drawing,drawBright;
 static netguy_t netGuy[MAX_NETGUYS];
 static int record,caught;
@@ -31,10 +31,6 @@ static int score,lastScore,ticker;
 
 void Init_Netgame(void)
 {
-	int i;
-
-	curMap=NULL;
-	points=(netpt_t *)malloc(sizeof(netpt_t)*MAX_POINTS);
 	numPts=0;
 	drawing=0;
 	drawBright=0;
@@ -45,13 +41,12 @@ void Init_Netgame(void)
 	drawing=2;
 	caughtBright=-32;
 
-	for(i=0;i<MAX_NETGUYS;i++)
+	for (int i=0; i<MAX_NETGUYS ;i++)
 		netGuy[i].x=-1;
 }
 
 void Exit_Netgame(void)
 {
-	free(points);
 }
 
 void AddNetGuys(void)

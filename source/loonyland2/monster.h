@@ -8,7 +8,6 @@
 #include "winpch.h"
 #include "jamulspr.h"
 #include "display.h"
-#pragma pack(1)
 
 // the monster types
 #define MONS_NONE      0

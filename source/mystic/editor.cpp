@@ -15,9 +15,6 @@
 #define EDITMODE_SPECIAL	10
 #define EDITMODE_TILELOAD	11
 
-#define MS_X (480)
-#define MS_Y (480)
-
 static char lastKey=0;
 
 static MGLDraw *editmgl;
@@ -38,27 +35,36 @@ static byte msButton=0;
 static byte musicPlaying;
 
 byte editMode=EDITMODE_EDIT;
+bool amEditing;
 
 static editopt_t editopt={MAP_SHOWLIGHTS|MAP_SHOWWALLS|MAP_SHOWITEMS|MAP_SHOWBADGUYS|MAP_SHOWSPECIALS,
 						PLOP_FLOOR,1,1,0,0,1,1};
 
+bool Editing(void)
+{
+	return amEditing;
+}
+
+Map* EditorMap(void)
+{
+	return curMap;
+}
+
 byte InitEditor(void)
 {
+	amEditing = true;
 	NewWorld(&world,editmgl);
 	curMap=world.map[0];
 	curMapNum=0;
 
-	//mouseX=MS_X;
-	//mouseY=MS_Y;
-	//MS_moveTo(MS_X,MS_Y);
 	PutCamera(0,0);
 	gameStartTime=timeGetTime();
 	InitGuys(128);
 	musicPlaying=0;
 	lastKey=0;
 	InitPlayer(INIT_LEVEL,0,0);
-	StopSong();
-
+	StopPlayingSong();
+	
 	return 1;
 }
 
@@ -68,6 +74,7 @@ void ExitEditor(void)
 	FreeWorld(&world);
 	PurgeMonsterSprites();
 	InitSound();
+	amEditing = false;
 }
 
 void ItemPickerClick(void)
@@ -104,7 +111,7 @@ void EnemyPickerClick(void)
 			return;
 		}
 		x+=202;
-		if(x>640-200)
+		if(x>SCRWID-200)
 		{
 			x=2;
 			y+=16;
@@ -178,6 +185,8 @@ void TerrainMouseClick(void)
 			world.terrain[editopt.curFloor].flags^=TF_DESTRUCT;
 		if(mouseX>4 && mouseX<16 && mouseY>369 && mouseY<370+12)
 			world.terrain[editopt.curFloor].flags^=TF_TRANS;
+		if (mouseX > 320 && mouseX < 320+12 && mouseY>249 && mouseY < 249 + 12)
+			world.terrain[editopt.curFloor].flags ^= TF_NOENEMY;
 	}
 	else
 	{
@@ -209,8 +218,8 @@ void AddMapBadguy(int x,int y,byte type)
 		for(i=0;i<MAX_MAPMONS;i++)
 			if(curMap->badguy[i].type==MONS_BOUAPHA)
 			{
-				DeleteGuy((curMap->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-					   (curMap->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+				DeleteGuy((curMap->badguy[i].x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+					   (curMap->badguy[i].y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 					   curMap->badguy[i].type);
 				curMap->badguy[i].type=0;
 			}
@@ -224,11 +233,11 @@ void AddMapBadguy(int x,int y,byte type)
 			curMap->badguy[i].x=x;
 			curMap->badguy[i].y=y;
 			GetCamera(&cx,&cy);
-			AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+			AddGuy((x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 				   0,
 				   type);
-			PutCamera(cx<<FIXSHIFT,cy<<FIXSHIFT);
+			PutCamera(cx*FIXAMT,cy*FIXAMT);
 			return;
 		}
 }
@@ -260,8 +269,8 @@ void Delete(int x,int y)
 	for(i=0;i<MAX_MAPMONS;i++)
 		if((curMap->badguy[i].type) && (curMap->badguy[i].x==x) && (curMap->badguy[i].y==y))
 		{
-			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))<<FIXSHIFT,
-				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))<<FIXSHIFT,
+			DeleteGuy((x*TILE_WIDTH+(TILE_WIDTH/2))*FIXAMT,
+				   (y*TILE_HEIGHT+(TILE_HEIGHT/2))*FIXAMT,
 				   curMap->badguy[i].type);
 			curMap->badguy[i].type=0;
 		}
@@ -464,12 +473,12 @@ void EditorMenuClick(void)
 	}
 	else if(editopt.plopMode==PLOP_ITEM)
 	{
-		if(mouseX>601 && mouseX<640 && mouseY>420)
+		if(mouseX>601 && mouseX<SCRWID && mouseY>420)
 			editMode=EDITMODE_PICKITEM;
 	}
 	else if(editopt.plopMode==PLOP_BADGUY)
 	{
-		if(mouseX>601 && mouseX<640 && mouseY>420)
+		if(mouseX>601 && mouseX<SCRWID && mouseY>420)
 			editMode=EDITMODE_PICKENEMY;
 	}
 
@@ -589,32 +598,23 @@ void EditorMenuClick(void)
 
 void UpdateMouse(void)
 {
-//	int msx,msy;
 	int cx,cy;
 
-	//MS_getPos(&msx,&msy);
-	//MS_moveTo(MS_X,MS_Y);
-
-	//mouseX+=(msx-MS_X);
-	//mouseY+=(msy-MS_Y);
-
 	editmgl->GetMouse(&mouseX,&mouseY);
-	//mouseX=MS_X;
-	//mouseY=MS_Y;
-
+	
 	if(mouseX<0)
 		mouseX=0;
 	if(mouseY<0)
 		mouseY=0;
-	if(mouseX>639)
-		mouseX=639;
-	if(mouseY>479)
-		mouseY=479;
+	if(mouseX>SCRWID-1)
+		mouseX=SCRWID-1;
+	if(mouseY>SCRHEI-1)
+		mouseY=SCRHEI-1;
 
 	GetCamera(&cx,&cy);
 
-	tileX=(mouseX+cx-320);
-	tileY=(mouseY+cy-240);
+	tileX=(mouseX+cx-HALFWID);
+	tileY=(mouseY+cy-HALFHEI);
 
 	if(tileX<0)
 		tileX=tileX/TILE_WIDTH-1;
@@ -671,7 +671,7 @@ byte EditorRun(int *lastTime)
 	{
 		if(!editmgl->Process())
 			return QUITGAME;
-
+		UpdateSounds();
 		// update everything here
 		EditorUpdateGuys(curMap);
 		curMap->Update(UPDATE_EDIT,&world);
@@ -681,9 +681,7 @@ byte EditorRun(int *lastTime)
 		numRunsToMakeUp++;
 		updFrameCount++;
 	}
-
-	JamulSoundUpdate();
-
+		
 	return CONTINUE;
 }
 
@@ -800,8 +798,8 @@ void ShowTarget(void)
 	col=255-col;
 	GetCamera(&cx,&cy);
 
-	x1=tileX*TILE_WIDTH-(cx-320);
-	y1=tileY*TILE_HEIGHT-(cy-240);
+	x1=tileX*TILE_WIDTH-(cx-HALFWID);
+	y1=tileY*TILE_HEIGHT-(cy-HALFHEI);
 
 	x2=x1+TILE_WIDTH-1;
 	y2=y1+TILE_HEIGHT-1;
@@ -861,6 +859,7 @@ void RenderTerrainInfo(byte which)
 	RenderCheckbox(5,346,world.terrain[which].flags&TF_STEP,"Changes when stepped on");
 	RenderCheckbox(5,358,world.terrain[which].flags&TF_DESTRUCT,"Changes when damaged");
 	RenderCheckbox(5,370,world.terrain[which].flags&TF_TRANS,"Transparent Roof");
+	RenderCheckbox(320, 250, world.terrain[which].flags & TF_NOENEMY, "No Enemies Allowed");
 
 	Print(5,386,"Next Terrain:",0,1);
 	RenderFloorTileUnlit(5,398,world.terrain[which].next);
@@ -925,7 +924,7 @@ void RenderEnemyPickDisplay(void)
 			editmgl->Box(x,y,x+200,y+14,16);
 		Print(x+2,y+2,s,0,1);
 		x+=202;
-		if(x>640-200)
+		if(x>SCRWID-200)
 		{
 			x=2;
 			y+=16;
@@ -939,7 +938,7 @@ void RenderPickDisplay(void)
 	byte selected;
 	char s[32];
 
-	editmgl->FillBox(0,240,639,479,0);
+	editmgl->FillBox(0,HALFHEI,639,479,0);
 
 	selected=255;
 	for(i=0;i<20;i++)
@@ -1011,7 +1010,7 @@ void RenderTerrainEditor(void)
 	int i,j;
 	byte selected;
 
-	editmgl->FillBox(0,240,639,479,0);
+	editmgl->FillBox(0,HALFHEI,639,479,0);
 
 	selected=255;
 	for(i=0;i<20;i++)
@@ -1047,13 +1046,13 @@ void ShowSpecials(void)
 		if(curMap->special[i].trigger)
 		{
 			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 1 - sy + 240,
+				curMap->special[i].x * TILE_WIDTH + 2 - sx + HALFWID,
+				curMap->special[i].y * TILE_HEIGHT + 1 - sy + HALFHEI,
 				"Spcl", 0, 1);
 			sprintf(spclNum, "%03d", i);
 			Print(
-				curMap->special[i].x * TILE_WIDTH + 2 - sx + 320,
-				curMap->special[i].y * TILE_HEIGHT + 12 - sy + 240,
+				curMap->special[i].x * TILE_WIDTH + 2 - sx + HALFWID,
+				curMap->special[i].y * TILE_HEIGHT + 12 - sy + HALFHEI,
 				spclNum, 0, 1);
 		}
 }
@@ -1142,7 +1141,7 @@ static void HandleKeyPresses(void)
 			x-=TILE_WIDTH;
 			if(x<0)
 				x=0;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 		case SDL_SCANCODE_UP:
 		case SDL_SCANCODE_KP_8:
@@ -1150,7 +1149,7 @@ static void HandleKeyPresses(void)
 			y-=TILE_HEIGHT;
 			if(y<0)
 				y=0;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 		case SDL_SCANCODE_RIGHT:
 		case SDL_SCANCODE_KP_6:
@@ -1158,7 +1157,7 @@ static void HandleKeyPresses(void)
 			x+=TILE_WIDTH;
 			if(x>curMap->width*TILE_WIDTH)
 				x=curMap->width*TILE_WIDTH;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 		case SDL_SCANCODE_DOWN:
 		case SDL_SCANCODE_KP_2:
@@ -1166,7 +1165,7 @@ static void HandleKeyPresses(void)
 			y+=TILE_HEIGHT;
 			if(y>curMap->height*TILE_HEIGHT)
 				y=curMap->height*TILE_HEIGHT;
-			PutCamera(x<<FIXSHIFT,y<<FIXSHIFT);
+			PutCamera(x*FIXAMT,y*FIXAMT);
 			break;
 	}
 
@@ -1175,7 +1174,24 @@ static void HandleKeyPresses(void)
 		switch(k)
 		{
 			case 'c':
-				Cavernize(curMap);
+				//Cavernize(curMap);
+				Treeify(curMap);
+				break;
+			case 'd':
+				if (curMap->GetTile(0, 0)->light == 0)
+				{
+					for (x = 0; x < curMap->width * curMap->height; x++)
+					{
+						curMap->map[x].light = -31;
+					}
+				}
+				else
+				{
+					for (x = 0; x < curMap->width * curMap->height; x++)
+					{
+						curMap->map[x].light = 0;
+					}
+				}
 				break;
 			case 'f':
 				editMode=EDITMODE_FILE;
@@ -1245,6 +1261,22 @@ static void HandleKeyPresses(void)
 				editopt.curBadguy++;
 				if(editopt.curBadguy>=NUM_MONSTERS)
 					editopt.curBadguy=1;
+				break;
+			case 'g':
+				{
+					mapTile_t* t = curMap->GetTile(tileX, tileY);
+					if (editopt.plopMode == PLOP_FLOOR && t)
+						editopt.curFloor = t->floor;
+					else if (editopt.plopMode == PLOP_WALL && t && t->wall != 0)
+					{
+						editopt.curWall = t->wall;
+						editopt.curWallFloor = t->floor;
+					}
+					else if (editopt.plopMode == PLOP_ITEM && t && t->item != 0)
+					{
+						editopt.curItem = t->item;
+					}
+				}
 				break;
 			case 8:
 				Delete(tileX,tileY);
@@ -1391,7 +1423,7 @@ void EditorSelectMap(byte w)
 {
 	curMap=world.map[w];
 	curMapNum=w;
-	PutCamera(320<<FIXSHIFT,240<<FIXSHIFT);
+	PutCamera(HALFWID*FIXAMT,HALFHEI*FIXAMT);
 	ExitGuys();
 	InitGuys(128);
 	AddMapGuys(curMap);

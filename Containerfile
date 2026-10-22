@@ -1,0 +1,18 @@
+# Container for a build environment compatible with the Steam Linux Runtime,
+# plus our own additional dependencies.
+FROM registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk:4.0.20260805.254769
+SHELL ["/bin/bash", "-c"]
+
+# Install patchelf for `install_as_soname`.
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+	clang-19 \
+	clang-tools-19 \
+	libclang-rt-19-dev \
+	patchelf
+
+# Skip install-deps.sh to avoid having to code it to actually work inside this.
+ENV HSW_NO_INSTALL_DEPS=1 \
+	CC=clang-19 \
+	CXX=clang++-19
+
+# Volume management is left to container runtime; see `./container`.

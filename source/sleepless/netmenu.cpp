@@ -9,7 +9,6 @@
 #include "playlist.h"
 #include "nameentry.h"
 #include "yesnodialog.h"
-#include "recordbook.h"
 #include "shop.h"
 #include "internet.h"
 #include "nameentry.h"
@@ -70,7 +69,6 @@ static int socketNum;
 static byte typeMode;
 static char *uploadList;
 
-static byte pageToDo=0;
 static byte mousemode;
 
 void InitNetMenu(MGLDraw *mgl)
@@ -79,7 +77,6 @@ void InitNetMenu(MGLDraw *mgl)
 
 	typeMode=0;
 	mousemode=0;
-	pageToDo=0;
 	mode=NET_NORMAL;
 	webInited=0;
 	msBright=0;
@@ -668,9 +665,4 @@ TASK(void) NetMenu(MGLDraw *mgl)
 
 	SaveProfile();
 	ExitNetMenu();
-}
-
-byte DoWebPage(void)
-{
-	return pageToDo;
 }

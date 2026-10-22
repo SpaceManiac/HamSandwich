@@ -6,6 +6,7 @@
 #include "options.h"
 #include "quest.h"
 #include "badge.h"
+#include "math_extras.h"
 
 #define NUM_STARS 400
 
@@ -17,21 +18,21 @@ byte allSpecialClock;
 word starX[NUM_STARS],starY[NUM_STARS];
 byte starCol[NUM_STARS];
 
-Map::Map(FILE *f)
+Map::Map(SDL_IOStream *f)
 {
-	fread(&width,1,sizeof(int),f);
-	fread(&height,1,sizeof(int),f);
+	SDL_ReadIO(f,&width,sizeof(int));
+	SDL_ReadIO(f,&height,sizeof(int));
 
-	fread(name,32,sizeof(char),f);
-	fread(badguy,MAX_MAPMONS,sizeof(mapBadguy_t),f);
+	SDL_ReadIO(f,name,32);
+	SDL_ReadIO(f,badguy,MAX_MAPMONS*sizeof(mapBadguy_t));
 	//memset(special,0,sizeof(special_t)*MAX_SPECIAL);
-	fread(special,MAX_SPECIAL,sizeof(special_t),f);
-	fread(&song,1,1,f);
-	fread(&flags,1,1,f);
+	SDL_ReadIO(f,special,MAX_SPECIAL*sizeof(special_t));
+	SDL_ReadIO(f,&song,1);
+	SDL_ReadIO(f,&flags,1);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 
-	fread(map,width*height,sizeof(mapTile_t),f);
+	SDL_ReadIO(f,map,width*height*sizeof(mapTile_t));
 }
 
 Map::Map(int wid,int hei,const char *name)
@@ -67,17 +68,17 @@ Map::~Map(void)
 	free(map);
 }
 
-byte Map::Save(FILE *f)
+byte Map::Save(SDL_IOStream *f)
 {
-	fwrite(&width,1,sizeof(int),f);
-	fwrite(&height,1,sizeof(int),f);
-	fwrite(name,32,sizeof(char),f);
-	fwrite(badguy,MAX_MAPMONS,sizeof(mapBadguy_t),f);
-	fwrite(special,MAX_SPECIAL,sizeof(special_t),f);
-	fwrite(&song,1,1,f);
-	fwrite(&flags,1,1,f);
+	SDL_WriteIO(f,&width,sizeof(int));
+	SDL_WriteIO(f,&height,sizeof(int));
+	SDL_WriteIO(f,name,32);
+	SDL_WriteIO(f,badguy,MAX_MAPMONS*sizeof(mapBadguy_t));
+	SDL_WriteIO(f,special,MAX_SPECIAL*sizeof(special_t));
+	SDL_WriteIO(f,&song,1);
+	SDL_WriteIO(f,&flags,1);
 
-	fwrite(map,width*height,sizeof(mapTile_t),f);
+	SDL_WriteIO(f,map,width*height*sizeof(mapTile_t));
 	return 1;
 }
 
@@ -365,7 +366,7 @@ void Map::Update(byte mode,world_t *world)
 					WeakTorch(x,y);
 				SpecialItemGetCheck(this,x,y);
 			}
-			if(map[i].item==ITM_TREE5)
+			if(map[i].item==ITM_TREE5 || map[i].item==ITM_CAT)
 			{
 				if(map[i].itemInfo>0)
 					map[i].itemInfo--;
@@ -893,11 +894,6 @@ void Map::Clone(int sx,int sy,int blkwidth,int blkheight,int dx,int dy)
 
 void Map::Render(world_t *world,int camX,int camY,byte flags)
 {
-	int i,j;
-
-	int tileX,tileY;
-	int ofsX,ofsY;
-	int scrX,scrY;
 	mapTile_t *m;
 	char lite;
 	char lites[9];
@@ -906,95 +902,91 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 	camX-=320;
 	camY-=240;
 
-	tileX=(camX/TILE_WIDTH)-1;
-	tileY=(camY/TILE_HEIGHT)-1;
-	ofsX=camX%TILE_WIDTH;
-	ofsY=camY%TILE_HEIGHT;
+	auto [minTileX, ofsX] = floor_div(camX, TILE_WIDTH);
+	auto [minTileY, ofsY] = floor_div(camY, TILE_HEIGHT);
 
-	scrX=-ofsX-TILE_WIDTH;
-	for(i=tileX;i<tileX+(SCRWID/TILE_WIDTH+4);i++)
+	int scrX = -ofsX;
+	for (int i = minTileX; i <= (camX + SCRWID) / TILE_WIDTH; i++)
 	{
-		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(SCRHEI/TILE_HEIGHT+6);j++)
+		int scrY = -ofsY;
+		for (int j = minTileY; j <= (camY + SCRHEI) / TILE_HEIGHT + 1; j++)
 		{
 			if(i>=0 && i<width && j>=0 && j<height)
 			{
 				m=&map[i+j*width];
 
-				if(!(flags&MAP_SHOWLIGHTS))	// we're ignoring lighting
-					lite=0;
-				else
+				if (flags & MAP_SHOWLIGHTS)
+				{
 					lite=m->templight;
 
-				lites[4]=lite;
-				if(i>0 && j>0)
-					lites[0]=map[i-1+(j-1)*width].templight;
-				else
-				{
+					lites[4]=lite;
+					if(i>0 && j>0)
+						lites[0]=map[i-1+(j-1)*width].templight;
+					else
+					{
+						if(i>0)
+							lites[0]=map[i-1+(j)*width].templight;
+						else if(j>0)
+							lites[0]=map[i+(j-1)*width].templight;
+						else
+							lites[0]=lite;
+					}
+					if(j>0)
+						lites[1]=map[i+(j-1)*width].templight;
+					else
+						lites[1]=lite;
+					if(i<width-1 && j>0)
+						lites[2]=map[i+1+(j-1)*width].templight;
+					else
+					{
+						if(i<width-1)
+							lites[2]=map[i+1+(j)*width].templight;
+						else if(j>0)
+							lites[2]=map[i+(j-1)*width].templight;
+						else
+							lites[2]=lite;
+					}
 					if(i>0)
-						lites[0]=map[i-1+(j)*width].templight;
-					else if(j>0)
-						lites[0]=map[i+(j-1)*width].templight;
+						lites[3]=map[i-1+j*width].templight;
 					else
-						lites[0]=lite;
-				}
-				if(j>0)
-					lites[1]=map[i+(j-1)*width].templight;
-				else
-					lites[1]=lite;
-				if(i<width-1 && j>0)
-					lites[2]=map[i+1+(j-1)*width].templight;
-				else
-				{
+						lites[3]=lite;
 					if(i<width-1)
-						lites[2]=map[i+1+(j)*width].templight;
-					else if(j>0)
-						lites[2]=map[i+(j-1)*width].templight;
+						lites[5]=map[i+1+(j)*width].templight;
 					else
-						lites[2]=lite;
+						lites[5]=lite;
+					if(i>0 && j<height-1)
+						lites[6]=map[i-1+(j+1)*width].templight;
+					else
+					{
+						if(i>0)
+							lites[6]=map[i-1+(j)*width].templight;
+						else if(j<height-1)
+							lites[6]=map[i+(j+1)*width].templight;
+						else
+							lites[6]=lite;
+					}
+					if(j<height-1)
+						lites[7]=map[i+(j+1)*width].templight;
+					else
+						lites[7]=lite;
+					if(i<width-1 && j<height-1)
+						lites[8]=map[i+1+(j+1)*width].templight;
+					else
+					{
+						if(i<width-1)
+							lites[8]=map[i+1+(j)*width].templight;
+						else if(j<height-1)
+							lites[8]=map[i+(j+1)*width].templight;
+						else
+							lites[8]=lite;
+					}
 				}
-				if(i>0)
-					lites[3]=map[i-1+j*width].templight;
-				else
-					lites[3]=lite;
-				if(i<width-1)
-					lites[5]=map[i+1+(j)*width].templight;
-				else
-					lites[5]=lite;
-				if(i>0 && j<height-1)
-					lites[6]=map[i-1+(j+1)*width].templight;
 				else
 				{
-					if(i>0)
-						lites[6]=map[i-1+(j)*width].templight;
-					else if(j<height-1)
-						lites[6]=map[i+(j+1)*width].templight;
-					else
-						lites[6]=lite;
-				}
-				if(j<height-1)
-					lites[7]=map[i+(j+1)*width].templight;
-				else
-					lites[7]=lite;
-				if(i<width-1 && j<height-1)
-					lites[8]=map[i+1+(j+1)*width].templight;
-				else
-				{
-					if(i<width-1)
-						lites[8]=map[i+1+(j)*width].templight;
-					else if(j<height-1)
-						lites[8]=map[i+(j+1)*width].templight;
-					else
-						lites[8]=lite;
-				}
-
-				if(!(flags&MAP_SHOWLIGHTS))
-				{
+					// we're ignoring lighting
+					lite=0;
 					lites[0]=lites[1]=lites[2]=lites[3]=lites[4]=lites[5]=lites[6]=lites[7]=lites[8]=0;
 				}
-				if(flags&MAP_SHOWITEMS)
-					RenderItem(scrX+camX+(TILE_WIDTH/2),scrY+camY+(TILE_HEIGHT/2),0,
-						m->item,m->itemInfo,lite);
 
 				if(m->wall && (flags&MAP_SHOWWALLS))	// there is a wall on this tile
 				{
@@ -1032,6 +1024,7 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 				}
 				else
 				{
+					// render the floor
 					if(j<height-1 && map[i+(j+1)*width].wall && !(world->terrain[map[i+(j+1)*width].wall].flags&TF_NOSHADOW))
 					{
 						if(i<width-1 && map[i+1+j*width].wall  && !(world->terrain[map[i+1+(j)*width].wall].flags&TF_NOSHADOW))
@@ -1116,11 +1109,39 @@ void Map::Render(world_t *world,int camX,int camY,byte flags)
 		scrX+=TILE_WIDTH;
 	}
 
+	if (flags & MAP_SHOWITEMS)
+	{
+		ItemRenderExtents extents = GetItemRenderExtents();
+		int scrX = -ofsX - extents.left*TILE_WIDTH;
+		for (int i = minTileX - extents.left; i <= (camX + SCRWID) / TILE_WIDTH + extents.right; i++)
+		{
+			int scrY = -ofsY - extents.up*TILE_HEIGHT;
+			for (int j = minTileY - extents.up; j <= (camY + SCRHEI) / TILE_HEIGHT + extents.down; j++)
+			{
+				if(i>=0 && i<width && j>=0 && j<height)
+				{
+					m=&map[i+j*width];
+
+					RenderItem(
+						scrX+camX+(TILE_WIDTH/2),
+						scrY+camY+(TILE_HEIGHT/2),
+						0,
+						m->item,
+						m->itemInfo,
+						(flags & MAP_SHOWLIGHTS) ? m->templight : 0
+					);
+				}
+				scrY+=TILE_HEIGHT;
+			}
+			scrX+=TILE_WIDTH;
+		}
+	}
+
 	if(this->flags&MAP_STARS)
 	{
 		int tx,ty;
 
-		for(i=0;i<NUM_STARS;i++)
+		for(int i=0;i<NUM_STARS;i++)
 		{
 			tx=(starX[i]+camX)/TILE_WIDTH;
 			ty=(starY[i]+camY)/TILE_HEIGHT;
@@ -1167,7 +1188,7 @@ void Map::ShowTags(int camX,int camY,int copyX,int copyY,int copyWid,int copyHei
 				sprintf(s,"%d",m->tag);
 				if(m->tag>0)
 					Print(i*TILE_WIDTH+2-camX,
-						  j*TILE_HEIGHT+6-camY,s,0,1);
+						  j*TILE_HEIGHT+12-camY,s,0,1);
 			}
 			scrY+=TILE_HEIGHT;
 		}
@@ -1251,32 +1272,32 @@ void Map::CopyChunk(int cx,int cy,int cwidth,int cheight,int dx,int dy)
 	AddMapGuys(this);
 }
 
-void Map::LoadFromProgress(FILE *f)
+void Map::LoadFromProgress(SDL_IOStream *f)
 {
 	int i;
 
 	if(map)
 		free(map);
 
-	fread(&width,sizeof(int),1,f);
-	fread(&height,sizeof(int),1,f);
-	fread(&flags,sizeof(byte),1,f);
+	SDL_ReadIO(f,&width,sizeof(int));
+	SDL_ReadIO(f,&height,sizeof(int));
+	SDL_ReadIO(f,&flags,sizeof(byte));
 	map=(mapTile_t *)malloc(width*height*sizeof(mapTile_t));
-	fread(map,sizeof(mapTile_t),width*height,f);
-	fread(special,sizeof(special_t),MAX_SPECIAL,f);
+	SDL_ReadIO(f,map,sizeof(mapTile_t)*width*height);
+	SDL_ReadIO(f,special,sizeof(special_t)*MAX_SPECIAL);
 
 	if(opt.cheats[CH_LIGHT])
 		for(i=0;i<width*height;i++)
 			map[i].light=0;
 }
 
-void Map::SaveProgress(FILE *f)
+void Map::SaveProgress(SDL_IOStream *f)
 {
-	fwrite(&width,sizeof(int),1,f);
-	fwrite(&height,sizeof(int),1,f);
-	fwrite(&flags,sizeof(byte),1,f);
-	fwrite(map,sizeof(mapTile_t),width*height,f);
-	fwrite(special,sizeof(special_t),MAX_SPECIAL,f);
+	SDL_WriteIO(f,&width,sizeof(int));
+	SDL_WriteIO(f,&height,sizeof(int));
+	SDL_WriteIO(f,&flags,sizeof(byte));
+	SDL_WriteIO(f,map,sizeof(mapTile_t)*width*height);
+	SDL_WriteIO(f,special,sizeof(special_t)*MAX_SPECIAL);
 }
 
 byte Map::FindPowerUps(int x,int y)
@@ -1294,7 +1315,8 @@ byte Map::FindPowerUps(int x,int y)
 			(map[i].item>=ITM_KEY2 && map[i].item<=ITM_WHOTPANTS) ||
 			map[i].item==ITM_MYSORB || map[i].item==ITM_SHROOM || map[i].item==ITM_DAISY ||
 			map[i].item==ITM_SILVER || map[i].item==ITM_TALISMAN || map[i].item==ITM_TRIPLEFIRE ||
-			map[i].item==ITM_BUST || map[i].item==ITM_BAT || map[i].item==ITM_SUPERHEART)
+			map[i].item==ITM_BUST || map[i].item==ITM_BAT || map[i].item==ITM_SUPERHEART ||
+			(map[i].item>=ITM_CAT && map[i].item<=ITM_STICK) )
 		{
 			r=(abs(xx-x)+abs(yy-y));
 			if(r>31)
@@ -1651,7 +1673,7 @@ void SpecialNeighborCheck(Map *map,special_t *spcl)
 	for(i=spcl->x-1;i<=spcl->x+1;i++)
 		for(j=spcl->y-1;j<=spcl->y+1;j++)
 		{
-			if(i!=spcl->x || j!=spcl->x)
+			if(i!=spcl->x || j!=spcl->y)
 				for(k=0;k<MAX_SPECIAL;k++)
 				{
 					if(map->special[k].x==i && map->special[k].y==j && (map->special[k].trigger&TRG_CHAIN))
@@ -1747,7 +1769,7 @@ void SpecialTakeEffect(byte num,Map *map,special_t *spcl,Guy *victim)
 	switch(spcl->effect)
 	{
 		case SPC_GOTOMAP:
-			if(spcl->value==41 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX) &&
+			if(spcl->value==41 && (player.worldNum==WORLD_NORMAL || player.worldNum==WORLD_REMIX || player.worldNum==WORLD_RANDOMIZER) &&
 				player.var[VAR_QUESTDONE+QUEST_HILL]==1)
 				spcl->value=44;	// go to empty rooftop instead
 			SendMessageToGame(MSG_GOTOMAP,spcl->value);

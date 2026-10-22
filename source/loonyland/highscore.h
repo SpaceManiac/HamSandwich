@@ -3,7 +3,7 @@
 
 #include "game.h"
 
-typedef struct highScore_t
+struct highScore_t
 {
 	byte mode;
 	char name[4];
@@ -20,7 +20,7 @@ typedef struct highScore_t
 	dword numSaves;
 	dword hitsTaken;
 	int	  spclValue;	// values needed for various modes
-} highScore_t;
+};
 
 TASK(void) NameEntry(MGLDraw *mgl);
 TASK(void) HighScore(MGLDraw *mgl);

@@ -106,10 +106,10 @@ static char fairyDesc[16*5][64]=
 		// chapter III
 		//#define FAIRY_RICHEY	(256)	// enemies drop more coins than normal
 		"Your enemies will",
-		"drop more coins than",
-		"usual, but your XP",
-		"will slowly drain",
-		"over time.",
+		"drop more coins and ",
+		"stones than usual,",
+		"but your XP will",
+		"drain over time.",
 
 		//#define FAIRY_SMARTY	(512)	// you earn 25% more XP per kill, but lose mana when hit as well as life (1/2 as much)
 		"Level up faster, but",
@@ -201,11 +201,14 @@ void EnterFairyBox(void)
 	InitFairyBox();
 	oldc=255;
 	PlaySong(SONG_SHOP);
-	shopScr=(byte *)malloc(640*480);
+	shopScr=(byte *)malloc(SCRWID*SCRHEI);
 	if(!shopScr)
 		FatalError("Out of memory!!");
 	shopSpr->GetSprite(36)->Draw(278,200,GetDisplayMGL());
-	memcpy(shopScr,GetDisplayMGL()->GetScreen(),640*480);
+	memcpy(shopScr,GetDisplayMGL()->GetScreen(),SCRWID*SCRHEI);
+	SetInMenu(true);
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
+	UpdateControls();
 }
 
 void LeaveFairyBox(void)
@@ -216,7 +219,7 @@ void LeaveFairyBox(void)
 
 void FairyCaughtText(byte w)
 {
-	char s[32];
+	char s[64];
 
 	sprintf(s,"You caught %s!",fairyName[w-1]);
 	NewMessage(s,60);
@@ -231,7 +234,7 @@ void RenderFairyBox(void)
 
 	mgl=GetDisplayMGL();
 
-	memcpy(mgl->GetScreen(),shopScr,640*480);
+	memcpy(mgl->GetScreen(),shopScr,SCRWID*SCRHEI);
 
 	w=1;
 	for(j=0;j<4;j++)
@@ -243,9 +246,8 @@ void RenderFairyBox(void)
 				InstaRenderMonster2(i*FAIRYDX+FAIRYX+25+(fairies[i+j*4].x/FIXAMT),FAIRYY+j*FAIRYDY+40+(fairies[i+j*4].y/FIXAMT),MONS_FAIRY,0,(fairies[i+j*4].frm/FIXAMT),fairies[i].facing,(i+j*4+1),0+8*(shopCursor==i+j*4),mgl);
 			else
 			{
-				for(k=0;k<4;k++)
-					if(player.chaseFairy[k]==i+j*4+1)
-						shopSpr->GetSprite(0)->Draw((i)*FAIRYDX+FAIRYX,FAIRYY+j*FAIRYDY,mgl);	// make it gold
+				if(player.chaseFairy&w)
+					shopSpr->GetSprite(0)->Draw((i)*FAIRYDX+FAIRYX,FAIRYY+j*FAIRYDY,mgl);	// make it gold
 			}
 			w*=2;
 		}
@@ -257,7 +259,7 @@ void RenderFairyBox(void)
 
 	if(player.haveFairy&w)
 	{
-		CenterPrint(320,318,fairyName[(shopCursor)],0,2);
+		CenterPrint(HALFWID,318,fairyName[(shopCursor)],0,2);
 
 		CenterPrintGlow(343,fairyDesc[shopCursor*5],2);
 		CenterPrintGlow(343+18,fairyDesc[shopCursor*5+1],2);
@@ -273,15 +275,13 @@ void RenderFairyBox(void)
 	}
 	else
 	{
-		CenterPrint(320,318,"???",0,2);
+		CenterPrint(HALFWID,318,"???",0,2);
 	}
-	CenterPrint(320,23,"Fairy Box",0,0);
+	CenterPrint(HALFWID,23,"Fairy Box",0,0);
 }
 
 byte UpdateFairyBox(MGLDraw *mgl)
 {
-	byte c;
-	static byte reptCounter=0;
 	int i;
 
 	for(i=0;i<16;i++)
@@ -308,27 +308,21 @@ byte UpdateFairyBox(MGLDraw *mgl)
 			fairies[i].frm-=FIXAMT*10;
 	}
 
-	c=GetControls();
-
-	reptCounter++;
-	if((!oldc) || (reptCounter>10))
-		reptCounter=0;
-
-	if((c&CONTROL_UP) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_UP))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor-=4;
 		if(shopCursor>=16)
 			shopCursor+=16;
 	}
-	if((c&CONTROL_DN) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_DN))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor+=4;
 		if(shopCursor>=16)
 			shopCursor-=16;
 	}
-	if((c&CONTROL_LF) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_LF))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor--;
@@ -337,14 +331,14 @@ byte UpdateFairyBox(MGLDraw *mgl)
 		if(shopCursor>50)
 			shopCursor=3;
 	}
-	if((c&CONTROL_RT) && (!reptCounter))
+	if(AutoRepeatTapped(CONTROL_RT))
 	{
 		MakeNormalSound(SND_MENUCLICK);
 		shopCursor++;
 		if((shopCursor%4)==0)
 			shopCursor-=4;
 	}
-	if((c&CONTROL_B1) && (!(oldc&CONTROL_B1)))
+	if(ButtonTapped(CONTROL_B1))
 	{
 		if(player.haveFairy&(1<<shopCursor))
 		{
@@ -353,19 +347,15 @@ byte UpdateFairyBox(MGLDraw *mgl)
 		}
 		else
 			FairyChange(player.fairyOn,0);
-
 		return 1;
 	}
-	if((c&CONTROL_B2) && (!(oldc&CONTROL_B2)))
+	if(ButtonTapped(CONTROL_B2))
 	{
 		FairyChange(player.fairyOn,0);
 		return 1;
 	}
-	oldc=c;
-
-	JamulSoundUpdate();
-
-	if(mgl->LastKeyPressed()==27)
+	
+	if(ButtonTapped(CONTROL_ESCAPE))
 	{
 		FairyChange(player.fairyOn,0);
 		return 1;

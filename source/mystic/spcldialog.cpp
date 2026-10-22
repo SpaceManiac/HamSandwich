@@ -62,6 +62,8 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	RenderCheckbox(62,110,spcl->trigger&TRG_HAVEBRAINS,"Have N brains");
 	RenderCheckbox(62,124,spcl->trigger&TRG_SHOOT,"Shoot item/wall");
 	RenderCheckbox(220,54,spcl->trigger&TRG_CHAIN,"Chain off neighbor Special");
+	RenderCheckbox(220, 68, spcl->trigger & TRG_KILLONE, "Kill one of type");
+	RenderCheckbox(220, 82, spcl->trigger & TRG_GETHURT, "Get hurt");
 
 	RenderCheckbox(62,148,spcl->trigger&TRG_REPEATABLE,"Multiple use");
 	RenderCheckbox(62,162,spcl->trigger&TRG_MESSAGE,"Show message");
@@ -94,6 +96,14 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	Print(136,244,"WinLevel",0,1);
 	DrawBox(134,258,204,272,16+15*(spcl->effect==SPC_PICTURE));
 	Print(136,260,"Show Pic",0,1);
+	DrawBox(134, 274, 204, 288, 16 + 15 * (spcl->effect == SPC_CHGITEM));
+	Print(136, 276, "ChgItem", 0, 1);
+	DrawBox(62, 274, 132, 288, 16 + 15 * (spcl->effect == SPC_CHGFLOOR));
+	Print(64, 276, "ChgFloor", 0, 1);
+	DrawBox(62, 290, 132, 304, 16 + 15 * (spcl->effect == SPC_KILLSPCL));
+	Print(64, 292, "KillSpcl", 0, 1);
+	DrawBox(134, 290, 204, 304, 16 + 15 * (spcl->effect == SPC_CHGMONS));
+	Print(136, 292, "ChgMons", 0, 1);
 
 	// trigger value
 	RenderValueAdjuster("Trigger Value",spcl->trigValue,210,12);
@@ -176,8 +186,12 @@ byte SpclDialogClick(int msx,int msy)
 	if(msx>61 && msx<72 && msy>161 && msy<162+14)
 		spcl->trigger^=TRG_MESSAGE;
 
-	if(msx>219 && msx<230 && msy>53 && msy<54+14)
-		spcl->trigger^=TRG_CHAIN;
+	if (msx > 219 && msx < 230 && msy>53 && msy < 54 + 14)
+		spcl->trigger ^= TRG_CHAIN;
+	if (msx > 219 && msx < 230 && msy>67 && msy < 68 + 14)
+		spcl->trigger ^= TRG_KILLONE;
+	if (msx > 219 && msx < 230 && msy>81 && msy < 82 + 14)
+		spcl->trigger ^= TRG_GETHURT;
 
 	// effect choices
 	if(msx>61 && msx<133 && msy>193 && msy<209)
@@ -200,6 +214,14 @@ byte SpclDialogClick(int msx,int msy)
 		spcl->effect=SPC_EXIT;
 	if(msx>133 && msx<205 && msy>257 && msy<273)
 		spcl->effect=SPC_PICTURE;
+	if (msx > 133 && msx < 205 && msy>273 && msy < 289)
+		spcl->effect = SPC_CHGITEM;
+	if (msx > 61 && msx < 133 && msy>273 && msy < 289)
+		spcl->effect = SPC_CHGFLOOR;
+	if (msx > 61 && msx < 133 && msy>289 && msy < 305)
+		spcl->effect = SPC_KILLSPCL;
+	if (msx > 133 && msx < 205 && msy>289 && msy < 305)
+		spcl->effect = SPC_CHGMONS;
 
 	// trigger value
 	i=spcl->trigValue;

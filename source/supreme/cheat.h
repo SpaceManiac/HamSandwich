@@ -7,28 +7,31 @@
 #include "message.h"
 #include "bullet.h"
 
-#define CHEAT_WINLEVEL	0
-#define CHEAT_HAMMERUP	1
-#define CHEAT_LIFE		2
-#define CHEAT_SHIELD	3
-#define CHEAT_BOOM		4
-#define CHEAT_FREEZE	5
-#define CHEAT_BRAINS	6
-#define CHEAT_KEYS		7
-#define CHEAT_SCANNER	8
-#define CHEAT_AMMO		9
-#define CHEAT_LIGHT		10
-#define CHEAT_WATER		11
-#define CHEAT_OXYGEN	12
-#define CHEAT_NOSKID	13
-#define CHEAT_SPEED		14
-#define CHEAT_RAGE		15
+enum : byte
+{
+	CHEAT_WINLEVEL,
+	CHEAT_HAMMERUP,
+	CHEAT_LIFE,
+	CHEAT_SHIELD,
+	CHEAT_BOOM,
+	CHEAT_FREEZE,
+	CHEAT_BRAINS,
+	CHEAT_KEYS,
+	CHEAT_SCANNER,
+	CHEAT_AMMO,
+	CHEAT_LIGHT,
+	CHEAT_WATER,
+	CHEAT_OXYGEN,
+	CHEAT_NOSKID,
+	CHEAT_SPEED,
+	CHEAT_RAGE,
 
-#define NUM_CHEATS		16
+	NUM_CHEATS
+};
 
 void InitCheater(void);
 void CheatKey(char c);
 void DoCheat(byte w);
-char *CheatName(byte w);
+const char *CheatName(byte w);
 
 #endif

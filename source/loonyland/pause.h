@@ -4,16 +4,22 @@
 #include "winpch.h"
 #include "display.h"
 
-struct player_t;
+enum class PauseMenuResult : byte
+{
+	Paused,
+	Continue,
+	Quit,
+	GiveUp,  // not used
+	WarpToLooniton,
+};
 
 void RenderPauseMenu(MGLDraw *mgl);
 void RenderSlotPickMenu(void);
-byte UpdatePauseMenu(MGLDraw *mgl);
+PauseMenuResult UpdatePauseMenu(MGLDraw *mgl);
 void InitPauseMenu(void);
-void SetSubCursor(byte s);
 void BumpSaveGem(void);
 void LoadGame(int i);
 void DeleteSave(int i);
-void SetNoSaving(byte on);
+void SetNoSaving(bool on);
 
 #endif

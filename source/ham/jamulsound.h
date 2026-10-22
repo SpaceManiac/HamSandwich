@@ -9,17 +9,20 @@ enum {
 	SND_MAXPRIORITY = 2,	// ignore priority value, this sound is a must-have
 	SND_ONE = 4,			// only one copy may play at once
 	SND_PLAYING = 8,		// well, it's not for everyone, but it goes here
-	SND_LOOPING = 16,
-	SND_SUSTAIN = 32,		// only used by instruments
-	SND_RANDOM = 64, 		// randomize pitch up or down 10%
-	SND_BACKWARDS = 128,
-	SND_DOUBLESPEED = 256,
+	SND_LOOPING = 32,
+	SND_SUSTAIN = 64,		// only used by instruments
+	SND_RANDOM = 128, 		// randomize pitch up or down 10%
+	SND_BACKWARDS = 256,
+	SND_DOUBLESPEED = 512,
+	SND_MUSICVOLUME = 1024, // use music volume instead of sound volume, for Stockboy
 };
 
 const int MAX_SNDPRIORITY = 65536;
 
-bool JamulSoundInit(int numBuffers);
-void JamulSoundExit(void);
+HAM_API void SetJamulSoundEnabled(bool enabled, int numSounds);
+HAM_API bool JamulSoundInit(int numBuffers);
+HAM_API void JamulSoundExit(void);
+HAM_API bool SoundIsAvailable();
 
 // --------------------------------
 // here's the fun and easy sound manager
@@ -27,17 +30,31 @@ void JamulSoundExit(void);
 // for as many sounds as you'll try to play.  It will load them if they aren't in memory already.
 
 // call this fairly often to free up unused buffers, otherwise no new sounds can be played
-void JamulSoundUpdate(void);
+HAM_API void JamulSoundUpdate(void);
 
 // call this to wipe the sounds from memory
-void JamulSoundPurge(void);
+HAM_API void JamulSoundPurge(void);
 
 // call this a lot, it plays sounds
-void GoPlaySound(int num, long pan, long vol, int flags, int priority);
+HAM_API void GoPlaySound(int num, long pan, long vol, int flags, int priority);
 
 // pass in the sound # you're sick of hearing
-bool JamulSoundStop(int which);
+HAM_API bool JamulSoundStop(int which);
 
-void JamulSoundVolume(int v);
+HAM_API void JamulSoundVolume(int v);
+HAM_API void JamulSoundChangeSoundVolume(int snd, int volume);
+
+// ----------------------------------------------------------------------------
+
+HAM_API void SetHamMusicEnabled(bool enabled);
+
+HAM_API void UpdateMusic();
+
+HAM_API void SetMusicVolume(int vol);
+
+// Accepts full path, including leading "sound/" or "music/".
+HAM_API void PlaySongFile(const char* path);
+HAM_API void StopSong();
+HAM_API bool IsSongPlaying();
 
 #endif  // JAMULSOUND_H

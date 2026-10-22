@@ -71,7 +71,7 @@ void RenderSpclDialog(int msx,int msy,MGLDraw *mgl)
 	RenderCheckbox(220,68,spcl->trigger&TRG_VAROFF,"Var N != N2");
 	RenderCheckbox(220,82,spcl->trigger&TRG_GETITEM,"Get Item");
 	RenderCheckbox(220,96,spcl->trigger&TRG_DELAYCHAIN,"Delayed Chain");
-	RenderCheckbox(300,96,spcl->trigger&TRG_ITEMHERE,"Item Here");
+	RenderCheckbox(300,110,spcl->trigger&TRG_ITEMHERE,"Item Here");
 
 	RenderCheckbox(62,148,spcl->trigger&TRG_REPEATABLE,"Multiple use");
 	RenderCheckbox(62,162,spcl->trigger&TRG_MESSAGE,"Show message");
@@ -221,7 +221,7 @@ byte SpclDialogClick(int msx,int msy)
 	if(msx>219 && msx<230 && msy>95 && msy<96+14)
 		spcl->trigger^=TRG_DELAYCHAIN;
 
-	if(msx>299 && msx<310 && msy>95 && msy<96+14)
+	if(msx>299 && msx<310 && msy>109 && msy<110+14)
 		spcl->trigger^=TRG_ITEMHERE;
 
 	// effect choices

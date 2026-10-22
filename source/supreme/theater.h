@@ -6,6 +6,7 @@
 TASK(void) Theater(MGLDraw *mgl);
 
 void SeeMovie(char *fname);
-byte AllMoviesSeen(void);
+bool AllMoviesSeen();
+byte NumMoviesSeen();
 
 #endif

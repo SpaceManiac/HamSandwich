@@ -56,7 +56,7 @@ int totalScore;
 
 void Commaize(char *s,int n)
 {
-	char s2[8];
+	char s2[16];
 	byte zero;
 
 	s[0]='\0';
@@ -154,7 +154,7 @@ void InitEndGame(void)
 {
 	int i;
 
-	DBG("InitEndGame");
+	LogVerbose("InitEndGame");
 	for(i=0;i<16;i++)
 	{
 		stat[i].curPts=0;
@@ -168,6 +168,7 @@ void InitEndGame(void)
 	{
 		case WORLD_NORMAL:
 		case WORLD_REMIX:
+		case WORLD_RANDOMIZER:
 			numStats=10;
 			// percent done
 			strcpy(stat[0].name,"Complete");
@@ -392,23 +393,23 @@ void InitEndGame(void)
 			}
 			break;
 		case WORLD_BOSSBASH:
-			DBG("BB-Setup");
+			LogTrace("BB-Setup");
 			numStats=3;
 			// time
-			DBG("BB1");
+			LogTrace("BB1");
 			if(player.hearts>0)
 			{
-				DBG("BB2");
+				LogTrace("BB2");
 				strcpy(stat[0].name,"Time");
 				stat[0].val=player.timeToFinish;
-				DBG("BB3");
+				LogTrace("BB3");
 				i=player.numSaves-30*30*BashPower();
 				if(i<0)
 					i=10*30;
-				DBG("BB4");
+				LogTrace("BB4");
 				stat[0].points=GetTimePoints(player.timeToFinish,i,2000000,40000,10000);
 				stat[0].type=ST_TIME;
-				DBG("BB5");
+				LogTrace("BB5");
 				sprintf(stat[0].xtra,"(%d:%02d par)",i/(30*60),(i/30)%60);
 			}
 			else
@@ -419,34 +420,34 @@ void InitEndGame(void)
 				stat[0].type=ST_TIME;
 				strcpy(stat[0].xtra,"(failed)");
 			}
-			DBG("BB6");
+			LogTrace("BB6");
 			// power level
 			strcpy(stat[1].name,"Power");
 			stat[1].val=BashPower();
-			DBG("BB7");
+			LogTrace("BB7");
 			strcpy(stat[1].xtra,"x-100,000");
 			stat[1].points=BashPower()*-100000;
 			stat[1].type=ST_BASH;
-			DBG("BB8");
+			LogTrace("BB8");
 			// hits taken
 			strcpy(stat[2].name,"Hits Taken");
 			stat[2].val=player.hitsTaken;
-			DBG("BB9");
+			LogTrace("BB9");
 			strcpy(stat[2].xtra,"x-100,000");
 			stat[2].points=player.hitsTaken*-100000;
-			DBG("BB10");
+			LogTrace("BB10");
 			break;
 	}
-	DBG("BB-Setup2");
+	LogTrace("BB-Setup2");
 	player.rank=0;
 	curStat=0;
 	totalScore=0;
 	GetDisplayMGL()->LastKeyPressed();
-	DBG("BB-Setup3");
+	LogTrace("BB-Setup3");
 	GetTaps();
-	DBG("BB-Setup4");
+	LogTrace("BB-Setup4");
 	InitFireworks();
-	DBG("BB-Setup5");
+	LogTrace("BB-Setup5");
 }
 
 void RenderFinalScore(int x,int y,MGLDraw *mgl)
@@ -489,6 +490,7 @@ void ShowScoreStats(int x,int y,highScore_t *me,MGLDraw *mgl)
 	{
 		case WORLD_NORMAL:
 		case WORLD_REMIX:
+		case WORLD_RANDOMIZER:
 			PrintGlow(x,y,"Percent Done",0,0);
 			sprintf(s,"%2.1f%%",(float)me->spclValue/FIXAMT);
 			RightPrintGlow(x+250,y,s,0,0);
@@ -637,7 +639,7 @@ void RenderEndGame(MGLDraw *mgl)
 {
 	int i,x,y;
 
-	DBG("RenderEndGame");
+	LogTrace("RenderEndGame");
 	mgl->ClearScreen();
 	RenderFireworks(mgl);
 
@@ -666,7 +668,7 @@ byte UpdateEndGame(int *lastTime,MGLDraw *mgl)
 	byte t;
 	static byte fwClock;
 
-	DBG("UpdateEndGame");
+	LogTrace("UpdateEndGame");
 	if(*lastTime>TIME_PER_FRAME*30)
 		*lastTime=TIME_PER_FRAME*30;
 
@@ -785,13 +787,13 @@ TASK(void) EndGameTally(MGLDraw *mgl)
 	dword now,then,hangon;
 	highScore_t hs;
 
-	DBG("EndGameTally");
+	LogVerbose("EndGameTally");
 	EndClock();
 	hangon=TimeLength();
 
 	now=timeGetTime();
 	InitEndGame();
-	DBG("SurvivedInitEndGame");
+	LogVerbose("SurvivedInitEndGame");
 	b=1;
 	while(b==1)
 	{
@@ -806,9 +808,9 @@ TASK(void) EndGameTally(MGLDraw *mgl)
 		}
 		EndClock();
 	}
-	DBG("ExitEndGameTally1");
+	LogVerbose("ExitEndGameTally1");
 	ExitFireworks();
-	DBG("ExitEndGameTally2");
+	LogVerbose("ExitEndGameTally2");
 	then=timeGetTime();
 	ResetClock(hangon);
 	//AddGarbageTime(then-now);
@@ -817,5 +819,5 @@ TASK(void) EndGameTally(MGLDraw *mgl)
 	if(totalScore>=10000000)
 		EarnBadge(BADGE_SCORE);
 	BadgeCheck(BE_ENDGAME,0,curMap);
-	DBG("ExitEndGameTally3");
+	LogVerbose("ExitEndGameTally3");
 }

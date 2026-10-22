@@ -1,0 +1,23 @@
+#!/bin/sh
+set -eu
+
+Bootstrap=$(dirname "$0")
+. "$Bootstrap/_common.sh"
+
+AndroidSdk="$Cache/android-sdk-$OS"
+if ! test -d "$AndroidSdk"; then
+	TmpExtract=$(temp_unzip "$(temp_download_and_verify ANDROID_CLI_VERSION "$OS")")
+	mkdir "$TmpExtract/licenses"
+	printf '\n24333f8a63b6825ea9c5514f83c2829b004d1fee' > "$TmpExtract/licenses/android-sdk-license"
+	mv "$TmpExtract" "$AndroidSdk"
+fi
+
+printf 'sdk.dir=%s\ncmake.dir=%s\n' \
+	"$AndroidSdk" \
+	"$(realpath "$(tools/bootstrap/cmake --bootstrap-print-directory)")" \
+	>"$Bootstrap/../../local.properties"
+
+if test "$#" -gt 0; then
+    PATH="$AndroidSdk/platform-tools:$PATH"
+    "$@"
+fi

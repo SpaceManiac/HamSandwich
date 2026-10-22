@@ -9,5 +9,6 @@ void ExitMapDialog(void);
 void RenderMapDialog(int msx,int msy,MGLDraw *mgl);
 byte MapDialogKey(char key);
 byte MapDialogClick(int msx,int msy);
+void MapDialogScroll(int msz);
 
 #endif

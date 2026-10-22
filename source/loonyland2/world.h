@@ -4,7 +4,6 @@
 #include "winpch.h"
 #include "map.h"
 #include "tile.h"
-#pragma pack(4)
 
 #define MAX_MAPS	64
 
@@ -31,6 +30,7 @@ typedef struct terrain_t
 	int flags;
 	word next;
 } terrain_t;
+static_assert(sizeof(terrain_t) == 8);
 
 typedef struct world_t
 {
@@ -48,6 +48,5 @@ byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void GetWorldName(const char *fname,char *buf);
-int  GetWorldPoints(const char *fname);
 
 #endif

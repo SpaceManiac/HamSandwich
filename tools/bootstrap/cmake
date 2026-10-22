@@ -1,0 +1,43 @@
+#!/bin/sh
+set -eu
+
+if test "${MSYSTEM:-}"; then
+	# On MSYS2, use the provided CMake in order to get the provided toolchain.
+	exec cmake "$@"
+fi
+
+Bootstrap=$(dirname "$0")
+. "$Bootstrap/_common.sh"
+
+case "$OS" in
+	Linux)
+		CMakeFolder="cmake-$CMAKE_VERSION-linux-x86_64"
+		CMakeExe="$Cache/$CMakeFolder/bin/cmake$ExeExt"
+		Extract=temp_untar
+		;;
+	Windows)
+		CMakeFolder="cmake-$CMAKE_VERSION-windows-x86_64"
+		CMakeExe="$Cache/$CMakeFolder/bin/cmake$ExeExt"
+		Extract=temp_unzip
+		;;
+	Darwin)
+		CMakeFolder="cmake-$CMAKE_VERSION-macos10.10-universal"
+		CMakeExe="$Cache/$CMakeFolder/CMake.app/Contents/bin/cmake$ExeExt"
+		Extract=temp_untar
+		;;
+	*)
+		echo "not supported by cmake: $OS" >&2
+		exit 1
+		;;
+esac
+
+if ! test -f "$CMakeExe"; then
+	mv "$($Extract "$(temp_download_and_verify CMAKE_VERSION "$OS")")/$CMakeFolder" "$Cache/$CMakeFolder"
+fi
+
+if test "z${1:-}" = "z--bootstrap-print-directory"; then
+	echo "$Cache/$CMakeFolder"
+	exit
+fi
+
+exec "$CMakeExe" "$@"

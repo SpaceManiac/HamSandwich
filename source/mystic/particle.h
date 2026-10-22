@@ -21,6 +21,11 @@
 #define PART_LVLUP 14
 #define PART_COMPASS 15
 #define PART_FLOATER 16	// colored particles that float up in a ring
+#define PART_NUMBER 17
+#define PART_EYEGLOW 18	// red ones for the incabots to be visible in the dark
+#define PART_EYEGLOW2 19 // the right eye of the above (which is left)
+#define PART_INGREDIENT 20
+#define PART_COLORFIRE 21 // colored fire for the cooking game
 
 class Particle
 {
@@ -39,6 +44,7 @@ class Particle
 		int x,y,z;
 		int dx,dy,dz;
 		int life;
+		word data;
 };
 
 void InitParticles(int max);
@@ -47,7 +53,9 @@ void UpdateParticles(Map *map);
 void RenderParticles(void);
 
 void RenderParticle(int x,int y,byte *scrn,byte color,byte size);
+void RenderNumberParticles(void);
 
+word AddNumberParticle(int x, int y, int z, int value, byte color, word id);
 void BlowSmoke(int x,int y,int z,int dz);
 void BlowWigglySmoke(int x,int y,int z,int dz);
 void SpurtParticles(byte type,bool left,int x,int y,int z,byte angle,byte force);
@@ -58,7 +66,7 @@ void MakeItSnow(Map *map);
 void SpecialSnow(int x,int y);
 void AddParticle(int x,int y,int z,int dx,int dy,int dz,byte life,byte type,byte color);
 void ManaParticles(int x,int y);
-void TrailMe(int x,int y,byte f);
+void TrailMe(int x,int y,int z,byte f);
 void CompassTrail(int sx,int sy,int ex,int ey);
 void FloaterParticles(int x,int y,byte color,int radius,int spread,byte count);
 

@@ -3,17 +3,27 @@
 
 #include "mgldraw.h"
 #include "monster.h"
+#include "string_extras.h"
+#include "bitflags.h"
 
 // level progress flags
-#define LF_PASSED		2	// have passed it
-#define LF_CANDLES		4	// have collected all candles
+enum LevelProgressFlags : byte
+{
+	LF_PASSED  = 1 << 1, // have passed it
+	LF_CANDLES = 1 << 2, // have collected all candles
+};
+BITFLAGS(LevelProgressFlags)
 
 // keychain bitflags
-#define KC_KEYCH1		1
-#define KC_KEYCH2		2
-#define KC_KEYCH3		4
-#define KC_KEYCH4		8
-#define KC_LOONY		16
+enum KeychainFlags : byte
+{
+	KC_KEYCH1 = 1 << 0,
+	KC_KEYCH2 = 1 << 1,
+	KC_KEYCH3 = 1 << 2,
+	KC_KEYCH4 = 1 << 3,
+	KC_LOONY  = 1 << 4,
+};
+BITFLAGS(KeychainFlags)
 
 #define NUM_PLAYLISTS	4
 #define SONGNAME_LEN	128
@@ -40,31 +50,42 @@
 // 20 points per star (50 total, 1000 points)
 
 
-typedef struct levelData_t	// contains your scores, etc for one level
+struct levelData_t	// contains your scores, etc for one level
 {
 	byte levelNum;		// because only passed levels are stored
-	byte flags;
+	LevelProgressFlags flags;
 	float percentage;
 	float recordDestroy;
 	int   recordCombo;
 	dword recordBaseScore;
-} levelData_t;
+};
 
-typedef struct worldData_t	// contains your progress for one world
+struct worldData_t	// contains your progress for one world
 {
 	char filename[32];	// the world's filename
 	int  var[8];		// the 'global' variables for this world
-	byte keychains;		// bitflags for each one, and the loonykey
+	KeychainFlags keychains;		// bitflags for each one, and the loonykey
 	float percentage;
 	byte levelOn;		// which level of this world you're on
 	byte levels;		// how many levels are stored here - it only stores ones you've either
 						// passed, or accomplished something in
 	levelData_t *level;	// progress info for each level that HAS been passed only.
-} worldData_t;
 
-#define EXPANSION_SIZE	(1019)
+	std::span<levelData_t> Levels() { return std::span{level, levels}; }
+};
 
-typedef struct progress_t
+enum class HudChoice : byte  // SERIALIZED in the player profile.
+{
+	// Supreme With Cheese, and the default choice.
+	Supreme  = 0,
+	// Like classic Dr. Lunatic. See `RenderInterfaceOld` for details.
+	Classic  = 1,
+	// Supreme, plus weapon lock indicator and speedrun timer.
+	Advanced = 2,
+};
+
+// WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
+struct progress_t
 {
 	// total values for stats
 	dword totalCandles;
@@ -98,16 +119,31 @@ typedef struct progress_t
 
 	dword cheats;				// how often you've cheated
 	byte wpnLock;				// weapon lock
-	byte expansion[EXPANSION_SIZE];		// unused space for possible future expansion
-} progress_t;
+	HudChoice hudChoice;
+	byte moreControl[2][2];
+	byte moreJoyCtrl[2];
+	byte expansion[1012];		// unused space for possible future expansion
+};
 
-typedef struct playList_t
+struct playList_t
 {
 	byte numSongs;
 	char *song;
-} playList_t;
+};
 
-typedef struct profile_t
+// Difficulty levels. SERIALIZED in profile, specials, and leaderboards.
+enum : byte
+{
+	DIFFICULTY_NORMAL  = 0,
+	DIFFICULTY_HARD    = 1,
+	DIFFICULTY_LUNATIC = 2,
+
+	MAX_DIFFICULTY  // End marker. Add new entries above this.
+};
+const char* GetDifficultyName(int difficulty);
+
+// WARNING: changing this struct's contents may break save compatibility or require modifications in Load/SaveProfile.
+struct profile_t
 {
 	char name[16];
 	// important stuff
@@ -125,7 +161,7 @@ typedef struct profile_t
 	byte nameVerified;
 	progress_t progress;
 	char motd[1024];	// message of the day
-} profile_t;
+};
 
 extern profile_t profile;
 extern byte modeShopNum[10];
@@ -137,6 +173,7 @@ void FreeProfile(void);
 void DefaultControls(void);
 void DefaultProfile(const char *name);
 
+void SetFirstTime();
 byte FirstTime(void);
 void EraseWorldProgress(const char *fname);
 worldData_t *GetWorldProgress(const char *fname);

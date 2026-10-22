@@ -1,10 +1,9 @@
 #ifndef AUDIOFX_H
 #define AUDIOFX_H
 
-struct Mix_Chunk;
+#include "jamultypes.h"
+#include "owned_mixer.h"
 
-Mix_Chunk* FxRandomPitch(Mix_Chunk* sample);
-Mix_Chunk* FxBackwards(Mix_Chunk* sample);
-Mix_Chunk* FxDoubleSpeed(Mix_Chunk* sample);
+HAM_API owned::MIX_Audio FxBackwards(SDL_IOStream *file, MIX_Mixer *mixer);
 
 #endif  // AUDIOFX_H

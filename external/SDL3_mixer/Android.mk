@@ -1,0 +1,235 @@
+# Save the local path
+SDL_MIXER_LOCAL_PATH := $(call my-dir)
+
+# Enable this if you want to support loading WAV music
+SUPPORT_WAV ?= true
+
+# Enable this if you want to support loading FLAC music via dr_flac
+SUPPORT_FLAC_DRFLAC ?= true
+
+# Enable this if you want to support loading FLAC music with libFLAC
+SUPPORT_FLAC_LIBFLAC ?= false
+FLAC_LIBRARY_PATH := external/flac
+
+# Enable this if you want to support loading OGG Vorbis music via stb_vorbis
+SUPPORT_VORBIS_STB ?= true
+
+# Enable this if you want to support loading OGG Vorbis music via libvorbis
+SUPPORT_VORBIS_LIBVORBIS ?= false
+LIBVORBIS_LIBRARY_PATH := external/vorbis
+
+# Enable this if you want to support loading OGG Vorbis music via Tremor (FOR ARM DEVICES WITHOUT A HARDWARE FLOATING POINT UNIT ONLY!)
+SUPPORT_VORBIS_LIBTREMOR ?= false
+LIBTREMOR_LIBRARY_PATH := external/tremor
+
+# Enable this if you want to support loading MP3 music via dr_mp3
+SUPPORT_MP3_DRMP3 ?= true
+
+# Enable this if you want to support loading MP3 music via MPG123
+SUPPORT_MP3_MPG123 ?= false
+MPG123_LIBRARY_PATH := external/mpg123
+
+# Enable this if you want to support loading WavPack music via libwavpack
+SUPPORT_WAVPACK ?= true
+WAVPACK_LIBRARY_PATH := external/wavpack
+
+# Enable this if you want to support loading music via libgme
+SUPPORT_GME ?= false
+GME_LIBRARY_PATH := external/libgme
+
+# Enable this if you want to support loading MOD music via libxmp
+SUPPORT_MOD_XMP ?= false
+XMP_LIBRARY_PATH := external/libxmp
+
+# Enable this if you want to support TiMidity
+SUPPORT_MID_TIMIDITY ?= false
+TIMIDITY_LIBRARY_PATH := src/timidity
+
+# Enable this if you want to support Opus via libopus
+SUPPORT_OPUS ?= false
+OPUS_LIBRARY_PATH := external/opus
+OPUSFILE_LIBRARY_PATH := external/opusfile
+
+
+# Make sure we don't build both libtremor and libvorbis. Different implementations of same API.
+ifeq ($(SUPPORT_VORBIS_LIBTREMOR),true)
+    ifeq ($(SUPPORT_VORBIS_LIBVORBIS),true)
+        $(error Both libtremor and libvorbis support are enabled. Please choose one)
+    endif
+endif
+
+# Multiple things need libogg.
+SUPPORT_LIBOGG := false
+OGG_LIBRARY_PATH := external/ogg
+ifeq ($(SUPPORT_FLAC_LIBFLAC),true)
+    SUPPORT_LIBOGG := true
+endif
+ifeq ($(SUPPORT_VORBIS_LIBTREMOR),true)
+    SUPPORT_LIBOGG := true
+	VORBIS_LIBRARY_PATH := $(LIBTREMOR_LIBRARY_PATH)
+endif
+ifeq ($(SUPPORT_VORBIS_LIBVORBIS),true)
+    SUPPORT_LIBOGG := true
+	VORBIS_LIBRARY_PATH := $(LIBVORBIS_LIBRARY_PATH)
+endif
+
+# Build the library
+ifeq ($(SUPPORT_FLAC_LIBFLAC),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(FLAC_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library
+ifeq ($(SUPPORT_LIBOGG),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(OGG_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library (libvorbis or libtremor)
+ifneq ($(VORBIS_LIBRARY_PATH),)
+    include $(SDL_MIXER_LOCAL_PATH)/$(VORBIS_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library
+ifeq ($(SUPPORT_MP3_MPG123),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(MPG123_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library
+ifeq ($(SUPPORT_WAVPACK),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(WAVPACK_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library
+ifeq ($(SUPPORT_GME),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(GME_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library
+ifeq ($(SUPPORT_MOD_XMP),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(XMP_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library
+ifeq ($(SUPPORT_MID_TIMIDITY),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(TIMIDITY_LIBRARY_PATH)/Android.mk
+endif
+
+# Build the library
+ifeq ($(SUPPORT_OPUS),true)
+    include $(SDL_MIXER_LOCAL_PATH)/$(OPUS_LIBRARY_PATH)/Android.mk
+    include $(SDL_MIXER_LOCAL_PATH)/$(OPUSFILE_LIBRARY_PATH)/Android.mk
+endif
+
+# Restore local path
+LOCAL_PATH := $(SDL_MIXER_LOCAL_PATH)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := SDL3_mixer
+
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
+
+LOCAL_SRC_FILES :=                                      \
+    $(subst $(LOCAL_PATH)/,,                            \
+      $(wildcard $(LOCAL_PATH)/src/*.c)                 \
+    )
+
+LOCAL_CFLAGS :=
+LOCAL_LDLIBS :=
+LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--version-script=$(LOCAL_PATH)/src/SDL_mixer.sym
+LOCAL_STATIC_LIBRARIES :=
+LOCAL_SHARED_LIBRARIES := SDL3
+
+ifeq ($(SUPPORT_WAV),true)
+    LOCAL_CFLAGS += -DDECODER_WAV
+endif
+
+ifeq ($(SUPPORT_FLAC_DRFLAC),true)
+    LOCAL_CFLAGS += -DDECODER_FLAC_DRFLAC
+endif
+
+ifeq ($(SUPPORT_FLAC_LIBFLAC),true)
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(FLAC_LIBRARY_PATH)/include
+    LOCAL_CFLAGS += -DDECODER_FLAC_LIBFLAC
+    LOCAL_STATIC_LIBRARIES += libFLAC
+endif
+
+ifeq ($(SUPPORT_VORBIS_STB),true)
+    LOCAL_CFLAGS += -DDECODER_OGGVORBIS_STB
+endif
+
+ifeq ($(SUPPORT_LIBOGG),true)
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(OGG_LIBRARY_PATH)/include
+    LOCAL_STATIC_LIBRARIES += ogg
+endif
+
+ifeq ($(SUPPORT_VORBIS_LIBTREMOR),true)
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(VORBIS_LIBRARY_PATH)
+    LOCAL_CFLAGS += -DDECODER_OGGVORBIS_VORBISFILE -DVORBIS_USE_TREMOR -DVORBIS_HEADER="<ivorbisfile.h>"
+    LOCAL_STATIC_LIBRARIES += vorbisidec
+endif
+
+ifeq ($(SUPPORT_VORBIS_LIBVORBIS),true)
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(VORBIS_LIBRARY_PATH)/include
+    LOCAL_CFLAGS += -DDECODER_OGGVORBIS_VORBISFILE -DVORBIS_HEADER="<vorbis/vorbisfile.h>"
+    LOCAL_STATIC_LIBRARIES += vorbisdec
+endif
+
+ifeq ($(SUPPORT_MP3_DRMP3),true)
+    LOCAL_CFLAGS += -DDECODER_MP3_DRMP3
+endif
+
+# This needs to be a shared library to comply with the LGPL license
+ifeq ($(SUPPORT_MP3_MPG123),true)
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(MPG123_LIBRARY_PATH)/src/include
+    LOCAL_CFLAGS += -DDECODER_MP3_MPG123
+    LOCAL_SHARED_LIBRARIES += mpg123
+endif
+
+ifeq ($(SUPPORT_WAVPACK),true)
+    LOCAL_CFLAGS += -DDECODER_WAVPACK -DDECODER_WAVPACK_DSD -DWAVPACK_HEADER=\"../external/wavpack/include/wavpack.h\"
+    LOCAL_STATIC_LIBRARIES += wavpack
+endif
+
+ifeq ($(SUPPORT_GME),true)
+    LOCAL_CFLAGS += -DDECODER_GME
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(GME_LIBRARY_PATH)
+    LOCAL_STATIC_LIBRARIES += libgme
+endif
+
+ifeq ($(SUPPORT_MOD_XMP),true)
+    LOCAL_CFLAGS += -DDECODER_MOD_XMP -DLIBXMP_HEADER=\"../external/libxmp/include/xmp.h\"
+    LOCAL_STATIC_LIBRARIES += xmp
+endif
+
+ifeq ($(SUPPORT_MID_TIMIDITY),true)
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(TIMIDITY_LIBRARY_PATH)
+    LOCAL_CFLAGS += -DDECODER_MIDI_TIMIDITY
+    LOCAL_STATIC_LIBRARIES += timidity
+endif
+
+ifeq ($(SUPPORT_OPUS),true)
+    LOCAL_CFLAGS += -DDECODER_OPUS
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(OPUS_LIBRARY_PATH)/include
+    LOCAL_STATIC_LIBRARIES += opus
+    LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(OPUSFILE_LIBRARY_PATH)/include
+    LOCAL_STATIC_LIBRARIES += opusfile
+endif
+
+LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/include
+
+include $(BUILD_SHARED_LIBRARY)
+
+###########################
+#
+# SDL3_mixer static library
+#
+###########################
+
+LOCAL_MODULE := SDL3_mixer_static
+
+LOCAL_MODULE_FILENAME := libSDL3_mixer
+
+LOCAL_LDLIBS :=
+LOCAL_EXPORT_LDLIBS :=
+
+include $(BUILD_STATIC_LIBRARY)

@@ -62,6 +62,7 @@
 #define WORLD_BOSSBASH	5
 #define WORLD_INFSURV	6
 #define WORLD_REMIX		7
+#define WORLD_RANDOMIZER	8
 
 extern Map	*curMap;
 extern world_t curWorld;
@@ -92,11 +93,10 @@ TASK(void) LunaticGame(MGLDraw *mgl,byte load,byte mode);
 void SendMessageToGame(byte msg,int content);
 void AddGarbageTime(dword t);
 
-void SetGameIdle(bool b);
-byte GetGameIdle(void);
-void GameIdle(void);
 byte WindingDown(void);
 
 void UndoWindDown(void);
+
+void PauseGame();
 
 #endif

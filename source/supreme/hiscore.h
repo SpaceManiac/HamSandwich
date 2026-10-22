@@ -33,7 +33,7 @@
 #define SCORE_SAVED	1	// indicate it came from the stored list
 #define SCORE_NEW	2	// indicate it's a newly created score
 
-typedef struct score_t
+struct score_t
 {
 	char name[16];
 	dword score;
@@ -43,7 +43,7 @@ typedef struct score_t
 	dword levelChecksum;
 	dword scoreChecksum;
 	byte beenUploaded;
-} score_t;
+};
 
 void ScoreEvent(byte event,int amt);
 
@@ -54,13 +54,13 @@ void LoadHiScores(void);
 
 byte TryHighScore(void);
 
-byte GetTopScores(score_t *winners,Map *map);
-byte GetTopTimes(score_t *winners,Map *map);
+byte GetTopScores(score_t *winners,const Map *map);
+byte GetTopTimes(score_t *winners,const Map *map);
 
 void CryptoTest(void);
 
 void EraseHighScores(world_t *world);
-dword ChecksumMap(Map *map);
+dword ChecksumMap(const Map *map);
 char *GetScoresToUpload(int *num,int *scoreSize);
 char *GetTimesToUpload(int *num,int *scoreSize);
 int CountScoresToUpload(void);

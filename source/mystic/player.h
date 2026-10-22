@@ -9,16 +9,41 @@
 #include "bullet.h"
 #include "world.h"
 #include "intface.h"
+#include "skills.h"
+#include "runes.h"
 
-// secondary weapon defines
-#define WPN_NONE     0
-#define WPN_MISSILES 1
-#define WPN_AK8087	 2
-#define WPN_BOMBS	 3
-#define WPN_FLAME	 4
+#define SAVE_VERSION (1)
+
+// level passed bitflags
+#define LP_PASSED (1)
+#define LP_GOTRUNE (2)
+#define LP_GOTSPELL (4)
+#define LP_GOTFAIRY (8)
+#define LP_GOTSWORD (16)
+#define LP_GOTRUNEPOUCH (32)
+#define LP_GOTSKILLSHARD (64)
+
+#define WATER_DAMAGE (10)	// damage taken when you fall in the water, in modern mode
+#define MAX_RUNESTONES (9999)
+
+enum class Difficulty : byte
+{
+	CLASSIC,
+	MODERN,
+	BRUTAL_CLASSIC,
+	BRUTAL_MODERN,
+	VERY_CLASSIC,
+	// ironman?
+	// ^ serialized stable above this point
+	UNUSED,	// for a save slot that isn't used
+};
+
+const char* DifficultySuffix(Difficulty diff);
 
 #define HAMMER_UP_AMOUNT 3
 #define HAMMER_MIN_SPEED 12
+
+#define MAX_PLAYERLEVEL (50)
 
 // initializing constants (pass to InitPlayer)
 #define INIT_GAME  2
@@ -41,20 +66,19 @@
 #define GEAR_FEATHER (1024)
 #define GEAR_SOCKS	 (2048)
 
-typedef struct player_t
+struct player_t
 {
 	// values for the overall game
-	byte musicSettings;
-	int prevScore;	// so you can lose all your points when you die
+	byte saveVersion;
+	char saveCode[4];
 	int score;
-	byte levelPassed[6][MAX_MAPS];
-	byte keychain[4];
-		// total completion is how many "points" the world has in it
-	int  totalCompletion[6];
-		// complete is how many of those points the player has, to create a percentage complete display
-	int  complete[6];
-	char customName[32];
-	byte lunacyKey[4];
+	byte levelPassed[6][MAX_MAPS-6];
+	byte swordPiece[4];
+	int  UNUSED1[6];
+	int  UNUSED2[6];
+	char UNUSED3[32];
+	byte UNUSED4[3];
+	byte bobbyDoorOpen;
 	byte prevLevel;	// in case you die
 	word prevExp;	// in case you die
 	word prevMoney;
@@ -74,8 +98,10 @@ typedef struct player_t
 	byte levelsPassed;
 	byte worldNum;
 	int overworldX,overworldY;
-	byte chaseFairy[4];
+	word chaseFairy;
 	// values reset for each level
+	byte usedFireballs;
+	byte seekerKills;
 	byte shield;
 	byte levelNum;
 	byte keys[4];
@@ -109,14 +135,54 @@ typedef struct player_t
 	byte shieldStones;
 	byte spellStones;
 	byte vaultOpened;
-	byte expando[252];	// just in case!
-} player_t;
+	Difficulty difficulty;
+	byte skillPts;
+	byte skill[MAX_SKILLS];
+	byte downgradeSpell[9];
+	byte disableSword;
+	byte disableThorns;
+	byte disableMoveNShoot;
+	byte disableDmgNumbers;
+	byte timeSinceLastInferno;
+	byte summonDmgBoost;
+	byte taunted;
+	byte parry;
+	word bigMoney;
+	word prevBigMoney;
+	byte skillStones;
+	byte runes[(int)Rune::NUM_RUNES];
+	word runeStones;
+	byte farley;
+	byte barrier;
+	byte storedFlames;
+	byte flameCounter;
+	byte infernoKills;
+	byte summonKills;
+	byte usedSpells[10];
+	byte totalKills;	// capped at 255 of course
+	word cumulativeBerserk;
+	byte levelPassed2[6][6];	// the last 6 levels have to hide here to prevent old saves from breaking
+	byte puzzleVar[3];	// special vars for an in-level puzzle
+	byte runePouches;
+	byte castCount;
+	byte ectoplasm;
+	byte ectoClock;
+	byte disableOrbRadar;
+	byte disableSkillWarning;
+	byte movedSinceSave;
+	byte lastLegitSaveSlot;
+	byte energyRamp;
+	word chalStars;
+	word chalTotalStars;
+	byte expando[153-MAX_SKILLS-(int)Rune::NUM_RUNES];	// just in case!
+};
 
 extern player_t player;
 extern byte beenReborn;
 
 void InitPlayer(byte initWhat,byte world,byte level);
 void ExitPlayer(void);
+bool PlayerHasTier2Spell(void);
 void PlayerControlMe(Guy *me,mapTile_t *mapTile,world_t *world);
 byte PlayerHasHammer(void);
 byte PlayerGetItem(byte itm,int x,int y);
@@ -126,24 +192,18 @@ int  PlayerBrains(void);
 void SetPlayerHP(int hp);
 byte PlayerLevelsPassed(void);
 byte PlayerPassedLevel(byte world,byte map);
-byte PlayerKeyChain(byte w);
+byte PlayerHasSwordPiece(byte w);
 byte PlayerKeys(byte w);
 void PlayerLoseKey(byte w);
-void PlayerSetWorldWorth(byte world,int amt);
-float PlayerGetPercent(byte world);
-float PlayerGetGamePercent(void);
-void SetCustomName(const char *name);
-char *GetCustomName(void);
-byte PlayerHasLunacyKey(byte w);
+int CalcGamePercent(const player_t* p);
 void PlayerHeal(byte amt);
 void PlayerLoadGame(byte which);
 void PlayerSaveGame(byte which);
+void AutoSave();
 byte GetPlayerWorld(void);
 byte PlayerShield(void);
 void PlayerGetPoints(int amt);
 void PlayerResetScore(void);
-byte PlayerGetMusicSettings(void);
-void PlayerSetMusicSettings(byte m);
 void SetPlayerGlow(byte v);
 byte GetPlayerGlow(void);
 byte PlayerPushMore(void);
@@ -153,23 +213,54 @@ void ToggleWaterwalk(void);
 byte PlayerCanWaterwalk(void);
 void SetTportClock(byte tp);
 byte GetTportClock(void);
-void DoPlayerFacing(byte c,Guy *me);
+void DoPlayerFacing(Guy *me);
 void SetPlayerDefense(void);
 void SetPlayerDamage(void);
 void SetPlayerSpeed(void);
 byte PlayerHasSword(void);
-
-byte PlayerHasSpell(void);
+void PlayerUpdateLife(void);
 void BeginArmageddon(void);
 void ArmageddonUpdate(Map *map);
-byte KeyChainAllCheck(void);
-byte SpellBookForThisLevel(byte level,byte chapter);
-byte FairyForThisLevel(word lvl);
+byte SwordAllCheck(void);
+byte SpellBookForThisLevel(byte level, byte chapter);
+byte FairyForThisLevel(byte level, byte chapter);
 byte GetVampyClock(void);
 void ResetPlayerLevels(void);
 void CheckForAllSecrets(void);
 byte PlayerHasAllSecrets(byte chapter);
 void SetChallengeCrystals(int amt);
 int GetChallengeCrystals(void);
+void BeginCast(Guy* me,byte spell);
+void AddToRestorationBuffer(float amt);
+bool ArmageddonIsUnderway(void);
+void GainMoney(int amt);
+bool CanAffordMoney(int amt);
+int TotalMoney(void);
+byte HighestWorldReached(void);
+void PlayerHealWithSpell(byte amt);
+
+void GetRunePouchInLevel(void);
+void GetRuneInLevel(void);
+void GetFairyBellInLevel(void);
+void GetSwordInLevel(void);
+void GetSpellInLevel(void);
+void GetSkillShardInLevel(void);
+bool GotRuneInLevel(byte world, byte level);
+bool GotFairyBellInLevel(byte world, byte level);
+bool GotSpellInLevel(byte world, byte level);
+bool GotSwordInLevel(byte world, byte level);
+bool GotRunePouchInLevel(byte world, byte level);
+bool GotSkillShardInLevel(byte world, byte level);
+
+void ResetLevelPassedFlags(int chapter, int level, bool resetAll);
+byte* GetLevelPassedFlag(int chapter, int level);
+
+void PickUpRune(void);
+
+bool BrutalMode(void);
+bool ClassicMode(void);
+bool VeryClassicMode();
+int GetShieldStoneMultiplier(int stones);
+int GetPowerStoneMultiplier(int stones);
 
 #endif

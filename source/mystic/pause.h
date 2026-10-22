@@ -6,13 +6,25 @@
 
 struct player_t;
 
+enum class PauseResult : byte
+{
+	Resume = 0,
+	Pause = 1,
+	GiveUp = 2,
+	Quit = 3,
+};
+
 void RenderPauseMenu(void);
 void RenderSlotPickMenu(void);
-byte UpdatePauseMenu(MGLDraw *mgl);
+void RenderSkillMenu(void);
+void RenderWeirdMenu(void);
+void RenderRuneMenu(void);
+PauseResult UpdatePauseMenu(MGLDraw *mgl);
 void UpdateUnPausedMenu();
 void InitPauseMenu(void);
-float CalcTotalPercent(player_t *p);
 void SetGiveUpText(byte gu);
 void SetSubCursor(byte s);
 void ResetPauseMenu(void);
+void RenderSkillBox(int x, int y, int x2, int y2, byte outC, byte inC);
+
 #endif

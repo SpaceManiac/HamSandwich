@@ -1312,9 +1312,10 @@ void ExitMonsters(void)
 
 	for (i = 1; i < NUM_MONSTERS; i++)
 	{
-		if (i == MONS_BJORN)
-			monsType[i].spr = NULL; // he uses the same sprites as MONS_SVEN
-		if (monsType[i].spr)
+		// repeat graphics monsters do not delete their sprites
+		if (monsType[i].sprName[0] == '!')
+			monsType[i].spr = NULL;
+		else if (monsType[i].spr)
 			delete monsType[i].spr;
 		monsType[i].spr = NULL;
 	}
@@ -1638,9 +1639,6 @@ inline void FaceGoodguy(Guy *me, Guy *goodguy)
 	}
 }
 
-#ifndef __GNUC__
-inline // Mingw complains about an undefinied reference to this from guy.cpp
-#endif
 int RangeToTarget(Guy *me, Guy *goodguy)
 {
 	return abs(me->x - goodguy->x) + abs(me->y - goodguy->y);
@@ -7209,6 +7207,6 @@ void AI_Santa(Guy *me, Map *map, world_t *world, Guy *goodguy)
 }
 
 #ifdef EXPANDO
-#include "monster2.inc"
-#include "monster3.inc"
+#include "monster2.inl"
+#include "monster3.inl"
 #endif

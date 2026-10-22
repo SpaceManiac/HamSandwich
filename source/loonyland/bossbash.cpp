@@ -277,7 +277,7 @@ TASK(byte) BossMenu(MGLDraw *mgl)
 	byte done=0;
 	int lastTime;
 
-	DBG("InitBossMenu");
+	LogVerbose("InitBossMenu");
 	InitBossMenu();
 
 	lastTime=1;
@@ -300,7 +300,7 @@ TASK(byte) BossMenu(MGLDraw *mgl)
 		EndClock();
 	}
 
-	DBG("ExitBossMenu");
+	LogVerbose("ExitBossMenu");
 	ExitBossMenu();
 
 	if(victim==255)
@@ -318,7 +318,7 @@ void UpdateBash(void)
 {
 	if(!AnyMonsterExists())
 	{
-		DBG("SendWinLevel");
+		LogVerbose("SendWinLevel");
 		player.numSaves=parTime[player.levelNum-1];
 		SendMessageToGame(MSG_WINLEVEL,0);
 	}

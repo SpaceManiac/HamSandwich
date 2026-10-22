@@ -1,27 +1,28 @@
 #include "ioext.h"
 #include <streambuf>
+#include <SDL3/SDL_iostream.h>
 
-const int BUFSZ = 8192;
+constexpr int BUFSZ = 8192;
 
-class FilePtrBuf : public std::streambuf
+class SdlRwBuf : public std::streambuf
 {
 public:
-	explicit FilePtrBuf(FILE* f) : f(f) {}
-	~FilePtrBuf() {
-		// Because we buffer, when we revert control to the FILE*,
+	explicit SdlRwBuf(SDL_IOStream* f) : f(f) {}
+	~SdlRwBuf() {
+		// Because we buffer, when we revert control to the SDL_IOStream*,
 		// we must seek backwards by the amount we haven't read.
-		fseek(f, gptr() - egptr(), SEEK_CUR);
+		SDL_SeekIO(f, gptr() - egptr(), SDL_IO_SEEK_CUR);
 	}
 
 private:
-	FILE* f;
+	SDL_IOStream* f;
 	char buf[BUFSZ];
 
 	int_type underflow() override
 	{
 		if (gptr() == egptr() && f)
 		{
-			size_t size = fread(buf, 1, BUFSZ, f);
+			size_t size = SDL_ReadIO(f, buf, BUFSZ);
 			setg(buf, buf, buf + size);
 		}
 		return gptr() == egptr()
@@ -31,39 +32,47 @@ private:
 
 	int_type overflow(int_type ch) override
 	{
-		int i = fputc(ch, f);
-		if (i == EOF)
-			return traits_type::eof();
-		return traits_type::to_int_type(i);
+		if (traits_type::eq_int_type(ch, traits_type::eof()))
+		{
+			return 0;
+		}
+		else
+		{
+			unsigned char ch2 = ch;
+			if (SDL_WriteIO(f, &ch2, 1) < 1)
+				return traits_type::eof();
+			return ch2;
+		}
 	}
 
 	std::streamsize xsputn(const char_type* s, std::streamsize n) override
 	{
-		return fwrite(s, 1, n, f);
+		return SDL_WriteIO(f, s, n);
 	}
 
 	int sync() override
 	{
-		return fflush(f) ? -1 : 0;
+		// https://github.com/libsdl-org/SDL/issues/3121
+		//return SDL_RWflush(f) ? -1 : 0;
+		return 0;
 	}
 
 	pos_type seekoff(off_type off, std::ios_base::seekdir dir, std::ios_base::openmode) override
 	{
-		int seek = SEEK_SET;
+		SDL_IOWhence seek = SDL_IO_SEEK_SET;
 		switch (dir)
 		{
-			case std::ios_base::beg: seek = SEEK_SET; break;
-			case std::ios_base::end: seek = SEEK_END; break;
-			case std::ios_base::cur: seek = SEEK_CUR; break;
+			case std::ios_base::beg: seek = SDL_IO_SEEK_SET; break;
+			case std::ios_base::end: seek = SDL_IO_SEEK_END; break;
+			case std::ios_base::cur: seek = SDL_IO_SEEK_CUR; break;
 			default: break;
 		}
-		fseek(f, off, seek);
-		return ftell(f);
+		return SDL_SeekIO(f, off, seek);
 	}
 };
 
-FilePtrStream::FilePtrStream(FILE* f)
-	: std::iostream(new FilePtrBuf(f))
+SdlRwStream::SdlRwStream(SDL_IOStream* f)
+	: std::iostream(new SdlRwBuf(f))
 	, sb(rdbuf())
 {
 	if (!f)

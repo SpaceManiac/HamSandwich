@@ -3,7 +3,7 @@
 #include "progress.h"
 #include "config.h"
 #include "editor.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 
 char curSongName[64];
 byte lastSong=255;
@@ -77,7 +77,7 @@ void PlaySong(const char *fname)
 	if(!config.music)
 		return;
 
-	if(!strcmp(curSongName, fname) && fname[0])
+	if(!strcmp(curSongName, fname) && fname[0] && IsSongPlaying())
 		return; // no need!
 
 	if((profile.musicMode&MUSIC_LISTBITS)!=MUSIC_OFFICIAL && !editing)
@@ -101,7 +101,8 @@ void PlaySongForce(const char *fname)
 	if(!config.music)
 		return;
 
-	strcpy(curSongName,fname);
+	if (curSongName != fname)
+		strcpy(curSongName,fname);
 	sprintf(fullname,"music/%s",fname);
 	PlaySongFile(fullname);
 }
@@ -109,11 +110,6 @@ void PlaySongForce(const char *fname)
 const char *CurSongTitle(void)
 {
 	return curSongName;
-}
-
-bool ConfigMusicEnabled()
-{
-	return config.music;
 }
 
 void PlayNextSong(void)

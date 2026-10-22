@@ -1,0 +1,139 @@
+{
+	"version": 3,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 19
+	},
+	"configurePresets": [
+		{
+			"name": "base",
+			"hidden": true,
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build/cmake-${presetName}$env{VisualStudioVersion}$env{MSYSTEM}",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug"
+			}
+		},
+		{
+			"name": "i686-base",
+			"hidden": true,
+			"inherits": "base",
+			"architecture": {
+				"value": "x86",
+				"strategy": "external"
+			},
+			"toolset": {
+				"value": "host=x86",
+				"strategy": "external"
+			}
+		},
+		{
+			"name": "windows-i686-debug",
+			"inherits": "i686-base",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "windows-i686-release",
+			"inherits": "windows-i686-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "windows-x86_64-debug",
+			"inherits": "base",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Windows"
+					]
+				}
+			}
+		},
+		{
+			"name": "windows-x86_64-release",
+			"inherits": "windows-x86_64-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "linux-x86_64-debug",
+			"inherits": "base",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "linux-x86_64-release",
+			"inherits": "linux-x86_64-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "macos-x86_64-debug",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_MAKE_PROGRAM": "${sourceDir}/tools/bootstrap/ninja"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"macOS"
+					]
+				}
+			}
+		},
+		{
+			"name": "macos-x86_64-release",
+			"inherits": "macos-x86_64-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "RelWithDebInfo"
+			}
+		},
+		{
+			"name": "emscripten-wasm32-debug",
+			"inherits": "i686-base",
+			"toolchainFile": "external/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		},
+		{
+			"name": "emscripten-wasm32-release",
+			"inherits": "emscripten-wasm32-debug",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
+		},
+		{
+			"name": "iwyu",
+			"inherits": "base",
+			"cacheVariables": {
+				"CMAKE_CXX_INCLUDE_WHAT_YOU_USE": "include-what-you-use"
+			},
+			"vendor": {
+				"microsoft.com/VisualStudioSettings/CMake/1.0": {
+					"hostOS": [
+						"Linux"
+					]
+				}
+			}
+		}
+	]
+}

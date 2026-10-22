@@ -83,7 +83,7 @@ void PowerupSpell(byte spl,byte amt)
 		NewBigMessage(s,60);
 		n=0;
 		for(i=0;i<8;i++)
-			if(SpellLevel(i)==9)
+			if(SpellLevel(i)>=8) // >=8 here actually means 9 or above for the badge. 9 = level 10 does exist.
 				n++;
 		if(n==8)
 			EarnBadge(BADGE_WITCHCRAFT);

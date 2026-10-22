@@ -4,6 +4,7 @@
 #include "progress.h"
 #include "game.h"
 #include "goal.h"
+#include "steam.h"
 
 #define RACE_MAPWIDTH	(32)
 #define RACE_MAPHEIGHT	(32)
@@ -13,7 +14,7 @@
 
 #define RACER_Y	(460*FIXAMT)
 
-typedef struct racer_t
+struct racer_t
 {
 	int x,y;
 	int dx,dy;
@@ -23,7 +24,7 @@ typedef struct racer_t
 
 	byte level;
 	dword distDone;
-} racer_t;
+};
 
 static int roadX[RACE_MAPHEIGHT],roadX2[RACE_MAPHEIGHT];
 static int roadY;
@@ -92,6 +93,8 @@ byte RaceDie(void)
 		coinsEarned=score/1000;
 		profile.progress.totalCoins+=coinsEarned;
 		MakeNormalSound(SND_BOMBBOOM);
+
+		Steam()->UploadArcadeScore("arcade/cave_zoomer", score);
 		return 1;
 	}
 	racer.speed=minSpeed;
@@ -129,7 +132,7 @@ void RenderRacer(MGLDraw *mgl)
 void RenderRaceGame(MGLDraw *mgl)
 {
 	int spd;
-	char s[32];
+	char s[64];
 
 	mgl->ClearScreen();
 

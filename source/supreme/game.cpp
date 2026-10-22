@@ -15,6 +15,8 @@
 #include "log.h"
 #include "palettes.h"
 #include "appdata.h"
+#include "winpch.h"
+#include "steam.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -44,7 +46,7 @@ byte msgContent;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-static byte idleGame=0,pictureNoKey;
+static byte pictureNoKey;
 
 void LunaticInit(MGLDraw *mgl)
 {
@@ -85,36 +87,33 @@ void LunaticExit(void)
 	StopSong();
 }
 
-byte VerifyLevel(Map *map)
+bool VerifyLevel(Map *map)
 {
 	dword chk,cmp;
-	FILE *f;
 
 	chk=ChecksumMap(map);
 
 	debugVerified = 0;
-	f=AssetOpen("worlds/levels.dat","rb");
+	auto f = AppdataOpen("worlds/levels.dat");
 	if(!f)
-		return 0;
+		return false;
 
 	dword index = 0;
-	while(fread(&cmp,sizeof(dword),1,f))
+	while(SDL_ReadIO(f,&cmp,sizeof(dword)))
 	{
 		++index;
 		if(cmp==chk)
 		{
-			fclose(f);
 			debugVerified = index;
-			return 1;
+			return true;
 		}
 	}
-	fclose(f);
-	return 0;
+	return false;
 }
 
 byte InitLevel(byte map)
 {
-	PrintToLog("InitLevel",map);
+	LogVerbose("InitLevel : %d", map);
 
 	JamulSoundPurge();	// each level, that should be good
 
@@ -125,11 +124,8 @@ byte InitLevel(byte map)
 	curMap=new Map(curWorld.map[map]);
 
 	verified=VerifyLevel(curMap);
-#ifdef _DEBUG
-	verified=true;
-#endif
 
-	PrintToLog(curMap->name,0);
+	LogVerbose("%s", curMap->name);
 
 	gameStartTime=timeGetTime();
 	tickerTime=timeGetTime();
@@ -181,7 +177,7 @@ byte InitLevel(byte map)
 
 void ExitLevel(void)
 {
-	PrintToLog("ExitLevel",0);
+	LogVerbose("ExitLevel");
 
 	// exit everything
 	ExitPauseMenu();
@@ -201,36 +197,18 @@ void ExitLevel(void)
 		ExitGallery();
 }
 
-void SetGameIdle(bool b)
-{
-	idleGame = b;
-	if (b)
-		PauseGame();
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-void GameIdle(void)
-{
-	dword start,end;
-
-	start=timeGetTime();
-	while(idleGame)
-	{
-		if(!gamemgl->Process())
-			break;
-	}
-	end=timeGetTime();
-	player.boredom=0;
-	return;
-}
-
 void RestoreGameplayGfx(void)
 {
+	gamemgl->ResizeBuffer(SCRWID, SCRHEI);
+	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
+	{
+		gamemgl->ClearScreen();
+		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
+		gamemgl->BufferFlip();
+	}
+	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
+		gamemgl->ClearScreen();
+
 	if(curMap)
 	{
 		if(curMap->flags&MAP_UNDERWATER)
@@ -238,15 +216,6 @@ void RestoreGameplayGfx(void)
 		else if(curMap->flags&MAP_LAVA)
 			LavaPalette(gamemgl);
 	}
-
-	if(profile.progress.purchase[modeShopNum[MODE_TEENY]]&SIF_ACTIVE)
-	{
-		gamemgl->ClearScreen();
-		GetDisplayMGL()->LoadBMP("graphics/gamepal.bmp");
-		//gamemgl->Flip();  // TODO: is this needed?
-	}
-	if(profile.progress.purchase[modeShopNum[MODE_RASTER]]&SIF_ACTIVE)
-		gamemgl->ClearScreen();
 }
 
 void EnterPictureDisplay(void)
@@ -343,13 +312,18 @@ TASK(byte) LunaticRun(int *lastTime)
 				windingDown--;
 				if(!windingDown)
 				{
-					PrintToLog("Wound Down",0);
+					LogVerbose("Wound Down");
 					CO_RETURN windDownReason;
 				}
 			}
 		}
 		else if(gameMode==GAMEMODE_MENU)
 		{
+			// With the addition of the Advanced HUD, it's confusing to not see
+			// it slide in when you select the option, so now let the HUD
+			// animate even when the game is paused.
+			UpdateInterface(curMap);
+
 			switch(UpdatePauseMenu(gamemgl))
 			{
 				case PAUSE_PAUSED:
@@ -357,6 +331,8 @@ TASK(byte) LunaticRun(int *lastTime)
 				case PAUSE_CONTINUE:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						Steam()->StartPlaytimeTracking(nullptr);
 					break;
 				case PAUSE_GIVEUP:
 					SetPlayerStart(-1,-1);
@@ -366,6 +342,8 @@ TASK(byte) LunaticRun(int *lastTime)
 						mapToGoTo=255;
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_WORLDSEL:
@@ -378,6 +356,8 @@ TASK(byte) LunaticRun(int *lastTime)
 					mapToGoTo=player.levelNum;	// repeat this level
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					if (!shopping && !editing)
+						Steam()->StartPlaytimeTracking(nullptr);
 					CO_RETURN LEVEL_ABORT;
 					break;
 				case PAUSE_EXIT:
@@ -451,9 +431,9 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else if(msgFromOtherModules==MSG_WINLEVEL)
 		{
-			PrintToLog("Level Win!",0);
+			LogVerbose("Level Win!");
 			GoalTimeDist();
-			PrintToLog("GoalTimeDist Done",0);
+			LogVerbose("GoalTimeDist Done");
 			mapToGoTo=msgContent;
 			windingDown=40;
 			windDownReason=LEVEL_WIN;
@@ -545,8 +525,8 @@ TASK(void) LunaticDraw(void)
 			PrintGlow(120,90,s,8,2);
 
 			int n = 0;
-			for(int i=0; i<MAX_SPECIAL; i++)
-				if(curMap->special[i].x!=255)
+			for (const special_t &special : curMap->special)
+				if(special.x!=255)
 					++n;
 
 			sprintf(s,"Fx %d", CountParticles());
@@ -570,7 +550,7 @@ TASK(void) LunaticDraw(void)
 			PrintGlow(5,150,s,8,2);
 
 			int KEY_MAX = 0;
-			const byte* key = SDL_GetKeyboardState(&KEY_MAX);
+			const bool* key = SDL_GetKeyboardState(&KEY_MAX);
 			char* end = s + sprintf(s,"Keys: ");
 			for (int i = 0; i < KEY_MAX; ++i)
 				if (key[i])
@@ -582,6 +562,19 @@ TASK(void) LunaticDraw(void)
 				if (gamemgl->mouse_b & (1<<i))
 					end += sprintf(end, "%d ", i);
 			PrintGlow(5,190,s,8,2);
+
+#ifndef NDEBUG
+			for(int i=0;i<8;i++)
+			{
+				sprintf(s,"V%d: %d",i,player.var[i]);
+				Print(5,220+i*16,s,0,1);
+			}
+			for(int i=0;i<8;i++)
+			{
+				sprintf(s,"G%d: %d",i,player.worldProg->var[i]);
+				Print(5,220+(i+8)*16,s,0,1);
+			}
+#endif
 		}
 	}
 	else if(gameMode==GAMEMODE_PIC)
@@ -660,6 +653,7 @@ void PauseGame(void)
 		return;
 	InitPauseMenu();
 	gameMode=GAMEMODE_MENU;
+	Steam()->StopPlaytimeTracking();
 }
 
 TASK(byte) PlayALevel(byte map)
@@ -692,10 +686,10 @@ TASK(byte) PlayALevel(byte map)
 
 		if(gameMode==GAMEMODE_PLAY && wasPaused)
 		{
-			if(!(GetJoyButtons()&4))
+			if(!(GetGamepadButtons()&(1<<SDL_GAMEPAD_BUTTON_START)))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetJoyButtons()&4)) && !wasPaused && gameMode==GAMEMODE_PLAY)
+		if((lastKey==27 || (GetGamepadButtons()&(1<<SDL_GAMEPAD_BUTTON_START)) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY)
 		{
 			wasPaused=1;
 			PauseGame();
@@ -712,10 +706,11 @@ TASK(byte) PlayALevel(byte map)
 	if(exitcode==LEVEL_WIN)
 	{
 		PlayerWinLevel(0);
-		PrintToLog("Tally",0);
+		LogVerbose("Tally");
 		AWAIT Tally(gamemgl,lastLevelName,0);
 	}
 	ExitLevel();
+	gamemgl->ResizeBuffer(SCRWID, SCRHEI);
 	CO_RETURN exitcode;
 }
 
@@ -734,9 +729,25 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	InitPlayer(GetWorldProgress(fname)->levelOn,fname);
 	if(!LoadWorld(&curWorld,fullName))
 		CO_RETURN 1;
+	CalculateItemRenderExtents();
+
+	player.pendingLeaderboardUpload = false;
+	float oldPercentage = player.worldProg->percentage;
+	byte oldKeychains = player.worldProg->keychains;
 
 	StopSong();
 	InitWorld(&curWorld);
+
+	if (!editing)
+	{
+		if (shopping)
+			Steam()->SetPresenceShopping();
+		else
+		{
+			Steam()->SetPresenceWorld(curWorld.map[0]->name);
+			Steam()->StartPlaytimeTracking(fullName);
+		}
+	}
 
 	mapNum=player.levelNum;
 	SetPlayerStart(-1,-1);
@@ -765,6 +776,13 @@ TASK(byte) PlayWorld(MGLDraw *mgl,const char *fname)
 	FreeWorld(&curWorld);
 	if(result==WORLD_SHOP)
 		doShop=1;
+
+	if (!editing && !shopping && (player.pendingLeaderboardUpload || player.worldProg->percentage != oldPercentage || player.worldProg->keychains != oldKeychains))
+	{
+		Steam()->UploadWorldScore();
+	}
+
+	Steam()->SetPresenceNone();
 	if(result==WORLD_QUITGAME || result==WORLD_SHOP)
 		CO_RETURN 0;
 	else
@@ -776,6 +794,7 @@ TASK(void) TestLevel(world_t *world,byte level)
 	byte result;
 
 	editing=2;
+	gamemgl->ResizeBuffer(SCRWID,SCRHEI);
 
 	ExitGuys();
 	ClearTestProgress();
@@ -809,7 +828,9 @@ TASK(void) TestLevel(world_t *world,byte level)
 		else if(result==WORLD_QUITGAME || result==WORLD_ABORT)
 			break;
 	}
-	memset(&curWorld,0,sizeof(world_t));
+	// `curWorld = {};` is more C++ey here, but stack overflows on unoptimized Emscripten builds.
+	// sizeof(world_t) ~= 776560 >> 65536 due to large embedded Tilegfx.
+	memset(&curWorld, 0, sizeof(world_t));
 	InitGuys(256);
 	GetSpecialsFromMap(EditorGetMap()->special);
 	editing=1;

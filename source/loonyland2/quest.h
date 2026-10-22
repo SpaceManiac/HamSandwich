@@ -3,7 +3,6 @@
 
 #include "jamultypes.h"
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define QUEST_WOOD		0	// collect 10 logs for the Woodsman
 #define QUEST_PRESENTS	1	// collect all 99 presents

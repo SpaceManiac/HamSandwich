@@ -1,6 +1,7 @@
 #ifndef GUY_H
 #define GUY_H
 
+#include <memory>
 #include "map.h"
 #include "monster.h"
 #include "jamulspr.h"
@@ -9,7 +10,7 @@
 #define ACTION_IDLE	0
 #define ACTION_BUSY 1
 
-class Guy
+class Guy final
 {
 	public:
 		Guy(void);
@@ -25,7 +26,7 @@ class Guy
 		byte CoconutBonk(int xx,int yy,Guy *him);
 		byte AttackCheck(byte size,int xx,int yy,Guy *him);
 		void AttackThem(void);
-		void GetShot(int dx,int dy,byte damage,Map *map,world_t *world);
+		void GetShot(int dx,int dy,byte damage,Map *map,world_t *world, bool bypassInvincible=false);
 		void CalculateRect(void);
 		byte IsAwake(void);
 
@@ -68,7 +69,7 @@ class Guy
 		char brtChange;
 		char name[32];
 
-		sprite_set_t* customSpr; // custom sprites
+		std::unique_ptr<sprite_set_t> customSpr; // custom sprites
 };
 
 extern Guy *goodguy;
@@ -83,9 +84,9 @@ Guy *AddBaby(int x,int y,int z,int type,Guy *me);
 Guy *GetGuy(word w);
 void DeleteGuy(int x,int y,int type);
 void AddMapGuys(Map *map);
-byte FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
-byte FindVictims(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
-byte FindVictims2(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
+Guy *FindVictim(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
+Guy *FindVictims(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
+Guy *FindVictims2(int x,int y,byte size,int dx,int dy,byte damage,Map *map,world_t *world,byte friendly);
 word LockOnEvil(int x,int y);
 word LockOnEvil2(int x,int y);
 word LockOnGood(int x,int y);
@@ -100,7 +101,6 @@ void GuySwap(int sx,int sy,int width,int height,int dx,int dy);
 void ShiftGuys(char dx,char dy,Map *map);
 void AddPygmy(Map *map,world_t *world,byte friendly);
 void AddNinja(Map *map,world_t *world,byte friendly);
-Guy *GetLastGuyHit(void);
 byte ControlMind(Guy *me);
 void KillMonster(int x,int y,int type,byte nofx);
 void MonsterLife(byte fx,int x,int y,int type,int newLife);
@@ -111,7 +111,7 @@ int CountMonsters(int type);
 int CountMonstersInRect(int type,int x,int y,int x2,int y2);
 Guy *GetGuyOfType(int type);
 void RemoveGuy(Guy *g);
-void Telefrag(Guy *g);
+void Telefrag(Guy *g, bool sphinxException = false);
 byte FreezeGuy(Guy *me);
 byte TryToPushItem(int x,int y,int destx,int desty,Map *map,world_t *world);
 void ChangeMonster(byte fx,int x,int y,int type,int newtype);

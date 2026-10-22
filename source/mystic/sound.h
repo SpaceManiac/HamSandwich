@@ -4,6 +4,8 @@
 #include "jamulsound.h"
 #include "jamultypes.h"
 
+#define MAX_SNDS_PER_FRAME (64)
+
 #define SND_MENUCLICK	0
 #define SND_MENUSELECT  1
 #define SND_PAUSE		2
@@ -71,7 +73,7 @@
 #define SND_SPD3CHOMP	56
 #define SND_SPD3SPEW	57
 // pygmy
-#define SND_PYGMYOUCH	58
+#define SND_SKELREVIVE  58
 #define SND_PYGMYDIE	59
 #define SND_PYGMYYAWN	60
 #define SND_PYGMYSPIN	61
@@ -174,8 +176,8 @@
 #define SND_WACKOSTAB	134
 #define SND_WACKOOUCH	135
 #define SND_WACKODIE	136
-// boiler
-#define SND_BOILERHIT	137
+
+#define SND_DEFLECT		137
 // great pumpkin
 #define SND_GREATPKOUCH	138
 #define SND_GREATPKDIE	139
@@ -191,14 +193,14 @@
 #define SND_SDZLSLASH	147
 #define SND_SDZLPOUND	148
 #define SND_SDZLSPIT	149
-// Santa
-#define SND_SANTAOUCH	150
-#define SND_SANTADIE	151
+
+#define SND_DIAMOND		150
+#define SND_PTEROOUCH	151
 #define SND_SANTAHIT	152
 // splash screen sounds
-#define SND_HAMUMU		153
-#define SND_XGAMES		154
-#define SND_FINAL		155
+#define SND_BIGCOIN		153
+#define SND_STAIRS		154
+#define SND_MONEYBAG	155
 
 #define SND_MONEY		156
 #define SND_ATTACKED	157
@@ -253,10 +255,9 @@
 #define SONG_BEATNIK	 203
 #define SONG_SHOP	     204
 #define SONG_INTRO		 205
-
-#define SONG_CHAP34MAP	 208
-#define SONG_CHAP34LEVEL 207
 #define SONG_CHAP34FIGHT 206
+#define SONG_CHAP34LEVEL 207
+#define SONG_CHAP34MAP	 208
 
 // back to sounds for some reason
 #define SND_OCTONSHOOT	209
@@ -294,6 +295,21 @@
 #define SND_TRIVIA		241
 #define SONG_HAPPYSTICK 242
 
+#define NEWSNG_CHAP12FIGHT 243
+#define NEWSNG_CHAP12LEVEL 244
+#define NEWSNG_CHAP12MAP	 245
+#define NEWSNG_BEATNIK	 246
+#define NEWSNG_SHOP	     247
+#define NEWSNG_INTRO		 248
+#define NEWSNG_CHAP34FIGHT	 249
+#define NEWSNG_CHAP34LEVEL 250
+#define NEWSNG_CHAP34MAP 251
+#define NEWSNG_BOBBYKHAN 252
+
+#define CLASSIC_SONG_START (SONG_CHAP12FIGHT)
+#define CLASSIC_SONG_END	(SONG_CHAP34MAP)
+#define MODERN_SONG_START	(NEWSNG_CHAP12FIGHT)
+
 // set this when done
 #define MAX_SOUND 100	// the most sounds used
 
@@ -302,11 +318,12 @@ void ExitSound(void);
 void MakeSound(int snd,int x,int y,int flags,int priority);
 void MakeNormalSound(int snd);
 void PlaySong(int sng);
-void StopSong(void);
 void ReplaySong(void);
 void VolumeSong(byte hi);
 void VolumeSound(byte hi);
 int CurrentSong(void);
-void SoundSystemExists(void);
+int CurrentSongAdjusted(void);
+void StopPlayingSong(void);
+void UpdateSounds(void);
 
 #endif

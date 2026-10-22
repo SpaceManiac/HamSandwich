@@ -2,7 +2,7 @@
 #include "mgldraw.h"
 #include "options.h"
 #include "player.h"
-#include "hammusic.h"
+#include "jamulsound.h"
 
 static int trackNum = 0;
 
@@ -47,9 +47,4 @@ void CDStop(void)
 {
 	StopSong();
 	trackNum = 0;
-}
-
-bool ConfigMusicEnabled()
-{
-	return true;
 }

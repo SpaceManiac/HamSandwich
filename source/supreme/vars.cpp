@@ -269,7 +269,7 @@ int DoTheMath(int start,byte action,int num)
 			break;
 		case VA_TILE:
 			if(start>=0 && start<curMap->width && num>=0 && num<curMap->height)
-				return curMap->map[start+num*curMap->width].floor;
+				return curMap->GetTile(start, num)->floor;
 			else
 				return 0;
 			break;
@@ -300,6 +300,7 @@ byte VarMath(byte finalV,char *func)
 	{
 		if(tmp[pos]>='0' && tmp[pos]<='9' && !operatorOk)	// numbers
 		{
+			j=pos;
 			for(i=pos;i<32;i++)
 				if(tmp[i]<'0' || tmp[i]>'9')	// find where the number ends
 				{
@@ -317,6 +318,7 @@ byte VarMath(byte finalV,char *func)
 		}
 		else if(tmp[pos]=='-' && !operatorOk)
 		{
+			j=pos;
 			for(i=pos+1;i<32;i++)
 				if(tmp[i]<'0' || tmp[i]>'9')	// find where the number ends
 				{

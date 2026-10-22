@@ -19,15 +19,15 @@ SelectTool::~SelectTool(void)
 
 void SelectTool::Update(int msx,int msy)
 {
-	int i;
+	MGLDraw* mgl = GetDisplayMGL();
 	Map *m;
 
 	if(doing==1 || doing==2)
 	{
 		// copying or swapping
-		if(GetDisplayMGL()->MouseTap())
+		if(mgl->MouseTap())
 		{
-			if(PointInRect(msx,msy,576,460,576+60,460+15))
+			if(PointInRect(msx, msy, mgl->GetWidth()-64, mgl->GetHeight()-20, mgl->GetWidth()-64+60, mgl->GetHeight()-20+15))
 			{
 				// cancel
 				doing=0;
@@ -36,36 +36,36 @@ void SelectTool::Update(int msx,int msy)
 		return;
 	}
 
-	if(msx<380 || msy<400 || msx>639 || msy>479)
+	if(msx<mgl->GetWidth()-260 || msy<mgl->GetHeight()-80 || msx>=mgl->GetWidth() || msy>=mgl->GetHeight())
 		return;
 
-	if(GetDisplayMGL()->MouseTap())
+	if(mgl->MouseTap())
 	{
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush++;
 			if(brush>13)
 				brush=0;
 		}
-		if(PointInRect(msx,msy,382,462,382+30,462+15))
+		if(PointInRect(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, mgl->GetWidth()-258+30, mgl->GetHeight()-18+15))
 		{
 			plopMode++;
 			if(plopMode>SELPLOP_OFF)
 				plopMode=0;
 		}
-		if(PointInRect(msx,msy,475,462,475+40,462+15))
+		if(PointInRect(msx,msy, mgl->GetWidth()-165, mgl->GetHeight()-18, mgl->GetWidth()-165+40, mgl->GetHeight()-18+15))
 		{
 			EditorSetSelectMode(1-EditorGetSelectMode());
 		}
-		if(PointInRect(msx,msy,496,403,496+140,403+15))
+		if(PointInRect(msx, msy, mgl->GetWidth()-144, mgl->GetHeight()-77, mgl->GetWidth()-144+140, mgl->GetHeight()-77+15))
 		{
 			m=EditorGetMap();
 
-			for(i=0;i<m->width*m->height;i++)
-				m->map[i].select=clearMode;
+			for (mapTile_t &target : m->Tiles())
+				target.select = clearMode;
 			clearMode=1-clearMode;
 		}
-		if(PointInRect(msx,msy,496,422,496+140,422+15))
+		if(PointInRect(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-58,mgl->GetWidth()-144+140,mgl->GetHeight()-58+15))
 		{
 			// copy selection
 			if(!CalcSource())
@@ -76,7 +76,7 @@ void SelectTool::Update(int msx,int msy)
 			else
 				doing=1;
 		}
-		if(PointInRect(msx,msy,496,441,496+140,441+15))
+		if(PointInRect(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-39,mgl->GetWidth()-144+140,mgl->GetHeight()-39+15))
 		{
 			// swap selection
 			if(!CalcSource())
@@ -87,30 +87,27 @@ void SelectTool::Update(int msx,int msy)
 			else
 				doing=2;
 		}
-		if(PointInRect(msx,msy,576,460,576+60,460+15))
+		if(PointInRect(msx,msy,mgl->GetWidth()-64,mgl->GetHeight()-20,mgl->GetWidth()-64+60,mgl->GetHeight()-20+15))
 		{
 			// invert selection
 			m=EditorGetMap();
 
-			for(i=0;i<m->width*m->height;i++)
-				m->map[i].select=1-m->map[i].select;
+			for (mapTile_t &target : m->Tiles())
+				target.select = !target.select;
 
-			for(i=0;i<m->width*m->height;i++)
-				if(m->map[i].select)
+			clearMode=1;
+			for (const mapTile_t &target : m->Tiles())
+				if(target.select)
 				{
 					clearMode=0;
-					i=0;
 					break;
 				}
-			if(i==m->width*m->height)
-				clearMode=1;
 		}
-
 	}
 
-	if(GetDisplayMGL()->RMouseTap())
+	if(mgl->RMouseTap())
 	{
-		if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
+		if(PointInRect(msx, msy, mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
 		{
 			brush--;
 			if(brush>13)
@@ -121,50 +118,54 @@ void SelectTool::Update(int msx,int msy)
 
 void SelectTool::Render(int msx,int msy)
 {
+	MGLDraw* mgl = GetDisplayMGL();
 	int minusBrush,plusBrush;
-	char plopText[][12]={"Toggle","Select","Unselect"};
-	char showText[][12]={"Outline","Mask"};
-	char clearText[][12]={"Select None","Select All"};
+	static const char plopText[][12]={"Toggle","Select","Unselect"};
+	static const char showText[][12]={"Outline","Mask"};
+	static const char clearText[][12]={"Select None","Select All"};
 
 	if(doing==1)
-		Print(390,410,"Click where you want to copy to!",0,1);
+		Print(mgl->GetWidth()-250, mgl->GetHeight()-70, "Click where you want to copy to!", 0, 1);
 	if(doing==2)
-		Print(390,410,"Click where you want to swap with!",0,1);
+		Print(mgl->GetWidth()-250, mgl->GetHeight()-70, "Click where you want to swap with!", 0, 1);
 	if(doing!=0)
 	{
-		RenderButtonImage(msx,msy,576,460,60,15,"Cancel");
+		RenderButtonImage(msx, msy, mgl->GetWidth()-64, mgl->GetHeight()-20, 60, 15, "Cancel");
 		return;
 	}
+
+	// display mode
+	RenderButtonImage(msx, msy, mgl->GetWidth()-165, mgl->GetHeight()-18,40,15,"Show");
+	Print(mgl->GetWidth()-121, mgl->GetHeight()-16, showText[EditorGetSelectMode()], 0, 1);
+
+	// clear all button
+	RenderButtonImage(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-77,140,15,clearText[clearMode]);
+	// copy button
+	RenderButtonImage(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-58,140,15,"Copy Selection");
+	// swap button
+	RenderButtonImage(msx,msy,mgl->GetWidth()-144,mgl->GetHeight()-39,140,15,"Swap Selection");
+	// invert button
+	RenderButtonImage(msx,msy,mgl->GetWidth()-64,mgl->GetHeight()-20,60,15,"Invert");
+
+	// plop mode
+	RenderButtonImage(msx, msy, mgl->GetWidth()-258, mgl->GetHeight()-18, 30, 15, "Plop");
+	Print(mgl->GetWidth()-224, mgl->GetHeight()-16, plopText[plopMode], 0, 1);
 
 	// brush size
 	minusBrush=brush;
 	plusBrush=brush+1;
 
-	// plop mode
-	RenderButtonImage(msx,msy,382,462,30,15,"Plop");
-	Print(416,464,plopText[plopMode],0,1);
-
-	// display mode
-	RenderButtonImage(msx,msy,475,462,40,15,"Show");
-	Print(519,464,showText[EditorGetSelectMode()],0,1);
-
-	// clear all button
-	RenderButtonImage(msx,msy,496,403,140,15,clearText[clearMode]);
-	// copy button
-	RenderButtonImage(msx,msy,496,422,140,15,"Copy Selection");
-	// swap button
-	RenderButtonImage(msx,msy,496,441,140,15,"Swap Selection");
-	// invert button
-	RenderButtonImage(msx,msy,576,460,60,15,"Invert");
-
-	if(PointInRect(msx,msy,397-15,442-15,397+16,442+16))
-		DrawFillBox(397-15,442-15,397+16,442+16,8+32*1);
-	DrawBox(397-15,442-15,397+16,442+16,31);
-	DrawFillBox(397-(minusBrush),
-				442-(minusBrush),
-				397+(plusBrush),
-				442+(plusBrush),24);
-	Print(397-15,442-26,"Brush",0,1);
+	if(PointInRect(msx,msy,mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16))
+		DrawFillBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 8+32*1);
+	DrawBox(mgl->GetWidth()-243-15, mgl->GetHeight()-38-15, mgl->GetWidth()-243+16, mgl->GetHeight()-38+16, 31);
+	DrawFillBox(
+		mgl->GetWidth()-243-(minusBrush),
+		mgl->GetHeight()-38-(minusBrush),
+		mgl->GetWidth()-243+(plusBrush),
+		mgl->GetHeight()-38+(plusBrush),
+		24
+	);
+	Print(mgl->GetWidth()-243-15, mgl->GetHeight()-38-26, "Brush", 0, 1);
 }
 
 void SelectTool::SetInk(void)
@@ -173,12 +174,10 @@ void SelectTool::SetInk(void)
 
 void SelectTool::StartPlop(void)
 {
-	int x,y;
-	Map *m;
+	auto [x, y] = EditorGetTileXY();
 
 	if(doing==1)
 	{
-		EditorGetTileXY(&x,&y);
 		lastX=x;
 		lastY=y;
 		doing=0;
@@ -190,7 +189,6 @@ void SelectTool::StartPlop(void)
 	}
 	if(doing==2)
 	{
-		EditorGetTileXY(&x,&y);
 		lastX=x;
 		lastY=y;
 		doing=0;
@@ -201,14 +199,13 @@ void SelectTool::StartPlop(void)
 		return;
 	}
 
-	m=EditorGetMap();
 	lastX=-1;
 	lastY=-1;
 
-	EditorGetTileXY(&x,&y);
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	Map *m = EditorGetMap();
+	if (mapTile_t *tile = m->TryGetTile(x, y))
 	{
-		if(m->map[x+y*m->width].select)
+		if(tile->select)
 			toggleType=0;
 		else
 			toggleType=1;
@@ -221,89 +218,75 @@ void SelectTool::StartPlop(void)
 
 void SelectTool::PlopOne(int x,int y)
 {
-	Map *m;
-
-	m=EditorGetMap();
-
-	if(x>=0 && y>=0 && x<m->width && y<m->height)
+	Map *m = EditorGetMap();
+	if (mapTile_t *tile = m->GetTile(x, y))
 	{
 		if(plopMode==SELPLOP_ON)
-			m->map[x+y*m->width].select=1;
+			tile->select=1;
 		else if(plopMode==SELPLOP_OFF)
-			m->map[x+y*m->width].select=0;
-		if(plopMode==SELPLOP_TOGGLE)
+			tile->select=0;
+		else if(plopMode==SELPLOP_TOGGLE)
 		{
 			if(toggleType)
-				m->map[x+y*m->width].select=1;
+				tile->select=1;
 			else
-				m->map[x+y*m->width].select=0;
+				tile->select=0;
 		}
 	}
 }
 
 void SelectTool::Plop(void)
 {
-	Map *m;
-	int x,y;
-	int i,j,minusBrush,plusBrush;
-
-	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
+	auto [x, y] = EditorGetTileXY();
+	Map *m = EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
+		for(int j=y-minusBrush;j<=y+plusBrush;j++)
+			for(int i=x-minusBrush;i<=x+plusBrush;i++)
 				PlopOne(i,j);
 
 		MakeNormalSound(SND_MENUCLICK);
 		lastX=x;
 		lastY=y;
 
-		for(i=0;i<m->width*m->height;i++)
-			if(m->map[i].select)
+		clearMode = 1;
+		for (const mapTile_t &tile : m->Tiles())
+			if (tile.select)
 			{
-				clearMode=0;
-				i=0;
+				clearMode = 0;
 				break;
 			}
-		if(i==m->width*m->height)
-			clearMode=1;
 	}
 }
 
 void SelectTool::ShowTarget(void)
 {
-	int x1,x2,y1,y2,cx,cy;
 	static byte col=0;
-	int tileX,tileY;
-	int tileX2,tileY2,minusBrush,plusBrush;
-
 	col=255-col;
 
 	if(doing==0)
 	{
 		// render a normal brush
-		GetCamera(&cx,&cy);
+		auto [cx, cy] = GetCamera();
+		auto [tileX, tileY] = EditorGetTileXY();
 
-		EditorGetTileXY(&tileX,&tileY);
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
 
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-
-		tileX2=tileX+plusBrush;
-		tileY2=tileY+plusBrush;
+		int tileX2=tileX+plusBrush;
+		int tileY2=tileY+plusBrush;
 
 		tileX-=minusBrush;
 		tileY-=minusBrush;
 
-		x1=tileX*TILE_WIDTH-(cx-320);
-		y1=tileY*TILE_HEIGHT-(cy-240);
+		int x1=tileX*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2);
+		int y1=tileY*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2);
 
-		x2=tileX2*TILE_WIDTH-(cx-320)+TILE_WIDTH-1;
-		y2=tileY2*TILE_HEIGHT-(cy-240)+TILE_HEIGHT-1;
+		int x2=tileX2*TILE_WIDTH-(cx-GetDisplayMGL()->GetWidth()/2)+TILE_WIDTH-1;
+		int y2=tileY2*TILE_HEIGHT-(cy-GetDisplayMGL()->GetHeight()/2)+TILE_HEIGHT-1;
 
 		DrawBox(x1,y1,x2,y1,col);
 		DrawBox(x1,y2,x2,y2,col);
@@ -347,22 +330,16 @@ byte SelectTool::CalcSource(void)
 
 void SelectTool::RenderCopyTarget(byte color)
 {
-	int i,j;
-
 	int tileX,tileY;
-	int tileModX,tileModY;
 	int ofsX,ofsY;
 	int scrX,scrY;
-	int camX,camY;
-	mapTile_t *m;
-	Map *map;
 
-	map=EditorGetMap();
-	GetCamera(&camX,&camY);
-	camX-=320;
-	camY-=240;
+	Map *map = EditorGetMap();
+	auto [camX, camY] = GetCamera();
+	camX-=GetDisplayMGL()->GetWidth()/2;
+	camY-=GetDisplayMGL()->GetHeight()/2;
 
-	EditorGetTileXY(&tileModX,&tileModY);
+	auto [tileModX, tileModY] = EditorGetTileXY();
 	tileX=(camX/TILE_WIDTH)-1;
 	tileY=(camY/TILE_HEIGHT)-1;
 	ofsX=camX%TILE_WIDTH;
@@ -375,15 +352,13 @@ void SelectTool::RenderCopyTarget(byte color)
 
 	tileX+=tileModX;
 	tileY+=tileModY;
-	for(i=tileX;i<tileX+(640/TILE_WIDTH+4);i++)
+	for(int i=tileX;i<tileX+(GetDisplayMGL()->GetWidth()/TILE_WIDTH+4);i++)
 	{
 		scrY=-ofsY-TILE_HEIGHT;
-		for(j=tileY;j<tileY+(480/TILE_HEIGHT+6);j++)
+		for(int j=tileY;j<tileY+(GetDisplayMGL()->GetHeight()/TILE_HEIGHT+6);j++)
 		{
-			if(i>=0 && i<map->width && j>=0 && j<map->height)
+			if (mapTile_t *m = map->TryGetTile(i, j))
 			{
-				m=&map->map[i+j*map->width];
-
 				if(m->select)
 				{
 					if(i==0 || !map->map[i-1+j*map->width].select)
@@ -632,23 +607,19 @@ void SelectTool::StartErase(void)
 
 void SelectTool::Erase(void)
 {
-	Map *m;
-	int x,y;
-	int i,j,minusBrush,plusBrush;
-
-	EditorGetTileXY(&x,&y);
-	m=EditorGetMap();
+	auto [x, y] = EditorGetTileXY();
+	Map *m = EditorGetMap();
 
 	if(x!=lastX || y!=lastY)
 	{
-		minusBrush=brush/2;
-		plusBrush=(brush+1)/2;
-		for(j=y-minusBrush;j<=y+plusBrush;j++)
-			for(i=x-minusBrush;i<=x+plusBrush;i++)
+		int minusBrush=brush/2;
+		int plusBrush=(brush+1)/2;
+		for(int j=y-minusBrush;j<=y+plusBrush;j++)
+			for(int i=x-minusBrush;i<=x+plusBrush;i++)
 			{
-				if(i>=0 && j>=0 && i<m->width && j<m->height && m->map[i+j*m->width].select)
+				if (mapTile_t *target = m->TryGetTile(i, j); target && target->select)
 				{
-					m->map[i+j*m->width].select=0;
+					target->select = 0;
 				}
 			}
 

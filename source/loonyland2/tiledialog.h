@@ -3,7 +3,6 @@
 
 #include "winpch.h"
 #include "display.h"
-#pragma pack(1)
 
 void InitTileDialog(void);
 void ExitTileDialog(void);

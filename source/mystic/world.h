@@ -5,7 +5,7 @@
 #include "map.h"
 #include "tile.h"
 
-#define MAX_MAPS	24
+#define MAX_MAPS	30
 
 // terrain flags
 #define TF_SOLID	1
@@ -19,6 +19,8 @@
 #define TF_STEP		256
 #define TF_DESTRUCT 512
 #define TF_TRANS    1024
+#define TF_COMBOSTEP 2048 // same as step, but it acts as though you stepped on all 4 of its immediate neighbors too. Only player can trigger it though
+#define TF_NOENEMY	4096
 
 typedef struct terrain_t
 {
@@ -33,14 +35,12 @@ typedef struct world_t
 	terrain_t terrain[200];
 } world_t;
 
-void WorldLoadBMP(char *name,byte *dst);
-
 byte NewWorld(world_t *world,MGLDraw *mgl);
-byte LoadWorld(world_t *world,char *fname);
-byte SaveWorld(world_t *world,char *fname);
+byte LoadWorld(world_t *world,const char *fname);
+byte SaveWorld(world_t *world,const char *fname);
 void FreeWorld(world_t *world);
 
 void InitWorld(world_t *world,byte worldNum);
-void GetWorldName(char *fname,char *buf);
+void GetWorldName(const char *fname,char *buf);
 
 #endif

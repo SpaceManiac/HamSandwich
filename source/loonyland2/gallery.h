@@ -3,7 +3,6 @@
 
 #include "jamultypes.h"
 #include "mgldraw.h"
-#pragma pack(1)
 
 #define GALLERY_PIX	(12)
 

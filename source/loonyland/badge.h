@@ -5,6 +5,8 @@
 #include "game.h"
 #include "map.h"
 
+enum PlayerCharacterType : int;
+
 #define BADGE_EVILIZER	0
 #define BADGE_BOWLING	1
 #define BADGE_GRAVES	2
@@ -78,5 +80,7 @@ void BadgeCheck(byte event,int value,Map *map);
 TASK(void) ShowBadge(byte b);
 TASK(void) ShowGameMode(byte mode,byte numBadges);
 void EarnBadge(byte b);
+
+auto GetCharacterDescription(PlayerCharacterType character) -> const char(*)[55];
 
 #endif

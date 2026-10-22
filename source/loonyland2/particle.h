@@ -4,7 +4,6 @@
 #include "map.h"
 #include "jamultypes.h"
 #include "display.h"
-#pragma pack(1)
 
 #define PART_NONE  0
 #define PART_SNOW2 1	// speedy snow particles, just like hammer particles but white

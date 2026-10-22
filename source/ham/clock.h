@@ -8,12 +8,12 @@
 #include <windows.h>
 #include <mmsystem.h>
 #else  // _WIN32
-dword timeGetTime();
+HAM_API dword timeGetTime();
 #endif  // _WIN32
 
-void StartClock(void);
-void EndClock(void);
-dword TimeLength(void);
-void ResetClock(dword amt);
+HAM_API void StartClock(void);
+HAM_API void EndClock(void);
+HAM_API dword TimeLength(void);
+HAM_API void ResetClock(dword amt);
 
 #endif

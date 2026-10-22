@@ -4,7 +4,6 @@
 #include "winpch.h"
 #include "display.h"
 #include "world.h"
-#pragma pack(1)
 
 void InitMapDialog(world_t *wrld,byte currentMap);
 void ExitMapDialog(void);

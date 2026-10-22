@@ -5,6 +5,9 @@
 #include "worldstitch.h"
 #include "log.h"
 #include "appdata.h"
+#include "world_io_legacy.h"
+#include "world_io_supreme.h"
+#include "world_io_ham1.h"
 
 byte keyChainInLevel[MAX_MAPS];
 
@@ -16,8 +19,8 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	world->numMaps=1;
 	mgl->LoadBMP("tilegfx/tiles.bmp");
 	world->numTiles=400;
-	SetNumTiles(400);
-	SetTiles(mgl->GetScreen());
+	world->tilegfx.numTiles = world->numTiles;
+	world->tilegfx.SetTiles(mgl->GetScreen(), mgl->GetWidth(), mgl->GetHeight());
 
 	// reset all the terrain
 	memset(world->terrain,0,sizeof(terrain_t)*NUMTILES);
@@ -35,324 +38,88 @@ byte NewWorld(world_t *world,MGLDraw *mgl)
 	return 1;
 }
 
-byte Ham_GetWorldName(const char *fname, char *buffer, char *authbuffer);
-byte Ham_LoadWorld(world_t *world, const char *fname);
-byte Ham_SaveWorld(world_t *world, const char *fname);
-
-byte LoadWorld(world_t *world,const char *fname)
+bool LoadWorld(world_t *world,const char *fname)
 {
-	FILE *f;
-	int i;
 	char code[32];
 
-	f=AssetOpen(fname,"rb");
+	auto f = AppdataOpen(fname);
 	if(!f)
-		return 0;
+		return false;
 
-	fread(code,sizeof(char),8,f);
+	SDL_ReadIO(f, code, 8);
+	SDL_SeekIO(f, 0, SDL_IO_SEEK_SET);
 	code[8]='\0';
 
 	if(!strcmp(code, "HAMSWCH!"))
 	{
-		fclose(f);
+		f.reset();
 		return Ham_LoadWorld(world, fname);
 	}
-	if(strcmp(code,"SUPREME!"))
+	else if (!strcmp(code, "SUPREME!"))
 	{
-		fclose(f);
+		return Supreme_LoadWorld(world, fname, f.get());
+	}
+	else
+	{
 		ClearCustomSounds();
-		return Legacy_LoadWorld(world,fname);
+		return Legacy_LoadWorld(world, f.get());
 	}
-
-	fread(&world->author,sizeof(char),32,f);
-	fread(&code,sizeof(char),32,f);	// name of the world, not needed here
-	fread(&world->numMaps,1,1,f);
-	fread(&world->totalPoints,1,sizeof(int),f);
-	fread(&world->numTiles,1,sizeof(word),f);	// tile count
-	SetNumTiles(world->numTiles);
-
-	LoadTiles(f);
-
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
-
-	for(i=0;i<MAX_MAPS;i++)
-		world->map[i]=NULL;
-
-	for(i=0;i<world->numMaps;i++)
-	{
-		world->map[i]=new Map(f);
-		if(!world->map[i])
-		{
-			fclose(f);
-			return 0;
-		}
-	}
-
-	LoadItems(f);
-	LoadCustomSounds(f);
-	SetupRandomItems();
-	fclose(f);
-	return 1;
 }
 
-byte BeginAppendWorld(world_t *world,const char *fname)
+bool SaveWorld(const world_t *world, const char *fname)
 {
-	FILE *f;
-	int i;
-	char code[32];
+	world->map[0]->flags|=MAP_HUB;
 
-	f=AssetOpen(fname,"rb");
-	if(!f)
-	{
-		SetStitchError("File Not Found");
-		return 0;
-	}
-
-	fread(code,sizeof(char),8,f);
-	code[8]='\0';
-	if(strcmp(code,"SUPREME!"))
-	{
-		fclose(f);
-		SetStitchError("Must be a Supreme world.");
-		return 0;
-	}
-
-	fread(&world->author,sizeof(char),32,f);
-	fread(&code,sizeof(char),32,f);	// name of the world, not needed here
-	fread(&world->numMaps,1,1,f);
-	fread(&world->totalPoints,1,sizeof(int),f);
-	fread(&world->numTiles,1,sizeof(word),f);	// tile count
-
-	if(world->numTiles+GetNumTiles()>NUMTILES)
-	{
-		fclose(f);
-		SetStitchError("Too many tiles!");
-		return 0;
-	}
-
-	stitchTileOffset=GetNumTiles();
-	SetNumTiles(world->numTiles+stitchTileOffset);
-
-	AppendTiles(stitchTileOffset,f);
-
-	fread(world->terrain,world->numTiles,sizeof(terrain_t),f);
-
-	for(i=0;i<MAX_MAPS;i++)
-		world->map[i]=NULL;
-
-	for(i=0;i<world->numMaps;i++)
-	{
-		world->map[i]=new Map(f);
-		if(!world->map[i])
-		{
-			fclose(f);
-			SetStitchError("Unable to load a level.");
-			for(int j=0;j<i;j++)
-				delete world->map[j];
-			return 0;
-		}
-	}
-
-	if(!AppendItems(f))
-	{
-		fclose(f);
-		SetStitchError("Too many custom items!");
-		return 0;
-	}
-	stitchSoundOffset=AppendCustomSounds(f);
-	if(stitchSoundOffset==-1)
-	{
-		fclose(f);
-		SetStitchError("Too many custom sounds!");
-		return 0;
-	}
-	SetupRandomItems();
-	fclose(f);
-	return 1;
-}
-
-#define YES_IF(X) if(X) { return true; }
-// Checks for if a world *must* be saved as a HamSandwich format world.
-// The intent is to prefer the Supreme format when possible, and use the
-// newer HamSandwich format only for worlds which absolutely require it.
-// It might take a little work, but worlds which do not exceed the limits of
-// the relevant integer types should still "fit" in the Supreme format.
-
-// There are some lines checking sizeof() for simplicity. If you change them,
-// you can tweak the SaveWorld and LoadWorld functions to save/load the old
-// size and tweak those checks.
-
-static bool MustBeHamSandwichMap(const Map *map)
-{
-	YES_IF(map->width > 250);  // x=255 is special, so we need HSW in that case
-	YES_IF(map->height > 250);
-	YES_IF(strlen(map->name) > 31);
-	YES_IF(strlen(map->song) > 31);
-
-	int count = 0;
-	for (int i = 0; i < MAX_MAPMONS; ++i)
-	{
-		if (map->badguy[i].type)
-		{
-			++count;
-			YES_IF(count > UINT8_MAX);
-			YES_IF(map->badguy[i].x > UINT8_MAX);
-			YES_IF(map->badguy[i].y > UINT8_MAX);
-			YES_IF(map->badguy[i].type > UINT8_MAX);
-			YES_IF(map->badguy[i].item > UINT8_MAX);
-		}
-	}
-
-	for (int i = 0; i < MAX_SPECIAL; ++i)
-	{
-		const auto& spcl = map->special[i];
-		if (spcl.x != 255)
-		{
-			YES_IF(i > UINT8_MAX);
-			YES_IF(spcl.x > UINT8_MAX);
-			YES_IF(spcl.y > UINT8_MAX);
-			YES_IF(spcl.uses > UINT8_MAX);
-
-			for (int j = 0; j < NUM_TRIGGERS; ++j)
-			{
-				if (spcl.trigger[j].type)
-				{
-					YES_IF(j > 7);
-				}
-			}
-			for (int j = 0; j < NUM_EFFECTS; ++j)
-			{
-				if (spcl.effect[j].type)
-				{
-					YES_IF(j > 31);
-				}
-			}
-
-			YES_IF(sizeof(trigger_t) != 12);
-			YES_IF(sizeof(effect_t) != 44);
-		}
-	}
-
-	YES_IF(map->flags > UINT16_MAX);
-	YES_IF(map->numBrains > UINT16_MAX);
-	YES_IF(map->numCandles > UINT16_MAX);
-	YES_IF(map->itemDrops > UINT16_MAX);
-
-	for (int i = 0, max = map->width * map->height; i < max; ++i)
-	{
-		YES_IF(map->map[i].floor > UINT16_MAX);
-		YES_IF(map->map[i].wall > UINT16_MAX);
-		YES_IF(map->map[i].item > UINT8_MAX);
-		YES_IF(map->map[i].light < INT8_MIN || map->map[i].light > INT8_MAX);
-	}
-
-	return false;
-}
-
-bool MustBeHamSandwichWorld(const world_t *world)
-{
-	// If any "legacy" limits are exceeded.
-	YES_IF(strlen(world->author) > 31);
-	YES_IF(world->numMaps > UINT8_MAX);
-	YES_IF(world->numTiles > UINT16_MAX);
-
-	YES_IF(sizeof(terrain_t) != 4);
-
-	for(int i = 0; i < world->numMaps; ++i)
-	{
-		YES_IF(MustBeHamSandwichMap(world->map[i]));
-	}
-
-	// simply crossing our fingers that there are <65535 custom items...
-	YES_IF(sizeof(item_t) != 124);
-
-	YES_IF(sizeof(soundDesc_t) != 36);
-
-	return false;
-}
-#undef YES_IF
-
-byte SaveWorld(world_t *world, const char *fname)
-{
 	std::string namebuf;
-	if (MustBeHamSandwichWorld(world))
+	if (!Supreme_CanSaveWorld(world))
 	{
 		// Save HamSandwich world.
-		printf("Saving HamSandwich world: %s\n", fname);
+		LogInfo("Saving HamSandwich world: %s", fname);
 		Ham_SaveWorld(world, fname);
 		// Save old world as backup.
 		namebuf = fname;
 		namebuf.append("_old");
 		fname = namebuf.c_str();
 	}
-	printf("Saving Supreme world: %s\n", fname);
+	LogInfo("Saving Supreme world: %s", fname);
 
-	FILE *f;
-	int i;
-	char code[9]="SUPREME!";
-
-	world->map[0]->flags|=MAP_HUB;
-	world->totalPoints=0;
-	for(i=1;i<MAX_MAPS;i++)
-		if(world->map[i] && (!(world->map[i]->flags&MAP_HUB)))
-			world->totalPoints+=100;	// each level is worth 100 points except hubs which is worth nothing
-
-	f=AssetOpen(fname,"wb");
+	auto f = AppdataOpen_Write(fname);
 	if(!f)
-		return 0;
+		return false;
 
-	fwrite(code,8,sizeof(char),f);	// identifier code
-	fwrite(&world->author,sizeof(char),32,f);
-	fwrite(&world->map[0]->name,sizeof(char),32,f);
-	fwrite(&world->numMaps,1,1,f);
-	fwrite(&world->totalPoints,1,sizeof(int),f);
-	fwrite(&world->numTiles,1,sizeof(word),f);
+	Supreme_SaveWorld(world, f.get());
 
-	SaveTiles(f);
-
-	fwrite(world->terrain,world->numTiles,sizeof(terrain_t),f);
-
-	for(i=0;i<world->numMaps;i++)
-		world->map[i]->Save(f);
-
-	SaveItems(f);
-	SaveCustomSounds(f);
-
-	fclose(f);
+	f.reset();
 	AppdataSync();
 
-	return 1;
+	return true;
 }
 
-byte GetWorldName(const char *fname,char *buffer,char *authbuffer)
+bool GetWorldName(const char *fname, StringDestination name, StringDestination author)
 {
-	FILE *f;
 	char code[9];
 
-	f=AssetOpen(fname,"rb");
+	owned::SDL_IOStream f = AppdataOpen(fname);
 	if(!f)
-		return 0;
+		return false;
 
-	fread(code,sizeof(char),8,f);
+	SDL_ReadIO(f,code,8);
 	code[8]='\0';
+
 	if(!strcmp(code,"HAMSWCH!"))
 	{
-		fclose(f);
-		return Ham_GetWorldName(fname, buffer, authbuffer);
+		f.reset();
+		return Ham_GetWorldName(fname, name, author);
 	}
-	else if(strcmp(code,"SUPREME!"))
+	else if(!strcmp(code,"SUPREME!"))
 	{
-		fclose(f);
-
-		strcpy(authbuffer,"Unknown Author");
-		return Legacy_GetWorldName(fname,buffer);
+		return Supreme_GetWorldName(f.get(), name, author);
 	}
-
-	fread(authbuffer,sizeof(char),32,f);
-	fread(buffer,sizeof(char),32,f);
-
-	fclose(f);
-	return 1;
+	else
+	{
+		author.assign("Unknown Author");
+		return Legacy_GetWorldName(f.get(), name);
+	}
 }
 
 void FreeWorld(world_t *world)
@@ -367,14 +134,15 @@ void FreeWorld(world_t *world)
 
 void InitWorld(world_t *world)
 {
+	SetCurrentTilegfx(&world->tilegfx);
 }
 
-void RepairTileToTile(world_t *w)
+void RepairTileToTile(world_t *w, const SwapTable &table)
 {
 	int i;
 
 	for(i=0;i<NUMTILES;i++)
-		w->terrain[i].next=GetSwap(w->terrain[i].next);
+		w->terrain[i].next=table.GetSwap(w->terrain[i].next);
 }
 
 void LocateKeychains(world_t *w)
@@ -392,41 +160,12 @@ void LocateKeychains(world_t *w)
 	}
 }
 
-void LogRequirements(world_t *w)
-{
-	int i,j,k;
-	FILE *f;
-
-	f=AppdataOpen("req_files.txt","wt");
-	fprintf(f,"World: %s\n",w->map[0]->name);
-
-	for(i=0;i<w->numMaps;i++)
-	{
-		for(j=0;j<MAX_SPECIAL;j++)
-		{
-			if(w->map[i]->special[j].x!=255)
-			{
-				for(k=0;k<NUM_EFFECTS;k++)
-				{
-					byte type = w->map[i]->special[j].effect[k].type;
-					if(type==EFF_PICTURE || type==EFF_MONSGRAPHICS || type==EFF_ITEMGRAPHICS)
-					{
-						fprintf(f,"user/%s\n",w->map[i]->special[j].effect[k].text);
-					}
-				}
-			}
-		}
-	}
-	fclose(f);
-	AppdataSync();
-}
-
 terrain_t *GetTerrain(world_t *w,word tile)
 {
-	static terrain_t tmp={0,0};
-
-	if(tile>799)
-		return &tmp;
-	else
+	if (tile < NUMTILES)
 		return &w->terrain[tile];
+
+	static terrain_t fake;
+	fake = {{}, 0};
+	return &fake;
 }

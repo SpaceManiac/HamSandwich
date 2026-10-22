@@ -9,8 +9,9 @@
 #include "particle.h"
 #include "fairy.h"
 #include "challenge.h"
+#include "options.h"
 
-byte spellCost[20]={
+static const byte spellCost[10][2]={
 	1,2,	// Energy Barrage/Storm
 	2,15,	// Dragon's Flame/Liquify
 	7,10,	// Seeker Bolt/Barrage
@@ -23,30 +24,76 @@ byte spellCost[20]={
 	128,128,	// Armageddon
 };
 
+int castCounter;
+float storedHealMana;
+float storedSeekerMana;
+
+byte HealCostIgnoringStoredMana(void)
+{
+	byte cost;
+
+	if (player.downgradeSpell[SPL_HEAL] || !player.spell[SPL_HEAL])
+		cost = spellCost[SPL_HEAL][0];
+	else
+		cost = spellCost[SPL_HEAL][player.spell[SPL_HEAL] - 1];
+
+	if (player.fairyOn == FAIRY_CHEAPY)
+	{
+		cost /= 2;	// half-price!
+		if (cost == 0)
+			cost = 1;
+	}
+	if (player.fairyOn == FAIRY_MIGHTY)
+	{
+		cost = cost * 9 / 10;	// 10% off
+		if (cost == 0)
+			cost = 1;
+	}
+
+	return cost;
+}
+
+byte SpellCost(byte spell,bool forceDowngrade)
+{
+	byte cost;
+
+	if (!ClassicMode() && player.worldNum == 1 && player.levelNum == 19 && HauntedWoodsGhosts() > 0 && GetGoodguy())
+		return 1;	// all spells cost 1 in haunted woods when magic is blocked
+
+	if (player.downgradeSpell[spell] || forceDowngrade || !player.spell[spell])
+		cost=spellCost[spell][0];
+	else
+		cost=spellCost[spell][player.spell[spell] - 1];
+
+	if (player.fairyOn == FAIRY_CHEAPY)
+	{
+		cost /= 2;	// half-price!
+		if (cost == 0)
+			cost = 1;
+	}
+	if (player.fairyOn == FAIRY_MIGHTY)
+	{
+		cost = cost * 9 / 10;	// 10% off
+		if (cost == 0)
+			cost = 1;
+	}
+	if (spell == SPL_HEAL && GetStoredHealMana() > 0)
+	{
+		if (cost > GetStoredHealMana())
+			cost -= GetStoredHealMana();
+		else
+			cost = 0;
+	}
+
+	return cost;
+}
+
 byte EnoughMana(void)
 {
 	byte cost;
 
-	if(player.curSpell==0)
-		return 1;
-	else
-	{
-		cost=spellCost[player.curSpell*2+(player.spell[player.curSpell]-1)];
-		if(player.fairyOn==FAIRY_CHEAPY)
-		{
-			cost/=2;	// half-price!
-			if(cost==0)
-				cost=1;
-		}
-		if(player.fairyOn==FAIRY_MIGHTY)
-		{
-			cost=cost*9/10;	// 10% off
-			if(cost==0)
-				cost=1;
-		}
-
-		return (player.mana>=cost);
-	}
+	cost = SpellCost(player.curSpell);
+	return (player.mana >= cost);
 }
 
 byte SpellLevel(void)
@@ -57,10 +104,15 @@ byte SpellLevel(void)
 
 	if(player.fairyOn==FAIRY_CASTY)
 		lvl+=10;
-	if(lvl>50)
-		lvl=50;
+	if(lvl>MAX_PLAYERLEVEL)
+		lvl=MAX_PLAYERLEVEL;
 
 	return lvl;
+}
+
+void ResetCastCounter(void)
+{
+	castCounter = 0;
 }
 
 void CastSpell(Guy *me)
@@ -69,24 +121,19 @@ void CastSpell(Guy *me)
 	byte cost;
 	int i,j;
 	Guy *g;
+	int fakeLevel;
 
 	if(player.life==0)
 		return;	// no shooting when you're dead
-
-	cost=spellCost[player.casting*2+(player.spell[player.casting]-1)];
-
-	if(player.fairyOn==FAIRY_CHEAPY)
+	if (player.casting==SPL_ARMAGEDDON && !ClassicMode() && SkillValue(SKILL_MANAGETTIN) > 0 && ArmageddonIsUnderway())
 	{
-		cost/=2;	// half-price!
-		if(cost==0)
-			cost=1;
+		MakeNormalSound(SND_FAILSPELL);	// no recasting dude!
+		return;
 	}
-	if(player.fairyOn==FAIRY_MIGHTY)
-	{
-		cost=cost*9/10;	// 10% off
-		if(cost==0)
-			cost=1;
-	}
+
+	cost = SpellCost(player.casting);
+	if(player.usedSpells[player.casting]==0)
+		player.usedSpells[player.casting]=1;
 	if(player.mana-cost<0)
 	{
 		ExplodeParticles2(PART_HAMMER,me->x,me->y,me->z,4,8);
@@ -98,23 +145,88 @@ void CastSpell(Guy *me)
 		// not enough mana to cast it!
 		return;
 	}
-	player.mana-=cost;
-	ChallengeEvent(CE_SPELL,cost);
 
-	if(player.fairyOn==FAIRY_CASTY && player.life>1)
+	if (!HauntedWoodsCastSpell(CurrentMap()))
 	{
-		GetGoodguy()->hp--;
-		player.life--;
+		player.mana -= 1;
+		ChallengeEvent(CE_SPELL, 1);
+		return;
 	}
+
+	if (!ClassicMode() && player.casting == SPL_ENERGY && Random(100) < SkillValue(SKILL_ENERGYMANA))
+	{
+		// free cast!
+	}
+	else
+	{
+		if (!ClassicMode() && player.casting == SPL_FLAME && player.storedFlames > 0)
+		{
+		}	// no cost, we're still using the stored flames
+		else
+		{
+			player.mana -= cost;
+			if (player.casting != SPL_HEAL)
+				StoreHealMana(cost);
+			else
+				ResetStoredHealMana();
+			if (player.casting != SPL_SEEKER)
+				StoreSeekerMana(cost);
+
+			ChallengeEvent(CE_SPELL, cost);
+			if (player.fairyOn == FAIRY_CASTY && player.life > 1)
+			{
+				GetGoodguy()->hp--;
+				player.life--;
+			}
+		}
+	}
+
+	if(player.castCount<255)
+		player.castCount++;
+
+	bool spellHeld = false;
+
+	if (player.curSpell == player.casting)
+		spellHeld = ButtonHeld(CONTROL_B2);
+	if (opt.quickCast == QUICKCAST_CASTANDSELECT || opt.quickCast == QUICKCAST_CASTONLY)
+	{
+		if (ButtonHeld(1 << (CTL_ID_QC_1 + player.casting)))
+			spellHeld = true;
+	}
+
+	byte bulType = BLT_LASER;
 
 	switch(player.casting)
 	{
-		case 0:	// energy barrage/storm
-			if(player.spell[0]==1)
+		case SPL_ENERGY:	// energy barrage/storm
+			if (ClassicMode())
+				fakeLevel = SpellLevel();
+			else
 			{
-				FireBullet(me->x,me->y,me->facing,BLT_LASER);
-				if(SpellLevel()>35)
-					FireBullet(me->x,me->y,me->facing,BLT_LASER);
+				fakeLevel = 1 + (SkillValue(SKILL_ENERGYRATE) * 49) / 150;
+				if (RuneValue(Rune::ENERGY2) > 0 && player.shield > 0)
+				{
+					bulType = BLT_LASER2;
+					player.shield--;
+				}
+				else if (RuneValue(Rune::ENERGY2) > 0 && player.barrier > 0)
+				{
+					bulType = BLT_LASER2;
+					if (player.barrier > 2)
+						player.barrier -= 2;
+					else
+						player.barrier = 0;
+				}
+			}
+			if(player.spell[SPL_ENERGY]==1 || player.downgradeSpell[SPL_ENERGY])
+			{
+				FireBullet(me->x,me->y,me->facing,bulType);
+				castCounter++;
+				if (fakeLevel > 35)
+				{
+					FireBullet(me->x, me->y, me->facing, bulType);
+					castCounter++;
+				}
 			}
 			else	// storm - shoot 8-ish ways
 			{
@@ -122,8 +234,9 @@ void CastSpell(Guy *me)
 				{
 					j=i*32-32+MGL_random(64);
 					j=j&255;
-					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine(j)*(12+(SpellLevel()/10)),
-						Sine(j)*(12+(SpellLevel()/10)),0,0,30,j/16,BLT_LASER);
+					FireExactBullet(me->x,me->y,FIXAMT*20,Cosine(j)*(12+(fakeLevel/10)),
+						Sine(j)*(12+(fakeLevel/10)),0,0,30,j/16,bulType);
+					castCounter++;
 				}
 				MakeNormalSound(SND_BULLETFIRE);
 			}
@@ -131,80 +244,137 @@ void CastSpell(Guy *me)
 			me->z+=FIXAMT*MGL_random(4);
 			me->dx+=FIXAMT/2-MGL_random(65535);
 			me->dy+=FIXAMT/2-MGL_random(65535);
-			c=GetControls();
-			if((c&CONTROL_B2) && (player.mana-cost>=0))	// fire is held
+			if(spellHeld && (player.mana-cost>=0))	// fire is held
 			{
-				if(SpellLevel()<25)
+				if (fakeLevel < 25)
 				{
-					player.wpnReload=1;
-					me->frm=2;
-					i=12-SpellLevel()/2;
-					if(i==0)
-						i=1;
+					player.wpnReload = 1;
+					me->frm = 2;
+					i = 12 - fakeLevel / 2;
+					if (i == 0)
+						i = 1;
 
-					me->frmAdvance=(256*2)/(i);
+					me->frmAdvance = (256 * 2) / (i);
 				}
 				else
 				{
-					player.wpnReload=1;
-					me->frmTimer=0;
+					player.wpnReload = 1;
+					me->frmTimer = 0;
 				}
+				if(SkillValue(SKILL_ENERGYRATE)>0 && player.energyRamp<200)
+					player.energyRamp+=2;
 			}
 			else
 			{
+				player.energyRamp = 0;
 				player.wpnReload=5;
-			}
-			DoPlayerFacing(c,me);
-			break;
-		case 1:	// dragon's flame, liquify
-			if(player.spell[1]==1)
-			{
-				FireBullet(me->x,me->y,me->facing,BLT_FLAME);
-				c=GetControls();
-				if(c&CONTROL_B2)	// fire is held
+				if (!ClassicMode())
 				{
-					if(SpellLevel()<25)
+					int frms = (int)(30.0f * SkillValue(SKILL_ENERGYBARRIER) * (castCounter/10));
+					if (player.spell[SPL_ENERGY] == 2 && !player.downgradeSpell[SPL_ENERGY])
+						frms /= 4;	// quarter as long for energy storm since it fires WAY more shots
+					if (frms > 255) frms = 255;
+					if (player.shield < (byte)frms) player.shield = (byte)frms;
+				}
+			}
+			DoPlayerFacing(me);
+			break;
+		case SPL_FLAME:	// dragon's flame, liquify
+			if(player.spell[SPL_FLAME]==1 || player.downgradeSpell[SPL_FLAME])
+			{
+				if(ClassicMode())
+					FireBullet(me->x, me->y, me->facing, BLT_FLAME);
+				else
+				{
+					if (player.storedFlames == 0)
+						player.storedFlames = 5;
+				}
+				if(spellHeld)	// fire is held
+				{
+					if (ClassicMode())
 					{
-						player.wpnReload=1;
-						me->frm=2;
-						i=12-SpellLevel()/2;
-						if(i==0)
-							i=1;
+						if (SpellLevel() < 25)
+						{
+							me->frm = 2;
+							i = 12 - SpellLevel() / 2;
+							if (i == 0)
+								i = 1;
 
-						me->frmAdvance=(256*2)/(i);
+							me->frmAdvance = (256 * 2) / (i);
+						}
+						else
+						{
+							player.wpnReload = 1;
+							me->frmTimer = 0;
+						}
 					}
-					else
+					else // modern mode is always fast firing, but its damage ticks at an increasing rate with levels
 					{
-						player.wpnReload=1;
-						me->frmTimer=0;
+						player.wpnReload = 1;
+						me->frmTimer = 0; // 5 - SkillValue(SKILL_FLAMEON);
 					}
 				}
 				else
 					player.wpnReload=5;
-				DoPlayerFacing(c,me);
+				DoPlayerFacing(me);
 			}
 			else
 			{
-				for(i=0;i<SpellLevel()/15+1;i++)
+				int cnt = SpellLevel() / 15 + 1;
+				if (!ClassicMode())
+					cnt = (int)((SkillValue(SKILL_FLAMEON)*1.2f)/2 + 1);
+				for(i=0;i<cnt;i++)
 					FireBullet(me->x+Cosine(me->facing*32)*32,me->y+Sine(me->facing*32)*32,me->facing*32,BLT_LIQUIFY);
+				if (!ClassicMode())
+				{
+					player.flameCounter++;
+					if (RuneValue(Rune::FLAME3) > 0 && player.flameCounter >= (int)RuneValue(Rune::FLAME3))
+					{
+						player.flameCounter = 0;
+						byte f = (me->facing + 2) & 7;
+						for (i = 0; i < cnt; i++)
+							FireBullet(me->x + Cosine(f * 32) * 32, me->y + Sine(f * 32) * 32, f * 32, BLT_LIQUIFY);
+						f = (me->facing + 6) & 7;
+						for (i = 0; i < cnt; i++)
+							FireBullet(me->x + Cosine(f * 32) * 32, me->y + Sine(f * 32) * 32, f * 32, BLT_LIQUIFY);
+					}
+				}
 				MakeNormalSound(SND_FLAMEGO);
 				player.wpnReload=5;
+				if (!ClassicMode())
+					player.wpnReload = 5 - SkillValue(SKILL_FLAMEON) / 2;
+			}
+			if (!ClassicMode() && SkillValue(SKILL_BACKDRAFT) > 0)	// reflect nearby bullets
+			{
+				FloaterParticles(me->x, me->y, 4, SkillValue(SKILL_BACKDRAFT)+16, 0, 10);
+				BackdraftEffect(me, SkillValue(SKILL_BACKDRAFT)+16);	// cheating the radius a little to account for kid's pudge
 			}
 			break;
-		case 2: // seeker bolt/barrage
+		case SPL_SEEKER: // seeker bolt/barrage
 			FireBullet(me->x,me->y,me->facing,BLT_MISSILE);
-			if(player.spell[2]==2)
+			if(player.spell[SPL_SEEKER]==2 && !player.downgradeSpell[SPL_SEEKER])
 			{
 				FireBullet(me->x,me->y,(me->facing-1)&7,BLT_MISSILE);
 				FireBullet(me->x,me->y,(me->facing+1)&7,BLT_MISSILE);
 			}
-			if(SpellLevel()<25)
-				player.wpnReload=15-(SpellLevel()/2);
+			if (ClassicMode())
+			{
+				if (SpellLevel() < 25)
+					player.wpnReload = 15 - (SpellLevel() / 2);
+				else
+					player.wpnReload = 2;
+			}
 			else
-				player.wpnReload=2;
+			{
+				i = SkillValue(SKILL_SEEKER) * 6 / 2;
+				if (i > 14) i = 14;
+				player.wpnReload = 15 - i;
+				if (player.wpnReload < 1)
+					player.wpnReload = 1;
+			}
 			break;
-		case 3: // ice blast/beam
-			if(player.spell[3]==1)
+		case SPL_ICE: // ice blast/beam
+			if(player.spell[SPL_ICE]==1 || player.downgradeSpell[SPL_ICE])
 			{
 				FireBullet(me->x,me->y,me->facing,BLT_ICECLOUD);
 			}
@@ -215,36 +385,81 @@ void CastSpell(Guy *me)
 			}
 			player.wpnReload=15;
 			break;
-		case 4:	// inferno
-			if(player.spell[4]==1)
+		case SPL_INFERNO:	// inferno
+			if (!ClassicMode())
+				StunAllOnscreen((byte)(SkillValue(SKILL_SHOCKWAVE) * 30));
+			player.timeSinceLastInferno = 0;
+			player.infernoKills = 0;
+
+			if(player.spell[SPL_INFERNO]==1 || player.downgradeSpell[SPL_INFERNO])
 			{
-				j=256/(SpellLevel()/4);
+				byte l = SpellLevel() / 4;
+				if (!ClassicMode())
+					l = 4 + SkillValue(SKILL_INFERNO)*8/5;
+				if (l < 1) l = 1;
+				j=256/l;
 				for(i=0;i<256;i+=j)
 				{
 					c=me->facing*32+i;
-					FireExactBullet(me->x,me->y,0,Cosine(c)*4,Sine(c)*4,0,0,i/8+1,0,BLT_BOMB);
+					FireExactBullet(me->x,me->y,0,Cosine(c)*4,Sine(c)*4,0,0,ClassicMode()?(i/8+1):i/16+1,0,BLT_BOMB);
+					if (!ClassicMode() && Random(100) < SkillValue(SKILL_MAYHEM))
+					{
+						int x, y;
+						x = me->x - HALFWID*FIXAMT + Random(SCRWID)*FIXAMT;
+						y = me->y - HALFHEI*FIXAMT + Random(SCRHEI)*FIXAMT;
+						FireExactBullet(x, y, 0, 0, 0, 0, 0, i / 8 + 1+Random(10), 0, BLT_BOMB);
+					}
 				}
 			}
 			else	// hyper inferno
 			{
-				for(i=0;i<8;i++)
+				int power = SpellLevel();
+				if (!ClassicMode())
+					power = 5+SkillValue(SKILL_INFERNO) * 9;
+				int adv = (32+17-10) - (power / 3);
+				i = 0;
+				for(i=0;i<256;i+=adv)
 				{
-					FireExactBullet(me->x,me->y,0,Cosine(i*32)*4,Sine(i*32)*4,0,0,8,0,BLT_BOMB);
-					FireExactBullet(me->x,me->y,0,Cosine(i*32)*6,Sine(i*32)*6,0,0,16,0,BLT_BOMB);
-					FireExactBullet(me->x+Cosine(i*32)*64,me->y+Sine(i*32)*48,0,0,0,0,0,14,i*32,BLT_LIQUIFY);
-					FireExactBullet(me->x+Cosine(i*32+16)*64,me->y+Sine(i*32+16)*48,0,0,0,0,0,14,i*32,BLT_LIQUIFY);
-					FireExactBullet(me->x+Cosine(i*32)*96,me->y+Sine(i*32)*72,0,0,0,0,0,20,i*32,BLT_LIQUIFY);
-					FireExactBullet(me->x+Cosine(i*32+16)*96,me->y+Sine(i*32+16)*72,0,0,0,0,0,20,i*32,BLT_LIQUIFY);
+					FireExactBullet(me->x,me->y,0,Cosine(i)*4,Sine(i)*4,0,0,8,0,BLT_BOMB);
+					FireExactBullet(me->x,me->y,0,Cosine(i)*6,Sine(i)*6,0,0,16,0,BLT_BOMB);
+					for(j=0;j<2;j++)
+						if (!ClassicMode() && Random(100) < SkillValue(SKILL_MAYHEM))
+						{
+							int x, y;
+							x = me->x - HALFWID * FIXAMT + Random(SCRWID) * FIXAMT;
+							y = me->y - HALFHEI * FIXAMT + Random(SCRHEI) * FIXAMT;
+							FireExactBullet(x, y, 0, 0, 0, 0, 0, 8+j*8+Random(10), 0, BLT_BOMB);
+						}
+
+					j = 14;
+					FireExactBullet(me->x+Cosine(i)*64,me->y+Sine(i)*48,0,0,0,0,0,j,i,BLT_LIQUIFY2);
+					FireExactBullet(me->x+Cosine(i+16)*64,me->y+Sine(i+16)*48,0,0,0,0,0,j,i,BLT_LIQUIFY2);
+					j = j * 20 / 14;
+					FireExactBullet(me->x+Cosine(i)*96,me->y+Sine(i)*72,0,0,0,0,0,j,i,BLT_LIQUIFY2);
+					FireExactBullet(me->x+Cosine(i+16)*96,me->y+Sine(i+16)*72,0,0,0,0,0,j,i,BLT_LIQUIFY2);
 				}
 				MakeNormalSound(SND_INFERNAL);
 			}
 			break;
-		case 5: // summon ptero
-			if(player.spell[5]==1)
+		case SPL_SUMMON: // summon ptero
+			if(player.spell[SPL_SUMMON]==1 || player.downgradeSpell[SPL_SUMMON])
 			{
 				SetPlayerGlow(64);
 				MakeNormalSound(SND_PTEROSUMMON);
-				AddGuy(me->x,me->y,FIXAMT*20,MONS_PTERO);
+				if (CountGuysOfType(MONS_PTERO) > PTERO_LIMIT)
+				{
+					// don't summon, but heal them all to full
+					HealPterosToFull();
+				}
+				else
+				{
+					AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
+					if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
+						AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
+				}
+				if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
+					player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
+
 			}
 			else
 			{
@@ -261,6 +476,10 @@ void CastSpell(Guy *me)
 					g->seq=ANIM_A1;
 					g->frmAdvance=128;
 					g->action=ACTION_BUSY;
+					if (!ClassicMode() && SkillValue(SKILL_DISTRACTION) > 0)
+						player.taunted = (byte)(30.0f * SkillValue(SKILL_DISTRACTION));
+					if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
+						AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
 				}
 				else
 				{
@@ -271,43 +490,143 @@ void CastSpell(Guy *me)
 			}
 			player.wpnReload=10;
 			break;
-		case 6:	// stone/steelskin
-			SetPlayerGlow(40);
-			if(player.spell[6]==1)
-				player.stoneskin+=SpellLevel()*20;
+		case SPL_ARMOR:	// stone/steelskin
+			if(!ClassicMode() && SkillValue(SKILL_PARRY))
+				SetPlayerGlow(40);
+			if (ClassicMode())
+			{
+				if (player.spell[SPL_ARMOR] == 1 || player.downgradeSpell[SPL_ARMOR])
+					player.stoneskin += SpellLevel() * 20;
+				else
+					player.stoneskin += SpellLevel() * 5;
+			}
 			else
-				player.stoneskin+=SpellLevel()*5;
+			{
+				if (player.spell[SPL_ARMOR] == 1 || player.downgradeSpell[SPL_ARMOR])
+					player.stoneskin += (int)(SkillValue(SKILL_ARMOR) * 30.0f * 5.0f / 100.0f);
+				else
+					player.stoneskin += (int)(SkillValue(SKILL_ARMOR) * 50.0f / 100.0f);
+				if (SkillValue(SKILL_HEALSUMMONS) > 0)
+					player.summonDmgBoost = 5 * 30;
+				if (SkillValue(SKILL_PARRY) > 0)
+				{
+					player.parry = 15;
+					player.shield = 15;
+				}
+				byte amt = (byte)RuneValue(Rune::ARMOR_BARRIER);
+				if (player.spell[SPL_ARMOR] == 2 && !player.downgradeSpell[SPL_ARMOR])
+					amt *= 2;
+				if (player.barrier<amt)
+					player.barrier = amt;
+			}
 			MakeNormalSound(SND_STONESKIN);
 			player.wpnReload=10;
 			break;
-		case 7:	// berserk
+		case SPL_BERSERK:	// berserk
 			SetPlayerGlow(40);
-			player.berserk+=SpellLevel()*10;
+			if (ClassicMode())
+				player.berserk += SpellLevel() * 10;
+			else
+			{
+				int amt = SkillValue(SKILL_BERSERK) * 60;
+				player.berserk += amt;
+				if (player.berserk > amt*2)
+					player.berserk = amt*2;
+			}
 			MakeNormalSound(SND_BERSERK);
 			player.wpnReload=10;
 			break;
-		case 8: // healing
+		case SPL_HEAL: // healing
 			MakeNormalSound(SND_LOONYKEY);
-			if(player.life==player.maxLife)
+			if(player.life==player.maxLife && ClassicMode() && !VeryClassicMode())
 			{
 				player.mana+=cost;
 				return;
 			}
-			SetPlayerGlow(80);
-			if(player.spell[8]==1)
+
+			if (!ClassicMode() && Random(100) < RuneValue(Rune::PALS))
 			{
-				PlayerHeal(SpellLevel());
+				AddGuy(me->x, me->y, FIXAMT * 20, MONS_PTERO);
+				MakeNormalSound(SND_PTEROSUMMON);
+			}
+
+			SetPlayerGlow(80);
+			if(player.spell[SPL_HEAL]==1 || player.downgradeSpell[SPL_HEAL])
+			{
+				if (ClassicMode())
+					PlayerHeal(SpellLevel());
+				else
+				{
+					int heal = SkillValue(SKILL_HEAL) * 30.0f / 100.0f;
+					if(SkillValue(SKILL_HEALSUMMONS) > 0)
+						HealSummons(heal);
+					if (SkillValue(SKILL_RESTORATION) > 0)
+						AddToRestorationBuffer((float)heal);
+					else
+						PlayerHealWithSpell(heal);
+				}
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),SpellLevel(),6);
 			}
 			else
 			{
-				PlayerHeal(128);
+				if(ClassicMode())
+					PlayerHeal(128);
+				else
+				{
+					int heal = SkillValue(SKILL_HEAL) * 64.0f / 100.0f;
+					if (SkillValue(SKILL_HEALSUMMONS) > 0)
+						HealSummons(heal);
+					if (SkillValue(SKILL_RESTORATION) > 0)
+						AddToRestorationBuffer((float)heal);
+					else
+						PlayerHealWithSpell(heal);
+					player.poison = 0;
+				}
 				ExplodeParticles2(PART_SLIME,me->x,me->y,MGL_randoml(FIXAMT*20),50,10);
 			}
 			player.wpnReload=10;
 			break;
-		case 9: // Armageddon!
+		case SPL_ARMAGEDDON: // Armageddon!
 			BeginArmageddon();
 			break;
+	}
+}
+
+byte GetStoredHealMana(void)
+{
+	return (byte)storedHealMana;
+}
+
+byte GetStoredSeekerMana(void)
+{
+	return (byte)storedSeekerMana;
+}
+
+void StoreHealMana(byte amt)
+{
+	storedHealMana += RuneValue(Rune::HEALSTORE) * (float)amt / 100.0f;
+	if (storedHealMana > 128)
+		storedHealMana = 128;	// we just cap at 128, because we don't want to bother checking which heal spell they're using. Doesn't matter
+}
+
+void ResetStoredHealMana(void)
+{
+	storedHealMana = 0;
+}
+
+
+void ResetStoredSeekerMana(void)
+{
+	storedSeekerMana = 0;
+}
+
+void StoreSeekerMana(byte amt)
+{
+	storedSeekerMana += RuneValue(Rune::AUTOSEEKER) * (float)amt / 100.0f;
+	byte cost = SpellCost(SPL_SEEKER, true);
+	while (storedSeekerMana >= cost)
+	{
+		storedSeekerMana -= (float)cost;
+		FireBullet(GetGoodguy()->x, GetGoodguy()->y, Random(8), BLT_MISSILE);
 	}
 }

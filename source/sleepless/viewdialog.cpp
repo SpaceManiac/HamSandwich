@@ -83,7 +83,7 @@ void ExitViewDialog(void)
 
 void RenderViewDialog(int msx,int msy,MGLDraw *mgl)
 {
-	char s[16];
+	char s[32];
 	int x,y;
 	Map *m;
 	int t;

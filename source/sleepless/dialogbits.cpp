@@ -1,5 +1,6 @@
 #include "dialogbits.h"
 #include "display.h"
+#include "string_extras.h"
 
 button_t button[MAX_BUTTONS];
 static byte stopChecking;
@@ -46,8 +47,7 @@ byte MakeButton(byte type,int id,byte on,int x,int y,int width,int height,const 
 			button[i].y=y;
 			button[i].width=width;
 			button[i].height=height;
-			memcpy(button[i].text,txt,31);
-			button[i].text[31]='\0';
+			ham_strcpy(button[i].text, txt);
 			button[i].callback=func;
 			return i;
 		}

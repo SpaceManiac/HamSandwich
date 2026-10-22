@@ -1,71 +1,77 @@
-# HamSandwich root makefile
+# Convenient root makefile. Invokes `cmake` and then `cmake --build` as needed.
 
-PROJECTS := lunatic supreme sleepless loonyland loonyland2 mystic
-PROJECTS += ham vanilla_extract
-toolset ?= gcc
+# Fallback settings. Keep this in sync with `./run`!
+ifndef preset
+mode ?= debug
+ifndef os
+# Detect OS and architecture.
+ifeq ($(MSYSTEM),MINGW32)
+os := windows
+arch := i686
+else ifeq ($(MSYSTEM),MINGW64)
+os := windows
+arch := x86_64
+else ifeq ($(MSYSTEM),UCRT64)
+os := windows
+arch := x86_64
+else ifeq ($(MSYSTEM),CLANG64)
+os := windows
+arch := x86_64
+else ifneq ($(MSYSTEM),)
+$(error The project cannot be built in '$(MSYSTEM)' mode. Return to the Start Menu and open 'MSYS2 MinGW x86' or 'MSYS2 MinGW x64')
+else ifeq ($(shell uname -sm),Linux x86_64)
+os := linux
+arch := x86_64
+else ifeq ($(shell uname -sm),Darwin x86_64)
+os := macos
+arch := x86_64
+else
+$(error Unknown system '$(shell uname -sm)'; set preset= manually.)
+endif  # uname -sm
+else ifndef arch
+ifneq (,$(filter $(os),windows))
+arch := i686
+else ifneq (,$(filter $(os),linux macos))
+arch := x86_64
+else ifneq (,$(filter $(os),emscripten))
+arch := wasm32
+else
+$(error Unknown os '$(os)'; set arch= manually.)
+endif  # filter on os
+endif  # os, arch
+preset := $(os)-$(arch)-$(mode)
+endif  # preset
 
-all:  # Default target
-
-# -----------------------------------------------------------------------------
-# Default to x86_64 on MINGW64 and on 64-bit Linuxes
-
-ifeq ($(MSYSTEM),MINGW64)
-config ?= debug_x86_64
-else ifeq ($(MSYSTEM),MINGW32)
-config ?= debug_x86
-else ifeq ($(shell uname -m),x86_64)
-config ?= debug_x86_64
+# Activate Emscripten SDK if needed.
+$(shell tools/build/install-deps.sh >&2)
+ifeq ($(os),emscripten)
+$(shell tools/emscripten/install-emsdk.sh >&2)
+# Suppress behavior where MSYS2's python uses `/` instead of `\` to separate paths,
+# ultimately causing Emscripten to ignore `-lidbfs.js`.
+MSYSTEM :=
 endif
-export config  # Make sure that recursive calls see this value.
 
-# -----------------------------------------------------------------------------
-# Ensure access to a premake5 binary, since we need it for much of the below.
-PREMAKE5 := premake5
+# Variables
+CMAKE ?= cmake
+BUILD_DIR := build/cmake-$(preset)$(MSYSTEM)
+BUILD_NINJA := $(BUILD_DIR)/build.ninja
 
-# Use build/premake5 if it exists, OR if there is no premake5 on PATH
-ifeq ($(wildcard build/premake5),build/premake5)
-PREMAKE5 := build/premake5
-MAKEFILE_DEPS += $(PREMAKE5)
-else ifeq ($(shell which premake5),)
-PREMAKE5 := build/premake5
-MAKEFILE_DEPS += $(PREMAKE5)
+ifeq ($(MAKECMDGOALS),)
+# If no targets were specified, synthesize a default target.
+.PHONY: _default
+_default: $(BUILD_NINJA)
+	@$(CMAKE) --build $(BUILD_DIR)
+else
+# If targets were specified, pass them through to `cmake --build`.
+.PHONY: $(MAKECMDGOALS)
+$(word 1,$(MAKECMDGOALS)):: $(BUILD_NINJA)
+	@$(CMAKE) --build $(BUILD_DIR) -t $(MAKECMDGOALS)
+$(MAKECMDGOALS)::
+	@#
+
 endif
 
-build/premake5:
-	@./tools/build/install-deps.sh
-
-# -----------------------------------------------------------------------------
-# Have premake5 recreate build/$(toolset)/Makefile when needed.
-CHILD_MAKEFILE := build/$(toolset)/Makefile
-
-# Recreate the child makefile if any of the premake Lua changes.
-MAKEFILE_DEPS += premake5.lua $(wildcard tools/build/*.lua)
-
-$(CHILD_MAKEFILE): $(MAKEFILE_DEPS)
-	@echo "==== Preparing $(toolset) build ===="
-	@rm -f $@
-	@$(PREMAKE5) gmake2 --cc=$(toolset)
-	@output="$$($(PREMAKE5) gmake2_deps --cc=$(toolset))" || printf "%s\n" "$$output"
-
-# Recreate the child makefile if any source directory mtimes change.
-$(CHILD_MAKEFILE).d: $(MAKEFILE_DEPS)
-	@$(PREMAKE5) gmake2_deps --cc=$(toolset) >/dev/null
--include $(CHILD_MAKEFILE).d
-
-# -----------------------------------------------------------------------------
-# Forward the phony targets through to the child makefile.
-.PHONY: all clean help $(PROJECTS)
-all clean help $(PROJECTS): $(CHILD_MAKEFILE)
-	@$(MAKE) --no-print-directory -C build/$(toolset) $@
-
-# -----------------------------------------------------------------------------
-# ./run helper
-build/$(toolset)/run-config.sh: $(MAKEFILE_DEPS)
-	@output="$$($(PREMAKE5) run-config --cc=$(toolset))" || (printf "==== Importing $(toolset) configuration ====\n%s\n" "$$output"; exit 1)
-
-# -----------------------------------------------------------------------------
-# ./android helper
-build/android/build.gradle: $(MAKEFILE_DEPS) $(addprefix source/,$(PROJECTS))
-	@echo "==== Preparing Android build ===="
-	@rm -f $@
-	@$(PREMAKE5) android-studio
+# If the CMake cache doesn't already exist, configure it for the first time.
+# If it does already exist, `cmake --build` will reconfigure if needed.
+$(BUILD_NINJA):
+	@$(CMAKE) --preset $(preset) -B $(BUILD_DIR)

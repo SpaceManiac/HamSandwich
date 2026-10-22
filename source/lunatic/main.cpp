@@ -11,6 +11,7 @@
 #include "mgldraw.h"
 #include "jamulfont.h"
 #include "jamulsound.h"
+#include "extern.h"
 
 #include "game.h"
 #include "editor.h"
@@ -19,18 +20,20 @@
 #include "monster.h"
 #include "title.h"
 #include "options.h"
+#include "appdata.h"
+
+#include <SDL3/SDL_main.h>
 
 #ifdef _WIN32
 #include <shellapi.h>
 #endif
 
-const char* AppdataFolderName()
-{
-	return "lunatic";
-}
+extern const HamSandwichMetadata* GetHamSandwichMetadata();
 
 TASK(int) main(int argc, char* argv[])
 {
+	g_HamExtern.ChooseNextSong = ChooseNextSong;
+
 	bool windowedGame=false;
 
 	for (int i = 1; i < argc; ++i)
@@ -39,6 +42,7 @@ TASK(int) main(int argc, char* argv[])
 			windowedGame=true;
 	}
 
+	AppdataInit(GetHamSandwichMetadata());
 	LoadOptions();
 	MGLDraw *mainmgl = new MGLDraw("Dr. Lunatic", 640, 480, windowedGame);
 	if (!mainmgl)

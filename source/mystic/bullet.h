@@ -38,7 +38,7 @@
 #define BLT_EVILHAMMER 25 // a grey hammer that is anti-bouapha
 #define BLT_COIN	 26	// a coin!  Good!
 #define BLT_ICECLOUD 27
-#define BLT_MINIFBALL 28	// a tiny friendly fireball, for pterodactyls
+#define BLT_MINIFBALL 28	// a tiny friendly fireball
 #define BLT_YELWAVE  29	// wavey thing
 #define BLT_BIGYELLOW 30	// big yellow bullet (same as grenade, but not lobbed or explosive)
 #define BLT_BIGCOIN  31
@@ -52,8 +52,32 @@
 #define BLT_SLIME	 39		// slug slime
 #define BLT_COMET	 40	// armageddon drops these from the sky
 #define BLT_COMETBOOM 41	// and they explode like this
+#define BLT_SEEKBOOM (42) // explosion when seekers kill, from a skill
+#define BLT_REDFBALL (43)	// red fireball, for reflected shots with backdraft. Gets its damage from flame spells, not fireball
+#define BLT_COMETBOOM2 (44)	// murdalize explosion
+#define BLT_LIQUIFY2 (45)	// the liquifies that come from hyper inferno - same, but they scale with inferno skill
+#define BLT_LIQUIFY3 (46)	// the liquifies that come from berserk - same, but they scale with berserk skill
+#define BLT_ICECOMET (47)
+#define BLT_ICECOMETBOOM (48)
+#define BLT_RUNESTONE (49)
+#define BLT_PTEROSHOT (50)
+#define BLT_MINE	(51)
+#define BLT_ICESHARD (52)	// ice shards from frozen enemies, pass in how much damage for them to deal
+#define BLT_GLOB_BOMB (53) // snail slime bomb
+#define BLT_LASER2 (54)	// enhanced energy barrage
+#define BLT_LIFEPOTION (55)
+#define BLT_MANAPOTION (56)
+#define BLT_FAKELIQUIFY (57)	// a liquify flame that hurts nothing and doesn't spread
+#define BLT_OCTONJUICE (58)
+#define BLT_OCTONJUICESPLAT (59)
+#define BLT_ECTOPLASM (60)
+#define BLT_GHOSTTRAP (61)
+#define BLT_MONEYBAG (62)
+#define BLT_FLAME3	(63)	// evil flame, same as flame 2, but it doesn't randomize and slow down
+#define BLT_DIAMOND (64)
+#define BLT_GOLEMBOOM (65)	// same as boom, but comes from a golem dying, scales with the summon skill
 
-#define MAX_BULLETS 256
+#define MAX_BULLETS 512
 
 // the special hammer flags for different powerups
 #define HMR_REVERSE 1
@@ -73,6 +97,8 @@ typedef struct bullet_t
 	byte bright;
 } bullet_t;
 
+extern sprite_set_t* bulletSpr;
+
 void InitBullets(void);
 void ExitBullets(void);
 
@@ -86,11 +112,13 @@ void LaunchMegabeam(int x,int y,word owner);
 void FireBullet(int x,int y,byte facing,byte type);
 void FireBulletAfter(int x,int y,byte facing,byte type,bullet_t *thisone);
 void FireExactBullet(int x,int y,int z,int dx,int dy,int dz,byte anim,byte timer,byte facing,byte type);
-void HammerLaunch(int x,int y,byte facing,byte count,byte flags);
+void HammerLaunch(int x,int y,byte facing,byte count,byte flags,bool skulls);
 byte Bulletable(Map *map,int x,int y);
 void BulletRanOut(bullet_t *me,Map *map,world_t *world);	// prototyped for interior use
-void SkullLaunch(int x,int y,byte facing,byte count,byte flags);
 void Armageddon(Map *map,int x,int y);
+void BackdraftEffect(Guy *me, int radius);
+void BurnTreesInArea(Map* map, int x, int y, int x2, int y2);
+void RevealEctoplasm(int x, int y);
 
 byte BulletHittingType(void);
 

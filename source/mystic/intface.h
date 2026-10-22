@@ -16,5 +16,6 @@ void RenderInterface(byte life,byte hmrFlags,byte hammers,int brains,int score,b
 
 sprite_t *GetIntfaceSpr(byte spr);
 byte MonsterShown(void);
+void ResetInterface(bool fillLifeAndMana);
 
 #endif

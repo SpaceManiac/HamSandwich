@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+
+Bootstrap=$(dirname "$0")
+. "$Bootstrap/_common.sh"
+
+NinjaExe="$Cache/ninja-$NINJA_VERSION-$OS$ExeExt"
+if ! test -f "$NinjaExe"; then
+	mv "$(temp_unzip "$(temp_download_and_verify NINJA_VERSION "$OS")")/ninja$ExeExt" "$NinjaExe"
+fi
+
+exec "$NinjaExe" "$@"

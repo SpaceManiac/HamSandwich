@@ -8,6 +8,9 @@
 #include "options.h"
 #include "trivia.h"
 #include "palettes.h"
+#include "spell.h"
+#include "editor.h"
+#include "achieves.h"
 
 byte showStats=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -24,7 +27,7 @@ static byte waterFlip=0;
 char lastKey=0;
 
 MGLDraw *gamemgl;
-static Map		*curMap;
+static Map	*curMap;
 byte gameMode=GAMEMODE_PLAY;
 byte	mapToGoTo;
 byte	worldNum;
@@ -42,29 +45,37 @@ static byte newGame;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-static byte idleGame=0;
 
-#ifndef VALUE
-char worldName[4][32]={
+static const char worldName[4][32]={
 	"river.dlw",
 	"forest.dlw",
 	"castle.dlw",
-	"under.dlw"
+	"under.dlw",
 };
-#else
-char worldName[4][32]={
-	"river_val.dlw",
-	"forest_val.dlw",
-	"castle.dlw",
-	"under.dlw"
+
+static const char worldName_m[4][32] = {
+	"river_m.dlw",
+	"forest_m.dlw",
+	"castle_m.dlw",
+	"under_m.dlw",
 };
-#endif
+
+static const char worldName_99[4][32] = {
+	"river_99.dlw",
+	"forest_99.dlw",
+	"castle_99.dlw",
+	"under_99.dlw",
+};
+
+static const char* WorldName(int world)
+{
+	return VeryClassicMode() ? worldName_99[world] : ClassicMode() ? worldName[world] : worldName_m[world];
+}
 
 void LunaticInit(MGLDraw *mgl)
 {
 	gamemgl=mgl;
 
-	InitOptions();
 	InitCosSin();
 	InitDisplay(gamemgl);
 	InitSound();
@@ -73,12 +84,14 @@ void LunaticInit(MGLDraw *mgl)
 	InitItems();
 	InitInterface();
 	mgl->ClearKeys();
-	InitControls();
+	InitControls(MYSTIC_CONTROL_SCHEME);
 	InitPlayer(INIT_GAME,0,0);
 	InitShop();
 	battle=0;
 	VolumeSound(opt.soundVol);
 	VolumeSong(opt.musicVol);
+	SetInMenu(true);
+	InitAchieveSystem();
 }
 
 void LunaticExit(void)
@@ -126,13 +139,13 @@ byte InitLevel(byte map)
 	frmRate=30.0f;
 	visFrms=0;
 	msgFromOtherModules=0;
-
-	InitGuys(128);
+	InitGuys(256);
 	InitBullets();
 	InitPlayer(INIT_LEVEL,0,map);
 	InitMessage();
+	InitSpeechSystem();
 	NewBigMessage(curMap->name,100);
-	InitParticles(256);
+	InitParticles(1024);
 	lastKey=0;
 	curMap->Init(&curWorld);
 
@@ -161,7 +174,7 @@ byte InitLevel(byte map)
 		UpdateGuys(curMap,&curWorld);
 		SetGiveUpText(1+battle);
 
-		if(!battle && player.levelPassed[player.worldNum][player.levelNum]==1)
+		if(!battle && PlayerPassedLevel(player.worldNum,player.levelNum))
 		{
 			// you've passed this level before, clean out incriminating prizes
 			GetRidOfGoodStuff(curMap);
@@ -169,22 +182,26 @@ byte InitLevel(byte map)
 	}
 	battleIsWon=0;
 
-	switch(curMap->song)
+	if (player.worldNum == 3 && player.levelNum == 11 && !opt.classicMusic)
+		PlaySong(NEWSNG_BOBBYKHAN);
+	else
 	{
+		switch (curMap->song)
+		{
 		case 1:
-			if(player.worldNum<2)
+			if (player.worldNum < 2)
 				PlaySong(SONG_CHAP12MAP);
 			else
 				PlaySong(SONG_CHAP34MAP);
 			break;
 		case 2:
-			if(player.worldNum<2)
+			if (player.worldNum < 2)
 				PlaySong(SONG_CHAP12LEVEL);
 			else
 				PlaySong(SONG_CHAP34LEVEL);
 			break;
 		case 3:
-			if(player.worldNum<2)
+			if (player.worldNum < 2)
 				PlaySong(SONG_CHAP12FIGHT);
 			else
 				PlaySong(SONG_CHAP34FIGHT);
@@ -192,6 +209,7 @@ byte InitLevel(byte map)
 		case 4:
 			PlaySong(SONG_HAPPYSTICK);
 			break;
+		}
 	}
 	if(player.levelNum==13 && player.worldNum==1)
 		ResetTemplePuzzle(curMap);
@@ -199,6 +217,7 @@ byte InitLevel(byte map)
 		WhackazoidUpdate(1);
 	SetupWater();
 	InitTrivia();
+	SetInMenu(false);
 	return 1;
 }
 
@@ -209,52 +228,44 @@ void ExitLevel(void)
 	ExitGuys();
 	ExitBullets();
 	ExitParticles();
-
+	SetInMenu(true);
 	delete curMap;
 	PurgeMonsterSprites();
 }
 
-void SetGameIdle(bool b)
+void PauseGame(void)
 {
-	idleGame=b;
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-void GameIdle(void)
-{
-	dword start,end;
-
-	start=timeGetTime();
-	while(idleGame)
-	{
-		if(!gamemgl->Process())
-			break;
-	}
-	end=timeGetTime();
-	AddGarbageTime(end-start);
-	return;
-}
-
-void EnterStatusScreen(void)
-{
+	SetInMenu(true);
+	InitPauseMenu();
+	LockOutControl(CONTROL_B1 | CONTROL_B2 | CONTROL_ESCAPE, true);
+	UpdateControls();
 	gameMode=GAMEMODE_MENU;
 }
 
 void EnterPictureDisplay(void)
 {
+	SetInMenu(true);
+	UpdateControls();
 	gameMode=GAMEMODE_PIC;
-	GetTaps();	// clear the key tap buffer
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 }
 
 void EnterSpeechMode(void)
 {
+	SetInMenu(true);
+	UpdateControls();
 	gameMode=GAMEMODE_SPEECH;
-	GetTaps();	// clear the key tap buffer
+	LockOutControl(CONTROL_B1 | CONTROL_B2, true);
+}
+
+void EnterFarleyMode(void)
+{
+	SetInMenu(true);
+	UpdateControls();
+	gameMode = GAMEMODE_FARLEY;
+	MakeNormalSound(SND_BATDIVE);
+	InitFarley();
+	LockOutControl(CONTROL_UP|CONTROL_DN|CONTROL_B1 | CONTROL_B2, true);
 }
 
 void AddGarbageTime(dword t)
@@ -272,6 +283,11 @@ byte WonTheBattle(void)
 	return 0;
 }
 
+bool GameIsPaused(void)
+{
+	return(gameMode != GAMEMODE_PLAY);
+}
+
 byte GetGameMode(void)
 {
 	return gameMode;
@@ -287,6 +303,8 @@ TASK(byte) LunaticRun(int *lastTime)
 
 	while(*lastTime>=TIME_PER_FRAME)
 	{
+		UpdateSounds();
+		UpdateControls();
 
 		if(!gamemgl->Process())
 		{
@@ -377,10 +395,12 @@ TASK(byte) LunaticRun(int *lastTime)
 				{
 					if(windDownReason==LEVEL_SHOP)
 					{
+						LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 						gameMode=GAMEMODE_SHOP;
 					}
 					else if(windDownReason==LEVEL_FAIRY)
 					{
+						LockOutControl(CONTROL_B1 | CONTROL_B2, true);
 						gameMode=GAMEMODE_FAIRY;
 					}
 					else
@@ -398,14 +418,16 @@ TASK(byte) LunaticRun(int *lastTime)
 		{
 			switch(UpdatePauseMenu(gamemgl))
 			{
-				case 0:
+				case PauseResult::Resume:
 					lastKey=0;
 					gameMode=GAMEMODE_PLAY;
+					SetInMenu(false);
+					UpdateControls();
 					break;
-				case 1:
+				case PauseResult::Pause:
 					break;
-				case 2:
-					StopSong();
+				case PauseResult::GiveUp:
+					StopPlayingSong();
 					if(mapNum)
 						mapToGoTo=1;
 					else
@@ -432,6 +454,7 @@ TASK(byte) LunaticRun(int *lastTime)
 						battle=0;
 						lastKey=0;
 						gameMode=GAMEMODE_PLAY;
+						UpdateControls();
 						break;
 					}
 					else if(battle==1 && (battleIsWon))
@@ -445,7 +468,7 @@ TASK(byte) LunaticRun(int *lastTime)
 					ChallengeEvent(CE_DIE,0);
 					CO_RETURN LEVEL_ABORT;
 					break;
-				case 3:
+				case PauseResult::Quit:
 					mapToGoTo=255;
 					lastKey=0;
 					ChallengeEvent(CE_QUIT,0);
@@ -499,14 +522,27 @@ TASK(byte) LunaticRun(int *lastTime)
 		}
 		else if(gameMode==GAMEMODE_SPEECH)
 		{
-			if(UpdateSpeech(gamemgl)==1)
+			if(UpdateSpeech(gamemgl)==1 && gameMode!=GAMEMODE_FARLEY)
 			{
 				gameMode=GAMEMODE_PLAY;
+				CO_RETURN LEVEL_PLAYING;
+			}
+		}
+		else if (gameMode == GAMEMODE_FARLEY)
+		{
+			if (UpdateFarley(gamemgl) == 1)
+			{
+				gameMode = GAMEMODE_PLAY;
+				if (FarleyWorldChoice() != player.worldNum)
+				{
+					windingDown = 30;
+					windDownReason = LEVEL_FARLEY;
+				}
 			}
 		}
 		else	// gamemode_pic
 		{
-			if(GetTaps()&(CONTROL_B1|CONTROL_B2))
+			if(ButtonTapped(CONTROL_B1|CONTROL_ESCAPE|CONTROL_B2))
 			{
 				gameMode=GAMEMODE_PLAY;
 				// restore the palette
@@ -603,15 +639,6 @@ TASK(byte) LunaticRun(int *lastTime)
 			battle=0;
 			newGame=0;
 		}
-		else if(msgFromOtherModules==MSG_WINGAME)
-		{
-			AWAIT ShowVictoryAnim(0);	// you killed the final boss
-			mapToGoTo=0;
-			windingDown=1;
-			windDownReason=LEVEL_WIN;
-			msgFromOtherModules=MSG_NONE;
-			AWAIT ShowVictoryAnim(4);
-		}
 		else if(msgFromOtherModules==MSG_BATTLE)
 		{
 			switch(player.worldNum)	// different chapters have different random levels
@@ -639,6 +666,9 @@ TASK(byte) LunaticRun(int *lastTime)
 		else if (msgFromOtherModules==MSG_SHOWANIM)
 		{
 			AWAIT ShowVictoryAnim(msgContent);
+			UpdateControls();
+			LockOutControl(CONTROL_ESCAPE | CONTROL_B2, true);
+			msgFromOtherModules=MSG_NONE;
 		}
 
 		*lastTime-=TIME_PER_FRAME;
@@ -648,7 +678,6 @@ TASK(byte) LunaticRun(int *lastTime)
 	CDMessingTime=0;	// that's how long CD messing took
 	CDMessingTime+=garbageTime;	// time wasted with such things as playing animations
 	garbageTime=0;
-	JamulSoundUpdate();
 
 	CO_RETURN LEVEL_PLAYING;
 }
@@ -668,27 +697,26 @@ TASK(void) LunaticDraw(void)
 		RenderSpecialXes(gamemgl,curMap,worldNum);
 		RenderMessage();
 		PlayerRenderInterface(gamemgl);
+		if (Challenging())
+			ChallengeRender(gamemgl);
 		RenderPauseMenu();
 		if(gameMode==GAMEMODE_SPEECH)
 			RenderSpeech();
+		if (gameMode == GAMEMODE_FARLEY)
+			RenderFarley();
 	}
 	else if(gameMode==GAMEMODE_SHOP)
 	{
-		//gamemgl->ClearScreen();
 		RenderShop();
 	}
 	else if(gameMode==GAMEMODE_FAIRY)
 	{
-		//gamemgl->ClearScreen();
 		RenderFairyBox();
 	}
 	else
 	{
 		// nothing to do for gamemode_pic
 	}
-
-	if(Challenging())
-		ChallengeRender(gamemgl);
 
 	if(DoTrivia())
 		RenderTrivia(gamemgl);
@@ -738,15 +766,14 @@ void HandleKeyPresses(void)
 		if((lastKey>='a' && lastKey<='z') || (lastKey>='A' && lastKey<='Z'))
 			CheatKey(lastKey);
 	}
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// can't show stats unless in debug mode
 	if(lastKey=='S')
 	{
 		showStats=1-showStats;
 		lastKey=0;
 	}
-#endif
-	if(lastKey=='g')
+	/*if (lastKey == 'g')
 	{
 		k=GetGamma();
 		k++;
@@ -755,21 +782,13 @@ void HandleKeyPresses(void)
 		GammaCorrect(gamemgl, k);
 		SetGamma(k);
 		lastKey=0;
-	}
-	if(lastKey>='0' && lastKey<='9')
-	{
-		k=lastKey-'0';
-		if(k==0)
-			k=10;
-		k--;
-		if(player.spell[k])
-			player.curSpell=k;
-	}
-	if(lastKey==27 && gameMode==GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
-	{
-		InitPauseMenu();
-		gameMode=GAMEMODE_MENU;
-	}
+	}*/
+#endif
+
+	if((ButtonTapped(CONTROL_ESCAPE)) && gameMode == GAMEMODE_PLAY && !windingUp && !windingDown && !newGame)
+		PauseGame();
+	if (GetGameIdle() && gameMode == GAMEMODE_PLAY)
+		PauseGame();
 }
 
 TASK(byte) PlayALevel(byte map)
@@ -857,19 +876,20 @@ TASK(byte) ChallengePlay(byte world,byte lvl)
 {
 	byte result;
 
-	if(!LoadWorld(&curWorld,worldName[world]))
+	if(!LoadWorld(&curWorld, WorldName(world)))
 		CO_RETURN WORLD_ABORT;
 
+	InitWorld(&curWorld, worldNum);
 	InitPlayer(INIT_WORLD,world,0);
 
 	worldNum=world;
-	InitWorld(&curWorld,worldNum);
 	ResetPauseMenu();
 
 	mapNum=lvl;
 	battle=0;
 	result=AWAIT PlayALevel(mapNum);
-
+	if (result == LEVEL_WIN)
+		PlayerWinLevel(worldNum, mapNum,false);
 	FreeWorld(&curWorld);
 	CO_RETURN 0;
 }
@@ -878,7 +898,7 @@ TASK(byte) LunaticWorld(byte world)
 {
 	byte result;
 
-	if(!LoadWorld(&curWorld,worldName[world]))
+	if(!LoadWorld(&curWorld, WorldName(world)))
 		CO_RETURN WORLD_ABORT;
 
 	InitPlayer(INIT_WORLD,world,0);
@@ -898,17 +918,9 @@ TASK(byte) LunaticWorld(byte world)
 
 		if(player.worldNum==3 && mapNum==18)
 		{
-			player.worldNum=0;
+			// you beat the happy stick dancers, so you move on to more madcap
+			EarnAchieve(Achievement::WINMADCAP);
 			player.nightmare=2;
-			FreeWorld(&curWorld);
-			if(!LoadWorld(&curWorld,worldName[player.worldNum]))
-				CO_RETURN WORLD_ABORT;
-			ResetPlayerLevels();
-			InitWorld(&curWorld,worldNum);
-			InitPlayer(INIT_WORLD,player.worldNum,1);
-
-			worldNum=player.worldNum;
-			world=worldNum;
 			ResetPauseMenu();
 			player.overworldX=-2000;
 			mapNum=1;
@@ -929,9 +941,26 @@ TASK(byte) LunaticWorld(byte world)
 			PlayerResetScore();
 			// don't do anything, play the same level
 		}
+		else if (result == LEVEL_FARLEY)
+		{
+			player.worldNum = FarleyWorldChoice();
+			FreeWorld(&curWorld);
+			if (!LoadWorld(&curWorld, WorldName(player.worldNum)))
+				CO_RETURN WORLD_ABORT;
+			InitWorld(&curWorld, player.worldNum);
+			InitPlayer(INIT_WORLD, player.worldNum, 1);
+
+			worldNum = player.worldNum;
+			world = worldNum;
+			InitWorld(&curWorld, worldNum);
+			ResetPauseMenu();
+			player.overworldX = -2000;
+			mapNum = 1;
+			battle = 0;
+		}
 		else if(result==LEVEL_WIN)
 		{
-			 mapNum=player.levelNum;
+			mapNum=player.levelNum;
 			PlayerWinLevel(world,mapNum,curMapFlags&MAP_SECRET);
 			if((player.worldNum==0 && mapNum==14) ||
 				(player.worldNum==1 && mapNum==12) ||
@@ -942,14 +971,15 @@ TASK(byte) LunaticWorld(byte world)
 				return WORLD_NAG;
 #else
 				player.worldNum++;
-				InitPlayer(INIT_WORLD,player.worldNum,1);
 				FreeWorld(&curWorld);
-				if(!LoadWorld(&curWorld,worldName[player.worldNum]))
+				if(!LoadWorld(&curWorld, WorldName(player.worldNum)))
 					CO_RETURN WORLD_ABORT;
 
 				worldNum=player.worldNum;
 				world=worldNum;
 				InitWorld(&curWorld,worldNum);
+				InitPlayer(INIT_WORLD, player.worldNum, 1);
+
 				ResetPauseMenu();
 				player.overworldX=-2000;
 				mapNum=1;
@@ -960,9 +990,19 @@ TASK(byte) LunaticWorld(byte world)
 			else if(player.worldNum==3 && mapNum==11)
 			{
 				AWAIT ShowVictoryAnim(4);
-				//return WORLD_QUITGAME;
-				if(player.nightmare)
+				if (VeryClassicMode())
 				{
+					// just return to chapter 4 I guess!
+					player.levelNum = 1;
+					mapNum = 1;
+					EarnAchieve(Achievement::WINCLASSIC);
+					FreeWorld(&curWorld);
+					if (!LoadWorld(&curWorld, WorldName(player.worldNum)))
+						CO_RETURN WORLD_ABORT;
+				}
+				else if(player.nightmare)
+				{
+					// send you to the happy stick dancers
 					player.worldNum=3;
 					player.levelNum=18;
 					mapNum=18;
@@ -973,10 +1013,17 @@ TASK(byte) LunaticWorld(byte world)
 				}
 				else
 				{
+					if(ClassicMode())
+						EarnAchieve(Achievement::WINCLASSIC);
+					else
+						EarnAchieve(Achievement::WINMODERN);
+					if (BrutalMode())
+						EarnAchieve(Achievement::WINBRUTAL);
+
 					player.worldNum=0;
 					player.nightmare=1;
 					FreeWorld(&curWorld);
-					if(!LoadWorld(&curWorld,worldName[player.worldNum]))
+					if(!LoadWorld(&curWorld, WorldName(player.worldNum)))
 						CO_RETURN WORLD_ABORT;
 					ResetPlayerLevels();
 					InitWorld(&curWorld,worldNum);
@@ -1013,34 +1060,27 @@ TASK(byte) LunaticWorld(byte world)
 
 TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 {
-	byte b,worldResult;
-
 	if(!load)	// don't do this if loading a game, it was already done and the player was filled with values
 	{
 		InitPlayer(INIT_GAME,0,0);
 		AWAIT ShowVictoryAnim(0);
 	}
 
-	newGame=0;
-	if(load>0)	// continuing a saved game
-		worldResult=WORLD_LOAD;
-	else
+	newGame = (load == 0);
+	while (mgl->Process())
 	{
-		worldResult=0;
-		newGame=1;
-	}
-	while(1)
-	{
-		b=player.worldNum;
+		byte worldResult = AWAIT LunaticWorld(player.worldNum);
 
-		worldResult=AWAIT LunaticWorld(b);
-
-		if(worldResult==WORLD_QUITGAME)
+		if (worldResult == WORLD_QUITGAME || worldResult == WORLD_ABORT)
 		{
+			if (player.movedSinceSave)
+				opt.lastSaveSlotUsed = 245;	// if you didn't save before quitting, then the backup is the last save you saved
+				
+			AutoSave();  // No Challenging() check needed because ChallengePlay is separate.
 			mgl->LastKeyPressed();	// just to clear key buffer
 			break;
 		}
-		if(worldResult==WORLD_NAG)
+		else if (worldResult==WORLD_NAG)
 		{
 			ExitPlayer();
 			CO_RETURN 1;
@@ -1062,5 +1102,8 @@ TASK(byte) LunaticGame(MGLDraw *mgl,byte load)
 
 Map *CurrentMap(void)
 {
-	return curMap;
+	if (Editing())
+		return EditorMap();
+	else
+		return curMap;
 }

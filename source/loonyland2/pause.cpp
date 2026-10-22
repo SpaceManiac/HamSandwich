@@ -39,6 +39,7 @@ static char helpTxt[4][64];
 static char askingTxt[64];
 static char statText[6][32],statNum[6];
 static byte statClock[3];
+static dword lastBtn = 0;
 
 void NewStatText(byte n)
 {
@@ -438,7 +439,7 @@ void RenderOptionsMenu(int x,int y)
 
 void RenderSetKey(int x,int y,byte t)
 {
-	char actName[7][16]={
+	static const char actName[7][16]={
 		"Up",
 		"Down",
 		"Left",
@@ -980,19 +981,18 @@ void HandlePauseKeyPresses(MGLDraw *mgl)
 
 void LoadGame(void)
 {
-	FILE *f;
 	char txt[64];
 
-
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=AppdataOpen(txt,"rb");
+	auto f = AppdataOpen(txt);
 	if(!f)
 	{
 		InitPlayer(INIT_GAME,0,0);
 	}
 	else
 	{
-		fread(&player,sizeof(player_t),1,f);
+		static_assert(sizeof(player_t) == 6118);
+		SDL_ReadIO(f,&player,sizeof(player_t));
 		if(player.addonName[0]=='\0')
 		{
 			ResetLevelDefs();
@@ -1004,12 +1004,12 @@ void LoadGame(void)
 			LoadLevelDefs(player.addonName);
 			LoadWorld(&curWorld,txt);
 		}
-		LoadGuys(f);
-		LoadBullets(f);
+		LoadGuys(f.get());
+		LoadBullets(f.get());
 		if(!curMap)
 			curMap=new Map(20,20,"hi");
-		curMap->LoadFromProgress(f);
-		fclose(f);
+		curMap->LoadFromProgress(f.get());
+		f.reset();
 		ResetInterface();
 		PlayerCalcStats();
 		if(player.invinc<30)
@@ -1019,11 +1019,10 @@ void LoadGame(void)
 
 void SaveGame(void)
 {
-	FILE *f;
 	char txt[64];
 
 	sprintf(txt,"profiles/char%02d.loony",gameToLoad+1);
-	f=AppdataOpen(txt,"wb");
+	auto f = AppdataOpen_Write(txt);
 	if(!f)
 	{
 		return;
@@ -1032,13 +1031,14 @@ void SaveGame(void)
 	{
 		player.destx=goodguy->mapx;
 		player.desty=goodguy->mapy;
-		fwrite(&player,sizeof(player_t),1,f);
+		static_assert(sizeof(player_t) == 6118);
+		SDL_WriteIO(f,&player,sizeof(player_t));
 		player.destx=0;
 		player.desty=0;
-		SaveGuys(f);
-		SaveBullets(f);
-		curMap->SaveProgress(f);
-		fclose(f);
+		SaveGuys(f.get());
+		SaveBullets(f.get());
+		curMap->SaveProgress(f.get());
+		f.reset();
 		AppdataSync();
 	}
 }
@@ -1357,12 +1357,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					{
 						subMode=SUBMODE_SETBTN;
 						mgl->ClearKeys();
-						i=0;
-						while(i<10000 && GetJoyButtons())
-						{
-							i++;
-							SDL_Delay(1);
-						}
+						lastBtn = GetJoyButtons();
 						MakeNormalSound(SND_MENUSELECT);
 					}
 					else
@@ -1389,7 +1384,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		byte r;
 
 		r=LastScanCode();
-		if(r==59)
+		if(r==SDL_SCANCODE_ESCAPE)
 		{
 			subMode=SUBMODE_OPTIONS;	// escape
 			MakeNormalSound(SND_MENUCANCEL);
@@ -1410,9 +1405,8 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 	}
 	else if(subMode==SUBMODE_SETBTN)
 	{
-		dword btn;
-
-		btn=GetJoyButtons();
+		dword btn = GetJoyButtons() & ~lastBtn;
+		lastBtn = GetJoyButtons();
 
 		j=1;
 		for(i=0;i<16;i++)
@@ -1718,6 +1712,7 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 					DropItem(subcursor);
 					MakeNormalSound(SND_EQUIP);
 					SortEquipment();
+					PlayerCalcStats();
 				}
 			}
 			subMode=SUBMODE_EQUIP;

@@ -37,11 +37,11 @@ void RenderMapDialog(int msx,int msy,MGLDraw *mgl)
 	int i;
 
 	// box for the whole dialog
-	mgl->FillBox(60,10,480,370,8);
-	mgl->Box(60,10,480,370,16);
+	mgl->FillBox(60,10,480,370+14*6,8);
+	mgl->Box(60,10,480,370+14*6,16);
 	// the box that contains the map list
-	mgl->Box(62,12,362,352,16);
-	mgl->FillBox(63,13,361,351,0);
+	mgl->Box(62,12,362,352+14*6,16);
+	mgl->FillBox(63,13,361,351+14*6,0);
 	for(i=0;i<MAX_MAPNAMES;i++)
 	{
 		Print(67,16+i*14,mapnames[i],0,1);
@@ -51,9 +51,9 @@ void RenderMapDialog(int msx,int msy,MGLDraw *mgl)
 			mgl->Box(64,14+i*14,360,14+(i+1)*14,31);	// megahilite if this is the selected one
 	}
 	// the box to enter a new name
-	mgl->Box(62,354,362,368,16);
-	mgl->FillBox(63,355,361,367,0);
-	Print(64,356,newmapname,0,1);
+	mgl->Box(62,354+6*14,362,368+14*6,16);
+	mgl->FillBox(63,355+6*14,361,367+14*6,0);
+	Print(64,356+14*6,newmapname,0,1);
 
 	// now the buttons
 	mgl->Box(380,12,470,12+14,16);

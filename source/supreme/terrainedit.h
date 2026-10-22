@@ -12,7 +12,7 @@ void TerrainEdit_Init(world_t *wrld);
 void TerrainEdit_InitPicker(byte fromMode,world_t *wrld);
 void TerrainEdit_Exit(void);
 
-void TerrainEdit_Update(int mouseX,int mouseY,MGLDraw *mgl);
+void TerrainEdit_Update(int mouseX, int mouseY, int scroll, MGLDraw *mgl);
 void TerrainEdit_Render(int mouseX,int mouseY,MGLDraw *mgl);
 
 void TerrainEdit_Key(char k);

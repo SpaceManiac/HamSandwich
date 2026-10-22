@@ -1,0 +1,36 @@
+#!/bin/bash
+set -euo pipefail
+
+extension=$PWD/build/jspedit.aseprite-extension
+source=$PWD/source/jspedit_aseprite
+
+mkdir -p build
+rm -f "$extension"
+
+# Add package.json with modified version field
+git_hash=$(git log -1 --format=%H -- "$source" "$0")
+short_git_hash=$(git rev-parse --short=10 "$git_hash")
+touch_date=$(git log -1 --date=format-local:%Y%m%d%H%M.%S --format=%ad "$git_hash" --)
+
+vdir=$PWD/build
+version=$(jq -r '.version' <"$source/package.json")
+version=${version/dev/git-"$short_git_hash"}
+jq '.version = $version' --arg version "$version" <"$source/package.json" >"$vdir/package.json"
+touch -t "$touch_date" "$vdir/package.json"
+(
+	cd "$vdir"
+	zip -X "$extension" package.json
+)
+
+# Add contents
+find "$extension" -type f -exec touch -t "$touch_date" '{}' +
+(
+	cd "$source"
+	TZ=UTC zip -X "$extension" --exclude '.gitignore' --exclude '__pref.lua' --exclude 'package.json' --recurse-paths .
+)
+
+# Summarize
+echo "$short_git_hash" >"$extension.version"
+ls -l "$extension"
+git log -1 "$git_hash" -- | cat
+sha256sum "$extension"

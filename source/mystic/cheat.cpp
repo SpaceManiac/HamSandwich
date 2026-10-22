@@ -1,10 +1,12 @@
 #include "cheat.h"
+#include <ctype.h>
 #include "challenge.h"
+#include "options.h"
 
 #ifdef CHEAT
-#define NUM_CHEATS 17
+#define NUM_CHEATS 21
 #else
-#define NUM_CHEATS 9
+#define NUM_CHEATS 10
 #endif
 
 char cheatCode[NUM_CHEATS][16]={
@@ -17,6 +19,7 @@ char cheatCode[NUM_CHEATS][16]={
 	"liquefaction",		// waterwalk
 	"rutabaga",			// gain a level
 	"damedinero",		// free money
+	"chalice",			// unlock challenge mode
 #ifdef CHEAT
 	/* THE REST ARE TEMP CHEATS!! */
 	"one",				// all type 1 spells
@@ -27,6 +30,9 @@ char cheatCode[NUM_CHEATS][16]={
 	"chapterwin",		// skip this chapter
 	"boss",				// go to final boss, if in chapter 4
 	"secretize",		// get all secrets
+	"mana",				// refill mana to full
+	"skillbor",			// 10 skill points
+	"stony",			// toggle the unlocking of all 6 cheatstones
 #endif
 	};
 
@@ -73,6 +79,7 @@ void DoCheat(byte w)
 			MakeNormalSound(SND_CHEATWIN);
 			NewMessage("Lemme out!",30);
 			SendMessageToGame(MSG_WINLEVEL,0);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 1:	// max hammer up
 			for(i=0;i<5;i++)
@@ -82,17 +89,19 @@ void DoCheat(byte w)
 			PlayerGetItem(ITM_REVERSE,0,0);
 			PlayerGetItem(ITM_REFLECT,0,0);
 			NewMessage("ULTRA FIRE UP!!",30);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 2:	// meganuke
 			GetCamera(&cx,&cy);
-			cx-=320;
-			cy-=240;
+			cx-=HALFWID;
+			cy-=HALFHEI;
 			for(i=0;i<60;i++)
 			{
-				FireBullet((cx+MGL_random(640))<<FIXSHIFT,(cy+MGL_random(480))<<FIXSHIFT,
+				FireBullet((cx+MGL_random(SCRWID))*FIXAMT,(cy+MGL_random(SCRHEI))*FIXAMT,
 							0,BLT_BOOM);
 			}
 			ShakeScreen(10);	// make the screen shake!
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 3:	// all keys
 			for(i=0;i<3;i++)
@@ -101,49 +110,73 @@ void DoCheat(byte w)
 			PlayerGetItem(ITM_KEYG,0,0);
 			PlayerGetItem(ITM_KEYB,0,0);
 			NewMessage("I am the keymaster!",30);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 4:	// restore health
 			PlayerHeal(128);
 			player.mana=128;
 			NewMessage("Aaaaah",30);
 			MakeNormalSound(SND_HEALTHCHEAT);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 5:	// shield
 			player.stoneskin=30*20;
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 6:	// water-walk
 			ToggleWaterwalk();
 			MakeNormalSound(SND_CHEATWIN);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
 		case 7: // gain a level
-			if(player.level<50)
+			if(player.level<MAX_PLAYERLEVEL)
 				player.level++;
 			NewMessage("Level Up!",30);
+			// Not CE_CHEAT because this doesn't instantly grant HP or MP or score.
 			break;
 		case 8: // money
-			player.money+=50000;
+			player.runeStones = MAX_RUNESTONES;
+			GainMoney(VeryClassicMode() ? 500 : 50000);
 			NewMessage("DINERO POR TODOS!",30);
+			// Not CE_CHEAT because GainMoney doesn't grant score.
+			break;
+		case 9:
+			opt.challenge = 1;
+			NewMessage("That wasn't much of a challenge!", 30);
+			// Not CE_CHEAT, obviously!
 			break;
 		// THE REST ARE TEMP CHEATS!
-		case 9:
+		case 10:
 			for(i=0;i<10;i++)
 				player.spell[i]=1;
 			break;
-		case 10:
+		case 11:
 			for(i=0;i<9;i++)
 				player.spell[i]=2;
 			break;
-		case 11:
+		case 12:
 			CheatChal();
 			NewMessage("Got 10 stars",30);
 			break;
-		case 12:
-			PlayerGetPoints(10000);
-			break;
 		case 13:
-			CheckForAllSecrets();
+			PlayerGetPoints(10000);
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
-		case 14:	// auto-win level
+		case 14:
+			if (PlayerHasSword())
+			{
+				player.swordPiece[0] = 0;
+				SwordAllCheck();
+				SetKidSprite(0);
+			}
+			else
+			{
+				player.swordPiece[0] = player.swordPiece[1] = player.swordPiece[2] = player.swordPiece[3] = 1;
+				SwordAllCheck();
+				SetKidSprite(1);
+			}
+			break;
+		case 15:	// auto-win level
 			if(player.worldNum==3)
 				break;
 			MakeNormalSound(SND_CHEATWIN);
@@ -161,23 +194,47 @@ void DoCheat(byte w)
 					player.levelNum=15;
 					break;
 			}
+			ChallengeEvent(CE_CHEAT, 0);
 			break;
-		case 15:
+		case 16:
 			if(player.worldNum==3)
 				SendMessageToGame(MSG_GOTOMAP,11);
 			if(player.worldNum==0)
 				SendMessageToGame(MSG_GOTOMAP,14);
 			break;
-		case 16:
+		case 17:
 			for(i=0;i<20;i++)
 				player.gotSpell[i]=1;
 			player.haveFairy=65535;
-			player.keychain[0]=1;
-			player.keychain[1]=1;
-			player.keychain[2]=1;
-			player.keychain[3]=1;
-			KeyChainAllCheck();
+			player.swordPiece[0]=1;
+			player.swordPiece[1]=1;
+			player.swordPiece[2]=1;
+			player.swordPiece[3]=1;
+			for (i = 0; i < (int)Rune::NUM_RUNES; i++)
+				player.runes[i] = RUNE_RANK3;
+			player.runePouches = 5;
+			player.skillPts = 180;
+			SwordAllCheck();
 			CheckForAllSecrets();
+			break;
+		case 18:
+			player.mana = player.maxMana;
+			NewMessage("mana mana mana", 30);
+			ChallengeEvent(CE_CHEAT, 0);
+			break;
+		case 19:
+			player.skillPts += 10;
+			NewMessage("SKILLBOR!!!", 30);
+			break;
+		case 20:
+			NewMessage("Stoney, brah", 30);
+			for (i = 0; i < 6; i++)
+			{
+				if (opt.cheatStone[i] == CHEATSTONE_LOCKED)
+					opt.cheatStone[i] = CHEATSTONE_OFF;
+				else
+					opt.cheatStone[i] = CHEATSTONE_LOCKED;
+			}
 			break;
 	}
 }

@@ -17,23 +17,29 @@
 #define ID_PICKTHEME 200
 #define ID_PICKMONS  500
 
-static byte mode,curTheme;
+static byte mode;
 static world_t *world;
 static dword curMons;
 static byte rememberMode;
 static byte helpRemember;
 
-static dword themes[]={MT_GOOD,MT_EVIL,MT_SPOOKY,MT_ZOMBIE,MT_VAMPIRE,MT_SPIDER,MT_PYGMY,
-					   MT_ZOID,MT_BOSS,MT_MINIBOSS,MT_WACKY,MT_PUMPKIN,MT_THINGY,MT_VEGGIE,
-					   MT_ARCTIC,MT_DESERT,MT_VEHICLE,MT_GENERATE,MT_TRAP,MT_ALIEN,
-					   MT_HIGHTECH,MT_ANIMAL,MT_HUMAN,MT_URBAN,MT_AQUATIC,MT_UNDERSEA,MT_FLYING,
-					   MT_BITS};
+static const MonsterThemes themes[]={
+	MT_GOOD,MT_EVIL,MT_SPOOKY,MT_ZOMBIE,MT_VAMPIRE,MT_SPIDER,MT_PYGMY,
+	MT_ZOID,MT_BOSS,MT_MINIBOSS,MT_WACKY,MT_PUMPKIN,MT_THINGY,MT_VEGGIE,
+	MT_ARCTIC,MT_DESERT,MT_VEHICLE,MT_GENERATE,MT_TRAP,MT_ALIEN,
+	MT_HIGHTECH,MT_ANIMAL,MT_HUMAN,MT_URBAN,MT_AQUATIC,MT_UNDERSEA,MT_FLYING,
+	MT_BITS
+};
+static constexpr int NUM_THEMES = std::size(themes);
+static MonsterThemes curTheme = MT_GOOD;
 
 static std::vector<dword> monsList;
 static word monsInList,monsStart,monsShown;
+static constexpr int MONSTERS_PER_PAGE = 18;
 static byte realClick;
 
-static dword saveCurMons=1,saveCurTheme=0;
+static dword saveCurMons=1;
+static MonsterThemes saveCurTheme=MT_GOOD;
 
 static void SetupMonsterDisplay(void);
 static void MakeMonsterList(void);
@@ -51,7 +57,6 @@ static void ExitClick(int id)
 
 static void PickMonsterClick(int id)
 {
-	PurgeMonsterSprites();
 	RadioOn(id,ID_PICKMONS,ID_PICKMONS+50);
 	curMons=monsList[monsStart+(id-ID_PICKMONS)];
 	SetupMonsterDisplay();
@@ -75,7 +80,6 @@ static void MoreMonstersClick(int id)
 		monsStart=0;
 
 	ClearButtons(ID_PICKMONS,ID_PICKMONS+50);
-	ClearButtons(ID_MOREMONS,ID_MOREMONS);
 
 	// now make buttons for the first N, which is however many fit on the screen
 	pos=130;
@@ -88,7 +92,11 @@ static void MoreMonstersClick(int id)
 		if(pos>480-30)
 			break;
 	}
-	MakeButton(BTN_NORMAL,ID_MOREMONS,0,2,pos,156,16,"More Monsters...",MoreMonstersClick);
+
+	ClearButtons(ID_MOREMONS,ID_MOREMONS);
+	char buf[32];
+	ham_sprintf(buf, "More Monsters %d/%d", monsStart / MONSTERS_PER_PAGE + 1, (monsInList - 1) / MONSTERS_PER_PAGE + 1);
+	MakeButton(BTN_NORMAL,ID_MOREMONS,0,2,454,156,16,buf,MoreMonstersClick);
 }
 
 static void MakeMonsterList(void)
@@ -106,7 +114,7 @@ static void MakeMonsterList(void)
 	// get all items which match this theme
 	for(i=0;i<NUM_MONSTERS;i++)
 	{
-		if(MonsterTheme(i)&themes[curTheme])
+		if((MonsterTheme(i) & curTheme) == curTheme)
 		{
 			monsList.push_back(i);
 			monsInList=pos+1;
@@ -138,21 +146,35 @@ static void MakeMonsterList(void)
 	{
 		if(pos>480-30)
 		{
-			MakeButton(BTN_NORMAL,ID_MOREMONS,0,2,pos,156,16,"More Monsters...",MoreMonstersClick);
+			char buf[32];
+			ham_sprintf(buf, "More Monsters %d/%d", monsStart / MONSTERS_PER_PAGE + 1, (monsInList - 1) / MONSTERS_PER_PAGE + 1);
+			MakeButton(BTN_NORMAL,ID_MOREMONS,0,2,pos,156,16,buf,MoreMonstersClick);
 			break;
 		}
 		MakeButton(BTN_RADIO,ID_PICKMONS+i,0,2,pos,156,16,MonsterName(monsList[i+monsStart]),PickMonsterClick);
 		monsShown++;
 		pos+=18;
 	}
+}
 
+static void SetThemeRadio()
+{
+	for (int i = 0; i < NUM_THEMES; ++i)
+		SetButtonState(ID_PICKTHEME + i, (themes[i] == MT_NONE ? curTheme == MT_NONE : bool(curTheme & themes[i])) ? CHECK_ON : CHECK_OFF);
 }
 
 static void PickThemeClick(int id)
 {
-	RadioOn(id,ID_PICKTHEME,ID_PICKTHEME+50);
-	curTheme=id-ID_PICKTHEME;
+	curTheme = themes[id-ID_PICKTHEME];
 	MakeMonsterList();
+	SetThemeRadio();
+}
+
+static void PickThemeRightClick(int id)
+{
+	curTheme ^= themes[id-ID_PICKTHEME];
+	MakeMonsterList();
+	SetThemeRadio();
 }
 
 static void MonsterEditSetupButtons(void)
@@ -188,6 +210,7 @@ static void MonsterEditSetupButtons(void)
 	MakeButton(BTN_RADIO,ID_PICKTHEME+25,0,2+158*1,2+18*6,156,16,"Undersea",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+26,0,2+158*2,2+18*6,156,16,"Flying",PickThemeClick);
 	MakeButton(BTN_RADIO,ID_PICKTHEME+27,0,2+158*3,2+18*6,156,16,"Body Parts",PickThemeClick);
+	SetThemeRadio();
 
 	// delete, move, and exit
 	MakeButton(BTN_NORMAL,ID_EXIT,0,480,460,158,14,"Exit Monster List",ExitClick);
@@ -207,7 +230,7 @@ void MonsterEdit_Init(byte modeFrom,world_t *wrld)
 	curTheme=saveCurTheme;
 	MonsterEditSetupButtons();
 	SetupMonsterDisplay();
-	RadioOn(ID_PICKTHEME+curTheme,ID_PICKTHEME,ID_PICKTHEME+50);
+	SetThemeRadio();
 	MakeMonsterList();
 }
 
@@ -234,6 +257,12 @@ void MonsterEdit_Update(int mouseX,int mouseY,MGLDraw *mgl)
 		}
 		else
 			CheckButtons(mouseX,mouseY);
+	}
+
+	if(mgl->RMouseTap())
+	{
+		for (i = 0; i < NUM_THEMES; ++i)
+			CheckButtonCallback(mouseX, mouseY, ID_PICKTHEME + i, PickThemeRightClick);
 	}
 }
 
@@ -272,7 +301,7 @@ void MonsterEdit_Render(int mouseX,int mouseY,MGLDraw *mgl)
 
 	SetSpriteConstraints(161,130,639,479);
 	InstaRenderMonster(520,380,curMons,0,mgl);
-	SetSpriteConstraints(0,0,639,479);
+	ClearSpriteConstraints();
 
 	mgl->FillBox(161,268,470,479,32*1+4);
 	mgl->Box(160,268,470,479,32*1+16);

@@ -19,6 +19,10 @@
 #define GOAL_CRYSTALS 12	// get all challenge crystals
 #define GOAL_NOKILL	13	// don't kill any of monster N
 #define GOAL_GETALL 14	// get all the other goals in one run
+#define GOAL_COOK	15 // cook at least N% quality
+#define GOAL_KILLONE 16 // kill one enemy of type N
+#define GOAL_ECTOPLASM 17 // collect N ectoplasm at once
+#define GOAL_GHOSTSNOSPELLS 18 // catch all ghosts without spells
 
 // challenge events
 #define CE_NONE		0	// nothing happened
@@ -32,6 +36,17 @@
 #define CE_GET		8	// get an item #N
 #define CE_POINTS	9	// earn N XP
 #define CE_QUIT		10	// chose to quit the game, so don't tally or even go back to challenge menu
+#define CE_SMASHBALL 11 // hit a wall in smashball
+#define CE_COOK		12 // cooked at quality level N%
+#define CE_ECTOPLASM 13 // collected N ectoplasm
+#define CE_CHEAT    14  // used a cheat
+
+#define HOURGLASS_BONUS (20)	// percent of time the hourglass grants you
+
+#define MAX_CHALLENGE (80)
+#define TRIVIA_SLOT		(79)	// this slot is where we store whether trivia is turned on or not
+
+#define MAX_COMBO_TIME (60)
 
 typedef struct goal_t
 {
@@ -44,18 +59,19 @@ typedef struct challenge_t
 	byte chapter,level;
 	byte starCost;
 	char name[32];
+	word flags;
 	dword time;
 	goal_t goal[5];
 } challenge_t;
 
 typedef struct chalData_t
 {
-	dword topScore[64];
-	dword topTime[64];
-	word topCombo[64];
-	byte goal[64][5];
-	byte bought[64];
-	byte stars,totalStars;
+	dword topScore[MAX_CHALLENGE];
+	dword topTime[MAX_CHALLENGE];
+	word topCombo[MAX_CHALLENGE];
+	byte goal[MAX_CHALLENGE][5];
+	byte bought[MAX_CHALLENGE];
+	byte formerStars,formerTotalStars;	// these are no longer used, but loading a challenge save will import them if appropriate
 	player_t player;
 } chalData_t;
 
@@ -71,6 +87,7 @@ typedef struct attempt_t
 	byte goalOk[5];
 	dword letterMaxClock;
 	byte quit;
+	bool cheated;
 } attempt_t;
 
 TASK(byte) ChallengeMenu(MGLDraw *mgl);
@@ -81,8 +98,8 @@ void ChallengeRender(MGLDraw *mgl);
 TASK(void) ChallengeTally(MGLDraw *mgl);
 byte CurrentLetter(void);
 byte DoTrivia(void);
-
+void PauseChallengeRender(int offX);
 void CheatChal(void);
-
+void LoadChallengePercents(byte pcts[4]);
 
 #endif

@@ -1,0 +1,14 @@
+{
+	"title": "Spooky Castle",
+	"registry_key": "Spooky Castle",
+	"installers": [
+		{
+			"filename": "spookycastle_install.EXE",
+			"kind": "inno",
+			"sha256sum": "8e6582a813ec9e723b01d53b483fb6a2e52df9f6d1cca9dbcda12fcc10c861e8",
+			"link": "https://hamumu.itch.io/spooky-castle",
+			"file_id": 725936,
+			"description": "Base assets for Spooky Castle"
+		}
+	]
+}

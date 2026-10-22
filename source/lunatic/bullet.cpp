@@ -1,6 +1,7 @@
 #include "bullet.h"
 #include "guy.h"
 #include "player.h"
+#include "log.h"
 
 enum {
 	SPR_FLAME = 0,
@@ -579,7 +580,6 @@ void HitBadguys(bullet_t *me, Map *map, world_t *world)
 				MakeSound(SND_LIGHTNING, me->x, me->y, SND_CUTOFF, 900);
 				for (i = 0; i < player.hammers - 1; i++)
 					FireBullet(me->x, me->y, 0, BLT_LIGHTNING2, me->friendly);
-				me->type = BLT_NONE;
 			}
 			break;
 		case BLT_HAMMER:
@@ -2122,16 +2122,14 @@ void ReflectBullets(int x, int y, byte size, byte friendly)
 
 void BulletTally(void)
 {
-#ifdef LOG
-	int i;
+	if (!IsLogPriority(SDL_LOG_PRIORITY_VERBOSE))
+		return;
 
-	for (i = 0; i < MAX_BULLETS; i++)
+	for (int i = 0; i < MAX_BULLETS; i++)
 	{
 		if (bullet[i].type)
 		{
-			fprintf(logFile, "BUL %d: Type %d", i, bullet[i].type);
+			LogVerbose("BUL %d: Type %d", i, bullet[i].type);
 		}
 	}
-	fflush(logFile);
-#endif
 }

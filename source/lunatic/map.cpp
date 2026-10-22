@@ -4,6 +4,7 @@
 #include "game.h"
 #include "guy.h"
 #include "options.h"
+#include "log.h"
 
 const int NUM_STARS = 400;
 
@@ -15,32 +16,30 @@ byte allSpecialClock;
 word starX[NUM_STARS], starY[NUM_STARS];
 byte starCol[NUM_STARS];
 
-Map::Map(FILE *f)
+Map::Map(SDL_IOStream *f)
 {
-	fread(&width, 1, sizeof (int), f);
-	fread(&height, 1, sizeof (int), f);
+	SDL_ReadIO(f, &width, sizeof (int));
+	SDL_ReadIO(f, &height, sizeof (int));
 
-	fread(name, 32, sizeof (char), f);
-	fread(badguy, MAX_MAPMONS, sizeof (mapBadguy_t), f);
-	fread(special, MAX_SPECIAL, sizeof (special_t), f);
-	fread(&song, 1, 1, f);
-	fread(&flags, 1, 1, f);
+	SDL_ReadIO(f, name, 32);
+	SDL_ReadIO(f, badguy, MAX_MAPMONS * sizeof (mapBadguy_t));
+	SDL_ReadIO(f, special, MAX_SPECIAL * sizeof (special_t));
+	SDL_ReadIO(f, &song, 1);
+	SDL_ReadIO(f, &flags, 1);
 
 	map = (mapTile_t *) calloc(sizeof (mapTile_t) * width*height, 1);
 
-	fread(map, width*height, sizeof (mapTile_t), f);
+	SDL_ReadIO(f, map, width*height * sizeof (mapTile_t));
 
-#ifdef LOG
-	int i;
-
-	fprintf(logFile, "LOADMAP %s\n", name);
-	for (i = 0; i < MAX_MAPMONS; i++)
+	if (IsLogPriority(SDL_LOG_PRIORITY_VERBOSE))
 	{
-		if (badguy[i].type)
-			fprintf(logFile, "M#%03d. %d. %s - (%d,%d)\n", i, badguy[i].type, MonsterName(badguy[i].type), badguy[i].x, badguy[i].y);
+		LogVerbose("LOADMAP %s\n", name);
+		for (int i = 0; i < MAX_MAPMONS; i++)
+		{
+			if (badguy[i].type)
+				LogTrace("M#%03d. %d. %s - (%d,%d)\n", i, badguy[i].type, MonsterName(badguy[i].type), badguy[i].x, badguy[i].y);
+		}
 	}
-	fflush(logFile);
-#endif
 }
 
 Map::Map(byte size, const char *name)
@@ -88,17 +87,17 @@ Map::~Map(void)
 	free(map);
 }
 
-byte Map::Save(FILE *f)
+byte Map::Save(SDL_IOStream *f)
 {
-	fwrite(&width, 1, sizeof (int), f);
-	fwrite(&height, 1, sizeof (int), f);
-	fwrite(name, 32, sizeof (char), f);
-	fwrite(badguy, MAX_MAPMONS, sizeof (mapBadguy_t), f);
-	fwrite(special, MAX_SPECIAL, sizeof (special_t), f);
-	fwrite(&song, 1, 1, f);
-	fwrite(&flags, 1, 1, f);
+	SDL_WriteIO(f, &width, sizeof (int));
+	SDL_WriteIO(f, &height, sizeof (int));
+	SDL_WriteIO(f, name, 32);
+	SDL_WriteIO(f, badguy, MAX_MAPMONS * sizeof (mapBadguy_t));
+	SDL_WriteIO(f, special, MAX_SPECIAL * sizeof (special_t));
+	SDL_WriteIO(f, &song, 1);
+	SDL_WriteIO(f, &flags, 1);
 
-	fwrite(map, width*height, sizeof (mapTile_t), f);
+	SDL_WriteIO(f, map, width*height * sizeof (mapTile_t));
 	return 1;
 }
 
@@ -1011,20 +1010,15 @@ void SpecialTakeEffect(byte num, Map *map, special_t *spcl, Guy *victim)
 
 	if (!(spcl->trigger & TRG_CHAIN))
 		SpecialNeighborCheck(map, spcl);
-#ifdef LOG
-	fprintf(logFile, "Special #%d, effect %d\n", num, spcl->effect);
-	fflush(logFile);
-#endif
+	LogVerbose("Special #%d, effect %d\n", num, spcl->effect);
 	switch (spcl->effect) {
 		case SPC_GOTOMAP:
 			MakeNormalSound(SND_GOTOMAP);
 			SendMessageToGame(MSG_GOTOMAP, spcl->value);
 			break;
 		case SPC_EXIT:
-#ifdef LOG
 			MonsterTally();
 			BulletTally();
-#endif
 			if (PlayerBrains() == totalBrains)
 			{
 				SendMessageToGame(MSG_WINLEVEL, 0);

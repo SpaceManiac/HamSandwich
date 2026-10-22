@@ -5,7 +5,6 @@
 #include "jamulspr.h"
 #include "display.h"
 #include "mgldraw.h"
-#pragma pack(1)
 
 void InitInterface(void);
 void ExitInterface(void);

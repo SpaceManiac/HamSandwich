@@ -13,10 +13,8 @@
 #include "customworld.h"
 #include "palettes.h"
 #include "appdata.h"
+#include "string_extras.h"
 #include <stdlib.h>
-#if __linux__ || __EMSCRIPTEN__
-#include <unistd.h>
-#endif
 
 byte showStats=0,spookIt=0;
 dword gameStartTime,visFrameCount,updFrameCount;
@@ -44,7 +42,7 @@ byte msgContent;
 word windingDown;
 byte windingUp;
 byte windDownReason;
-static byte idleGame=0,pictureNoKey,loadingUp=1;
+static byte pictureNoKey,loadingUp=1;
 
 void LunaticInit(MGLDraw *mgl)
 {
@@ -85,7 +83,7 @@ void LunaticExit(void)
 
 byte InitLevel(byte map)
 {
-	PrintToLog("InitLevel",map);
+	LogVerbose("InitLevel : %d",map);
 
 	JamulSoundPurge();	// each level, that should be good
 
@@ -97,7 +95,7 @@ byte InitLevel(byte map)
 
 	verified=1;
 
-	PrintToLog(curMap->name,0);
+	LogVerbose("%s", curMap->name);
 
 	gameStartTime=timeGetTime();
 	tickerTime=timeGetTime();
@@ -138,7 +136,7 @@ byte InitLevel(byte map)
 		if(player.beenThere[map])	// you have been here - the fact that it's not saved means you are cheating!
 		{
 			NewMessage("YOU CHEAT!",50,1);
-#ifndef _DEBUG
+#ifdef NDEBUG
 			player.brains=0;
 			player.candles=0;
 			if(player.hammers>1)
@@ -192,7 +190,7 @@ byte InitLevel(byte map)
 
 void ExitLevel(void)
 {
-	PrintToLog("ExitLevel",0);
+	LogVerbose("ExitLevel");
 	// exit everything
 	ExitPauseMenu();
 	ExitGuys();
@@ -204,34 +202,6 @@ void ExitLevel(void)
 	delete curMap;
 	curMap = nullptr;
 	PurgeMonsterSprites();
-}
-
-void SetGameIdle(bool b)
-{
-	idleGame=b;
-	if (b)
-		PauseGame();
-}
-
-byte GetGameIdle(void)
-{
-	return idleGame;
-}
-
-// this is run whenever the game is swapped away from
-void GameIdle(void)
-{
-	dword start,end;
-
-	start=timeGetTime();
-	while(idleGame)
-	{
-		if(!gamemgl->Process())
-			break;
-	}
-	end=timeGetTime();
-	player.boredom=0;
-	return;
 }
 
 void RestoreGameplayGfx(void)
@@ -282,6 +252,7 @@ TASK(byte) LunaticRun(int *lastTime)
 			CO_RETURN LEVEL_ABORT;
 		}
 
+		gamemgl->SetMouseRelative(gameMode == GAMEMODE_PLAY ? true : false);
 		if(gameMode==GAMEMODE_PLAY)
 		{
 			profile.progress.totalTime=player.clock;
@@ -330,7 +301,7 @@ TASK(byte) LunaticRun(int *lastTime)
 				windingDown--;
 				if(!windingDown)
 				{
-					PrintToLog("Wound Down",0);
+					LogVerbose("Wound Down");
 					CO_RETURN windDownReason;
 				}
 			}
@@ -446,14 +417,14 @@ TASK(byte) LunaticRun(int *lastTime)
 			if(profile.progress.totalTime<30*60*240)
 				CompleteGoal(12);
 			RemoveGuy(GetGuyOfType(MONS_RADISH));
-			PrintToLog("Level Win!",0);
+			LogVerbose("Level Win!");
 			goodguy->dx=goodguy->dy=0;
 			if(goodguy->hp==0)
 				goodguy->hp=1;
 			player.journal[63]=1;
 			SaveState();
 			GoalTimeDist();
-			PrintToLog("GoalTimeDist Done",0);
+			LogVerbose("GoalTimeDist Done");
 			mapToGoTo=msgContent;
 			windingDown=40;
 			windDownReason=LEVEL_WIN;
@@ -464,11 +435,9 @@ TASK(byte) LunaticRun(int *lastTime)
 			// It's cheatable but that's kind of ok
 			if (!IsCustomWorld())
 			{
-				FILE* f = AppdataOpen("profiles/editor.dat", "wt");
-				char text[256];
-				sprintf(text,"Editor unlocked by %s, what a cool guy!\n", profile.name);
-				fwrite(text, sizeof(char), strlen(text), f);
-				fclose(f);
+				auto f = AppdataOpen_Write("profiles/editor.dat");
+				SDL_IOprintf(f.get(), "Editor unlocked by %s, what a cool guy!\n", profile.name);
+				f.reset();
 				AppdataSync();
 			}
 		}
@@ -576,7 +545,7 @@ TASK(void) LunaticDraw(void)
 		PrintGlow(120,101,s,8,1);
 
 		int KEY_MAX = 0;
-		const byte* key = SDL_GetKeyboardState(&KEY_MAX);
+		const bool* key = SDL_GetKeyboardState(&KEY_MAX);
 		char* end = s + sprintf(s,"Keys: ");
 		for (int i = 0; i < KEY_MAX; ++i)
 			if (key[i])
@@ -737,7 +706,7 @@ TASK(byte) PlayALevel(byte map)
 			if(!(GetJoyButtons()&4))
 				wasPaused=0;
 		}
-		if((lastKey==27 || (GetJoyButtons()&4)) && !wasPaused && gameMode==GAMEMODE_PLAY && windingDown==0 && windingUp==0)
+		if((lastKey==27 || (GetJoyButtons()&4) || GetGameIdle()) && !wasPaused && gameMode==GAMEMODE_PLAY && windingDown==0 && windingUp==0)
 		{
 			wasPaused=1;
 			PauseGame();
