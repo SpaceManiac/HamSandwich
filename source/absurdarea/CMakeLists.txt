@@ -4,3 +4,5 @@ HamSandwich_add_executable(
 	SOURCES ${sources}
 )
 target_compile_definitions(absurdarea PRIVATE DIRECTORS)
+
+install(FILES "LICENSE.txt" RENAME "LICENSE.AbsurdArea.txt" TYPE BIN COMPONENT generic/executables)
