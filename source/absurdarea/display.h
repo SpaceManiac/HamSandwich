@@ -34,7 +34,6 @@
 #define DISPLAY_NUMBER		8192	// render a printed number
 #define DISPLAY_CLOCK		16384	// add clock hands!
 
-#pragma pack(push, 1)
 typedef struct displayObj_t
 {
 	int x,y,z,z2;
@@ -64,7 +63,6 @@ class DisplayList
 		displayObj_t dispObj[MAX_DISPLAY_OBJS];
 		int head,nextfree;
 };
-#pragma pack(pop)
 
 bool InitDisplay(MGLDraw *mainmgl);
 void ExitDisplay(void);

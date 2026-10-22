@@ -430,6 +430,7 @@ void LoadOptions(void)
 	}
 	else
 	{
+		static_assert(sizeof(options_t) == 165);
 		if(fread(&opt,1,sizeof(options_t),f)<sizeof(options_t))
 		{
 #ifdef DIRECTORS

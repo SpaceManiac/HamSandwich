@@ -30,13 +30,11 @@
 #define MAX_MATCHES	 (55)
 #endif
 
-#pragma pack(push, 1)
 typedef struct waveDef_t
 {
 	byte count;
 	byte type;
 } waveDef_t;
-static_assert(sizeof(waveDef_t) == 2);
 
 typedef struct arenaMatch_t
 {
@@ -54,8 +52,6 @@ typedef struct arenaMatch_t
 	byte waveCnt;	// just for display purposes
 	waveDef_t waves[MAX_WAVES][MAX_PER_WAVE];
 } arenaMatch_t;
-static_assert(sizeof(arenaMatch_t) == 276);
-#pragma pack(pop)
 
 extern arenaMatch_t arenaMatch[MAX_MATCHES];
 

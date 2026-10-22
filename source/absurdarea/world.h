@@ -25,7 +25,6 @@
 #define TF_NOBULLET	(1<<14)	// bullets can't pass this
 #define TF_WATERFX	(1<<15)
 
-#pragma pack(push, 4)
 typedef struct terrain_t
 {
 	int flags;
@@ -40,7 +39,6 @@ typedef struct world_t
 	Map	 *map[MAX_MAPS];
 	terrain_t terrain[NUMTILES];
 } world_t;
-#pragma pack(pop)
 
 void WorldLoadBMP(const char *name,byte *dst);
 

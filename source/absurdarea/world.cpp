@@ -41,6 +41,7 @@ byte LoadWorld(world_t *world,const char *fname)
 
 	LoadTiles(f);
 
+	static_assert(sizeof(terrain_t) == 8);
 	fread(world->terrain,NUMTILES,sizeof(terrain_t),f);
 	for(i=0;i<MAX_MAPS;i++)
 		world->map[i]=NULL;
@@ -75,6 +76,7 @@ byte SaveWorld(world_t *world,const char *fname)
 
 	SaveTiles(f);
 
+	static_assert(sizeof(terrain_t) == 8);
 	fwrite(world->terrain,NUMTILES,sizeof(terrain_t),f);
 
 	for(i=0;i<world->numMaps;i++)

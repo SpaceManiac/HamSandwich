@@ -2682,6 +2682,7 @@ void SaveBullets(FILE *f)
 	fwrite(&b,sizeof(word),1,f);
 	for(i=0;i<MAX_BULLETS;i++)
 	{
+		static_assert(sizeof(bullet_t) == 57);
 		if(bullet[i].type)
 			fwrite(&bullet[i],sizeof(bullet_t),1,f);
 	}
@@ -2702,6 +2703,7 @@ void LoadBullets(FILE *f)
 	fread(&b,sizeof(word),1,f);
 	for(i=0;i<b;i++)
 	{
+		static_assert(sizeof(bullet_t) == 57);
 		fread(&bullet[i],sizeof(bullet_t),1,f);
 	}
 }

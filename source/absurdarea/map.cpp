@@ -30,14 +30,17 @@ Map::Map(FILE *f)
 	fread(&height,1,sizeof(int),f);
 
 	fread(name,32,sizeof(char),f);
+	static_assert(sizeof(mapBadguy_t) == 3);
 	fread(badguy,MAX_MAPMONS,sizeof(mapBadguy_t),f);
 	//memset(special,0,sizeof(special_t)*MAX_SPECIAL);
+	static_assert(sizeof(special_t) == 80);
 	fread(special,MAX_SPECIAL,sizeof(special_t),f);
 	fread(&song,1,1,f);
 	fread(&flags,1,1,f);
 
 	map=(mapTile_t *)calloc(sizeof(mapTile_t)*width*height,1);
 
+	static_assert(sizeof(mapTile_t) == 10);
 	fread(map,width*height,sizeof(mapTile_t),f);
 }
 
@@ -79,11 +82,14 @@ byte Map::Save(FILE *f)
 	fwrite(&width,1,sizeof(int),f);
 	fwrite(&height,1,sizeof(int),f);
 	fwrite(name,32,sizeof(char),f);
+	static_assert(sizeof(mapBadguy_t) == 3);
 	fwrite(badguy,MAX_MAPMONS,sizeof(mapBadguy_t),f);
+	static_assert(sizeof(special_t) == 80);
 	fwrite(special,MAX_SPECIAL,sizeof(special_t),f);
 	fwrite(&song,1,1,f);
 	fwrite(&flags,1,1,f);
 
+	static_assert(sizeof(mapTile_t) == 10);
 	fwrite(map,width*height,sizeof(mapTile_t),f);
 	return 1;
 }

@@ -883,7 +883,7 @@ void RenderUpgrade(int x, int y, int w, int h, byte u, byte mode)
 		mode = 0;
 
 	PauseBox(x,y,x+w-1,y+h-1,colors[mode]);
-	
+
 	x+=w/2+1;
 	y+=h/2+1;
 	upgrade_t* up = GetUpgrade(u);
@@ -974,12 +974,12 @@ void RenderAAUpgrades(int x, int y)
 
 	PauseBox(x + 202, y + 5, x + 638, y + 345, 234);
 	PauseBox(x + 202, y + 347, x + 638, y + 428, 234);
-	
+
 	if (subcursor >= MAX_UPGRADES)
 		subcursor=0;
 	if (subMode==SUBMODE_AAUPGRADE)
 		DescribeUpgrade(x, y, cursorToUpgrade[subcursor]);
-	
+
 	PrintGlow(x + 251, y + 8, "Upgrades", 0, 0);
 	byte o=1;
 	for (byte ob=0; ob<MAX_OBJECTIVES; ++ob)
@@ -993,7 +993,7 @@ void RenderAAUpgrades(int x, int y)
 
 	x += 206;
 	y += 38;
-	
+
 	// class boxes
 	PauseBox(x, y, x+2*smallmargin+2*margin+3*boxw-1, y+textheight+2*smallmargin+4*margin+5*boxh-1, 234);
 	PauseBox(x+3*margin+3*boxw, y ,x+2*smallmargin+4*margin+5*boxw-1, y+textheight+2*smallmargin+4*margin+5*boxh-1, 234);
@@ -1024,7 +1024,7 @@ void RenderAAUpgrades(int x, int y)
 	}
 	DrawBox(x+2*(boxw+margin)+boxw/2+1, y+5*(boxh+margin)+boxh/2, x+3*(boxw+margin)+boxw/2, y+5*(boxh+margin)+boxh/2+1, 0); // expert
 
-	// print boxes 
+	// print boxes
 	for (byte sc = 0; sc < MAX_UPGRADES; ++sc)
 	{
 		byte r = sc/5;
@@ -1164,6 +1164,7 @@ void LoadGame(void)
 	}
 	else
 	{
+		static_assert(sizeof(player_t) == 6118);
 		fread(&player,sizeof(player_t),1,f);
 		if(player.addonName[0]=='\0')
 		{
@@ -1204,6 +1205,7 @@ void SaveGame(void)
 	{
 		player.destx=goodguy->mapx;
 		player.desty=goodguy->mapy;
+		static_assert(sizeof(player_t) == 6118);
 		fwrite(&player,sizeof(player_t),1,f);
 		player.destx=0;
 		player.desty=0;

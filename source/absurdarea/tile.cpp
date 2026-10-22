@@ -40,11 +40,13 @@ void SetTiles(byte *scrn,byte wall)
 
 void SaveTiles(FILE *f)
 {
+	static_assert(sizeof(tile_t) == 768);
 	fwrite(tiles,NUMTILES,sizeof(tile_t),f);
 }
 
 void LoadTiles(FILE *f)
 {
+	static_assert(sizeof(tile_t) == 768);
 	fread(tiles,NUMTILES,sizeof(tile_t),f);
 }
 

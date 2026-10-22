@@ -75,7 +75,6 @@
 #define LF_TOWN		(1)
 #define LF_ARENA	(2)	// Arena rules - enemies don't drop items, just money
 
-#pragma pack(push, 1)
 typedef struct levelDef_t
 {
 	dword flags;
@@ -84,7 +83,6 @@ typedef struct levelDef_t
 	byte herbCount[7];
 	byte song;
 } levelDef_t;
-#pragma pack(pop)
 
 extern levelDef_t levelDef[NUM_LEVELS];
 

@@ -24,7 +24,6 @@
 #define PLOP_RANDOM 9
 #define MAXPLOP		10
 
-#pragma pack(push, 1)
 typedef struct editopt_t
 {
 	byte displayFlags;
@@ -39,7 +38,6 @@ typedef struct editopt_t
 	byte curTag;
 	int  copyX,copyY,copyWidth,copyHeight;
 } editopt_t;
-#pragma pack(pop)
 
 extern byte editing;
 

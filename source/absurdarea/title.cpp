@@ -20,7 +20,6 @@
 #define VERSION_NO	"Version 1.0O"
 #endif
 
-#pragma pack(push, 1)
 typedef struct save_t
 {
 	char name[16];
@@ -33,8 +32,6 @@ typedef struct save_t
 	byte mod[3];
 	char campName[64];
 } save_t;
-static_assert(sizeof(save_t) == 95);
-#pragma pack(pop)
 
 static byte oldc=0;
 static byte saveMod[3];
@@ -185,6 +182,7 @@ void GetSavesForMenu(void)
 		}
 		else if(f)
 		{
+			static_assert(sizeof(player_t) == 6118);
 			fread(&p,sizeof(player_t),1,f);
 			fclose(f);
 			save[n].percentage=CalcPercent(&p);

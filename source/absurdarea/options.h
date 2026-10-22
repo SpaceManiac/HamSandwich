@@ -5,7 +5,6 @@
 #include "mgldraw.h"
 #include "gallery.h"
 
-#pragma pack(push, 1)
 typedef struct options_t
 {
 	byte control[2][8];	// key scancodes
@@ -18,7 +17,6 @@ typedef struct options_t
 	byte galPix[GALLERY_PIX];
 #endif
 } options_t;
-#pragma pack(pop)
 
 extern options_t opt;
 
