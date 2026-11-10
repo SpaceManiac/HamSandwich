@@ -802,6 +802,13 @@ byte Guy::IsActive(Map *map)
 	return active;
 }
 
+byte Guy::RealTeam()
+{
+	if (mindControl)
+		return EVIL;    // good guys can never be mind controlled
+	return team;
+}
+
 void Guy::FindTarget(Map *map,world_t *world)
 {
 	int i;
@@ -1818,7 +1825,7 @@ void GuyFact(Guy *g)
 			sprintf(s2,"has %d Armor.",monsType[g->type].armor);
 			break;
 		case 2:
-			sprintf(s2,"has %d/%d Life.",g->hp,MonsterHP(g->type,g->team));
+			sprintf(s2,"has %d/%d Life.",g->hp,MonsterHP(g->type,g->RealTeam()));
 			break;
 		case 3:
 			sprintf(s2,"does %d damage.",monsType[g->type].damage);
@@ -2453,9 +2460,9 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 	{
 		lifeGuy=this;
 		if(type==MONS_SHROOM)
-			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(originalType,team),hp*128/MonsterHP(originalType,team),(byte)(hp>0));
+			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(originalType,RealTeam()),hp*128/MonsterHP(originalType,RealTeam()),(byte)(hp>0));
 		else
-			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(type,team),hp*128/MonsterHP(type,team),(byte)(hp>0));
+			ShowEnemyLife(MonsterName(type),formerHP*128/MonsterHP(type,RealTeam()),hp*128/MonsterHP(type,RealTeam()),(byte)(hp>0));
 	}
 	else if(type==player.monsType)
 	{
@@ -3882,10 +3889,10 @@ void HealGuy(Guy *g,word amt)
 
 	show=amt;
 
-	if(g->hp+amt>MonsterHP(g->type,g->team))
+	if(g->hp+amt>MonsterHP(g->type,g->RealTeam()))
 	{
-		show=MonsterHP(g->type,g->team)-g->hp;
-		g->hp=MonsterHP(g->type,g->team);
+		show=MonsterHP(g->type,g->RealTeam())-g->hp;
+		g->hp=MonsterHP(g->type,g->RealTeam());
 	}
 	else
 		g->hp+=amt;

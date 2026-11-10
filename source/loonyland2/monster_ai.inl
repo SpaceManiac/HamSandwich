@@ -2134,7 +2134,7 @@ void AI_BunnyBoss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		me->type=MONS_NONE;
 		return;
 	}
-	if(me->hp<MonsterHP(me->type,me->team)/2 && player.var[VAR_QUESTDONE+QUEST_LEADER]==0)	// half dead
+	if(me->hp<MonsterHP(me->type,me->RealTeam())/2 && player.var[VAR_QUESTDONE+QUEST_LEADER]==0)	// half dead
 	{
 		player.chatClock=0;
 		BeginChatting(30);	// you'll never get me!
@@ -3872,10 +3872,10 @@ void AI_Baron(Guy *me,Map *map,world_t *world,Guy *goodguy)
 
 	BasicAI(me,SND_BARONOUCH,SND_PUPPETDIE,map,world,goodguy);
 
-	if(me->hp<MonsterHP(me->type,me->team)/2)
-		me->hp=MonsterHP(me->type,me->team)/2;	// capped at 50% HP loss
+	if(me->hp<MonsterHP(me->type,me->RealTeam())/2)
+		me->hp=MonsterHP(me->type,me->RealTeam())/2;	// capped at 50% HP loss
 
-	if(me->hp<=MonsterHP(me->type,me->team)/2)	// 50% health, time to end it
+	if(me->hp<=MonsterHP(me->type,me->RealTeam())/2)	// 50% health, time to end it
 	{
 		me->bright=20;
 		player.var[VAR_TEMP+2]=1;
