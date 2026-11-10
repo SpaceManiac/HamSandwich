@@ -551,9 +551,8 @@ byte UpdateAchieveMenu(MGLDraw *mgl)
 	HandleAchieveKeyPresses(mgl);
 	if(lastKey==27)	// hit ESC to exit
 	{
-		return 1;
-
 		lastKey=0;
+		return 1;
 	}
 	return 0;
 }
