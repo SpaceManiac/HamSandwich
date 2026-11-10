@@ -2151,6 +2151,7 @@ void AI_BunnyBoss(Guy *me,Map *map,world_t *world,Guy *goodguy)
 		if(g)
 		{
 			g->team=GOOD;
+			g->tag=31;
 		}
 	}
 	// end quest-related nonsense!!!!!!!!!!!!!!
