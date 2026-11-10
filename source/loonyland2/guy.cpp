@@ -2619,7 +2619,7 @@ void UpdateGuys(Map *map,world_t *world)
 					if(PlagueOn() && guys[i]->team==EVIL && Distance(guys[i]->x,guys[i]->y,goodguy->x,goodguy->y)<=(int)(SpecificSkillVal(1,SKILL_PLAGUE)*FIXAMT))
 						j+=2;
 
-					guys[i]->GetShotReal(0,0,CurseDmg(j,GOOD+EVIL-guys[i]->team),map,world);
+					guys[i]->GetShotReal(0,0,PoisonDmg(j,GOOD+EVIL-guys[i]->team),map,world);
 					if(guys[i]->hp!=0)
 						guys[i]->ouch=3;
 				}
