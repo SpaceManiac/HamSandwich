@@ -2409,7 +2409,7 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 				if(bulletHittingType==BLT_CLOCKBULLET || bulletHittingType==BLT_CLOCKBOOM || bulletHittingType==BLT_CLOCKBOOM2)
 				{
 					TalentPoint(TLT_CLOCKWORK,1);
-					RepairClockbot(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]);
+					RepairClockbot(RecoverAmt(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]));
 				}
 			}
 			else if(meleeAttacker->type==MONS_GHOST || meleeAttacker->type==MONS_BONEHEAD || (meleeAttacker->type==MONS_MOUSE4 && meleeAttacker->mindControl==0))
@@ -2421,7 +2421,7 @@ void Guy::GetShotReal(int dx,int dy,word damage,Map *map,world_t *world)
 			else if(meleeAttacker->type==MONS_YOURBOT)
 			{
 				TalentPoint(TLT_CLOCKWORK,1);
-				RepairClockbot(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]);
+				RepairClockbot(RecoverAmt(player.var[VAR_CLOCKBOT-IT_LOG+IT_CAN]));
 			}
 #ifdef DIRECTORS
 			if(meleeAttacker!=NULL && meleeAttacker->type==MONS_LILBADGER)
