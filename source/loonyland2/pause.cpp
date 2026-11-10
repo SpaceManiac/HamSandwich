@@ -1800,7 +1800,10 @@ byte UpdatePauseMenu(MGLDraw *mgl)
 		else if(subMode==SUBMODE_EQUIPYESNO)
 			subMode=SUBMODE_EQUIP;
 		else
+		{
 			subMode=SUBMODE_NONE;
+			SetHelpText();
+		}
 		lastKey=0;
 	}
 	return PAUSE_PAUSED;
