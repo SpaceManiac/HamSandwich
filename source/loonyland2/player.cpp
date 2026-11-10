@@ -204,7 +204,7 @@ void MadcapPlayer(void)
 	// strip out all quest items, from stash too
 	for(i=0;i<MAX_EQUIP;i++)
 	{
-		if(player.items[i].count>0 && (ItemCost(&player.items[i],1)==0 || player.items[i].type==IT_ROPE || player.items[i].type==IT_TOYCRYSTAL))	// unsellable item, must be important!
+		if(player.items[i].count>0 && (ItemCost(&player.items[i],1)==0 || player.items[i].type==IT_ROPE || player.items[i].type==IT_TOYCRYSTAL || player.items[i].type == IT_STOLEN))	// unsellable item, must be important!
 		{
 			player.items[i].count=0;
 			player.items[i].type=IT_NONE;
@@ -213,7 +213,7 @@ void MadcapPlayer(void)
 	SortEquipment();
 	for(i=0;i<SHOP_SIZE;i++)
 	{
-		if(player.shopInv[SHOP_STASH][i].count>0 && (ItemCost(&player.shopInv[SHOP_STASH][i],1)==0 || player.shopInv[SHOP_STASH][i].type==IT_ROPE || player.shopInv[SHOP_STASH][i].type==IT_TOYCRYSTAL))	// unsellable item, must be important!
+		if(player.shopInv[SHOP_STASH][i].count>0 && (ItemCost(&player.shopInv[SHOP_STASH][i],1)==0 || player.shopInv[SHOP_STASH][i].type==IT_ROPE || player.shopInv[SHOP_STASH][i].type==IT_TOYCRYSTAL || player.shopInv[SHOP_STASH][i].type == IT_STOLEN))	// unsellable item, must be important!
 		{
 			player.shopInv[SHOP_STASH][i].count=0;
 			player.shopInv[SHOP_STASH][i].type=IT_NONE;
