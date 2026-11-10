@@ -46,6 +46,8 @@ class Guy
 
 		byte IsActive(Map *map);
 
+		byte RealTeam();	// for HP checking
+
 		int safeX,safeY;	// last time you were safely on the ground
 		int x,y,z;
 		int oldx,oldy;
