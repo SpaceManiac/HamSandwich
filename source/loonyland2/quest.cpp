@@ -3603,6 +3603,7 @@ void DoChatAction(byte a)
 				MakeNormalSound(SND_SHARPEN);
 				player.axe.sharpened=1;
 				player.axe.value++;
+				PlayerCalcStats();
 				NewMessage("Your axe was sharpened!",0);
 			}
 			break;
