@@ -171,7 +171,16 @@ byte InitLevel(byte map)
 			if(!player.var[VAR_MADCAP])
 				TipEvent(TIP_BEGIN);
 			else
+			{
 				player.var[VAR_TIP+0]=1;
+#ifdef DIRECTORS
+				if(opt.modifier[29]==0)
+				{
+					opt.modifier[29]=1;	// secret modifier slot used to house whether you can hear commentary or not
+					player.var[VAR_COMMENTARY]=1;
+				}
+#endif
+			}
 		}
 		SetupArena(curMap);
 		if(ModifierOn(MOD_IRONMAN))
@@ -748,13 +757,6 @@ TASK(byte) LunaticWorld(byte world,const char *worldName)
 			// won the game!  Go back to Woody's cabin
 			// movie goes here
 			player.var[VAR_COMMENTARY]=0;
-#ifdef DIRECTORS
-			if(opt.modifier[29]==0)
-			{
-				opt.modifier[29]=1;	// secret modifier slot used to house whether you can hear commentary or not
-				player.var[VAR_COMMENTARY]=1;
-			}
-#endif
 			Song(SONG_WINTER);
 			AWAIT FLI_play("graphics/ending.flc",0,10,gamemgl);
 			if(ModifierOn(MOD_IRONMAN) && player.var[VAR_MADCAP])	// just won Madcap mode!
