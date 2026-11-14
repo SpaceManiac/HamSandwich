@@ -1427,8 +1427,8 @@ byte UpdateService(MGLDraw *mgl)
 				SortEquipment();
 			}
 		}
-		return 0;
 		lastKey=0;
+		return 0;
 	}
 
 	return 1;
