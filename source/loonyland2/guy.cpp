@@ -485,6 +485,8 @@ void Guy::Shoved(int xx,int yy,Map *map,world_t *world)
 
 	if(MonsterFlags(type)&MF_NOMOVE)
 		return;
+	if(type==MONS_BIRD && player.var[VAR_BIRDCHAT]==0 && (levelDef[player.levelNum].flags&LF_ARENA)==0)
+		return;
 
 	if(type==MONS_BUNNYTROOP || type==MONS_BUNNYBOSS || type==MONS_BUNNYBOSS2 || type==MONS_THUG || type==MONS_BRUISER || type==MONS_JUNKSMITH)
 	{
