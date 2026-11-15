@@ -1427,6 +1427,8 @@ byte UpdateService(MGLDraw *mgl)
 				SortEquipment();
 			}
 		}
+		else if (shopType==SVC_ONION)
+			return 1;
 		lastKey=0;
 		return 0;
 	}
