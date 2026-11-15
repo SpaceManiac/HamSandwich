@@ -1935,8 +1935,8 @@ void HitBadguys(bullet_t *me,Map *map,world_t *world)
 			if(GetGuy(i-1)->type!=player.monsType)
 			{
 				GetGuy(i-1)->hp+=me->damage;
-				if(GetGuy(i-1)->hp>MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->team))
-					GetGuy(i-1)->hp=MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->team);
+				if(GetGuy(i-1)->hp>MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->RealTeam()))
+					GetGuy(i-1)->hp=MonsterHP(GetGuy(i-1)->type,GetGuy(i-1)->RealTeam());
 				if(GetGuy(i-1)->type==MONS_YOURBOT)
 				{
 					player.var[VAR_CLOCKLIFE]=GetGuy(i-1)->hp&0xFF;
