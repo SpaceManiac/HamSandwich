@@ -105,16 +105,33 @@ word DamageAmt(word dmg,byte team)
 		return dmg*(100+player.var[VAR_MADGEM+MC_MIGHT]*10)/100;
 }
 
+word PoisonDmg(word dmg, byte team)
+{
+	if (player.var[VAR_MADCAP])
+	{
+		if (team==EVIL)
+		{
+			if (PlagueOn())
+				return dmg;
+			else
+				return dmg*MADCAP_CURSEBOOST;
+		}
+		else
+		{
+			return dmg*(100+player.var[VAR_MADGEM+MC_CURSE]*20)/100;
+		}
+	}
+	else
+		return dmg;
+}
+
 word CurseDmg(word dmg,byte team)
 {
 	if(player.var[VAR_MADCAP])
 	{
 		if(team==EVIL)
 		{
-			if(PlagueOn())
-				return dmg;
-			else
-				return dmg*MADCAP_CURSEBOOST;
+			return dmg*MADCAP_CURSEBOOST;
 		}
 		else
 		{
