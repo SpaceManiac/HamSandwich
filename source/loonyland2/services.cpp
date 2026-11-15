@@ -29,13 +29,13 @@ word CalcSmithCost(equip_t *e1,equip_t *e2)
 	cost=(e1->value+e2->value+e1->speed+e2->speed);
 	if(e1->magic>=1 && e1->magic<=30)	// regular magic
 		cost*=2;
-	else if(e1->magic>=31 && e1->magic<=35)	// elite magic
+	else if(e1->magic>=31 && e1->magic<=45)	// elite magic
 		cost*=5;
 	else if(e1->magic>=46 && e1->magic<=54)	// cursed magic
 		cost*=3;
 	if(e2->magic>=1 && e2->magic<=30)	// regular magic
 		cost*=2;
-	else if(e2->magic>=31 && e2->magic<=35)	// elite magic
+	else if(e2->magic>=31 && e2->magic<=45)	// elite magic
 		cost*=5;
 	else if(e2->magic>=46 && e2->magic<=54)	// cursed magic
 		cost*=3;
