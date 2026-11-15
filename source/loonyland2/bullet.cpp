@@ -376,7 +376,7 @@ bulletDef_t bulDef[BLT_TYPES]={
 	 0,0,0,				// delay,type,rate
 	},
 	// 22 - BLT_DRAIN
-	{BF_HITEVIL|BF_GLOW|BF_PLAYERONLY|BF_LIGHT,	// flags
+	{BF_HITGOOD|BF_GLOW|BF_PLAYERONLY|BF_LIGHT,	// flags
 	 0,0,20,FIXAMT*1,FIXAMT*5,FIXAMT/2,0,60,10,	// gravity,damage,hit size,hitForce,speed,dspeed,beginDZ,timer,homing
 	 128,243,243,1,			// anim speed, first frame, last frame, # of facings
 	 // run out of time effect
@@ -2433,6 +2433,8 @@ void FireMe(bullet_t *me,int x,int y,int z,int owner,byte facing,byte type,word 
 	me->anim=0;
 	me->frame=bulDef[me->type].firstFrm;
 	me->team=GetGuy(owner)->team;
+	if (type == BLT_DRAINMASTER || type == BLT_DRAIN || type == BLT_GALE2)  //fix so restoration doesn't cure enemies
+		me->team = (GOOD + EVIL) - me->team;
 	me->nohit=0;
 	me->bSpawnTimer=bulDef[me->type].spawnDelay;
 	me->pSpawnTimer=bulDef[me->type].partDelay;
