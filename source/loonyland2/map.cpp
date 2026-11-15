@@ -1421,8 +1421,8 @@ void SpecialShootCheck(Map *map,int x,int y)
 
 	for(i=0;i<MAX_SPECIAL;i++)
 		if((map->special[i].trigger&TRG_SHOOT) &&
-			map->special[i].x>=x-1 && map->special[i].y>=y-1 &&
-			map->special[i].x<=x+1 && map->special[i].y<=y+1)
+			map->special[i].trigX>=x-1 && map->special[i].trigY>=y-1 &&
+			map->special[i].trigX<=x+1 && map->special[i].trigY<=y+1)
 		{
 			SpecialTakeEffect(i,map,&map->special[i],NULL);
 		}
