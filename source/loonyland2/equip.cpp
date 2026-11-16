@@ -1040,7 +1040,7 @@ byte EquipCount(byte item)
 	for(i=0;i<MAX_EQUIP;i++)
 		if(player.items[i].type==item)
 		{
-			if(c+player.items[i].count<=255)
+			if(player.items[i].count<=255-c)
 				c+=player.items[i].count;
 			else
 				return 255;
@@ -1059,7 +1059,7 @@ byte GotItem(byte item)
 	for(i=0;i<MAX_EQUIP;i++)
 		if(player.items[i].type==item)
 		{
-			if(c+player.items[i].count<=255)
+			if(player.items[i].count<=255-c)
 				c+=player.items[i].count;
 			else
 				c=255;
@@ -1069,7 +1069,7 @@ byte GotItem(byte item)
 	{
 		if(player.shopInv[SHOP_STASH][i].type==item)
 		{
-			if(c+player.shopInv[SHOP_STASH][i].count<=255)
+			if(player.shopInv[SHOP_STASH][i].count<=255-c)
 				c+=player.shopInv[SHOP_STASH][i].count;
 			else
 				c=255;
