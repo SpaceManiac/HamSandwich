@@ -948,6 +948,8 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 	Clamp(&ddx,FIXAMT*TILE_WIDTH);
 	Clamp(&ddy,FIXAMT*TILE_HEIGHT);
 
+	bool danger=false;	 // to fix the shoved-into-danger-terrain bug
+
 	x+=ddx;
 
 	if(!CanWalk(x,y,map,world))
@@ -961,6 +963,7 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger=true;	//CanWalk may have shoved us into danger
 			// bump if you would enter a danger square
 			x-=ddx;
 			if(WallBumpMons(type))
@@ -981,11 +984,18 @@ void Guy::FrozenUpdate(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger=true;	//CanWalk may have shoved us into danger
 			// bump if you would enter a danger square
 			y-=ddy;
 			if(WallBumpMons(type))
 				wallBump|=2;	// tell it that it hit a wall
 		}
+	}
+
+	if(danger && !CanWalkNoMons(x,y,map,world))		// we were shove-glitched into danger terrain! reset all movement!
+	{
+		x=oldx;
+		y=oldy;
 	}
 
 	if(MonsterFlags(type)&MF_FLYING)
@@ -1347,6 +1357,8 @@ void Guy::Update(Map *map,world_t *world)
 		ddy/=2;
 	}
 
+	bool danger=false;	 // to fix the shoved-into-danger-terrain bug
+
 	x+=ddx;
 
 	if(!CanWalk(x,y,map,world))
@@ -1360,6 +1372,7 @@ void Guy::Update(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger=true;	//CanWalk may have shoved us into danger
 			// bump if you would enter a danger square
 			x-=ddx;
 			if(WallBumpMons(type))
@@ -1380,11 +1393,18 @@ void Guy::Update(Map *map,world_t *world)
 		// check to see if this would put you in water/stuff
 		if(TerrainIs((x/(TILE_WIDTH*FIXAMT)),(y/(TILE_HEIGHT*FIXAMT)),TF_SKY|TF_LAVA|TF_WATER))
 		{
+			danger=true;	//CanWalk may have shoved us into danger
 			// bump if you would enter a danger square
 			y-=ddy;
 			if(WallBumpMons(type))
 				wallBump|=2;	// tell it that it hit a wall
 		}
+	}
+	
+	if(danger && !CanWalkNoMons(x,y,map,world))		// we were shove-glitched into danger terrain! reset all movement!
+	{
+		x=oldx;
+		y=oldy;
 	}
 
 	if(MonsterFlags(type)&MF_FLYING)
