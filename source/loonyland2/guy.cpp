@@ -519,7 +519,7 @@ void Guy::Shoved(int xx,int yy,Map *map,world_t *world)
 	}
 	if(!CanWalkNoMons(newx,y,map,world))
 		newx=x;
-	if(!CanWalkNoMons(x,newy,map,world))
+	if(!CanWalkNoMons(newx,newy,map,world))
 		newy=y;
 
 	if(type==player.monsType)
